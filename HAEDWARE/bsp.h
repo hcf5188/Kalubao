@@ -12,14 +12,13 @@
 #define GPIO_Pin_KWP_RX		GPIO_Pin_11
 #define GPIO_Pin_KWP_TX		GPIO_Pin_10
 
-
 void SystemBspInit(void );
 
-void SysTickInit(void);
-void BspClockInit(void);
-void GPIOLEDInit(void);
-
-void CAN1Config(void);
+void SysTickInit(void);    //系统时钟初始化
+void BspClockInit(void);   //外设时钟初始化
+void GPIOLEDInit(void);    //LED  IO口初始化
+void CDMAUart2Init(void);  //CDMA 串口初始化
+void CAN1Config(void);     //CAN1 初始化
 
 #endif
 

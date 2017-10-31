@@ -1,9 +1,9 @@
 /************************************************************
-*公司名称:       宁波GQY视讯股份有限公司
+*公司名称:       上海星融汽车科技有限公司
 *文件名称: mem_Q.c
 *作者姓名: HongCf
 *文件内容: 循环队列操作
-*编写日期: 2017-4-30
+*编写日期: 2017-10-30
 *************************************************************/
 
 #include "memblock.h"
@@ -15,7 +15,7 @@
 * 输入参数 : 循环对列的长度
 * 返 回 值 : pCIR_QUEUE类型，指向循环队列的指针
 ****************************************************************/
-pCIR_QUEUE Cir_Queue_Init(unsigned int length)
+pCIR_QUEUE Cir_Queue_Init(uint16_t length)
 {
 	pCIR_QUEUE ptr_Q = NULL;
 	
@@ -75,7 +75,7 @@ NORMAL_STATE  CirQ_Clear(pCIR_QUEUE ptr_Q)
 * 输入参数 : 指向循环队列的指针
 * 返 回 值 : 保存值的数量count。
 ****************************************************************/
-unsigned short int CirQ_GetLength(pCIR_QUEUE ptr_Q)
+uint16_t CirQ_GetLength(pCIR_QUEUE ptr_Q)
 {
 	if(ptr_Q->data == NULL) return 0;
 	
@@ -105,7 +105,7 @@ NORMAL_STATE CirQ_Pop(pCIR_QUEUE ptr_Q,unsigned char *phead)
 * 输入参数 : 指向循环队列的指针，要压入的值
 * 返 回 值 : 枚举NORMAL_STATE类型。
 ****************************************************************/
-NORMAL_STATE CirQ_OnePush(pCIR_QUEUE ptr_Q,unsigned char dat)
+NORMAL_STATE CirQ_OnePush(pCIR_QUEUE ptr_Q,uint8_t dat)
 {
 	if(ptr_Q->data == NULL)           return FAULT;
 	if(ptr_Q->count == ptr_Q->length) return OVERFLOW;
@@ -125,7 +125,7 @@ NORMAL_STATE CirQ_OnePush(pCIR_QUEUE ptr_Q,unsigned char dat)
 * 输入参数 : 指向循环队列的指针，指向源地址的指针，要压入值的个数
 * 返 回 值 : 枚举NORMAL_STATE类型。
 ****************************************************************/
-NORMAL_STATE CirQ_Pushs(pCIR_QUEUE ptr_Q,const unsigned char *pdata,unsigned char length)
+NORMAL_STATE CirQ_Pushs(pCIR_QUEUE ptr_Q,const uint8_t *pdata,uint16_t length)
 {
 	if(ptr_Q->data == NULL) return FAULT;
 	if(length == 0)         return FAULT;
