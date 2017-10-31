@@ -1,9 +1,9 @@
 /************************************************************
-*公司名称:       宁波GQY视讯股份有限公司
+*公司名称:       上海星融汽车科技有限公司
 *文件名称: mem_Store.c
 *作者姓名: HongCf
 *文件内容: 数据堆操作
-*编写日期: 2017-4-30
+*编写日期: 2017-10-30
 *************************************************************/
 
 #include "memblock.h"
@@ -14,7 +14,7 @@
 * 输入参数 : 堆栈的长度
 * 返 回 值 : pSTORE类型，指向堆栈的指针
 ****************************************************************/
-pSTORE Store_Init(unsigned int length)
+pSTORE Store_Init(uint16_t length)
 {
 	pSTORE S = NULL;
 	if(length < 2)  return NULL;
@@ -39,11 +39,14 @@ pSTORE Store_Init(unsigned int length)
 ****************************************************************/
 NORMAL_STATE Store_Delete(pSTORE S)
 {
-	if(S->base == NULL)         return FAULT;
+	if(S->base == NULL)         
+		return FAULT;
 	
-	if(Mem_free(S->base) != 0)  return FAULT;
+	if(Mem_free(S->base) != 0)  
+		return FAULT;
 	
-	if(Mem_free(S) != 0)        return FAULT;
+	if(Mem_free(S) != 0)        
+		return FAULT;
 	
 	return OK;
 }
@@ -65,7 +68,7 @@ NORMAL_STATE Store_Clear(pSTORE S)
 * 输入参数 : 指向堆栈的指针，要压入的数据
 * 返 回 值 : NORMAL_STATE类型，操作是否成功状态
 ****************************************************************/
-NORMAL_STATE Store_Push(pSTORE S,unsigned char dat)
+NORMAL_STATE Store_Push(pSTORE S,uint8_t dat)
 {
 	if(S->base == NULL) return FAULT;
 	if(S->top  == S->length) return OVERFLOW;
@@ -81,7 +84,7 @@ NORMAL_STATE Store_Push(pSTORE S,unsigned char dat)
 * 输入参数 : 指向堆栈的指针，要弹出的地址
 * 返 回 值 : NORMAL_STATE类型，操作是否成功状态
 ****************************************************************/
-NORMAL_STATE Store_Pop(pSTORE S,unsigned char *pdat)
+NORMAL_STATE Store_Pop(pSTORE S,uint8_t *pdat)
 {
 	if(S->base == NULL) return FAULT;
 	if(S->top == 0)    return EMPTY;
@@ -97,7 +100,7 @@ NORMAL_STATE Store_Pop(pSTORE S,unsigned char *pdat)
 * 输入参数 : 指向堆栈的指针
 * 返 回 值 : unsigned int类型，数据的长度
 ****************************************************************/
-unsigned int Store_Getlength(pSTORE S)
+uint16_t Store_Getlength(pSTORE S)
 {
 	if(S->base == NULL) return 0;
 	
