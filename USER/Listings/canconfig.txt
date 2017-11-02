@@ -19,7 +19,7 @@
 000006  0648              LSLS     r0,r1,#25
 000008  f7fffffe          BL       RCC_APB1PeriphClockCmd
 ;;;13     	CAN_DeInit(CAN1);
-00000c  4828              LDR      r0,|L1.176|
+00000c  4829              LDR      r0,|L1.180|
 00000e  f7fffffe          BL       CAN_DeInit
 ;;;14     	CAN_StructInit(&CAN_InitStructure);
 000012  a801              ADD      r0,sp,#4
@@ -38,11 +38,11 @@
 000028  f88d0013          STRB     r0,[sp,#0x13]
 ;;;21       	GPIO_Init(GPIOB, &GPIO_InitStructure);
 00002c  a904              ADD      r1,sp,#0x10
-00002e  4821              LDR      r0,|L1.180|
+00002e  4822              LDR      r0,|L1.184|
 000030  f7fffffe          BL       GPIO_Init
 ;;;22     	GPIO_ResetBits(GPIOB, GPIO_Pin_14);//使能CAN芯片 VP230
 000034  f44f4180          MOV      r1,#0x4000
-000038  481e              LDR      r0,|L1.180|
+000038  481f              LDR      r0,|L1.184|
 00003a  f7fffffe          BL       GPIO_ResetBits
 ;;;23     	
 ;;;24     	//CAN1_RX   -  PB8;
@@ -54,7 +54,7 @@
 000048  f88d0013          STRB     r0,[sp,#0x13]
 ;;;27     	GPIO_Init(GPIOB, &GPIO_InitStructure);
 00004c  a904              ADD      r1,sp,#0x10
-00004e  4819              LDR      r0,|L1.180|
+00004e  481a              LDR      r0,|L1.184|
 000050  f7fffffe          BL       GPIO_Init
 ;;;28     	//CAN1_TX   -  PB9;
 ;;;29     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
@@ -68,7 +68,7 @@
 000064  f88d0012          STRB     r0,[sp,#0x12]
 ;;;32     	GPIO_Init(GPIOB, &GPIO_InitStructure);
 000068  a904              ADD      r1,sp,#0x10
-00006a  4812              LDR      r0,|L1.180|
+00006a  4813              LDR      r0,|L1.184|
 00006c  f7fffffe          BL       GPIO_Init
 ;;;33     
 ;;;34     	GPIO_PinRemapConfig(GPIO_Remap1_CAN1 , ENABLE);
@@ -76,79 +76,84 @@
 000072  f44f10ea          MOV      r0,#0x1d4000
 000076  f7fffffe          BL       GPIO_PinRemapConfig
 ;;;35     	
-;;;36     	CAN1_BaudSet(CANBAUD_250K);         //设置CAN波特率为250K
+;;;36     	CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
 00007a  2001              MOVS     r0,#1
 00007c  f7fffffe          BL       CAN1_BaudSet
-;;;37     	CAN1_ClearFilter();                 //清除滤波器
-000080  f7fffffe          BL       CAN1_ClearFilter
-;;;38     	
-;;;39     	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);				//FIFO1消息挂号中断允许.		 
-000084  2201              MOVS     r2,#1
-000086  2110              MOVS     r1,#0x10
-000088  4809              LDR      r0,|L1.176|
-00008a  f7fffffe          BL       CAN_ITConfig
-;;;40     	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;
-00008e  2015              MOVS     r0,#0x15
-000090  f88d0000          STRB     r0,[sp,#0]
-;;;41     	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-000094  2002              MOVS     r0,#2
-000096  f88d0001          STRB     r0,[sp,#1]
-;;;42     	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
-00009a  2005              MOVS     r0,#5
-00009c  f88d0002          STRB     r0,[sp,#2]
-;;;43     	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-0000a0  2001              MOVS     r0,#1
-0000a2  f88d0003          STRB     r0,[sp,#3]
-;;;44     	NVIC_Init(&NVIC_InitStructure);	
-0000a6  4668              MOV      r0,sp
-0000a8  f7fffffe          BL       NVIC_Init
-;;;45     }
-0000ac  b005              ADD      sp,sp,#0x14
-0000ae  bd00              POP      {pc}
-;;;46     //CAN1 波特率设置
+;;;37     	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);//设置滤波器
+000080  2104              MOVS     r1,#4
+000082  480e              LDR      r0,|L1.188|
+000084  f7fffffe          BL       CAN1_SetFilter
+;;;38     //	CAN1_ClearFilter();                   //清除滤波器
+;;;39     	
+;;;40     	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);				//FIFO1消息挂号中断允许.		 
+000088  2201              MOVS     r2,#1
+00008a  2110              MOVS     r1,#0x10
+00008c  4809              LDR      r0,|L1.180|
+00008e  f7fffffe          BL       CAN_ITConfig
+;;;41     	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;
+000092  2015              MOVS     r0,#0x15
+000094  f88d0000          STRB     r0,[sp,#0]
+;;;42     	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+000098  2002              MOVS     r0,#2
+00009a  f88d0001          STRB     r0,[sp,#1]
+;;;43     	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
+00009e  2005              MOVS     r0,#5
+0000a0  f88d0002          STRB     r0,[sp,#2]
+;;;44     	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+0000a4  2001              MOVS     r0,#1
+0000a6  f88d0003          STRB     r0,[sp,#3]
+;;;45     	NVIC_Init(&NVIC_InitStructure);	
+0000aa  4668              MOV      r0,sp
+0000ac  f7fffffe          BL       NVIC_Init
+;;;46     }
+0000b0  b005              ADD      sp,sp,#0x14
+0000b2  bd00              POP      {pc}
+;;;47     //CAN1 波特率设置
                           ENDP
 
-                  |L1.176|
-                          DCD      0x40006400
                   |L1.180|
+                          DCD      0x40006400
+                  |L1.184|
                           DCD      0x40010c00
+                  |L1.188|
+                          DCD      0x18dafb10
 
                           AREA ||i.CAN1_BaudSet||, CODE, READONLY, ALIGN=2
 
                   CAN1_BaudSet PROC
-;;;46     //CAN1 波特率设置
-;;;47     void CAN1_BaudSet(CANBAUD_Enum baud)
+;;;47     //CAN1 波特率设置
+;;;48     void CAN1_BaudSet(CANBAUD_Enum baud)
 000000  b53e              PUSH     {r1-r5,lr}
-;;;48     {
+;;;49     {
 000002  4604              MOV      r4,r0
-;;;49     	CAN_InitTypeDef         CAN_InitStructure;
-;;;50     	
+;;;50     	CAN_InitTypeDef         CAN_InitStructure;
 ;;;51     	
-;;;52     	CAN_InitStructure.CAN_TTCM = DISABLE;
+;;;52     	
+;;;53     	CAN_InitStructure.CAN_TTCM = DISABLE;
 000004  2000              MOVS     r0,#0
 000006  f88d0006          STRB     r0,[sp,#6]
-;;;53     	CAN_InitStructure.CAN_ABOM = DISABLE;
+;;;54     	CAN_InitStructure.CAN_ABOM = DISABLE;
 00000a  f88d0007          STRB     r0,[sp,#7]
-;;;54     	CAN_InitStructure.CAN_AWUM = DISABLE;
+;;;55     	CAN_InitStructure.CAN_AWUM = DISABLE;
 00000e  f88d0008          STRB     r0,[sp,#8]
-;;;55     	CAN_InitStructure.CAN_NART = DISABLE;
+;;;56     	CAN_InitStructure.CAN_NART = DISABLE;
 000012  f88d0009          STRB     r0,[sp,#9]
-;;;56     	CAN_InitStructure.CAN_RFLM = DISABLE;
+;;;57     	CAN_InitStructure.CAN_RFLM = DISABLE;
 000016  f88d000a          STRB     r0,[sp,#0xa]
-;;;57     	CAN_InitStructure.CAN_TXFP = DISABLE;
+;;;58     	CAN_InitStructure.CAN_TXFP = DISABLE;
 00001a  f88d000b          STRB     r0,[sp,#0xb]
-;;;58     	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;//正常模式
+;;;59     	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;//正常模式
 00001e  f88d0002          STRB     r0,[sp,#2]
-;;;59     
-;;;60     	CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;
+;;;60     
+;;;61     	CAN_InitStructure.CAN_SJW = CAN_SJW_1tq;
 000022  f88d0003          STRB     r0,[sp,#3]
-;;;61     	CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
+;;;62     	CAN_InitStructure.CAN_BS1 = CAN_BS1_9tq;
 000026  2008              MOVS     r0,#8
 000028  f88d0004          STRB     r0,[sp,#4]
-;;;62     	CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
+;;;63     	CAN_InitStructure.CAN_BS2 = CAN_BS2_8tq;
 00002c  2007              MOVS     r0,#7
 00002e  f88d0005          STRB     r0,[sp,#5]
-;;;63     	switch(baud)
+;;;64     	switch(baud)
 000032  b134              CBZ      r4,|L2.66|
 000034  2c01              CMP      r4,#1
 000036  d005              BEQ      |L2.68|
@@ -158,37 +163,37 @@
 00003e  d10d              BNE      |L2.92|
 000040  e008              B        |L2.84|
                   |L2.66|
-;;;64     	{
-;;;65     		case CANBAUD_100K:break;
+;;;65     	{
+;;;66     		case CANBAUD_100K:break;
 000042  e00c              B        |L2.94|
                   |L2.68|
-;;;66     		case CANBAUD_250K:CAN_InitStructure.CAN_Prescaler = 8;break;
+;;;67     		case CANBAUD_250K:CAN_InitStructure.CAN_Prescaler = 8;break;
 000044  2008              MOVS     r0,#8
 000046  f8ad0000          STRH     r0,[sp,#0]
 00004a  e008              B        |L2.94|
                   |L2.76|
-;;;67     		case CANBAUD_500K:CAN_InitStructure.CAN_Prescaler = 4;break;
+;;;68     		case CANBAUD_500K:CAN_InitStructure.CAN_Prescaler = 4;break;
 00004c  2004              MOVS     r0,#4
 00004e  f8ad0000          STRH     r0,[sp,#0]
 000052  e004              B        |L2.94|
                   |L2.84|
-;;;68     		case CANBAUD_1M  :CAN_InitStructure.CAN_Prescaler = 2;break;
+;;;69     		case CANBAUD_1M  :CAN_InitStructure.CAN_Prescaler = 2;break;
 000054  2002              MOVS     r0,#2
 000056  f8ad0000          STRH     r0,[sp,#0]
 00005a  e000              B        |L2.94|
                   |L2.92|
-;;;69     		default:break;
+;;;70     		default:break;
 00005c  bf00              NOP      
                   |L2.94|
-00005e  bf00              NOP                            ;65
-;;;70     	}
-;;;71     	CAN_Init(CAN1, &CAN_InitStructure);
+00005e  bf00              NOP                            ;66
+;;;71     	}
+;;;72     	CAN_Init(CAN1, &CAN_InitStructure);
 000060  4669              MOV      r1,sp
 000062  4802              LDR      r0,|L2.108|
 000064  f7fffffe          BL       CAN_Init
-;;;72     }
+;;;73     }
 000068  bd3e              POP      {r1-r5,pc}
-;;;73     //清除滤波器
+;;;74     //清除滤波器
                           ENDP
 
 00006a  0000              DCW      0x0000
@@ -198,47 +203,47 @@
                           AREA ||i.CAN1_ClearFilter||, CODE, READONLY, ALIGN=2
 
                   CAN1_ClearFilter PROC
-;;;73     //清除滤波器
-;;;74     void CAN1_ClearFilter(void)
+;;;74     //清除滤波器
+;;;75     void CAN1_ClearFilter(void)
 000000  b51f              PUSH     {r0-r4,lr}
-;;;75     {
-;;;76     	CAN_FilterInitTypeDef   CAN_FilterInitStructure;
-;;;77     	
-;;;78     	CAN_FilterInitStructure.CAN_FilterNumber=1;	//过滤器1
+;;;76     {
+;;;77     	CAN_FilterInitTypeDef   CAN_FilterInitStructure;
+;;;78     	
+;;;79     	CAN_FilterInitStructure.CAN_FilterNumber=1;	//过滤器1
 000002  2001              MOVS     r0,#1
 000004  f88d000a          STRB     r0,[sp,#0xa]
-;;;79     	CAN_FilterInitStructure.CAN_FilterMode=CAN_FilterMode_IdMask; 	//屏蔽位模式
+;;;80     	CAN_FilterInitStructure.CAN_FilterMode=CAN_FilterMode_IdMask; 	//屏蔽位模式
 000008  2000              MOVS     r0,#0
 00000a  f88d000b          STRB     r0,[sp,#0xb]
-;;;80     	CAN_FilterInitStructure.CAN_FilterScale=CAN_FilterScale_32bit; 	//32位宽 
+;;;81     	CAN_FilterInitStructure.CAN_FilterScale=CAN_FilterScale_32bit; 	//32位宽 
 00000e  2001              MOVS     r0,#1
 000010  f88d000c          STRB     r0,[sp,#0xc]
-;;;81     	
-;;;82     	CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;	//32位ID
+;;;82     	
+;;;83     	CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;	//32位ID
 000014  2000              MOVS     r0,#0
 000016  f8ad0000          STRH     r0,[sp,#0]
-;;;83     	CAN_FilterInitStructure.CAN_FilterIdLow=0x0000;
+;;;84     	CAN_FilterInitStructure.CAN_FilterIdLow=0x0000;
 00001a  f8ad0002          STRH     r0,[sp,#2]
-;;;84     	CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;//32位MASK
+;;;85     	CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;//32位MASK
 00001e  f8ad0004          STRH     r0,[sp,#4]
-;;;85     	CAN_FilterInitStructure.CAN_FilterMaskIdLow=0x0000;
+;;;86     	CAN_FilterInitStructure.CAN_FilterMaskIdLow=0x0000;
 000022  f8ad0006          STRH     r0,[sp,#6]
-;;;86     	CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_Filter_FIFO1;//过滤器1关联到FIFO1
+;;;87     	CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_Filter_FIFO1;//过滤器1关联到FIFO1
 000026  2001              MOVS     r0,#1
 000028  f8ad0008          STRH     r0,[sp,#8]
-;;;87     	
-;;;88     	CAN_FilterInitStructure.CAN_FilterActivation=ENABLE;//激活过滤器1
+;;;88     	
+;;;89     	CAN_FilterInitStructure.CAN_FilterActivation=ENABLE;//激活过滤器1
 00002c  f88d000d          STRB     r0,[sp,#0xd]
-;;;89     	CAN_FIFORelease(CAN1,CAN_FIFO1);
+;;;90     	CAN_FIFORelease(CAN1,CAN_FIFO1);
 000030  2101              MOVS     r1,#1
 000032  4803              LDR      r0,|L3.64|
 000034  f7fffffe          BL       CAN_FIFORelease
-;;;90     	CAN_FilterInit(&CAN_FilterInitStructure);			//滤波器初始化
+;;;91     	CAN_FilterInit(&CAN_FilterInitStructure);			//滤波器初始化
 000038  4668              MOV      r0,sp
 00003a  f7fffffe          BL       CAN_FilterInit
-;;;91     }
+;;;92     }
 00003e  bd1f              POP      {r0-r4,pc}
-;;;92     //设置滤波器
+;;;93     //设置滤波器
                           ENDP
 
                   |L3.64|
@@ -247,71 +252,71 @@
                           AREA ||i.CAN1_SetFilter||, CODE, READONLY, ALIGN=1
 
                   CAN1_SetFilter PROC
-;;;92     //设置滤波器
-;;;93     void CAN1_SetFilter(uint32_t canId,uint32_t canIde)
+;;;93     //设置滤波器
+;;;94     void CAN1_SetFilter(uint32_t canId,uint32_t canIde)
 000000  b57f              PUSH     {r0-r6,lr}
-;;;94     {
+;;;95     {
 000002  4604              MOV      r4,r0
 000004  460d              MOV      r5,r1
-;;;95     	CAN_FilterInitTypeDef  CAN_FilterInitStructure;
-;;;96     
-;;;97     	CAN_FilterInitStructure.CAN_FilterNumber = 0;
+;;;96     	CAN_FilterInitTypeDef  CAN_FilterInitStructure;
+;;;97     
+;;;98     	CAN_FilterInitStructure.CAN_FilterNumber = 0;
 000006  2000              MOVS     r0,#0
 000008  f88d000a          STRB     r0,[sp,#0xa]
-;;;98     	CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
+;;;99     	CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
 00000c  f88d000b          STRB     r0,[sp,#0xb]
-;;;99     	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
+;;;100    	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
 000010  2001              MOVS     r0,#1
 000012  f88d000c          STRB     r0,[sp,#0xc]
-;;;100    	if(canIde == CAN_ID_STD)
+;;;101    	if(canIde == CAN_ID_STD)
 000016  b995              CBNZ     r5,|L4.62|
-;;;101    	{
-;;;102    		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32)canId<<21)&0xffff0000)>>16;
+;;;102    	{
+;;;103    		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32)canId<<21)&0xffff0000)>>16;
 000018  0560              LSLS     r0,r4,#21
 00001a  0c00              LSRS     r0,r0,#16
 00001c  f8ad0000          STRH     r0,[sp,#0]
-;;;103    		CAN_FilterInitStructure.CAN_FilterIdLow   = (((u32)canId<<21)|CAN_ID_STD)&0xffff;
+;;;104    		CAN_FilterInitStructure.CAN_FilterIdLow   = (((u32)canId<<21)|CAN_ID_STD)&0xffff;
 000020  2000              MOVS     r0,#0
 000022  ea405044          ORR      r0,r0,r4,LSL #21
 000026  b280              UXTH     r0,r0
 000028  f8ad0002          STRH     r0,[sp,#2]
-;;;104    		CAN_FilterInitStructure.CAN_FilterMaskIdHigh  = 0xFE00;
+;;;105    		CAN_FilterInitStructure.CAN_FilterMaskIdHigh  = 0xFE00;
 00002c  f44f407e          MOV      r0,#0xfe00
 000030  f8ad0004          STRH     r0,[sp,#4]
-;;;105    		CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0xFFFC;
+;;;106    		CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0xFFFC;
 000034  f64f70fc          MOV      r0,#0xfffc
 000038  f8ad0006          STRH     r0,[sp,#6]
 00003c  e011              B        |L4.98|
                   |L4.62|
-;;;106    	}else
-;;;107    	{
-;;;108    		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32)canId<<3)&0xffff0000)>>16;
+;;;107    	}else
+;;;108    	{
+;;;109    		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32)canId<<3)&0xffff0000)>>16;
 00003e  f3c4304f          UBFX     r0,r4,#13,#16
 000042  f8ad0000          STRH     r0,[sp,#0]
-;;;109    		CAN_FilterInitStructure.CAN_FilterIdLow   = (((u32)canId<<3)|CAN_ID_EXT)&0xffff;
+;;;110    		CAN_FilterInitStructure.CAN_FilterIdLow   = (((u32)canId<<3)|CAN_ID_EXT)&0xffff;
 000046  2004              MOVS     r0,#4
 000048  eb0000c4          ADD      r0,r0,r4,LSL #3
 00004c  b280              UXTH     r0,r0
 00004e  f8ad0002          STRH     r0,[sp,#2]
-;;;110    		CAN_FilterInitStructure.CAN_FilterMaskIdHigh  = 0xFFFF;
+;;;111    		CAN_FilterInitStructure.CAN_FilterMaskIdHigh  = 0xFFFF;
 000052  f64f70ff          MOV      r0,#0xffff
 000056  f8ad0004          STRH     r0,[sp,#4]
-;;;111    		CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0xFFC0;
+;;;112    		CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0xFFC0;
 00005a  f64f70c0          MOV      r0,#0xffc0
 00005e  f8ad0006          STRH     r0,[sp,#6]
                   |L4.98|
-;;;112    	}
-;;;113    	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO1;//0
+;;;113    	}
+;;;114    	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO1;//0
 000062  2001              MOVS     r0,#1
 000064  f8ad0008          STRH     r0,[sp,#8]
-;;;114    	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
+;;;115    	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
 000068  f88d000d          STRB     r0,[sp,#0xd]
-;;;115    	CAN_FilterInit(&CAN_FilterInitStructure);
+;;;116    	CAN_FilterInit(&CAN_FilterInitStructure);
 00006c  4668              MOV      r0,sp
 00006e  f7fffffe          BL       CAN_FilterInit
-;;;116    }
+;;;117    }
 000072  bd7f              POP      {r0-r6,pc}
-;;;117    
+;;;118    
                           ENDP
 
 

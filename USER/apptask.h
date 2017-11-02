@@ -10,6 +10,10 @@
 #define GPS_TASK_PRIO        12     //车辆定位GPS任务优先级
 #define OBD_TASK_PRIO        13     //故障诊断OBD任务优先级
 
+#define CDMA_LED_PRIO        20     //网络通信GPRS-LED任务优先级
+#define GPS_LED_PRIO         21     //车辆定位GPS-LED任务优先级
+#define OBD_LED_PRIO         22     //故障诊断OBD-LED任务优先级
+
 #define START_TASK_PRIO      50     //起始任务优先级
 
 /************************   任务堆栈大小定义定义   ************************/
@@ -20,7 +24,7 @@
 #define GPS_STK_SIZE         128    //车辆定位GPS任务堆栈大小
 #define OBD_STK_SIZE         128    //整车故障诊断OBD任务堆栈大小
 
-
+#define LED_STK_SIZE         64     //LED任务堆栈大小
 
 /************************   任务声明            ************************/
 

@@ -33,8 +33,9 @@ void CAN1Config(void)
 
 	GPIO_PinRemapConfig(GPIO_Remap1_CAN1 , ENABLE);
 	
-	CAN1_BaudSet(CANBAUD_250K);         //设置CAN波特率为250K
-	CAN1_ClearFilter();                 //清除滤波器
+	CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
+	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);//设置滤波器
+//	CAN1_ClearFilter();                   //清除滤波器
 	
 	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);				//FIFO1消息挂号中断允许.		 
 	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;

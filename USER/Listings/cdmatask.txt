@@ -2,47 +2,30 @@
 ; commandline ArmCC [--list --split_sections --debug -c --asm --interleave -o..\obj\cdmatask.o --asm_dir=.\Listings\ --list_dir=.\Listings\ --depend=..\obj\cdmatask.d --cpu=Cortex-M3 --apcs=interwork -O0 -I..\OBD -I..\SYSTEM -I..\USER -I..\LIB\inc -I..\UCOSII\CONFIG -I..\UCOSII\PORT -I..\UCOSII\CORE -I..\HAEDWARE -I..\GPS -I..\CDMA -I..\DEAL -IC:\Keil_v5\ARM\RV31\INC -IC:\Keil_v5\ARM\CMSIS\Include -IC:\Keil_v5\ARM\Inc\ST\STM32F10x -D__MICROLIB -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER --omf_browse=..\obj\cdmatask.crf ..\CDMA\CDMATask.c]
                           THUMB
 
-                          AREA ||i.CDMATask||, CODE, READONLY, ALIGN=2
+                          AREA ||i.CDMATask||, CODE, READONLY, ALIGN=1
 
                   CDMATask PROC
 ;;;5      
 ;;;6      void CDMATask(void *pdata)
-000000  e015              B        |L1.46|
+000000  e005              B        |L1.14|
                   |L1.2|
 ;;;7      {
 ;;;8      
 ;;;9      	while(1)
 ;;;10     	{
-;;;11     		GPIO_ResetBits(GPIO_LED,LED_GPIO_MOD);
-000002  2110              MOVS     r1,#0x10
-000004  480a              LDR      r0,|L1.48|
-000006  f7fffffe          BL       GPIO_ResetBits
-;;;12     		OSTimeDlyHMSM(0,0,0,350);
-00000a  f44f73af          MOV      r3,#0x15e
-00000e  2200              MOVS     r2,#0
-000010  4611              MOV      r1,r2
-000012  4610              MOV      r0,r2
-000014  f7fffffe          BL       OSTimeDlyHMSM
-;;;13     		GPIO_SetBits(GPIO_LED,LED_GPIO_MOD);
-000018  2110              MOVS     r1,#0x10
-00001a  4805              LDR      r0,|L1.48|
-00001c  f7fffffe          BL       GPIO_SetBits
-;;;14     		OSTimeDlyHMSM(0,0,0,350);
-000020  f44f73af          MOV      r3,#0x15e
-000024  2200              MOVS     r2,#0
-000026  4611              MOV      r1,r2
-000028  4610              MOV      r0,r2
-00002a  f7fffffe          BL       OSTimeDlyHMSM
-                  |L1.46|
-00002e  e7e8              B        |L1.2|
-;;;15     		
-;;;16     	}
-;;;17     }
-;;;18     
+;;;11     		OSTimeDlyHMSM(0,0,0,250);
+000002  23fa              MOVS     r3,#0xfa
+000004  2200              MOVS     r2,#0
+000006  4611              MOV      r1,r2
+000008  4610              MOV      r0,r2
+00000a  f7fffffe          BL       OSTimeDlyHMSM
+                  |L1.14|
+00000e  e7f8              B        |L1.2|
+;;;12     	}
+;;;13     }
+;;;14     
                           ENDP
 
-                  |L1.48|
-                          DCD      0x40010c00
 
 ;*** Start embedded assembler ***
 

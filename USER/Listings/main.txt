@@ -2,114 +2,346 @@
 ; commandline ArmCC [--list --split_sections --debug -c --asm --interleave -o..\obj\main.o --asm_dir=.\Listings\ --list_dir=.\Listings\ --depend=..\obj\main.d --cpu=Cortex-M3 --apcs=interwork -O0 -I..\OBD -I..\SYSTEM -I..\USER -I..\LIB\inc -I..\UCOSII\CONFIG -I..\UCOSII\PORT -I..\UCOSII\CORE -I..\HAEDWARE -I..\GPS -I..\CDMA -I..\DEAL -IC:\Keil_v5\ARM\RV31\INC -IC:\Keil_v5\ARM\CMSIS\Include -IC:\Keil_v5\ARM\Inc\ST\STM32F10x -D__MICROLIB -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER --omf_browse=..\obj\main.crf main.c]
                           THUMB
 
+                          AREA ||i.CDMALEDTask||, CODE, READONLY, ALIGN=2
+
+                  CDMALEDTask PROC
+;;;66     uint16_t freCDMALed = 50;
+;;;67     void CDMALEDTask(void *pdata)
+000000  e026              B        |L1.80|
+                  |L1.2|
+;;;68     {
+;;;69     	while(1)
+;;;70     	{
+;;;71     		if(freCDMALed < 50)
+000002  4814              LDR      r0,|L1.84|
+000004  8800              LDRH     r0,[r0,#0]  ; freCDMALed
+000006  2832              CMP      r0,#0x32
+000008  da03              BGE      |L1.18|
+;;;72     			freCDMALed = 50;
+00000a  2032              MOVS     r0,#0x32
+00000c  4911              LDR      r1,|L1.84|
+00000e  8008              STRH     r0,[r1,#0]
+000010  e008              B        |L1.36|
+                  |L1.18|
+;;;73     		else if(freCDMALed >2000)
+000012  4810              LDR      r0,|L1.84|
+000014  8800              LDRH     r0,[r0,#0]  ; freCDMALed
+000016  f5b06ffa          CMP      r0,#0x7d0
+00001a  dd03              BLE      |L1.36|
+;;;74     			freCDMALed = 2000;
+00001c  f44f60fa          MOV      r0,#0x7d0
+000020  490c              LDR      r1,|L1.84|
+000022  8008              STRH     r0,[r1,#0]
+                  |L1.36|
+;;;75     		GPIO_ResetBits(GPIO_LED,LED_GPIO_MOD);
+000024  2110              MOVS     r1,#0x10
+000026  480c              LDR      r0,|L1.88|
+000028  f7fffffe          BL       GPIO_ResetBits
+;;;76     		OSTimeDlyHMSM(0,0,0,freCDMALed);
+00002c  4809              LDR      r0,|L1.84|
+00002e  8803              LDRH     r3,[r0,#0]  ; freCDMALed
+000030  2200              MOVS     r2,#0
+000032  4611              MOV      r1,r2
+000034  4610              MOV      r0,r2
+000036  f7fffffe          BL       OSTimeDlyHMSM
+;;;77     		GPIO_SetBits(GPIO_LED,LED_GPIO_MOD);
+00003a  2110              MOVS     r1,#0x10
+00003c  4806              LDR      r0,|L1.88|
+00003e  f7fffffe          BL       GPIO_SetBits
+;;;78     		OSTimeDlyHMSM(0,0,0,freCDMALed);
+000042  4804              LDR      r0,|L1.84|
+000044  8803              LDRH     r3,[r0,#0]  ; freCDMALed
+000046  2200              MOVS     r2,#0
+000048  4611              MOV      r1,r2
+00004a  4610              MOV      r0,r2
+00004c  f7fffffe          BL       OSTimeDlyHMSM
+                  |L1.80|
+000050  e7d7              B        |L1.2|
+;;;79     	}
+;;;80     }
+;;;81     uint16_t freGPSLed = 50;
+                          ENDP
+
+000052  0000              DCW      0x0000
+                  |L1.84|
+                          DCD      freCDMALed
+                  |L1.88|
+                          DCD      0x40010c00
+
+                          AREA ||i.GPSLEDTask||, CODE, READONLY, ALIGN=2
+
+                  GPSLEDTask PROC
+;;;81     uint16_t freGPSLed = 50;
+;;;82     void GPSLEDTask(void *pdata)
+000000  e026              B        |L2.80|
+                  |L2.2|
+;;;83     {
+;;;84     	while(1)
+;;;85     	{
+;;;86     		if(freGPSLed < 50)
+000002  4814              LDR      r0,|L2.84|
+000004  8800              LDRH     r0,[r0,#0]  ; freGPSLed
+000006  2832              CMP      r0,#0x32
+000008  da03              BGE      |L2.18|
+;;;87     			freGPSLed = 50;
+00000a  2032              MOVS     r0,#0x32
+00000c  4911              LDR      r1,|L2.84|
+00000e  8008              STRH     r0,[r1,#0]
+000010  e008              B        |L2.36|
+                  |L2.18|
+;;;88     		else if(freGPSLed >2000)
+000012  4810              LDR      r0,|L2.84|
+000014  8800              LDRH     r0,[r0,#0]  ; freGPSLed
+000016  f5b06ffa          CMP      r0,#0x7d0
+00001a  dd03              BLE      |L2.36|
+;;;89     			freGPSLed = 2000;
+00001c  f44f60fa          MOV      r0,#0x7d0
+000020  490c              LDR      r1,|L2.84|
+000022  8008              STRH     r0,[r1,#0]
+                  |L2.36|
+;;;90     		GPIO_ResetBits(GPIO_LED,LED_GPIO_GPS);
+000024  2108              MOVS     r1,#8
+000026  480c              LDR      r0,|L2.88|
+000028  f7fffffe          BL       GPIO_ResetBits
+;;;91     		OSTimeDlyHMSM(0,0,0,freGPSLed);
+00002c  4809              LDR      r0,|L2.84|
+00002e  8803              LDRH     r3,[r0,#0]  ; freGPSLed
+000030  2200              MOVS     r2,#0
+000032  4611              MOV      r1,r2
+000034  4610              MOV      r0,r2
+000036  f7fffffe          BL       OSTimeDlyHMSM
+;;;92     		GPIO_SetBits(GPIO_LED,LED_GPIO_GPS);
+00003a  2108              MOVS     r1,#8
+00003c  4806              LDR      r0,|L2.88|
+00003e  f7fffffe          BL       GPIO_SetBits
+;;;93     		OSTimeDlyHMSM(0,0,0,freGPSLed);
+000042  4804              LDR      r0,|L2.84|
+000044  8803              LDRH     r3,[r0,#0]  ; freGPSLed
+000046  2200              MOVS     r2,#0
+000048  4611              MOV      r1,r2
+00004a  4610              MOV      r0,r2
+00004c  f7fffffe          BL       OSTimeDlyHMSM
+                  |L2.80|
+000050  e7d7              B        |L2.2|
+;;;94     	}
+;;;95     }
+;;;96     uint16_t freOBDLed = 50;
+                          ENDP
+
+000052  0000              DCW      0x0000
+                  |L2.84|
+                          DCD      freGPSLed
+                  |L2.88|
+                          DCD      0x40010c00
+
+                          AREA ||i.OBDLEDTask||, CODE, READONLY, ALIGN=2
+
+                  OBDLEDTask PROC
+;;;96     uint16_t freOBDLed = 50;
+;;;97     void OBDLEDTask(void *pdata)
+000000  e026              B        |L3.80|
+                  |L3.2|
+;;;98     {
+;;;99     	while(1)
+;;;100    	{
+;;;101    		if(freOBDLed < 50)
+000002  4814              LDR      r0,|L3.84|
+000004  8800              LDRH     r0,[r0,#0]  ; freOBDLed
+000006  2832              CMP      r0,#0x32
+000008  da03              BGE      |L3.18|
+;;;102    			freOBDLed = 50;
+00000a  2032              MOVS     r0,#0x32
+00000c  4911              LDR      r1,|L3.84|
+00000e  8008              STRH     r0,[r1,#0]
+000010  e008              B        |L3.36|
+                  |L3.18|
+;;;103    		else if(freOBDLed >2000)
+000012  4810              LDR      r0,|L3.84|
+000014  8800              LDRH     r0,[r0,#0]  ; freOBDLed
+000016  f5b06ffa          CMP      r0,#0x7d0
+00001a  dd03              BLE      |L3.36|
+;;;104    			freOBDLed = 2000;
+00001c  f44f60fa          MOV      r0,#0x7d0
+000020  490c              LDR      r1,|L3.84|
+000022  8008              STRH     r0,[r1,#0]
+                  |L3.36|
+;;;105    		GPIO_ResetBits(GPIO_LED,LED_GPIO_OBD);
+000024  2120              MOVS     r1,#0x20
+000026  480c              LDR      r0,|L3.88|
+000028  f7fffffe          BL       GPIO_ResetBits
+;;;106    		OSTimeDlyHMSM(0,0,0,freOBDLed);
+00002c  4809              LDR      r0,|L3.84|
+00002e  8803              LDRH     r3,[r0,#0]  ; freOBDLed
+000030  2200              MOVS     r2,#0
+000032  4611              MOV      r1,r2
+000034  4610              MOV      r0,r2
+000036  f7fffffe          BL       OSTimeDlyHMSM
+;;;107    		GPIO_SetBits(GPIO_LED,LED_GPIO_OBD);
+00003a  2120              MOVS     r1,#0x20
+00003c  4806              LDR      r0,|L3.88|
+00003e  f7fffffe          BL       GPIO_SetBits
+;;;108    		OSTimeDlyHMSM(0,0,0,freOBDLed);
+000042  4804              LDR      r0,|L3.84|
+000044  8803              LDRH     r3,[r0,#0]  ; freOBDLed
+000046  2200              MOVS     r2,#0
+000048  4611              MOV      r1,r2
+00004a  4610              MOV      r0,r2
+00004c  f7fffffe          BL       OSTimeDlyHMSM
+                  |L3.80|
+000050  e7d7              B        |L3.2|
+;;;109    	}
+;;;110    }
+;;;111    
+                          ENDP
+
+000052  0000              DCW      0x0000
+                  |L3.84|
+                          DCD      freOBDLed
+                  |L3.88|
+                          DCD      0x40010c00
+
                           AREA ||i.StartTask||, CODE, READONLY, ALIGN=2
 
                   StartTask PROC
-;;;29     
-;;;30     void StartTask(void *pdata)
+;;;42     
+;;;43     void StartTask(void *pdata)
 000000  2400              MOVS     r4,#0
-;;;31     {
-;;;32     	OS_CPU_SR cpu_sr=0;
-;;;33     	pdata = pdata; 
+;;;44     {
+;;;45     	OS_CPU_SR cpu_sr=0;
+;;;46     	pdata = pdata; 
 000002  bf00              NOP      
-;;;34     	MemBuf_Init();                  //建立任务控制块
-000004  f7fffffe          BL       MemBuf_Init
-;;;35       	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
-000008  f7fffffe          BL       OS_CPU_SR_Save
-00000c  4604              MOV      r4,r0
-;;;36     	
-;;;37      	OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);						   
-00000e  230b              MOVS     r3,#0xb
-000010  4a0f              LDR      r2,|L1.80|
-000012  2100              MOVS     r1,#0
-000014  480f              LDR      r0,|L1.84|
-000016  f7fffffe          BL       OSTaskCreate
-;;;38      	OSTaskCreate(GPSTask,(void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);		
-00001a  230c              MOVS     r3,#0xc
-00001c  4a0e              LDR      r2,|L1.88|
-00001e  2100              MOVS     r1,#0
-000020  480e              LDR      r0,|L1.92|
-000022  f7fffffe          BL       OSTaskCreate
-;;;39      	OSTaskCreate(OBDTask,(void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);						   
-000026  230d              MOVS     r3,#0xd
-000028  4a0d              LDR      r2,|L1.96|
-00002a  2100              MOVS     r1,#0
-00002c  480d              LDR      r0,|L1.100|
-00002e  f7fffffe          BL       OSTaskCreate
-;;;40     	
-;;;41         OSTaskSuspend(START_TASK_PRIO);	//挂起起始任务.
-000032  2032              MOVS     r0,#0x32
-000034  f7fffffe          BL       OSTaskSuspend
-;;;42     	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
-000038  4620              MOV      r0,r4
-00003a  f7fffffe          BL       OS_CPU_SR_Restore
-;;;43     	while(1)
-00003e  e005              B        |L1.76|
-                  |L1.64|
-;;;44     	{
-;;;45     		OSTimeDlyHMSM(0,0,0,250);
-000040  23fa              MOVS     r3,#0xfa
-000042  2200              MOVS     r2,#0
-000044  4611              MOV      r1,r2
-000046  4610              MOV      r0,r2
-000048  f7fffffe          BL       OSTimeDlyHMSM
-                  |L1.76|
-00004c  e7f8              B        |L1.64|
-;;;46     	}
-;;;47     }
+;;;47         //建立内存控制块
 ;;;48     
+;;;49       	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
+000004  f7fffffe          BL       OS_CPU_SR_Save
+000008  4604              MOV      r4,r0
+;;;50     	
+;;;51      	OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);						   
+00000a  230b              MOVS     r3,#0xb
+00000c  4a18              LDR      r2,|L4.112|
+00000e  2100              MOVS     r1,#0
+000010  4818              LDR      r0,|L4.116|
+000012  f7fffffe          BL       OSTaskCreate
+;;;52      	OSTaskCreate(GPSTask,(void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);		
+000016  230c              MOVS     r3,#0xc
+000018  4a17              LDR      r2,|L4.120|
+00001a  2100              MOVS     r1,#0
+00001c  4817              LDR      r0,|L4.124|
+00001e  f7fffffe          BL       OSTaskCreate
+;;;53      	OSTaskCreate(OBDTask,(void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);	
+000022  230d              MOVS     r3,#0xd
+000024  4a16              LDR      r2,|L4.128|
+000026  2100              MOVS     r1,#0
+000028  4816              LDR      r0,|L4.132|
+00002a  f7fffffe          BL       OSTaskCreate
+;;;54     
+;;;55     	OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE-1],CDMA_LED_PRIO);						   
+00002e  2314              MOVS     r3,#0x14
+000030  4a15              LDR      r2,|L4.136|
+000032  2100              MOVS     r1,#0
+000034  4815              LDR      r0,|L4.140|
+000036  f7fffffe          BL       OSTaskCreate
+;;;56      	OSTaskCreate(GPSLEDTask,(void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1],GPS_LED_PRIO);		
+00003a  2315              MOVS     r3,#0x15
+00003c  4a14              LDR      r2,|L4.144|
+00003e  2100              MOVS     r1,#0
+000040  4814              LDR      r0,|L4.148|
+000042  f7fffffe          BL       OSTaskCreate
+;;;57      	OSTaskCreate(OBDLEDTask,(void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1],OBD_LED_PRIO);		
+000046  2316              MOVS     r3,#0x16
+000048  4a13              LDR      r2,|L4.152|
+00004a  2100              MOVS     r1,#0
+00004c  4813              LDR      r0,|L4.156|
+00004e  f7fffffe          BL       OSTaskCreate
+;;;58     	
+;;;59         OSTaskSuspend(START_TASK_PRIO);	//挂起起始任务.
+000052  2032              MOVS     r0,#0x32
+000054  f7fffffe          BL       OSTaskSuspend
+;;;60     	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
+000058  4620              MOV      r0,r4
+00005a  f7fffffe          BL       OS_CPU_SR_Restore
+;;;61     	while(1)
+00005e  e005              B        |L4.108|
+                  |L4.96|
+;;;62     	{
+;;;63     		OSTimeDlyHMSM(0,0,0,250);
+000060  23fa              MOVS     r3,#0xfa
+000062  2200              MOVS     r2,#0
+000064  4611              MOV      r1,r2
+000066  4610              MOV      r0,r2
+000068  f7fffffe          BL       OSTimeDlyHMSM
+                  |L4.108|
+00006c  e7f8              B        |L4.96|
+;;;64     	}
+;;;65     }
+;;;66     uint16_t freCDMALed = 50;
                           ENDP
 
-00004e  0000              DCW      0x0000
-                  |L1.80|
+00006e  0000              DCW      0x0000
+                  |L4.112|
                           DCD      CDMA_TASK_STK+0x1fc
-                  |L1.84|
+                  |L4.116|
                           DCD      CDMATask
-                  |L1.88|
+                  |L4.120|
                           DCD      GPS_TASK_STK+0x1fc
-                  |L1.92|
+                  |L4.124|
                           DCD      GPSTask
-                  |L1.96|
+                  |L4.128|
                           DCD      OBD_TASK_STK+0x1fc
-                  |L1.100|
+                  |L4.132|
                           DCD      OBDTask
+                  |L4.136|
+                          DCD      CDMA_LED_STK+0xfc
+                  |L4.140|
+                          DCD      CDMALEDTask
+                  |L4.144|
+                          DCD      GPS_LED_STK+0xfc
+                  |L4.148|
+                          DCD      GPSLEDTask
+                  |L4.152|
+                          DCD      OBD_LED_STK+0xfc
+                  |L4.156|
+                          DCD      OBDLEDTask
 
                           AREA ||i.main||, CODE, READONLY, ALIGN=2
 
                   main PROC
-;;;16     
-;;;17     int main(void )
+;;;25     
+;;;26     int main(void )
 000000  b510              PUSH     {r4,lr}
-;;;18     {
-;;;19     	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+;;;27     {
+;;;28     	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 000002  f44f60a0          MOV      r0,#0x500
 000006  f7fffffe          BL       NVIC_PriorityGroupConfig
-;;;20     	
-;;;21     	SystemBspInit();
+;;;29     	
+;;;30     	SystemBspInit();
 00000a  f7fffffe          BL       SystemBspInit
-;;;22     	
-;;;23     	OSInit(); 
+;;;31     	
+;;;32     	OSInit(); 
 00000e  f7fffffe          BL       OSInit
-;;;24     	
-;;;25     	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
-000012  2332              MOVS     r3,#0x32
-000014  4a04              LDR      r2,|L2.40|
-000016  2100              MOVS     r1,#0
-000018  4804              LDR      r0,|L2.44|
-00001a  f7fffffe          BL       OSTaskCreate
-;;;26     	
-;;;27     	OSStart();	 
-00001e  f7fffffe          BL       OSStart
-;;;28     }
-000022  2000              MOVS     r0,#0
-000024  bd10              POP      {r4,pc}
-;;;29     
+;;;33     	
+;;;34     	MemBuf_Init();  
+000012  f7fffffe          BL       MemBuf_Init
+;;;35     	
+;;;36     	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
+000016  2332              MOVS     r3,#0x32
+000018  4a04              LDR      r2,|L5.44|
+00001a  2100              MOVS     r1,#0
+00001c  4804              LDR      r0,|L5.48|
+00001e  f7fffffe          BL       OSTaskCreate
+;;;37     	
+;;;38     	OSStart();	 
+000022  f7fffffe          BL       OSStart
+;;;39     }
+000026  2000              MOVS     r0,#0
+000028  bd10              POP      {r4,pc}
+;;;40     
                           ENDP
 
-000026  0000              DCW      0x0000
-                  |L2.40|
+00002a  0000              DCW      0x0000
+                  |L5.44|
                           DCD      START_TASK_STK+0x1fc
-                  |L2.44|
+                  |L5.48|
                           DCD      StartTask
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
@@ -122,6 +354,21 @@
                           %        512
                   OBD_TASK_STK
                           %        512
+                  CDMA_LED_STK
+                          %        256
+                  GPS_LED_STK
+                          %        256
+                  OBD_LED_STK
+                          %        256
+
+                          AREA ||.data||, DATA, ALIGN=1
+
+                  freCDMALed
+000000  0032              DCW      0x0032
+                  freGPSLed
+000002  0032              DCW      0x0032
+                  freOBDLed
+000004  0032              DCW      0x0032
 
 ;*** Start embedded assembler ***
 

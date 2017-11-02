@@ -19,7 +19,9 @@
 #include "os_cpu.h"
 #include "os_cfg.h"
 
-#include <stm32f10x.h>	    
+#include <stm32f10x.h>	 
+
+#include "memblock.h"
 
 #endif
 

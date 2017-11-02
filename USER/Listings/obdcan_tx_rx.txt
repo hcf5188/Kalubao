@@ -5,142 +5,130 @@
                           AREA ||i.CAN1_RX1_IRQHandler||, CODE, READONLY, ALIGN=2
 
                   CAN1_RX1_IRQHandler PROC
-;;;29     CanRxMsg CAN1_RxMsg;
-;;;30     void CAN1_RX1_IRQHandler(void )
+;;;31     
+;;;32     void CAN1_RX1_IRQHandler(void )
 000000  b510              PUSH     {r4,lr}
-;;;31     {
-;;;32     	OSIntEnter();//系统进入中断服务程序
-000002  f7fffffe          BL       OSIntEnter
-;;;33     	
-;;;34     	CAN_Receive(CAN1, CAN_FIFO1, &CAN1_RxMsg);
-000006  4a0e              LDR      r2,|L1.64|
-000008  2101              MOVS     r1,#1
-00000a  480e              LDR      r0,|L1.68|
-00000c  f7fffffe          BL       CAN_Receive
-;;;35     	if(dataToSend.testIsOK == 0) //收到CAN回复的数据 - 测试成功
-000010  480d              LDR      r0,|L1.72|
-000012  7a00              LDRB     r0,[r0,#8]  ; dataToSend
-000014  b980              CBNZ     r0,|L1.56|
-;;;36     	{
-;;;37     		dataToSend.testIsOK = 1;    
-000016  2001              MOVS     r0,#1
-000018  490b              LDR      r1,|L1.72|
-00001a  7208              STRB     r0,[r1,#8]
-;;;38     		if(dataToSend.ide == CAN_ID_STD)
-00001c  4608              MOV      r0,r1
-00001e  6840              LDR      r0,[r0,#4]  ; dataToSend
-000020  b928              CBNZ     r0,|L1.46|
-;;;39     			CAN1_SetFilter(CAN1_RxMsg.StdId,CAN_ID_STD);//标准帧
-000022  4907              LDR      r1,|L1.64|
-000024  6808              LDR      r0,[r1,#0]  ; CAN1_RxMsg
-000026  2100              MOVS     r1,#0
-000028  f7fffffe          BL       CAN1_SetFilter
-00002c  e004              B        |L1.56|
-                  |L1.46|
-;;;40     		else
-;;;41     			CAN1_SetFilter(CAN1_RxMsg.ExtId,CAN_ID_EXT);//扩展帧
-00002e  4904              LDR      r1,|L1.64|
-000030  6848              LDR      r0,[r1,#4]  ; CAN1_RxMsg
-000032  2104              MOVS     r1,#4
-000034  f7fffffe          BL       CAN1_SetFilter
-                  |L1.56|
-;;;42     	}
-;;;43     	
-;;;44     	OSIntExit();  //中断服务结束，系统进行任务调度
-000038  f7fffffe          BL       OSIntExit
-;;;45     }
-00003c  bd10              POP      {r4,pc}
-;;;46     
+;;;33     {
+;;;34     	CanRxMsg* CAN1_RxMsg = Mem_malloc(sizeof(CanRxMsg));
+000002  2014              MOVS     r0,#0x14
+000004  f7fffffe          BL       Mem_malloc
+000008  4604              MOV      r4,r0
+;;;35     	
+;;;36     	OSIntEnter();//系统进入中断服务程序
+00000a  f7fffffe          BL       OSIntEnter
+;;;37     	
+;;;38     	CAN_Receive(CAN1, CAN_FIFO1, CAN1_RxMsg);
+00000e  4622              MOV      r2,r4
+000010  2101              MOVS     r1,#1
+000012  4805              LDR      r0,|L1.40|
+000014  f7fffffe          BL       CAN_Receive
+;;;39     //	if(dataToSend.testIsOK == 0) //收到CAN回复的数据 - 测试成功
+;;;40     //	{
+;;;41     //		dataToSend.testIsOK = 1;    
+;;;42     //		if(dataToSend.ide == CAN_ID_STD)
+;;;43     //			CAN1_SetFilter(CAN1_RxMsg->StdId,CAN_ID_STD);//标准帧
+;;;44     //		else
+;;;45     //			CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);//扩展帧
+;;;46     //	}
+;;;47     	
+;;;48     	OSQPost(canRecieveQ,CAN1_RxMsg);
+000018  4621              MOV      r1,r4
+00001a  4804              LDR      r0,|L1.44|
+00001c  6800              LDR      r0,[r0,#0]  ; canRecieveQ
+00001e  f7fffffe          BL       OSQPost
+;;;49     	
+;;;50     	OSIntExit();  //中断服务结束，系统进行任务调度
+000022  f7fffffe          BL       OSIntExit
+;;;51     }
+000026  bd10              POP      {r4,pc}
+;;;52     
                           ENDP
 
-00003e  0000              DCW      0x0000
-                  |L1.64|
-                          DCD      CAN1_RxMsg
-                  |L1.68|
+                  |L1.40|
                           DCD      0x40006400
-                  |L1.72|
-                          DCD      dataToSend
+                  |L1.44|
+                          DCD      canRecieveQ
 
                           AREA ||i.OBD_CAN_SendData||, CODE, READONLY, ALIGN=2
 
                   OBD_CAN_SendData PROC
-;;;4      static CanTxMsg TxMessage;
-;;;5      void OBD_CAN_SendData(CAN1DataToSend sendData)
+;;;6      static CanTxMsg TxMessage;
+;;;7      void OBD_CAN_SendData(CAN1DataToSend sendData)
 000000  b51f              PUSH     {r0-r4,lr}
-;;;6      {
-;;;7      	if(sendData.ide == CAN_ID_STD)         //标准帧
+;;;8      {
+;;;9      	if(sendData.ide == CAN_ID_STD)         //标准帧
 000002  9801              LDR      r0,[sp,#4]
 000004  b918              CBNZ     r0,|L2.14|
-;;;8      		TxMessage.StdId = sendData.canId;
+;;;10     		TxMessage.StdId = sendData.canId;
 000006  4919              LDR      r1,|L2.108|
 000008  9800              LDR      r0,[sp,#0]
 00000a  6008              STR      r0,[r1,#0]  ; TxMessage
 00000c  e002              B        |L2.20|
                   |L2.14|
-;;;9      	else 
-;;;10     		TxMessage.ExtId = sendData.canId;  //扩展帧
+;;;11     	else 
+;;;12     		TxMessage.ExtId = sendData.canId;  //扩展帧
 00000e  4917              LDR      r1,|L2.108|
 000010  9800              LDR      r0,[sp,#0]
 000012  6048              STR      r0,[r1,#4]  ; TxMessage
                   |L2.20|
-;;;11     	TxMessage.IDE = sendData.ide;
+;;;13     	TxMessage.IDE = sendData.ide;
 000014  4915              LDR      r1,|L2.108|
 000016  9801              LDR      r0,[sp,#4]
 000018  7208              STRB     r0,[r1,#8]
-;;;12     	TxMessage.RTR = CAN_RTR_DATA;
+;;;14     	TxMessage.RTR = CAN_RTR_DATA;
 00001a  2000              MOVS     r0,#0
 00001c  7248              STRB     r0,[r1,#9]
-;;;13     	TxMessage.DLC = 8;//数据长度
+;;;15     	TxMessage.DLC = 8;//数据长度
 00001e  2008              MOVS     r0,#8
 000020  7288              STRB     r0,[r1,#0xa]
-;;;14     	
-;;;15     	TxMessage.Data[0] = sendData.pdat[0];
+;;;16     	
+;;;17     	TxMessage.Data[0] = sendData.pdat[0];
 000022  9803              LDR      r0,[sp,#0xc]
 000024  7800              LDRB     r0,[r0,#0]
 000026  72c8              STRB     r0,[r1,#0xb]
-;;;16     	TxMessage.Data[1] = sendData.pdat[1];
+;;;18     	TxMessage.Data[1] = sendData.pdat[1];
 000028  9803              LDR      r0,[sp,#0xc]
 00002a  7841              LDRB     r1,[r0,#1]
 00002c  480f              LDR      r0,|L2.108|
 00002e  7301              STRB     r1,[r0,#0xc]
-;;;17     	TxMessage.Data[2] = sendData.pdat[2];
+;;;19     	TxMessage.Data[2] = sendData.pdat[2];
 000030  9803              LDR      r0,[sp,#0xc]
 000032  7881              LDRB     r1,[r0,#2]
 000034  480d              LDR      r0,|L2.108|
 000036  7341              STRB     r1,[r0,#0xd]
-;;;18     	TxMessage.Data[3] = sendData.pdat[3];
+;;;20     	TxMessage.Data[3] = sendData.pdat[3];
 000038  9803              LDR      r0,[sp,#0xc]
 00003a  78c1              LDRB     r1,[r0,#3]
 00003c  480b              LDR      r0,|L2.108|
 00003e  7381              STRB     r1,[r0,#0xe]
-;;;19     	TxMessage.Data[4] = sendData.pdat[4];
+;;;21     	TxMessage.Data[4] = sendData.pdat[4];
 000040  9803              LDR      r0,[sp,#0xc]
 000042  7901              LDRB     r1,[r0,#4]
 000044  4809              LDR      r0,|L2.108|
 000046  73c1              STRB     r1,[r0,#0xf]
-;;;20     	TxMessage.Data[5] = sendData.pdat[5];
+;;;22     	TxMessage.Data[5] = sendData.pdat[5];
 000048  9803              LDR      r0,[sp,#0xc]
 00004a  7941              LDRB     r1,[r0,#5]
 00004c  4807              LDR      r0,|L2.108|
 00004e  7401              STRB     r1,[r0,#0x10]
-;;;21     	TxMessage.Data[6] = sendData.pdat[6];
+;;;23     	TxMessage.Data[6] = sendData.pdat[6];
 000050  9803              LDR      r0,[sp,#0xc]
 000052  7981              LDRB     r1,[r0,#6]
 000054  4805              LDR      r0,|L2.108|
 000056  7441              STRB     r1,[r0,#0x11]
-;;;22     	TxMessage.Data[7] = sendData.pdat[7];
+;;;24     	TxMessage.Data[7] = sendData.pdat[7];
 000058  9803              LDR      r0,[sp,#0xc]
 00005a  79c1              LDRB     r1,[r0,#7]
 00005c  4803              LDR      r0,|L2.108|
 00005e  7481              STRB     r1,[r0,#0x12]
-;;;23     	
-;;;24     	CAN_Transmit(CAN1,&TxMessage);
+;;;25     	
+;;;26     	CAN_Transmit(CAN1,&TxMessage);
 000060  4601              MOV      r1,r0
 000062  4803              LDR      r0,|L2.112|
 000064  f7fffffe          BL       CAN_Transmit
-;;;25     }
+;;;27     }
 000068  bd1f              POP      {r0-r4,pc}
-;;;26     
+;;;28     
                           ENDP
 
 00006a  0000              DCW      0x0000
@@ -152,8 +140,6 @@
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
                   TxMessage
-                          %        20
-                  CAN1_RxMsg
                           %        20
 
 ;*** Start embedded assembler ***

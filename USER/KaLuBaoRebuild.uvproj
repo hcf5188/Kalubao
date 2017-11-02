@@ -441,6 +441,11 @@
               <FileType>1</FileType>
               <FilePath>..\CDMA\CDMATask.c</FilePath>
             </File>
+            <File>
+              <FileName>CDMA_Tx_Rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\CDMA\CDMA_Tx_Rx.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

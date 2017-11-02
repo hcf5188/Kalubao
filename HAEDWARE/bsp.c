@@ -9,8 +9,9 @@ void SystemBspInit(void )
 	SysTickInit();
 	BspClockInit();
 	GPIOLEDInit();
+	CDMAUart2Init();
 
-	CAN1Config();
+//	
 	
 }
 //系统时钟滴答初始化

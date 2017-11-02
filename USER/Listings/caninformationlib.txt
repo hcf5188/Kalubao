@@ -5,9 +5,9 @@
                           AREA ||.data||, DATA, ALIGN=2
 
                   CANSearchLib
-                          DCD      0x18da10fa
+                          DCD      0x18da10fb
 000004  04010000          DCB      0x04,0x01,0x00,0x00
-                          DCD      0x18da10fa
+                          DCD      0x18da10fb
 00000c  04020000          DCB      0x04,0x02,0x00,0x00
                           DCD      0x000007df
 000014  00010000          DCB      0x00,0x01,0x00,0x00
