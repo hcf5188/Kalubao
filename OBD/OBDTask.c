@@ -70,7 +70,7 @@ void OBDTask(void *pdata)
 	
 	while(1)
 	{
-		CAN1_RxMsg = OSQPend(canRecieveQ,5,&err);
+		CAN1_RxMsg = OSQPend(canRecieveQ,200,&err);
 		if(err == OS_ERR_NONE)
 		{
 			freOBDLed = 200;

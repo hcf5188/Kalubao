@@ -27,11 +27,10 @@ int main(void )
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	
-	SystemBspInit();
-	
 	OSInit(); 
 	
-	MemBuf_Init();  
+	SystemBspInit();
+	MemBuf_Init();   //建立内存控制块 
 	
 	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
 	
@@ -44,7 +43,6 @@ void StartTask(void *pdata)
 {
 	OS_CPU_SR cpu_sr=0;
 	pdata = pdata; 
-    //建立内存控制块
 
   	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
 	
@@ -63,7 +61,7 @@ void StartTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,250);
 	}
 }
-uint16_t freCDMALed = 50;
+uint16_t freCDMALed = 300;
 void CDMALEDTask(void *pdata)
 {
 	while(1)
@@ -78,7 +76,7 @@ void CDMALEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freCDMALed);
 	}
 }
-uint16_t freGPSLed = 50;
+uint16_t freGPSLed = 300;
 void GPSLEDTask(void *pdata)
 {
 	while(1)
@@ -93,7 +91,7 @@ void GPSLEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freGPSLed);
 	}
 }
-uint16_t freOBDLed = 50;
+uint16_t freOBDLed = 300;
 void OBDLEDTask(void *pdata)
 {
 	while(1)
