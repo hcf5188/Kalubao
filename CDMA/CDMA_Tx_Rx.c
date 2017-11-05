@@ -52,26 +52,32 @@ uint8_t CDMASendDatas(const uint8_t* s,uint16_t length)
 
 uint8_t byteRece = 0;  //用于串口接收的字节
 uint8_t byteSend = 0;  //用于串口发送的字节 
-
+uint8_t *dkfs;
+static uint16_t rxTimeOut = 0;//1-接收超时   0 - 正在接收
+NORMAL_STATE rxtxState;
 void USART2_IRQHandler(void)
 {
 	OSIntEnter();//系统进入中断服务程序
-	
+	dkfs = receCDMA_S->base;
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)//接收到数据
   	{
-    	
     	byteRece = USART_ReceiveData(USART2);
-		Store_Push(receCDMA_S,byteRece);//todo:定时器超时相关  以及
-		                              //判断数据包结束 通知接收任务接收完成
-		
+	
+		rxtxState = Store_Push(receCDMA_S,byteRece);   
+		if(rxtxState == OK)
+		{
+			rxTimeOut = 1;
+			TIM_Cmd(TIM3, ENABLE);  //使能TIMx
+		}
 		USART_ClearITPendingBit(USART2, USART_IT_RXNE) ;
 	}
 	else if(USART_GetITStatus(USART2, USART_IT_TC) != RESET)//发送完毕  移位寄存器空
 	{
 		if(CirQ_GetLength(sendCDMA_Q) > 0)
 		{
-			CirQ_Pop(sendCDMA_Q,&byteSend);
-			USART_SendData(USART2, byteSend);
+			rxtxState = CirQ_Pop(sendCDMA_Q,&byteSend);
+			if(rxtxState == OK)
+				USART_SendData(USART2, byteSend);
 		}
 		else
 		{
@@ -83,8 +89,9 @@ void USART2_IRQHandler(void)
 	{
 		if(CirQ_GetLength(sendCDMA_Q) > 0)
 		{
-			CirQ_Pop(sendCDMA_Q,&byteSend);
-			USART_SendData(USART2, byteSend);
+			rxtxState = CirQ_Pop(sendCDMA_Q,&byteSend);
+			if(rxtxState == OK)
+				USART_SendData(USART2, byteSend);
 		}
 		else
 		{
@@ -93,13 +100,35 @@ void USART2_IRQHandler(void)
 		USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
 		USART_ClearITPendingBit(USART2, USART_IT_TXE) ;
 	}
-	
-	
 	OSIntExit();  //中断服务结束，系统进行任务调度
 }
-
-
-
+extern OS_EVENT *CDMARecieveQ;
+uint8_t *ptrRece;
+uint16_t receDatalen= 0;
+void TIM3_IRQHandler(void)   //TIM3中断
+{
+	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
+	{
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update  );  //清除TIMx更新中断标志 
+		rxTimeOut ++;
+		if(rxTimeOut > 10)
+		{
+			rxTimeOut = 0;
+			receDatalen = Store_Getlength(receCDMA_S);
+			if(receDatalen>2 )
+			{
+				ptrRece = Mem_malloc(receDatalen);
+				Store_Getdates(receCDMA_S,ptrRece,receDatalen);
+				OSQPost(CDMARecieveQ,ptrRece);
+			}
+			else
+				Store_Clear(receCDMA_S);
+			
+			TIM_Cmd(TIM3, DISABLE);
+		}
+	
+	}
+}
 
 
 

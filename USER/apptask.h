@@ -5,6 +5,7 @@
 #include "includes.h"
 #include "bsp.h"
 #include "memblock.h"
+#include "globalvar.h"
 /************************   任务以及互斥型信号量的优先级定义   *************/
 
 #define CDMA_TASK_PRIO       11     //网络通信GPRS任务优先级

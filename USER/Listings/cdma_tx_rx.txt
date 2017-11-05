@@ -132,145 +132,295 @@
                   |L2.92|
                           DCD      0x40004400
 
+                          AREA ||i.TIM3_IRQHandler||, CODE, READONLY, ALIGN=2
+
+                  TIM3_IRQHandler PROC
+;;;107    uint16_t receDatalen= 0;
+;;;108    void TIM3_IRQHandler(void)   //TIM3中断
+000000  b510              PUSH     {r4,lr}
+;;;109    {
+;;;110    	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
+000002  2101              MOVS     r1,#1
+000004  481d              LDR      r0,|L3.124|
+000006  f7fffffe          BL       TIM_GetITStatus
+00000a  2800              CMP      r0,#0
+00000c  d035              BEQ      |L3.122|
+;;;111    	{
+;;;112    		TIM_ClearITPendingBit(TIM3, TIM_IT_Update  );  //清除TIMx更新中断标志 
+00000e  2101              MOVS     r1,#1
+000010  481a              LDR      r0,|L3.124|
+000012  f7fffffe          BL       TIM_ClearITPendingBit
+;;;113    		rxTimeOut ++;
+000016  481a              LDR      r0,|L3.128|
+000018  8800              LDRH     r0,[r0,#0]  ; rxTimeOut
+00001a  1c40              ADDS     r0,r0,#1
+00001c  4918              LDR      r1,|L3.128|
+00001e  8008              STRH     r0,[r1,#0]
+;;;114    		if(rxTimeOut > 10)
+000020  4608              MOV      r0,r1
+000022  8800              LDRH     r0,[r0,#0]  ; rxTimeOut
+000024  280a              CMP      r0,#0xa
+000026  dd28              BLE      |L3.122|
+;;;115    		{
+;;;116    			rxTimeOut = 0;
+000028  2000              MOVS     r0,#0
+00002a  8008              STRH     r0,[r1,#0]
+;;;117    			receDatalen = Store_Getlength(receCDMA_S);
+00002c  4815              LDR      r0,|L3.132|
+00002e  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+000030  f7fffffe          BL       Store_Getlength
+000034  4914              LDR      r1,|L3.136|
+000036  8008              STRH     r0,[r1,#0]
+;;;118    			if(receDatalen>2 )
+000038  4608              MOV      r0,r1
+00003a  8800              LDRH     r0,[r0,#0]  ; receDatalen
+00003c  2802              CMP      r0,#2
+00003e  dd14              BLE      |L3.106|
+;;;119    			{
+;;;120    				ptrRece = Mem_malloc(receDatalen);
+000040  4608              MOV      r0,r1
+000042  8800              LDRH     r0,[r0,#0]  ; receDatalen
+000044  f7fffffe          BL       Mem_malloc
+000048  4910              LDR      r1,|L3.140|
+00004a  6008              STR      r0,[r1,#0]  ; ptrRece
+;;;121    				Store_Getdates(receCDMA_S,ptrRece,receDatalen);
+00004c  480e              LDR      r0,|L3.136|
+00004e  7802              LDRB     r2,[r0,#0]  ; receDatalen
+000050  4608              MOV      r0,r1
+000052  6801              LDR      r1,[r0,#0]  ; ptrRece
+000054  480b              LDR      r0,|L3.132|
+000056  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+000058  f7fffffe          BL       Store_Getdates
+;;;122    				OSQPost(CDMARecieveQ,ptrRece);
+00005c  480b              LDR      r0,|L3.140|
+00005e  6801              LDR      r1,[r0,#0]  ; ptrRece
+000060  480b              LDR      r0,|L3.144|
+000062  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
+000064  f7fffffe          BL       OSQPost
+000068  e003              B        |L3.114|
+                  |L3.106|
+;;;123    			}
+;;;124    			else
+;;;125    				Store_Clear(receCDMA_S);
+00006a  4806              LDR      r0,|L3.132|
+00006c  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+00006e  f7fffffe          BL       Store_Clear
+                  |L3.114|
+;;;126    			
+;;;127    			TIM_Cmd(TIM3, DISABLE);
+000072  2100              MOVS     r1,#0
+000074  4801              LDR      r0,|L3.124|
+000076  f7fffffe          BL       TIM_Cmd
+                  |L3.122|
+;;;128    		}
+;;;129    	
+;;;130    	}
+;;;131    }
+00007a  bd10              POP      {r4,pc}
+;;;132    
+                          ENDP
+
+                  |L3.124|
+                          DCD      0x40000400
+                  |L3.128|
+                          DCD      rxTimeOut
+                  |L3.132|
+                          DCD      receCDMA_S
+                  |L3.136|
+                          DCD      receDatalen
+                  |L3.140|
+                          DCD      ptrRece
+                  |L3.144|
+                          DCD      CDMARecieveQ
+
                           AREA ||i.USART2_IRQHandler||, CODE, READONLY, ALIGN=2
 
                   USART2_IRQHandler PROC
-;;;55     
-;;;56     void USART2_IRQHandler(void)
+;;;57     NORMAL_STATE rxtxState;
+;;;58     void USART2_IRQHandler(void)
 000000  b510              PUSH     {r4,lr}
-;;;57     {
-;;;58     	OSIntEnter();//系统进入中断服务程序
+;;;59     {
+;;;60     	OSIntEnter();//系统进入中断服务程序
 000002  f7fffffe          BL       OSIntEnter
-;;;59     	
-;;;60     	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)//接收到数据
-000006  f2405125          MOV      r1,#0x525
-00000a  482a              LDR      r0,|L3.180|
-00000c  f7fffffe          BL       USART_GetITStatus
-000010  b180              CBZ      r0,|L3.52|
-;;;61       	{
-;;;62         	
-;;;63         	byteRece = USART_ReceiveData(USART2);
-000012  4828              LDR      r0,|L3.180|
-000014  f7fffffe          BL       USART_ReceiveData
-000018  4927              LDR      r1,|L3.184|
-00001a  7008              STRB     r0,[r1,#0]
-;;;64     		Store_Push(receCDMA_S,byteRece);//todo:定时器超时相关  以及
-00001c  4608              MOV      r0,r1
-00001e  7801              LDRB     r1,[r0,#0]  ; byteRece
-000020  4826              LDR      r0,|L3.188|
-000022  6800              LDR      r0,[r0,#0]  ; receCDMA_S
-000024  f7fffffe          BL       Store_Push
-;;;65     		                              //判断数据包结束 通知接收任务接收完成
-;;;66     		
-;;;67     		USART_ClearITPendingBit(USART2, USART_IT_RXNE) ;
-000028  f2405125          MOV      r1,#0x525
-00002c  4821              LDR      r0,|L3.180|
-00002e  f7fffffe          BL       USART_ClearITPendingBit
-000032  e03c              B        |L3.174|
-                  |L3.52|
-;;;68     	}
-;;;69     	else if(USART_GetITStatus(USART2, USART_IT_TC) != RESET)//发送完毕  移位寄存器空
-000034  f2406126          MOV      r1,#0x626
-000038  481e              LDR      r0,|L3.180|
-00003a  f7fffffe          BL       USART_GetITStatus
-00003e  b1a8              CBZ      r0,|L3.108|
-;;;70     	{
-;;;71     		if(CirQ_GetLength(sendCDMA_Q) > 0)
-000040  481f              LDR      r0,|L3.192|
-000042  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
-000044  f7fffffe          BL       CirQ_GetLength
-000048  2800              CMP      r0,#0
-00004a  dd09              BLE      |L3.96|
-;;;72     		{
-;;;73     			CirQ_Pop(sendCDMA_Q,&byteSend);
-00004c  491d              LDR      r1,|L3.196|
-00004e  481c              LDR      r0,|L3.192|
-000050  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
-000052  f7fffffe          BL       CirQ_Pop
-;;;74     			USART_SendData(USART2, byteSend);
-000056  481b              LDR      r0,|L3.196|
-000058  7801              LDRB     r1,[r0,#0]  ; byteSend
-00005a  4816              LDR      r0,|L3.180|
-00005c  f7fffffe          BL       USART_SendData
-                  |L3.96|
-;;;75     		}
-;;;76     		else
+;;;61     	dkfs = receCDMA_S->base;
+000006  4839              LDR      r0,|L4.236|
+000008  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+00000a  6840              LDR      r0,[r0,#4]
+00000c  4938              LDR      r1,|L4.240|
+00000e  6008              STR      r0,[r1,#0]  ; dkfs
+;;;62     	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)//接收到数据
+000010  f2405125          MOV      r1,#0x525
+000014  4837              LDR      r0,|L4.244|
+000016  f7fffffe          BL       USART_GetITStatus
+00001a  b1e0              CBZ      r0,|L4.86|
+;;;63       	{
+;;;64         	byteRece = USART_ReceiveData(USART2);
+00001c  4835              LDR      r0,|L4.244|
+00001e  f7fffffe          BL       USART_ReceiveData
+000022  4935              LDR      r1,|L4.248|
+000024  7008              STRB     r0,[r1,#0]
+;;;65     	
+;;;66     		rxtxState = Store_Push(receCDMA_S,byteRece);   
+000026  4608              MOV      r0,r1
+000028  7801              LDRB     r1,[r0,#0]  ; byteRece
+00002a  4830              LDR      r0,|L4.236|
+00002c  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+00002e  f7fffffe          BL       Store_Push
+000032  4932              LDR      r1,|L4.252|
+000034  7008              STRB     r0,[r1,#0]
+;;;67     		if(rxtxState == OK)
+000036  4608              MOV      r0,r1
+000038  7800              LDRB     r0,[r0,#0]  ; rxtxState
+00003a  b930              CBNZ     r0,|L4.74|
+;;;68     		{
+;;;69     			rxTimeOut = 1;
+00003c  2001              MOVS     r0,#1
+00003e  4930              LDR      r1,|L4.256|
+000040  8008              STRH     r0,[r1,#0]
+;;;70     			TIM_Cmd(TIM3, ENABLE);  //使能TIMx
+000042  2101              MOVS     r1,#1
+000044  482f              LDR      r0,|L4.260|
+000046  f7fffffe          BL       TIM_Cmd
+                  |L4.74|
+;;;71     		}
+;;;72     		USART_ClearITPendingBit(USART2, USART_IT_RXNE) ;
+00004a  f2405125          MOV      r1,#0x525
+00004e  4829              LDR      r0,|L4.244|
+000050  f7fffffe          BL       USART_ClearITPendingBit
+000054  e046              B        |L4.228|
+                  |L4.86|
+;;;73     	}
+;;;74     	else if(USART_GetITStatus(USART2, USART_IT_TC) != RESET)//发送完毕  移位寄存器空
+000056  f2406126          MOV      r1,#0x626
+00005a  4826              LDR      r0,|L4.244|
+00005c  f7fffffe          BL       USART_GetITStatus
+000060  b1d0              CBZ      r0,|L4.152|
+;;;75     	{
+;;;76     		if(CirQ_GetLength(sendCDMA_Q) > 0)
+000062  4829              LDR      r0,|L4.264|
+000064  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
+000066  f7fffffe          BL       CirQ_GetLength
+00006a  2800              CMP      r0,#0
+00006c  dd0e              BLE      |L4.140|
 ;;;77     		{
-;;;78     			//todo:通知任务发送完成，可以发送下一包数据了
-;;;79     		}
-;;;80     		USART_ClearITPendingBit(USART2, USART_IT_TC) ;
-000060  f2406126          MOV      r1,#0x626
-000064  4813              LDR      r0,|L3.180|
-000066  f7fffffe          BL       USART_ClearITPendingBit
-00006a  e020              B        |L3.174|
-                  |L3.108|
-;;;81     	}
-;;;82     	else if(USART_GetITStatus(USART2, USART_IT_TXE) != RESET)//空  发送寄存器空
-00006c  f2407127          MOV      r1,#0x727
-000070  4810              LDR      r0,|L3.180|
-000072  f7fffffe          BL       USART_GetITStatus
-000076  b1d0              CBZ      r0,|L3.174|
-;;;83     	{
-;;;84     		if(CirQ_GetLength(sendCDMA_Q) > 0)
-000078  4811              LDR      r0,|L3.192|
-00007a  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
-00007c  f7fffffe          BL       CirQ_GetLength
-000080  2800              CMP      r0,#0
-000082  dd09              BLE      |L3.152|
-;;;85     		{
-;;;86     			CirQ_Pop(sendCDMA_Q,&byteSend);
-000084  490f              LDR      r1,|L3.196|
-000086  480e              LDR      r0,|L3.192|
-000088  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
-00008a  f7fffffe          BL       CirQ_Pop
-;;;87     			USART_SendData(USART2, byteSend);
-00008e  480d              LDR      r0,|L3.196|
-000090  7801              LDRB     r1,[r0,#0]  ; byteSend
-000092  4808              LDR      r0,|L3.180|
-000094  f7fffffe          BL       USART_SendData
-                  |L3.152|
-;;;88     		}
-;;;89     		else
-;;;90     		{
-;;;91     			 //todo:通知任务发送完成，可以发送下一包数据了
-;;;92     		}
-;;;93     		USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
-000098  2200              MOVS     r2,#0
-00009a  f2407127          MOV      r1,#0x727
-00009e  4805              LDR      r0,|L3.180|
-0000a0  f7fffffe          BL       USART_ITConfig
-;;;94     		USART_ClearITPendingBit(USART2, USART_IT_TXE) ;
-0000a4  f2407127          MOV      r1,#0x727
-0000a8  4802              LDR      r0,|L3.180|
-0000aa  f7fffffe          BL       USART_ClearITPendingBit
-                  |L3.174|
-;;;95     	}
-;;;96     	
-;;;97     	
-;;;98     	OSIntExit();  //中断服务结束，系统进行任务调度
-0000ae  f7fffffe          BL       OSIntExit
-;;;99     }
-0000b2  bd10              POP      {r4,pc}
-;;;100    
+;;;78     			rxtxState = CirQ_Pop(sendCDMA_Q,&byteSend);
+00006e  4927              LDR      r1,|L4.268|
+000070  4825              LDR      r0,|L4.264|
+000072  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
+000074  f7fffffe          BL       CirQ_Pop
+000078  4920              LDR      r1,|L4.252|
+00007a  7008              STRB     r0,[r1,#0]
+;;;79     			if(rxtxState == OK)
+00007c  4608              MOV      r0,r1
+00007e  7800              LDRB     r0,[r0,#0]  ; rxtxState
+000080  b920              CBNZ     r0,|L4.140|
+;;;80     				USART_SendData(USART2, byteSend);
+000082  4822              LDR      r0,|L4.268|
+000084  7801              LDRB     r1,[r0,#0]  ; byteSend
+000086  481b              LDR      r0,|L4.244|
+000088  f7fffffe          BL       USART_SendData
+                  |L4.140|
+;;;81     		}
+;;;82     		else
+;;;83     		{
+;;;84     			//todo:通知任务发送完成，可以发送下一包数据了
+;;;85     		}
+;;;86     		USART_ClearITPendingBit(USART2, USART_IT_TC) ;
+00008c  f2406126          MOV      r1,#0x626
+000090  4818              LDR      r0,|L4.244|
+000092  f7fffffe          BL       USART_ClearITPendingBit
+000096  e025              B        |L4.228|
+                  |L4.152|
+;;;87     	}
+;;;88     	else if(USART_GetITStatus(USART2, USART_IT_TXE) != RESET)//空  发送寄存器空
+000098  f2407127          MOV      r1,#0x727
+00009c  4815              LDR      r0,|L4.244|
+00009e  f7fffffe          BL       USART_GetITStatus
+0000a2  b1f8              CBZ      r0,|L4.228|
+;;;89     	{
+;;;90     		if(CirQ_GetLength(sendCDMA_Q) > 0)
+0000a4  4818              LDR      r0,|L4.264|
+0000a6  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
+0000a8  f7fffffe          BL       CirQ_GetLength
+0000ac  2800              CMP      r0,#0
+0000ae  dd0e              BLE      |L4.206|
+;;;91     		{
+;;;92     			rxtxState = CirQ_Pop(sendCDMA_Q,&byteSend);
+0000b0  4916              LDR      r1,|L4.268|
+0000b2  4815              LDR      r0,|L4.264|
+0000b4  6800              LDR      r0,[r0,#0]  ; sendCDMA_Q
+0000b6  f7fffffe          BL       CirQ_Pop
+0000ba  4910              LDR      r1,|L4.252|
+0000bc  7008              STRB     r0,[r1,#0]
+;;;93     			if(rxtxState == OK)
+0000be  4608              MOV      r0,r1
+0000c0  7800              LDRB     r0,[r0,#0]  ; rxtxState
+0000c2  b920              CBNZ     r0,|L4.206|
+;;;94     				USART_SendData(USART2, byteSend);
+0000c4  4811              LDR      r0,|L4.268|
+0000c6  7801              LDRB     r1,[r0,#0]  ; byteSend
+0000c8  480a              LDR      r0,|L4.244|
+0000ca  f7fffffe          BL       USART_SendData
+                  |L4.206|
+;;;95     		}
+;;;96     		else
+;;;97     		{
+;;;98     			 //todo:通知任务发送完成，可以发送下一包数据了
+;;;99     		}
+;;;100    		USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
+0000ce  2200              MOVS     r2,#0
+0000d0  f2407127          MOV      r1,#0x727
+0000d4  4807              LDR      r0,|L4.244|
+0000d6  f7fffffe          BL       USART_ITConfig
+;;;101    		USART_ClearITPendingBit(USART2, USART_IT_TXE) ;
+0000da  f2407127          MOV      r1,#0x727
+0000de  4805              LDR      r0,|L4.244|
+0000e0  f7fffffe          BL       USART_ClearITPendingBit
+                  |L4.228|
+;;;102    	}
+;;;103    	OSIntExit();  //中断服务结束，系统进行任务调度
+0000e4  f7fffffe          BL       OSIntExit
+;;;104    }
+0000e8  bd10              POP      {r4,pc}
+;;;105    extern OS_EVENT *CDMARecieveQ;
                           ENDP
 
-                  |L3.180|
-                          DCD      0x40004400
-                  |L3.184|
-                          DCD      byteRece
-                  |L3.188|
+0000ea  0000              DCW      0x0000
+                  |L4.236|
                           DCD      receCDMA_S
-                  |L3.192|
+                  |L4.240|
+                          DCD      dkfs
+                  |L4.244|
+                          DCD      0x40004400
+                  |L4.248|
+                          DCD      byteRece
+                  |L4.252|
+                          DCD      rxtxState
+                  |L4.256|
+                          DCD      rxTimeOut
+                  |L4.260|
+                          DCD      0x40000400
+                  |L4.264|
                           DCD      sendCDMA_Q
-                  |L3.196|
+                  |L4.268|
                           DCD      byteSend
 
-                          AREA ||.data||, DATA, ALIGN=0
+                          AREA ||.data||, DATA, ALIGN=2
 
                   byteRece
 000000  00                DCB      0x00
                   byteSend
-000001  00                DCB      0x00
+000001  000000            DCB      0x00,0x00,0x00
+                  dkfs
+                          DCD      0x00000000
+                  rxTimeOut
+000008  0000              DCW      0x0000
+                  rxtxState
+00000a  0000              DCB      0x00,0x00
+                  ptrRece
+                          DCD      0x00000000
+                  receDatalen
+000010  0000              DCW      0x0000
 
 ;*** Start embedded assembler ***
 

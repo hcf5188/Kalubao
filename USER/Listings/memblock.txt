@@ -11,14 +11,14 @@
 ;;;145    {
 ;;;146    	uint8_t err;
 ;;;147    	
-;;;148    	pMemBuf_10B = OSMemCreate(MemBuf_10B,MEM_10B_ROW,MEM_10B_COL,&err);
+;;;148    	pMemBuf_16B = OSMemCreate(MemBuf_16B,MEM_16B_ROW,MEM_16B_COL,&err);
 000002  466b              MOV      r3,sp
-000004  220c              MOVS     r2,#0xc
-000006  2132              MOVS     r1,#0x32
+000004  2212              MOVS     r2,#0x12
+000006  213c              MOVS     r1,#0x3c
 000008  4832              LDR      r0,|L1.212|
 00000a  f7fffffe          BL       OSMemCreate
 00000e  4932              LDR      r1,|L1.216|
-000010  6008              STR      r0,[r1,#0]  ; pMemBuf_10B
+000010  6008              STR      r0,[r1,#0]  ; pMemBuf_16B
 ;;;149    	if(err != OS_ERR_NONE)
 000012  f89d0000          LDRB     r0,[sp,#0]
 000016  b110              CBZ      r0,|L1.30|
@@ -55,7 +55,7 @@
                   |L1.30|
 00001e  466b              MOV      r3,sp                 ;152
 000020  2222              MOVS     r2,#0x22              ;152
-000022  2128              MOVS     r1,#0x28              ;152
+000022  213c              MOVS     r1,#0x3c              ;152
 000024  482d              LDR      r0,|L1.220|
 000026  f7fffffe          BL       OSMemCreate
 00002a  492d              LDR      r1,|L1.224|
@@ -67,7 +67,7 @@
                   |L1.58|
 00003a  466b              MOV      r3,sp                 ;156
 00003c  2242              MOVS     r2,#0x42              ;156
-00003e  2128              MOVS     r1,#0x28              ;156
+00003e  2150              MOVS     r1,#0x50              ;156
 000040  4828              LDR      r0,|L1.228|
 000042  f7fffffe          BL       OSMemCreate
 000046  4928              LDR      r1,|L1.232|
@@ -79,7 +79,7 @@
                   |L1.86|
 000056  466b              MOV      r3,sp                 ;160
 000058  2282              MOVS     r2,#0x82              ;160
-00005a  211e              MOVS     r1,#0x1e              ;160
+00005a  2114              MOVS     r1,#0x14              ;160
 00005c  4823              LDR      r0,|L1.236|
 00005e  f7fffffe          BL       OSMemCreate
 000062  4923              LDR      r1,|L1.240|
@@ -91,7 +91,7 @@
                   |L1.114|
 000072  466b              MOV      r3,sp                 ;164
 000074  f44f7281          MOV      r2,#0x102             ;164
-000078  2114              MOVS     r1,#0x14              ;164
+000078  210a              MOVS     r1,#0xa               ;164
 00007a  481e              LDR      r0,|L1.244|
 00007c  f7fffffe          BL       OSMemCreate
 000080  491d              LDR      r1,|L1.248|
@@ -103,7 +103,7 @@
                   |L1.144|
 000090  466b              MOV      r3,sp                 ;168
 000092  f2402202          MOV      r2,#0x202             ;168
-000096  2114              MOVS     r1,#0x14              ;168
+000096  210a              MOVS     r1,#0xa               ;168
 000098  4818              LDR      r0,|L1.252|
 00009a  f7fffffe          BL       OSMemCreate
 00009e  4918              LDR      r1,|L1.256|
@@ -132,9 +132,9 @@
 
 0000d2  0000              DCW      0x0000
                   |L1.212|
-                          DCD      MemBuf_10B
+                          DCD      MemBuf_16B
                   |L1.216|
-                          DCD      pMemBuf_10B
+                          DCD      pMemBuf_16B
                   |L1.220|
                           DCD      MemBuf_32B
                   |L1.224|
@@ -179,8 +179,8 @@
 ;;;117    	ptr_free = ptr_free - 1;
 ;;;118    	switch(*ptr_free)
 ;;;119    	{
-;;;120    		case MEM_10B_COL: 
-;;;121    			return OSMemPut(pMemBuf_10B,ptr_free);
+;;;120    		case MEM_16B_COL: 
+;;;121    			return OSMemPut(pMemBuf_16B,ptr_free);
 ;;;122    		case MEM_32B_COL: 
 ;;;123    			return OSMemPut(pMemBuf_32B,ptr_free);
 ;;;124    		case MEM_64B_COL: 
@@ -204,7 +204,7 @@
 000010  2882              CMP      r0,#0x82              ;118
 000012  d023              BEQ      |L2.92|
 000014  dc06              BGT      |L2.36|
-000016  280c              CMP      r0,#0xc               ;118
+000016  2812              CMP      r0,#0x12              ;118
 000018  d00e              BEQ      |L2.56|
 00001a  2822              CMP      r0,#0x22              ;118
 00001c  d012              BEQ      |L2.68|
@@ -222,7 +222,7 @@
                   |L2.56|
 000038  4621              MOV      r1,r4                 ;121
 00003a  4815              LDR      r0,|L2.144|
-00003c  6800              LDR      r0,[r0,#0]            ;121  ; pMemBuf_10B
+00003c  6800              LDR      r0,[r0,#0]            ;121  ; pMemBuf_16B
 00003e  f7fffffe          BL       OSMemPut
 000042  e7e2              B        |L2.10|
                   |L2.68|
@@ -268,7 +268,7 @@
                           ENDP
 
                   |L2.144|
-                          DCD      pMemBuf_10B
+                          DCD      pMemBuf_16B
                   |L2.148|
                           DCD      pMemBuf_32B
                   |L2.152|
@@ -299,11 +299,11 @@
 ;;;38     		return NULL;
 000008  2000              MOVS     r0,#0
                   |L3.10|
-;;;39     	else if(size <= MEM_10B_COL - 2)
+;;;39     	else if(size <= MEM_16B_COL - 2)
 ;;;40     	{
-;;;41     		if((ptr = OSMemGet(pMemBuf_10B,&err)) != NULL)
+;;;41     		if((ptr = OSMemGet(pMemBuf_16B,&err)) != NULL)
 ;;;42     		{
-;;;43     			*ptr = MEM_10B_COL;
+;;;43     			*ptr = MEM_16B_COL;
 ;;;44     			return ptr + 1;
 ;;;45     		}
 ;;;46     		else 
@@ -367,15 +367,15 @@
 ;;;104    }
 00000a  bd38              POP      {r3-r5,pc}
                   |L3.12|
-00000c  2d0a              CMP      r5,#0xa               ;39
+00000c  2d10              CMP      r5,#0x10              ;39
 00000e  dc0c              BGT      |L3.42|
 000010  4669              MOV      r1,sp                 ;41
 000012  4837              LDR      r0,|L3.240|
-000014  6800              LDR      r0,[r0,#0]            ;41  ; pMemBuf_10B
+000014  6800              LDR      r0,[r0,#0]            ;41  ; pMemBuf_16B
 000016  f7fffffe          BL       OSMemGet
 00001a  0004              MOVS     r4,r0                 ;41
 00001c  d003              BEQ      |L3.38|
-00001e  200c              MOVS     r0,#0xc               ;43
+00001e  2012              MOVS     r0,#0x12              ;43
 000020  8020              STRH     r0,[r4,#0]            ;43
 000022  1ca0              ADDS     r0,r4,#2              ;44
 000024  e7f1              B        |L3.10|
@@ -486,7 +486,7 @@
 
 0000ee  0000              DCW      0x0000
                   |L3.240|
-                          DCD      pMemBuf_10B
+                          DCD      pMemBuf_16B
                   |L3.244|
                           DCD      pMemBuf_32B
                   |L3.248|
@@ -502,24 +502,24 @@
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=0
 
-                  MemBuf_10B
-                          %        600
+                  MemBuf_16B
+                          %        1080
                   MemBuf_32B
-                          %        1360
+                          %        2040
                   MemBuf_64B
-                          %        2640
+                          %        5280
                   MemBuf_128B
-                          %        3900
+                          %        2600
                   MemBuf_256B
-                          %        5160
+                          %        2580
                   MemBuf_512B
-                          %        10280
+                          %        5140
                   MemBuf_1KB
                           %        6156
 
                           AREA ||.data||, DATA, ALIGN=2
 
-                  pMemBuf_10B
+                  pMemBuf_16B
                           DCD      0x00000000
                   pMemBuf_32B
                           DCD      0x00000000

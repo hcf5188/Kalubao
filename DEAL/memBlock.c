@@ -7,7 +7,7 @@
 *************************************************************/
 #include "memblock.h"
 
-OS_MEM	*pMemBuf_10B;
+OS_MEM	*pMemBuf_16B;
 OS_MEM	*pMemBuf_32B;
 OS_MEM  *pMemBuf_64B;
 OS_MEM	*pMemBuf_128B;
@@ -15,7 +15,7 @@ OS_MEM	*pMemBuf_256B;
 OS_MEM	*pMemBuf_512B;
 OS_MEM	*pMemBuf_1KB;
            
-uint8_t MemBuf_10B[MEM_10B_ROW][MEM_10B_COL];
+uint8_t MemBuf_16B[MEM_16B_ROW][MEM_16B_COL];
 uint8_t MemBuf_32B[MEM_32B_ROW][MEM_32B_COL];
 uint8_t MemBuf_64B[MEM_64B_ROW][MEM_64B_COL];
 uint8_t MemBuf_128B[MEM_128B_ROW][MEM_128B_COL];
@@ -36,11 +36,11 @@ void *Mem_malloc(uint16_t size)
 	
 	if(size < 1)
 		return NULL;
-	else if(size <= MEM_10B_COL - 2)
+	else if(size <= MEM_16B_COL - 2)
 	{
-		if((ptr = OSMemGet(pMemBuf_10B,&err)) != NULL)
+		if((ptr = OSMemGet(pMemBuf_16B,&err)) != NULL)
 		{
-			*ptr = MEM_10B_COL;
+			*ptr = MEM_16B_COL;
 			return ptr + 1;
 		}
 		else 
@@ -117,8 +117,8 @@ uint8_t Mem_free(void *ptr)
 	ptr_free = ptr_free - 1;
 	switch(*ptr_free)
 	{
-		case MEM_10B_COL: 
-			return OSMemPut(pMemBuf_10B,ptr_free);
+		case MEM_16B_COL: 
+			return OSMemPut(pMemBuf_16B,ptr_free);
 		case MEM_32B_COL: 
 			return OSMemPut(pMemBuf_32B,ptr_free);
 		case MEM_64B_COL: 
@@ -145,7 +145,7 @@ uint8_t MemBuf_Init(void)
 {
 	uint8_t err;
 	
-	pMemBuf_10B = OSMemCreate(MemBuf_10B,MEM_10B_ROW,MEM_10B_COL,&err);
+	pMemBuf_16B = OSMemCreate(MemBuf_16B,MEM_16B_ROW,MEM_16B_COL,&err);
 	if(err != OS_ERR_NONE)
 		return err;
 	

@@ -31,6 +31,7 @@ void GPIO_ALL_IN(void);
 void CAN1Config(void);     //CAN1 初始化
 
 void CDMAUart2Init(void);  //CDMA 串口初始化
+void TIM3ConfigInit(void );//定时器3 用来判断CDMA接收超时
 uint8_t CDMASendDatas(const uint8_t* s,uint16_t length);//CDMA 发送字符串
 
 

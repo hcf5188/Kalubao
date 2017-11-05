@@ -446,6 +446,16 @@
               <FileType>1</FileType>
               <FilePath>..\CDMA\CDMA_Tx_Rx.c</FilePath>
             </File>
+            <File>
+              <FileName>CDMA_OTA_TASK.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\CDMA\CDMA_OTA_TASK.c</FilePath>
+            </File>
+            <File>
+              <FileName>CDMAConfigTask.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\CDMA\CDMAConfigTask.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -593,6 +603,11 @@
               <FileName>stm32f10x_adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\LIB\src\stm32f10x_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\LIB\src\stm32f10x_tim.c</FilePath>
             </File>
           </Files>
         </Group>

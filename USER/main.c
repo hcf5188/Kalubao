@@ -20,7 +20,8 @@ void CDMALEDTask(void *pdata);
 void GPSLEDTask(void *pdata); 
 void OBDLEDTask(void *pdata); 
 
-
+pCIR_QUEUE sendCDMA_Q = NULL;     //指向 CDMA 串口发送队列  的指针
+pSTORE     receCDMA_S = NULL;     //指向 CDMA 串口接收数据堆的指针
 
 
 int main(void )
@@ -28,9 +29,13 @@ int main(void )
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	
 	OSInit(); 
+	MemBuf_Init();   //建立内存控制块
+	
+	sendCDMA_Q = Cir_Queue_Init(500);//CDMA 串口发送 循环队列
+	receCDMA_S = Store_Init(1024);   //CDMA 串口接收 数据堆
 	
 	SystemBspInit();
-	MemBuf_Init();   //建立内存控制块 
+	 
 	
 	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
 	

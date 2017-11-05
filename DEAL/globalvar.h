@@ -1,0 +1,45 @@
+#ifndef __GLOBALVAR_H__
+#define __GLOBALVAR_H__
+
+#include "includes.h"
+typedef enum
+{
+	LinkOK = 0,
+	LinkFault
+}LinkStatus;
+
+typedef struct
+{
+	uint8_t ipAddr[18];//ÓÃÀ´´æ´¢IPµØÖ·
+	uint8_t ipPotr[6]; //´æ´¢IP¶Ë¿ÚºÅ
+	uint8_t imei[18];  //´æ´¢IMEIºÅ
+	LinkStatus link;   //Á´Â·Á¬½Ó×´Ì¬
+
+}CDMAInformation;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+

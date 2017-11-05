@@ -60,7 +60,9 @@ void OBDTask(void *pdata)
 	static uint8_t index = 0;
 	CAN1Config();
 	canRecieveQ = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);
-	OSTimeDlyHMSM(0,0,2,0);
+	
+	OSTimeDlyHMSM(0,0,6,0);//CDMA还没启动，此处需要延时
+	
 //	CANTestChannel();
 	
 	dataToSend.canId = 0x18DA10FB;
