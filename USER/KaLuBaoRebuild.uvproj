@@ -431,6 +431,16 @@
               <FileType>1</FileType>
               <FilePath>..\GPS\GPSTask.c</FilePath>
             </File>
+            <File>
+              <FileName>GPSConfig.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GPS\GPSConfig.c</FilePath>
+            </File>
+            <File>
+              <FileName>GPS_Tx_Rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GPS\GPS_Tx_Rx.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -500,6 +510,11 @@
               <FileName>memStore.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\DEAL\memStore.c</FilePath>
+            </File>
+            <File>
+              <FileName>crcCompute.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DEAL\crcCompute.c</FilePath>
             </File>
           </Files>
         </Group>

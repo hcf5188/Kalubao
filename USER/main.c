@@ -23,26 +23,29 @@ void OBDLEDTask(void *pdata);
 pCIR_QUEUE sendCDMA_Q = NULL;     //指向 CDMA 串口发送队列  的指针
 pSTORE     receCDMA_S = NULL;     //指向 CDMA 串口接收数据堆的指针
 
+pCIR_QUEUE sendGPS_Q = NULL;     //指向 GPS 串口发送队列  的指针
+pSTORE     receGPS_S = NULL;     //指向 GPS 串口接收数据堆的指针
 
 int main(void )
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	
 	OSInit(); 
-	MemBuf_Init();   //建立内存控制块
+	
+	MemBuf_Init();   //建立内存块
 	
 	sendCDMA_Q = Cir_Queue_Init(500);//CDMA 串口发送 循环队列
 	receCDMA_S = Store_Init(1024);   //CDMA 串口接收 数据堆
 	
+	sendGPS_Q = Cir_Queue_Init(230); //GPS  串口发送 循环队列
+	receGPS_S = Store_Init(230);     //GPS  串口接收 数据堆
+	
 	SystemBspInit();
 	 
-	
 	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
 	
 	OSStart();	 
 }
-
-
 
 void StartTask(void *pdata)
 {
@@ -52,8 +55,8 @@ void StartTask(void *pdata)
   	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
 	
  	OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);						   
- 	OSTaskCreate(GPSTask,(void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);		
- 	OSTaskCreate(OBDTask,(void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);	
+ 	OSTaskCreate(GPSTask, (void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);		
+ 	OSTaskCreate(OBDTask, (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);	
 
 	OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE-1],CDMA_LED_PRIO);						   
  	OSTaskCreate(GPSLEDTask,(void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1],GPS_LED_PRIO);		

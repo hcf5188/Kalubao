@@ -38,88 +38,93 @@ const uint8_t at_Check[]    = "AT+ZIPPSTATUS=0\r";//查询当前TCP连接状态
 const uint8_t at_TCPClose[] = "AT+ZIPCLOSE=0\r";  //关闭通道号为0的TCP连接
 const uint8_t at_TCPSend[]  = "AT+ZIPSEND=0,35\r";//向连接号为0的地址发送%d个数据
                                                   //返回>  输入数据，成功后返回 +ZIPSEND：OK OK
+												  
+const uint8_t at_TCPSend1[]  = "AT+ZIPSEND=0,33\r";//向连接号为0的地址发送%d个数据
 const uint8_t at_GetIP[]    = "AT+ZIPGETIP\r";												  
  uint8_t sendDatas[39]={0x7E,0x00,0x1D,
-						   0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,
-						   0x80,0x00,0x01,0x00,
-							0x00,0x02,0x00,0x00,
-							0x05,0x80,0x00,0x00,0x00,
-							0xa8,0x6b,0x7E
-							};	
+						0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,0x39,
+						0x80,0x00,0x00,0x00,
+						0x00,0x02,0x00,0x00,
+						0x05,0x80,0x00,0x00,0x00,
+						0x43,0x65,0x7E};	
 uint8_t ReceDatas[100]; 
-												  
 static void CDMAConfigInit(void )
 {
 	uint8_t err;
-	uint8_t *ptr = NULL;
+	uint8_t *ptrCDMACfg = NULL;
 
 	CDMASendDatas(atCmd,sizeof(atCmd));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//AT\r\r\nOK\r\n
+	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+	Mem_free(ptrCDMACfg);//AT\r\r\nOK\r\n
 	OSTimeDlyHMSM(0,0,0,500);
 	
 	CDMASendDatas(ate0Cmd,sizeof(ate0Cmd));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//ATE0\r\r\nOK\r\n
+	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+	Mem_free(ptrCDMACfg);//ATE0\r\r\nOK\r\n
+	OSTimeDlyHMSM(0,0,0,500);
+	
+	CDMASendDatas(at_CPIN,sizeof(at_CPIN));
+	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+	Mem_free(ptrCDMACfg);//\r\nOK\r\n\nOK\r\n
 	OSTimeDlyHMSM(0,0,0,500);
 	
 	CDMASendDatas(at_ZDSLEEP,sizeof(at_ZDSLEEP));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\nOK\r\n\nOK\r\n
+	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+	Mem_free(ptrCDMACfg);//\r\nOK\r\n\nOK\r\n
 	OSTimeDlyHMSM(0,0,0,500);
 	
 	CDMASendDatas(at_CSQ,sizeof(at_CSQ));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\n+CSQ:
+	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+	Mem_free(ptrCDMACfg);//\r\n+CSQ:
 	OSTimeDlyHMSM(0,0,0,500);
 	
 	CDMASendDatas(at_GSN,sizeof(at_GSN));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\n863086032502879\r\n\r\nOK\r\n
+	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+	Mem_free(ptrCDMACfg);//\r\n863086032502879\r\n\r\nOK\r\n
 	OSTimeDlyHMSM(0,0,0,500);
 	
 	CDMASendDatas(at_ICCID,sizeof(at_ICCID));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\n+ZGETICCID:
+	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+	Mem_free(ptrCDMACfg);//\r\n+ZGETICCID:
 	OSTimeDlyHMSM(0,0,0,500);
 	
-	CDMASendDatas(at_CNMI,sizeof(at_CNMI));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\nOK\r      
-	OSTimeDlyHMSM(0,0,0,500);
-	
-	CDMASendDatas(at_SetZpNum,sizeof(at_SetZpNum));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\nOK\r\n\nOK\r\n
-	OSTimeDlyHMSM(0,0,0,500);
-	
-	CDMASendDatas(at_GPRSLink,sizeof(at_GPRSLink));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\n+ZPPPSTATUS:DISCONNECTED\r\n\r\nOK
-	OSTimeDlyHMSM(0,0,0,500);
-	
-	CDMASendDatas(at_ZPPPOPEN,sizeof(at_ZPPPOPEN));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);//\r\n+ZPPPOPEN:CONNECTED\r\n\r\nOK\r\n
-	OSTimeDlyHMSM(0,0,0,500);
-	
-	CDMASendDatas(at_TCPLink,sizeof(at_TCPLink));
-	ptr = OSQPend(CDMARecieveQ,1500,&err);
-	Mem_free(ptr);
-	OSTimeDlyHMSM(0,0,0,500);
-	ptr = OSQPend(CDMARecieveQ,500,&err);
-	Mem_free(ptr);
-	ptr = OSQPend(CDMARecieveQ,500,&err);
-	Mem_free(ptr);
-	ptr = OSQPend(CDMARecieveQ,500,&err);//主要用来清空接收的消息队列
-	Mem_free(ptr);
+//	CDMASendDatas(at_CNMI,sizeof(at_CNMI));
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+//	Mem_free(ptrCDMACfg);//\r\nOK\r      
+//	OSTimeDlyHMSM(0,0,0,500);
+//	
+//	CDMASendDatas(at_SetZpNum,sizeof(at_SetZpNum));
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+//	Mem_free(ptrCDMACfg);//\r\nOK\r\n\nOK\r\n
+//	OSTimeDlyHMSM(0,0,5,500);
+//	
+//	CDMASendDatas(at_GPRSLink,sizeof(at_GPRSLink));
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+//	Mem_free(ptrCDMACfg);//\r\n+ZPPPSTATUS:DISCONNECTED\r\n\r\nOK
+//	OSTimeDlyHMSM(0,0,3,500);
+//	
+//	CDMASendDatas(at_ZPPPOPEN,sizeof(at_ZPPPOPEN));
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+//	Mem_free(ptrCDMACfg);//\r\n+ZPPPOPEN:CONNECTED\r\n\r\nOK\r\n
+//	OSTimeDlyHMSM(0,0,0,500);
+//	
+//	CDMASendDatas(at_TCPLink,sizeof(at_TCPLink));
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+//	Mem_free(ptrCDMACfg);
+//	OSTimeDlyHMSM(0,0,0,500);
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,500,&err);
+//	Mem_free(ptrCDMACfg);
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,500,&err);
+//	Mem_free(ptrCDMACfg);
+//	ptrCDMACfg = OSQPend(CDMARecieveQ,500,&err);//主要用来清空接收的消息队列
+//	Mem_free(ptrCDMACfg);
 }
 
 void CDMATask(void *pdata)
 {
-//	uint16_t i = 0;
-	uint8_t *ptr = NULL;
-	uint8_t err;
+//	uint16_t crc = 0;
+//	uint8_t *ptrCDMARece = NULL;
+//	uint8_t err;
 	CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);  //建立CDMA接收 消息队列
 	CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE);//建立CDMA发送 消息队列
 	
@@ -128,41 +133,45 @@ void CDMATask(void *pdata)
 	OSTimeDlyHMSM(0,0,2,0);
 	while(1)
 	{
-
-		OSTimeDlyHMSM(0,0,0,20);
-		CDMASendDatas(at_TCPSend,sizeof(at_TCPSend));
-		ptr = OSQPend(CDMARecieveQ,500,&err);
-		Mem_free(ptr);
+		OSTimeDlyHMSM(0,0,1,20);
 		
-		CDMASendDatas(sendDatas,35);
-		ptr = OSQPend(CDMARecieveQ,500,&err);
-		Mem_free(ptr);
-		
-		
-		
-		
-		
-		
-//		OSTimeDlyHMSM(0,0,0,20);
-//		do
+//		if(sendDatas[2] == 29)
 //		{
-//			ptr = OSQPend(CDMARecieveQ,50,&err);
-//			if(err == OS_ERR_NONE)
-//			{
-//				if((ptr[2] == '+')&&(ptr[3] == 'Z')&&(ptr[4] == 'I')&&(ptr[5] == 'P')
-//				    &&(ptr[6] == 'R')&&(ptr[7] == 'E')&&(ptr[8] == 'C')&&(ptr[9] == 'V'))//接收到服务器下发的数据
-//				{ 
-//					for(i=0;i<60;i++)
-//					{
-//						ReceDatas[i] = ptr[i];
-//					}
-//				}
-//				Mem_free(ptr);
-//			}
-//				
+//			CDMASendDatas(at_TCPSend,sizeof(at_TCPSend));
+//			ptrCDMARece = OSQPend(CDMARecieveQ,1000,&err);
+//			Mem_free(ptrCDMARece);
+//			crc = CRC_Compute16(&sendDatas[1],31);
+//			sendDatas[32] = (crc>>8)&0xff;
+//			sendDatas[33] = (crc)&0xff;
+//			CDMASendDatas(sendDatas,35);
+//			sendDatas[2] = 27;
+//			sendDatas[27] = 0x03;
+//			sendDatas[32] = 0x7E;
+//		}
+//		else if(sendDatas[2] == 27)
+//		{
+//			CDMASendDatas(at_TCPSend1,sizeof(at_TCPSend1));
+//			ptrCDMARece = OSQPend(CDMARecieveQ,1000,&err);
+//			Mem_free(ptrCDMARece);
+//			sendDatas[29]++;
+//			crc = CRC_Compute16(&sendDatas[1],29);
 //			
-//		}while(err == OS_ERR_NONE);
-//		CDMASendDatas(atCmd,sizeof(atCmd));
+//			sendDatas[30] = (crc>>8)&0xff;
+//			sendDatas[31] = (crc)&0xff;
+//			
+//			CDMASendDatas(sendDatas,33);
+
+//		}
+//		ptrCDMARece = OSQPend(CDMARecieveQ,3000,&err);
+//		Mem_free(ptrCDMARece);
+//		ptrCDMARece = OSQPend(CDMARecieveQ,3000,&err);
+//		Mem_free(ptrCDMARece);
+//		ptrCDMARece = OSQPend(CDMARecieveQ,3000,&err);
+//		Mem_free(ptrCDMARece);
+//		
+//		sendDatas[22]++;
+//		sendDatas[25]++;
+//		
 	}
 }
 static void CDMAPowerOpen_Close(void)//这段代码是用来启动/关闭CDMA

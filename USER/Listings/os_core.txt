@@ -958,7 +958,7 @@
 ;;;1283   
 ;;;1284   
 ;;;1285       OS_MemClr((INT8U *)&OSEventTbl[0], sizeof(OSEventTbl)); /* Clear the event table                   */
-000002  f44f71c8          MOV      r1,#0x190
+000002  f44f71fa          MOV      r1,#0x1f4
 000006  4811              LDR      r0,|L15.76|
 000008  f7fffffe          BL       OS_MemClr
 ;;;1286       for (ix = 0u; ix < (OS_MAX_EVENTS - 1u); ix++) {        /* Init. list of free EVENT control blocks */
@@ -983,7 +983,7 @@
 00002c  1c58              ADDS     r0,r3,#1              ;1286
 00002e  b283              UXTH     r3,r0                 ;1286
                   |L15.48|
-000030  2b13              CMP      r3,#0x13              ;1286
+000030  2b18              CMP      r3,#0x18              ;1286
 000032  d3ed              BCC      |L15.16|
 ;;;1292   #if OS_EVENT_NAME_EN > 0u
 ;;;1293           pevent1->OSEventName    = (INT8U *)(void *)"?";     /* Unknown name                            */
@@ -1174,7 +1174,7 @@
 ;;;1528   
 ;;;1529   
 ;;;1530       OS_MemClr((INT8U *)&OSTCBTbl[0],     sizeof(OSTCBTbl));      /* Clear all the TCBs                 */
-000002  f2405194          MOV      r1,#0x594
+000002  f64001dc          MOV      r1,#0x8dc
 000006  4819              LDR      r0,|L18.108|
 000008  f7fffffe          BL       OS_MemClr
 ;;;1531       OS_MemClr((INT8U *)&OSTCBPrioTbl[0], sizeof(OSTCBPrioTbl));  /* Clear the priority table           */
@@ -1206,7 +1206,7 @@
 00003e  1c60              ADDS     r0,r4,#1              ;1532
 000040  b2c4              UXTB     r4,r0                 ;1532
                   |L18.66|
-000042  2c10              CMP      r4,#0x10              ;1532
+000042  2c1a              CMP      r4,#0x1a              ;1532
 000044  d3e9              BCC      |L18.26|
 ;;;1539   #endif
 ;;;1540       }
@@ -2127,7 +2127,7 @@
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
                   OSEventTbl
-                          %        400
+                          %        500
                   OSFlagTbl
                           %        16
                   OSTaskStatStk
@@ -2137,7 +2137,7 @@
                   OSTCBPrioTbl
                           %        256
                   OSTCBTbl
-                          %        1428
+                          %        2268
                   OSMemTbl
                           %        240
                   OSQTbl

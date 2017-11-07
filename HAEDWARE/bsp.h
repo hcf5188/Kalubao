@@ -28,11 +28,17 @@ void GPIOLEDInit(void);    //LED  IO口初始化
 void ADC1Init(void);
 void GPIO_ALL_IN(void);
 
+void GPSConfigInit(uint16_t baud);//设置GPS通信波特率
+	
 void CAN1Config(void);     //CAN1 初始化
 
 void CDMAUart2Init(void);  //CDMA 串口初始化
 void TIM3ConfigInit(void );//定时器3 用来判断CDMA接收超时
+void TIM2ConfigInit(void );//定时器2 用来处理GPRS接收逻辑
+
+void CDMASendByte(uint8_t dat);
 uint8_t CDMASendDatas(const uint8_t* s,uint16_t length);//CDMA 发送字符串
+uint8_t GPSSendDatas(const uint8_t* s,uint8_t length);  //GPS  发送字符串
 
 
 

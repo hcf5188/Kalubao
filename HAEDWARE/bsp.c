@@ -6,14 +6,19 @@
 //芯片初始化，包括系统时钟、芯片外设、时钟滴答等等
 void SystemBspInit(void )
 {
-	
 	BspClockInit();
-
+	
 	GPIOLEDInit();
+	
 //	ADC1Init();
+	
 	CDMAUart2Init();
+	
+	GPSConfigInit(9600);
+	
 	TIM3ConfigInit();
-//	
+	TIM2ConfigInit();
+	
 	SysTickInit();
 }
 //系统时钟滴答初始化
@@ -22,8 +27,6 @@ void SysTickInit(void)
 	SystemCoreClockUpdate();
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 	SysTick_Config(SystemCoreClock / OS_TICKS_PER_SEC);
-	
-	
 }
 //使能外设时钟
 void BspClockInit(void)
@@ -257,5 +260,6 @@ void TIM3ConfigInit(void )
 	
 //	TIM_Cmd(TIM3, ENABLE);  //使能TIMx		
 }
+
 
 

@@ -4,7 +4,7 @@
 
 extern pCIR_QUEUE sendCDMA_Q;//指向 CDMA 串口发送队列  的指针
 extern pSTORE     receCDMA_S;//指向 CDMA 串口接收数据堆的指针
-
+uint8_t aa [1000];
 void CDMASendByte(uint8_t dat)
 {
 #if OS_CRITICAL_METHOD == 3u           /* Allocate storage for CPU status register           */
@@ -28,6 +28,7 @@ uint8_t CDMASendDatas(const uint8_t* s,uint16_t length)
 	if(length < 1 || length >1020)
 		return 1;
 	OS_ENTER_CRITICAL();
+	sendCDMA_Q->data = aa;
 	if(CirQ_Pushs(sendCDMA_Q,s,length) != OK)
 	{
 		OS_EXIT_CRITICAL();
@@ -67,6 +68,7 @@ void USART2_IRQHandler(void)
 		if(rxtxState == OK)
 		{
 			rxTimeOut = 1;
+			TIM_SetCounter(TIM3,0); //清空计数器
 			TIM_Cmd(TIM3, ENABLE);  //使能TIMx
 		}
 		USART_ClearITPendingBit(USART2, USART_IT_RXNE) ;
@@ -105,8 +107,9 @@ void USART2_IRQHandler(void)
 extern OS_EVENT *CDMARecieveQ;
 uint8_t *ptrRece;
 uint16_t receDatalen= 0;
-void TIM3_IRQHandler(void)   //TIM3中断
+void TIM3_IRQHandler(void)   //CDMA接收超时处理定时器中断
 {
+	OSIntEnter();//系统进入中断服务程序
 	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
 	{
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update  );  //清除TIMx更新中断标志 
@@ -118,16 +121,24 @@ void TIM3_IRQHandler(void)   //TIM3中断
 			if(receDatalen>2 )
 			{
 				ptrRece = Mem_malloc(receDatalen);
-				Store_Getdates(receCDMA_S,ptrRece,receDatalen);
-				OSQPost(CDMARecieveQ,ptrRece);
+				if(ptrRece != NULL)//内存块申请成功
+				{
+					Store_Getdates(receCDMA_S,ptrRece,receDatalen);
+					if(OSQPost(CDMARecieveQ,ptrRece) != OS_ERR_NONE)//推送不成功需要释放内存块
+					{
+						Mem_free(ptrRece);
+						Store_Clear(receCDMA_S);//舍弃本次接收的数据
+					}
+				}
+				else
+					Store_Clear(receCDMA_S);    //舍弃本次接收的数据
 			}
 			else
-				Store_Clear(receCDMA_S);
-			
+				Store_Clear(receCDMA_S);//接收的数据长度<=2 视为无效数据，没有这么短的回复
 			TIM_Cmd(TIM3, DISABLE);
 		}
-	
 	}
+	OSIntExit();  //中断服务结束，系统进行任务调度
 }
 
 
