@@ -1,4 +1,3 @@
-
 #include "bsp.h"
 #include "includes.h"
 #include "apptask.h"
@@ -26,6 +25,8 @@ pSTORE     receCDMA_S = NULL;     //指向 CDMA 串口接收数据堆的指针
 pCIR_QUEUE sendGPS_Q = NULL;     //指向 GPS 串口发送队列  的指针
 pSTORE     receGPS_S = NULL;     //指向 GPS 串口接收数据堆的指针
 
+_SystemInformation sysAllData;
+
 int main(void )
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
@@ -34,7 +35,7 @@ int main(void )
 	
 	MemBuf_Init();   //建立内存块
 	
-	sendCDMA_Q = Cir_Queue_Init(500);//CDMA 串口发送 循环队列
+	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列
 	receCDMA_S = Store_Init(1024);   //CDMA 串口接收 数据堆
 	
 	sendGPS_Q = Cir_Queue_Init(230); //GPS  串口发送 循环队列
@@ -46,12 +47,25 @@ int main(void )
 	
 	OSStart();	 
 }
+#define SEND_MAX_TIME  3000     //3000ms计时时间到，则发送数据
+_CDMADataToSend* cdmaDataToSend = NULL;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
 
+OS_EVENT * CDMASendMutex;//建立互斥型信号量，用来独占处理 发向服务器的消息
+extern OS_EVENT *canSendQ;        //向OBD发送PID指令
+extern OS_EVENT *CDMASendQ;       //通过CDMA向服务器发送采集到的OBD、GPS数据
+extern _OBD_PID_Cmd  obdPIDAll[];
 void StartTask(void *pdata)
 {
+	uint8_t err;
+	uint8_t i = 0;
+	uint8_t *ptrOBDSend;
+	
 	OS_CPU_SR cpu_sr=0;
 	pdata = pdata; 
-
+	sysAllData.sendId = 0x80000000;     //全局发送指令流水号
+	
+	cdmaDataToSend = CDMNSendDataInit();//初始化获取发向CDMA的消息结构体
+	
   	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
 	
  	OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);						   
@@ -62,14 +76,51 @@ void StartTask(void *pdata)
  	OSTaskCreate(GPSLEDTask,(void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1],GPS_LED_PRIO);		
  	OSTaskCreate(OBDLEDTask,(void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1],OBD_LED_PRIO);		
 	
-    OSTaskSuspend(START_TASK_PRIO);	//挂起起始任务.
+	CDMASendMutex = OSMutexCreate(CDMA_SEND_PRIO,&err);//向CDMA发送缓冲区发送数据 独占 互斥型信号量
+	
 	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
+	OSTimeDlyHMSM(0,0,15,4);        //todo:等待其他任务完成初始化之后，再进行数据的流动
 	while(1)
 	{
-		OSTimeDlyHMSM(0,0,0,250);
+		OSTimeDlyHMSM(0,0,0,4);
+		//todo:遍历OBD的PID指令，如果时间到达，则向OBD发送队列，让其与ECU通信
+		for(i=0;i<10;i++)          //todo:PID指令的数目 后期需要配置
+		{
+			obdPIDAll[i].timeCount += 4;
+			if(obdPIDAll[i].timeCount >= obdPIDAll[i].period)
+			{
+				obdPIDAll[i].timeCount = 0;
+				
+				ptrOBDSend = Mem_malloc(9);
+				memcpy(ptrOBDSend,obdPIDAll[i].data,9);
+				err = OSQPost(canSendQ,ptrOBDSend);  //向OBD推送要发送的PID指令
+				if(err != OS_ERR_NONE)
+					Mem_free(ptrOBDSend);//推送不成功，需要释放内存块
+			}
+		}
+		if(cdmaDataToSend->datLength > 28)
+			cdmaDataToSend->timeCount += 4;
+		
+		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 850))
+		{
+			OSMutexPend(CDMASendMutex,0,&err);
+			//todo:将要发送的数据时间增加2，大于3000并且数据区不为0的时候，需要打包发送,申请新数据，并进行初始化
+			CDMASendDataPack(cdmaDataToSend);
+			err = OSQPost(CDMASendQ,cdmaDataToSend);
+			if(err != OS_ERR_NONE)
+			{
+				cdmaDataToSend->datLength = 27;
+				cdmaDataToSend->timeCount = 0;
+			}
+			else
+			{
+				cdmaDataToSend = CDMNSendDataInit();
+			}	
+			OSMutexPost(CDMASendMutex);
+		}
 	}
 }
-uint16_t freCDMALed = 300;
+uint16_t freCDMALed = 100;
 void CDMALEDTask(void *pdata)
 {
 	while(1)
@@ -84,7 +135,7 @@ void CDMALEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freCDMALed);
 	}
 }
-uint16_t freGPSLed = 300;
+uint16_t freGPSLed = 100;
 void GPSLEDTask(void *pdata)
 {
 	while(1)
@@ -99,7 +150,7 @@ void GPSLEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freGPSLed);
 	}
 }
-uint16_t freOBDLed = 300;
+uint16_t freOBDLed = 100;
 void OBDLEDTask(void *pdata)
 {
 	while(1)

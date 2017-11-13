@@ -82,6 +82,7 @@ extern OS_EVENT* receGPSQ;
 
 static uint16_t receGPSLen = 0;
 uint8_t *ptrGPSRece = NULL;
+
 void TIM2_IRQHandler(void)
 {
 	OSIntEnter();//系统进入中断服务程序
@@ -97,7 +98,7 @@ void TIM2_IRQHandler(void)
 			
 			if(receGPSLen>2 )
 			{
-				ptrGPSRece = Mem_malloc(receGPSLen+2);
+				ptrGPSRece = Mem_malloc(receGPSLen+2);				
 				if(ptrGPSRece != NULL)
 				{
 					ptrGPSRece[0] = (receGPSLen>>8)&0xff;

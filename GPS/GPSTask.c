@@ -5,44 +5,129 @@ OS_EVENT* receGPSQ;              //接收GPS信息的消息队列
 #define GPSRECBUF_SIZE  10       //接收GPS消息队列保存消息的最大量
 void *gpsRecBuf[GPSRECBUF_SIZE]; //用于存放指向邮箱的指针
 
-
-nmea_msg gpsx; 	     //GPS信息
-
+extern _SystemInformation sysAllData;//系统全局变量信息
+nmea_msg gpsMC; 	     //GPS信息
+extern OS_EVENT * CDMASendMutex;       //互斥型信号量，用来独占处理 发向服务器的消息
+extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
+extern uint16_t freGPSLed;
 /************************      GPS任务    ***********************/
-
 
 void GPSTask(void *pdata)
 {
-	u8 key=0XFF;
 	uint8_t err;
-	uint8_t * ptrGPSRece;
+	uint8_t i = 0;
+	uint8_t* ptrGPSRece;
+	uint8_t* ptrGPSPack = NULL;
+	uint16_t speed;
+	uint32_t timeStamp;//时间戳
+	uint16_t dataLen = 0;
+	uint8_t  datBuf[100];
+	uint8_t  index=1;
+
+	OSTimeDlyHMSM(0,0,10,500);
+	receGPSQ = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);  //建立GPS接收 消息队列
+	GPSStartInit();//初始化配置GPS
 	
-	receGPSQ = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);  //建立CDMA接收 消息队列
-	
-	OSTimeDlyHMSM(0,0,8,0);//CDMA还没启动，此处需要延时
-	if(Ublox_Cfg_Rate(1000,1)!=0)
-	{
-		while((Ublox_Cfg_Rate(1000,1)!=0)&&key)	//持续判断,直到可以检查到NEO-6M,且数据保存成功
-		{
-	  		Ublox_Cfg_Prt(9600);	        //重新设置模块的波特率为9600
-			Ublox_Cfg_Tp(1000000,100000,1);	//设置PPS为1秒钟输出1次,脉冲宽度为100ms	    
-			key=Ublox_Cfg_Cfg_Save();		//保存配置  
-		}
-	}
-	OSTimeDlyHMSM(0,0,0,500);
+	OSTimeDlyHMSM(0,0,10,500);
 	while(1)
 	{
 		ptrGPSRece = OSQPend(receGPSQ,0,&err);//等待接收到应答
+		//
+		dataLen = ptrGPSRece[0];
+		dataLen = (dataLen<<8) + ptrGPSRece[1];
+//		datBuf[0] = '$';
+//		index=1;
+//		for(i=3;i<dataLen + 2;i++)
+//		{
+//			if(ptrGPSRece[i] == '$')
+//			{
+//				
+//			}
+//			datBuf[index] = ptrGPSRece[i];
+//		}
+		GPS_Analysis(&gpsMC,&ptrGPSRece[2]);
 		Mem_free(ptrGPSRece);
+		
+		timeStamp = TimeCompare(gpsMC.utc.year,gpsMC.utc.month,gpsMC.utc.date,gpsMC.utc.hour,gpsMC.utc.min,gpsMC.utc.sec);
+		sysAllData.currentTime = timeStamp;
+			
+		ptrGPSPack = Mem_malloc(40);
+		if(ptrGPSPack != NULL)
+		{
+			ptrGPSPack[0] = 21;
+			ptrGPSPack[1] = 0x50;
+			ptrGPSPack[2] = 0x02;
+			timeStamp = t_htonl(timeStamp);	
+			memcpy(&ptrGPSPack[3],&timeStamp,sizeof(timeStamp));//UTC时间戳
+			timeStamp = t_htonl(gpsMC.longitude);
+			memcpy(&ptrGPSPack[7],&timeStamp,sizeof(timeStamp));//经度
+			timeStamp = t_htonl(gpsMC.latitude);
+			memcpy(&ptrGPSPack[11],&timeStamp,sizeof(timeStamp));//维度
+			
+			memset(&ptrGPSPack[15],0,2);       //todo:解析GPS方向，解析有效定位
+			speed = t_htons(gpsMC.speed);
+			memcpy(&ptrGPSPack[17],&speed,2);
+			memset(&ptrGPSPack[19],0,2);       //todo:当前车速
+			
+			
+			OSMutexPend(CDMASendMutex,0,&err);
+			
+			memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrGPSPack,21);
+			cdmaDataToSend->datLength += 21;
+			
+			OSMutexPost(CDMASendMutex);
+			
+			Mem_free(ptrGPSPack);
+		}
+		
+
+		freGPSLed = 300;          //LED  指示，GPS定位正常
 	}
 }
 
 /*********************以下为GPS配置、数据处理函数************************/
+#define SecsPerDay      (3600*24)
+const uint32_t Month_Days_Accu_C[13] = {0,31,59,90,120,151,181,212,243,273,304,334,365};
+const uint32_t Month_Days_Accu_L[13] = {0,31,60,91,121,152,182,213,244,274,305,335,366};
+uint32_t TimeCompare(uint32_t TYY,uint32_t TMO,uint32_t TDD,
+					uint32_t THH,uint32_t TMM,uint32_t TSS)
+{
+	uint32_t LeapY, ComY, TotSeconds, TotDays;
+	if(TYY==1970)
+      LeapY = 0;
+    else
+      LeapY = (TYY - 1968 -1)/4 ;//+1
+    ComY = (TYY - 1970)-(LeapY);
+    if (TYY%4)
+    //common year
+    	TotDays = LeapY*366 + ComY*365 + Month_Days_Accu_C[TMO-1] + (TDD-1); 
+  	else
+    //leap year
+    TotDays = LeapY*366 + ComY*365 + Month_Days_Accu_L[TMO-1] + (TDD-1); 
+  	TotSeconds = TotDays*SecsPerDay + (THH*3600 + TMM*60 + TSS);
+	return 	TotSeconds;
+}
 
-
+//初始化配置GPS
+void GPSStartInit(void )
+{
+	u8 key=0XFF;
+	OSTimeDlyHMSM(0,0,28,0);                //CDMA还没启动，此处需要延时
+	if(Ublox_Cfg_Rate(1000,1)!=0)          //1s采集一次 MC数据
+	{
+		while((Ublox_Cfg_Rate(1000,1)!=0)&&key)	//持续判断,直到可以检查到NEO-6M,且数据保存成功
+		{
+	  		Ublox_Cfg_Prt(9600);	        //重新设置模块的波特率为9600
+			Ublox_Cfg_Tp(1000000,100000,1);	//设置PPS为1秒钟输出1次,脉冲宽度为100ms	
+			Ublox_Cfg_Msg(4,1);		        //MC
+//			Ublox_Cfg_Msg(2,1);		        //SA
+			key=Ublox_Cfg_Cfg_Save();		//保存配置  
+		}
+	}
+}
 //从buf里面得到第cx个逗号所在的位置
 //返回值:0~0XFE,代表逗号所在位置的偏移.
-//       0XFF,代表不存在第cx个逗号							  
+//       0XFF,代表不存在第cx个逗号	
 u8 NMEA_Comma_Pos(u8 *buf,u8 cx)
 {	 		    
 	u8 *p=buf;
@@ -289,7 +374,7 @@ u8 Ublox_Cfg_Ack_Check(void)//todo:判断应答
 	for(i=2;i<(length+2);i++)
 		if(ptrGPSRece[i+2]==0XB5)
 				break;              //查找同步字符 0XB5
-	if(i == (length+2))                 //没有找到同步字符
+	if(i == (length+2))             //没有找到同步字符
 		err = 2;
 	else if(ptrGPSRece[i + 3] == 0) //接收到NACK应答
 		err = 3;

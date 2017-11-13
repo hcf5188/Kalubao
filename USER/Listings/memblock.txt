@@ -5,129 +5,129 @@
                           AREA ||i.MemBuf_Init||, CODE, READONLY, ALIGN=2
 
                   MemBuf_Init PROC
-;;;143    ****************************************************************/
-;;;144    uint8_t MemBuf_Init(void)
+;;;150    ****************************************************************/
+;;;151    uint8_t MemBuf_Init(void)
 000000  b508              PUSH     {r3,lr}
-;;;145    {
-;;;146    	uint8_t err;
-;;;147    	
-;;;148    	pMemBuf_16B = OSMemCreate(MemBuf_16B,MEM_16B_ROW,MEM_16B_COL,&err);
+;;;152    {
+;;;153    	uint8_t err;
+;;;154    	
+;;;155    	pMemBuf_16B = OSMemCreate(MemBuf_16B,MEM_16B_ROW,MEM_16B_COL,&err);
 000002  466b              MOV      r3,sp
 000004  2212              MOVS     r2,#0x12
-000006  213c              MOVS     r1,#0x3c
+000006  2164              MOVS     r1,#0x64
 000008  4832              LDR      r0,|L1.212|
 00000a  f7fffffe          BL       OSMemCreate
 00000e  4932              LDR      r1,|L1.216|
 000010  6008              STR      r0,[r1,#0]  ; pMemBuf_16B
-;;;149    	if(err != OS_ERR_NONE)
+;;;156    	if(err != OS_ERR_NONE)
 000012  f89d0000          LDRB     r0,[sp,#0]
 000016  b110              CBZ      r0,|L1.30|
-;;;150    		return err;
+;;;157    		return err;
 000018  f89d0000          LDRB     r0,[sp,#0]
                   |L1.28|
-;;;151    	
-;;;152    	pMemBuf_32B = OSMemCreate(MemBuf_32B,MEM_32B_ROW,MEM_32B_COL,&err);
-;;;153    	if(err != OS_ERR_NONE)
-;;;154    		return err;
-;;;155    	
-;;;156    	pMemBuf_64B = OSMemCreate(MemBuf_64B,MEM_64B_ROW,MEM_64B_COL,&err);
-;;;157    	if(err != OS_ERR_NONE)
-;;;158    		return err;
-;;;159    	
-;;;160    	pMemBuf_128B = OSMemCreate(MemBuf_128B,MEM_128B_ROW,MEM_128B_COL,&err);
-;;;161    	if(err != OS_ERR_NONE)
-;;;162    		return err;
-;;;163    	
-;;;164    	pMemBuf_256B = OSMemCreate(MemBuf_256B,MEM_256B_ROW,MEM_256B_COL,&err);
-;;;165    	if(err != OS_ERR_NONE)
-;;;166    		return err;
-;;;167    	
-;;;168    	pMemBuf_512B = OSMemCreate(MemBuf_512B,MEM_512B_ROW,MEM_512B_COL,&err);
-;;;169    	if(err != OS_ERR_NONE)
-;;;170    		return err;
-;;;171    	
-;;;172    	pMemBuf_1KB = OSMemCreate(MemBuf_1KB,MEM_1KB_ROW,MEM_1KB_COL,&err);
-;;;173    	if(err != OS_ERR_NONE)
-;;;174    		return err;
-;;;175    	return err;
-;;;176    }
+;;;158    	
+;;;159    	pMemBuf_32B = OSMemCreate(MemBuf_32B,MEM_32B_ROW,MEM_32B_COL,&err);
+;;;160    	if(err != OS_ERR_NONE)
+;;;161    		return err;
+;;;162    	
+;;;163    	pMemBuf_64B = OSMemCreate(MemBuf_64B,MEM_64B_ROW,MEM_64B_COL,&err);
+;;;164    	if(err != OS_ERR_NONE)
+;;;165    		return err;
+;;;166    	
+;;;167    	pMemBuf_128B = OSMemCreate(MemBuf_128B,MEM_128B_ROW,MEM_128B_COL,&err);
+;;;168    	if(err != OS_ERR_NONE)
+;;;169    		return err;
+;;;170    	
+;;;171    	pMemBuf_256B = OSMemCreate(MemBuf_256B,MEM_256B_ROW,MEM_256B_COL,&err);
+;;;172    	if(err != OS_ERR_NONE)
+;;;173    		return err;
+;;;174    	
+;;;175    	pMemBuf_512B = OSMemCreate(MemBuf_512B,MEM_512B_ROW,MEM_512B_COL,&err);
+;;;176    	if(err != OS_ERR_NONE)
+;;;177    		return err;
+;;;178    	
+;;;179    	pMemBuf_1KB = OSMemCreate(MemBuf_1KB,MEM_1KB_ROW,MEM_1KB_COL,&err);
+;;;180    	if(err != OS_ERR_NONE)
+;;;181    		return err;
+;;;182    	return err;
+;;;183    }
 00001c  bd08              POP      {r3,pc}
                   |L1.30|
-00001e  466b              MOV      r3,sp                 ;152
-000020  2222              MOVS     r2,#0x22              ;152
-000022  213c              MOVS     r1,#0x3c              ;152
+00001e  466b              MOV      r3,sp                 ;159
+000020  2222              MOVS     r2,#0x22              ;159
+000022  2164              MOVS     r1,#0x64              ;159
 000024  482d              LDR      r0,|L1.220|
 000026  f7fffffe          BL       OSMemCreate
 00002a  492d              LDR      r1,|L1.224|
-00002c  6008              STR      r0,[r1,#0]            ;152  ; pMemBuf_32B
-00002e  f89d0000          LDRB     r0,[sp,#0]            ;153
+00002c  6008              STR      r0,[r1,#0]            ;159  ; pMemBuf_32B
+00002e  f89d0000          LDRB     r0,[sp,#0]            ;160
 000032  b110              CBZ      r0,|L1.58|
-000034  f89d0000          LDRB     r0,[sp,#0]            ;154
+000034  f89d0000          LDRB     r0,[sp,#0]            ;161
 000038  e7f0              B        |L1.28|
                   |L1.58|
-00003a  466b              MOV      r3,sp                 ;156
-00003c  2242              MOVS     r2,#0x42              ;156
-00003e  2150              MOVS     r1,#0x50              ;156
+00003a  466b              MOV      r3,sp                 ;163
+00003c  2242              MOVS     r2,#0x42              ;163
+00003e  2164              MOVS     r1,#0x64              ;163
 000040  4828              LDR      r0,|L1.228|
 000042  f7fffffe          BL       OSMemCreate
 000046  4928              LDR      r1,|L1.232|
-000048  6008              STR      r0,[r1,#0]            ;156  ; pMemBuf_64B
-00004a  f89d0000          LDRB     r0,[sp,#0]            ;157
+000048  6008              STR      r0,[r1,#0]            ;163  ; pMemBuf_64B
+00004a  f89d0000          LDRB     r0,[sp,#0]            ;164
 00004e  b110              CBZ      r0,|L1.86|
-000050  f89d0000          LDRB     r0,[sp,#0]            ;158
+000050  f89d0000          LDRB     r0,[sp,#0]            ;165
 000054  e7e2              B        |L1.28|
                   |L1.86|
-000056  466b              MOV      r3,sp                 ;160
-000058  2282              MOVS     r2,#0x82              ;160
-00005a  2114              MOVS     r1,#0x14              ;160
+000056  466b              MOV      r3,sp                 ;167
+000058  2282              MOVS     r2,#0x82              ;167
+00005a  2114              MOVS     r1,#0x14              ;167
 00005c  4823              LDR      r0,|L1.236|
 00005e  f7fffffe          BL       OSMemCreate
 000062  4923              LDR      r1,|L1.240|
-000064  6008              STR      r0,[r1,#0]            ;160  ; pMemBuf_128B
-000066  f89d0000          LDRB     r0,[sp,#0]            ;161
+000064  6008              STR      r0,[r1,#0]            ;167  ; pMemBuf_128B
+000066  f89d0000          LDRB     r0,[sp,#0]            ;168
 00006a  b110              CBZ      r0,|L1.114|
-00006c  f89d0000          LDRB     r0,[sp,#0]            ;162
+00006c  f89d0000          LDRB     r0,[sp,#0]            ;169
 000070  e7d4              B        |L1.28|
                   |L1.114|
-000072  466b              MOV      r3,sp                 ;164
-000074  f44f7281          MOV      r2,#0x102             ;164
-000078  210a              MOVS     r1,#0xa               ;164
+000072  466b              MOV      r3,sp                 ;171
+000074  f44f7281          MOV      r2,#0x102             ;171
+000078  210a              MOVS     r1,#0xa               ;171
 00007a  481e              LDR      r0,|L1.244|
 00007c  f7fffffe          BL       OSMemCreate
 000080  491d              LDR      r1,|L1.248|
-000082  6008              STR      r0,[r1,#0]            ;164  ; pMemBuf_256B
-000084  f89d0000          LDRB     r0,[sp,#0]            ;165
+000082  6008              STR      r0,[r1,#0]            ;171  ; pMemBuf_256B
+000084  f89d0000          LDRB     r0,[sp,#0]            ;172
 000088  b110              CBZ      r0,|L1.144|
-00008a  f89d0000          LDRB     r0,[sp,#0]            ;166
+00008a  f89d0000          LDRB     r0,[sp,#0]            ;173
 00008e  e7c5              B        |L1.28|
                   |L1.144|
-000090  466b              MOV      r3,sp                 ;168
-000092  f2402202          MOV      r2,#0x202             ;168
-000096  210a              MOVS     r1,#0xa               ;168
+000090  466b              MOV      r3,sp                 ;175
+000092  f2402202          MOV      r2,#0x202             ;175
+000096  210a              MOVS     r1,#0xa               ;175
 000098  4818              LDR      r0,|L1.252|
 00009a  f7fffffe          BL       OSMemCreate
 00009e  4918              LDR      r1,|L1.256|
-0000a0  6008              STR      r0,[r1,#0]            ;168  ; pMemBuf_512B
-0000a2  f89d0000          LDRB     r0,[sp,#0]            ;169
+0000a0  6008              STR      r0,[r1,#0]            ;175  ; pMemBuf_512B
+0000a2  f89d0000          LDRB     r0,[sp,#0]            ;176
 0000a6  b110              CBZ      r0,|L1.174|
-0000a8  f89d0000          LDRB     r0,[sp,#0]            ;170
+0000a8  f89d0000          LDRB     r0,[sp,#0]            ;177
 0000ac  e7b6              B        |L1.28|
                   |L1.174|
-0000ae  466b              MOV      r3,sp                 ;172
-0000b0  f2404202          MOV      r2,#0x402             ;172
-0000b4  2106              MOVS     r1,#6                 ;172
+0000ae  466b              MOV      r3,sp                 ;179
+0000b0  f2404202          MOV      r2,#0x402             ;179
+0000b4  210c              MOVS     r1,#0xc               ;179
 0000b6  4813              LDR      r0,|L1.260|
 0000b8  f7fffffe          BL       OSMemCreate
 0000bc  4912              LDR      r1,|L1.264|
-0000be  6008              STR      r0,[r1,#0]            ;172  ; pMemBuf_1KB
-0000c0  f89d0000          LDRB     r0,[sp,#0]            ;173
+0000be  6008              STR      r0,[r1,#0]            ;179  ; pMemBuf_1KB
+0000c0  f89d0000          LDRB     r0,[sp,#0]            ;180
 0000c4  b110              CBZ      r0,|L1.204|
-0000c6  f89d0000          LDRB     r0,[sp,#0]            ;174
+0000c6  f89d0000          LDRB     r0,[sp,#0]            ;181
 0000ca  e7a7              B        |L1.28|
                   |L1.204|
-0000cc  f89d0000          LDRB     r0,[sp,#0]            ;175
+0000cc  f89d0000          LDRB     r0,[sp,#0]            ;182
 0000d0  e7a4              B        |L1.28|
-;;;177    
+;;;184    
                           ENDP
 
 0000d2  0000              DCW      0x0000
@@ -180,106 +180,136 @@
 ;;;118    	switch(*ptr_free)
 ;;;119    	{
 ;;;120    		case MEM_16B_COL: 
-;;;121    			return OSMemPut(pMemBuf_16B,ptr_free);
-;;;122    		case MEM_32B_COL: 
-;;;123    			return OSMemPut(pMemBuf_32B,ptr_free);
-;;;124    		case MEM_64B_COL: 
-;;;125    			return OSMemPut(pMemBuf_64B,ptr_free);
-;;;126    		case MEM_128B_COL: 
-;;;127    			return OSMemPut(pMemBuf_128B,ptr_free);
-;;;128    		case MEM_256B_COL: 
-;;;129    			return OSMemPut(pMemBuf_256B,ptr_free);
-;;;130    		case MEM_512B_COL: 
-;;;131    			return OSMemPut(pMemBuf_512B,ptr_free);
-;;;132    		case MEM_1KB_COL: 
-;;;133    			return OSMemPut(pMemBuf_1KB,ptr_free);
-;;;134    		default :
-;;;135    			return 255;
-;;;136    	}
-;;;137    }
+;;;121    			memset(ptr_free,0,MEM_16B_COL);
+;;;122    			return OSMemPut(pMemBuf_16B,ptr_free);
+;;;123    		case MEM_32B_COL: 
+;;;124    			memset(ptr_free,0,MEM_32B_COL);
+;;;125    			return OSMemPut(pMemBuf_32B,ptr_free);
+;;;126    		case MEM_64B_COL: 
+;;;127    			memset(ptr_free,0,MEM_64B_COL);
+;;;128    			return OSMemPut(pMemBuf_64B,ptr_free);
+;;;129    		case MEM_128B_COL: 
+;;;130    			memset(ptr_free,0,MEM_128B_COL);
+;;;131    			return OSMemPut(pMemBuf_128B,ptr_free);
+;;;132    		case MEM_256B_COL: 
+;;;133    			memset(ptr_free,0,MEM_256B_COL);
+;;;134    			return OSMemPut(pMemBuf_256B,ptr_free);
+;;;135    		case MEM_512B_COL: 
+;;;136    			memset(ptr_free,0,MEM_512B_COL);
+;;;137    			return OSMemPut(pMemBuf_512B,ptr_free);
+;;;138    		case MEM_1KB_COL: 
+;;;139    			memset(ptr_free,0,MEM_1KB_COL);
+;;;140    			return OSMemPut(pMemBuf_1KB,ptr_free);
+;;;141    		default :
+;;;142    			return 255;
+;;;143    	}
+;;;144    }
 00000a  bd70              POP      {r4-r6,pc}
                   |L2.12|
 00000c  1ea4              SUBS     r4,r4,#2              ;117
 00000e  8820              LDRH     r0,[r4,#0]            ;118
 000010  2882              CMP      r0,#0x82              ;118
-000012  d023              BEQ      |L2.92|
+000012  d02f              BEQ      |L2.116|
 000014  dc06              BGT      |L2.36|
 000016  2812              CMP      r0,#0x12              ;118
 000018  d00e              BEQ      |L2.56|
 00001a  2822              CMP      r0,#0x22              ;118
-00001c  d012              BEQ      |L2.68|
+00001c  d016              BEQ      |L2.76|
 00001e  2842              CMP      r0,#0x42              ;118
-000020  d134              BNE      |L2.140|
-000022  e015              B        |L2.80|
+000020  d154              BNE      |L2.204|
+000022  e01d              B        |L2.96|
                   |L2.36|
 000024  f5b07f81          CMP      r0,#0x102             ;118
-000028  d01e              BEQ      |L2.104|
+000028  d02e              BEQ      |L2.136|
 00002a  f2a02002          SUB      r0,r0,#0x202          ;118
-00002e  b308              CBZ      r0,|L2.116|
+00002e  b3b0              CBZ      r0,|L2.158|
 000030  f5b07f00          CMP      r0,#0x200             ;118
-000034  d12a              BNE      |L2.140|
-000036  e023              B        |L2.128|
+000034  d14a              BNE      |L2.204|
+000036  e03e              B        |L2.182|
                   |L2.56|
-000038  4621              MOV      r1,r4                 ;121
-00003a  4815              LDR      r0,|L2.144|
-00003c  6800              LDR      r0,[r0,#0]            ;121  ; pMemBuf_16B
-00003e  f7fffffe          BL       OSMemPut
-000042  e7e2              B        |L2.10|
-                  |L2.68|
-000044  4621              MOV      r1,r4                 ;123
-000046  4813              LDR      r0,|L2.148|
-000048  6800              LDR      r0,[r0,#0]            ;123  ; pMemBuf_32B
-00004a  f7fffffe          BL       OSMemPut
-00004e  e7dc              B        |L2.10|
-                  |L2.80|
-000050  4621              MOV      r1,r4                 ;125
-000052  4811              LDR      r0,|L2.152|
-000054  6800              LDR      r0,[r0,#0]            ;125  ; pMemBuf_64B
-000056  f7fffffe          BL       OSMemPut
-00005a  e7d6              B        |L2.10|
-                  |L2.92|
-00005c  4621              MOV      r1,r4                 ;127
-00005e  480f              LDR      r0,|L2.156|
-000060  6800              LDR      r0,[r0,#0]            ;127  ; pMemBuf_128B
-000062  f7fffffe          BL       OSMemPut
-000066  e7d0              B        |L2.10|
-                  |L2.104|
-000068  4621              MOV      r1,r4                 ;129
-00006a  480d              LDR      r0,|L2.160|
-00006c  6800              LDR      r0,[r0,#0]            ;129  ; pMemBuf_256B
+000038  2112              MOVS     r1,#0x12              ;121
+00003a  4620              MOV      r0,r4                 ;121
+00003c  f7fffffe          BL       __aeabi_memclr
+000040  4621              MOV      r1,r4                 ;122
+000042  4823              LDR      r0,|L2.208|
+000044  6800              LDR      r0,[r0,#0]            ;122  ; pMemBuf_16B
+000046  f7fffffe          BL       OSMemPut
+00004a  e7de              B        |L2.10|
+                  |L2.76|
+00004c  2122              MOVS     r1,#0x22              ;124
+00004e  4620              MOV      r0,r4                 ;124
+000050  f7fffffe          BL       __aeabi_memclr
+000054  4621              MOV      r1,r4                 ;125
+000056  481f              LDR      r0,|L2.212|
+000058  6800              LDR      r0,[r0,#0]            ;125  ; pMemBuf_32B
+00005a  f7fffffe          BL       OSMemPut
+00005e  e7d4              B        |L2.10|
+                  |L2.96|
+000060  2142              MOVS     r1,#0x42              ;127
+000062  4620              MOV      r0,r4                 ;127
+000064  f7fffffe          BL       __aeabi_memclr
+000068  4621              MOV      r1,r4                 ;128
+00006a  481b              LDR      r0,|L2.216|
+00006c  6800              LDR      r0,[r0,#0]            ;128  ; pMemBuf_64B
 00006e  f7fffffe          BL       OSMemPut
 000072  e7ca              B        |L2.10|
                   |L2.116|
-000074  4621              MOV      r1,r4                 ;131
-000076  480b              LDR      r0,|L2.164|
-000078  6800              LDR      r0,[r0,#0]            ;131  ; pMemBuf_512B
-00007a  f7fffffe          BL       OSMemPut
-00007e  e7c4              B        |L2.10|
-                  |L2.128|
-000080  4621              MOV      r1,r4                 ;133
-000082  4809              LDR      r0,|L2.168|
-000084  6800              LDR      r0,[r0,#0]            ;133  ; pMemBuf_1KB
-000086  f7fffffe          BL       OSMemPut
-00008a  e7be              B        |L2.10|
-                  |L2.140|
-00008c  20ff              MOVS     r0,#0xff              ;135
-00008e  e7bc              B        |L2.10|
-;;;138    /****************************************************************
+000074  2182              MOVS     r1,#0x82              ;130
+000076  4620              MOV      r0,r4                 ;130
+000078  f7fffffe          BL       __aeabi_memclr
+00007c  4621              MOV      r1,r4                 ;131
+00007e  4817              LDR      r0,|L2.220|
+000080  6800              LDR      r0,[r0,#0]            ;131  ; pMemBuf_128B
+000082  f7fffffe          BL       OSMemPut
+000086  e7c0              B        |L2.10|
+                  |L2.136|
+000088  f44f7181          MOV      r1,#0x102             ;133
+00008c  4620              MOV      r0,r4                 ;133
+00008e  f7fffffe          BL       __aeabi_memclr
+000092  4621              MOV      r1,r4                 ;134
+000094  4812              LDR      r0,|L2.224|
+000096  6800              LDR      r0,[r0,#0]            ;134  ; pMemBuf_256B
+000098  f7fffffe          BL       OSMemPut
+00009c  e7b5              B        |L2.10|
+                  |L2.158|
+00009e  e7ff              B        |L2.160|
+                  |L2.160|
+0000a0  f2402102          MOV      r1,#0x202             ;136
+0000a4  4620              MOV      r0,r4                 ;136
+0000a6  f7fffffe          BL       __aeabi_memclr
+0000aa  4621              MOV      r1,r4                 ;137
+0000ac  480d              LDR      r0,|L2.228|
+0000ae  6800              LDR      r0,[r0,#0]            ;137  ; pMemBuf_512B
+0000b0  f7fffffe          BL       OSMemPut
+0000b4  e7a9              B        |L2.10|
+                  |L2.182|
+0000b6  f2404102          MOV      r1,#0x402             ;139
+0000ba  4620              MOV      r0,r4                 ;139
+0000bc  f7fffffe          BL       __aeabi_memclr
+0000c0  4621              MOV      r1,r4                 ;140
+0000c2  4809              LDR      r0,|L2.232|
+0000c4  6800              LDR      r0,[r0,#0]            ;140  ; pMemBuf_1KB
+0000c6  f7fffffe          BL       OSMemPut
+0000ca  e79e              B        |L2.10|
+                  |L2.204|
+0000cc  20ff              MOVS     r0,#0xff              ;142
+0000ce  e79c              B        |L2.10|
+;;;145    /****************************************************************
                           ENDP
 
-                  |L2.144|
+                  |L2.208|
                           DCD      pMemBuf_16B
-                  |L2.148|
+                  |L2.212|
                           DCD      pMemBuf_32B
-                  |L2.152|
+                  |L2.216|
                           DCD      pMemBuf_64B
-                  |L2.156|
+                  |L2.220|
                           DCD      pMemBuf_128B
-                  |L2.160|
+                  |L2.224|
                           DCD      pMemBuf_256B
-                  |L2.164|
+                  |L2.228|
                           DCD      pMemBuf_512B
-                  |L2.168|
+                  |L2.232|
                           DCD      pMemBuf_1KB
 
                           AREA ||i.Mem_malloc||, CODE, READONLY, ALIGN=2
@@ -503,11 +533,11 @@
                           AREA ||.bss||, DATA, NOINIT, ALIGN=0
 
                   MemBuf_16B
-                          %        1080
+                          %        1800
                   MemBuf_32B
-                          %        2040
+                          %        3400
                   MemBuf_64B
-                          %        5280
+                          %        6600
                   MemBuf_128B
                           %        2600
                   MemBuf_256B
@@ -515,7 +545,7 @@
                   MemBuf_512B
                           %        5140
                   MemBuf_1KB
-                          %        6156
+                          %        12312
 
                           AREA ||.data||, DATA, ALIGN=2
 

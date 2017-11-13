@@ -78,77 +78,77 @@
                           AREA ||i.TIM2_IRQHandler||, CODE, READONLY, ALIGN=2
 
                   TIM2_IRQHandler PROC
-;;;84     uint8_t *ptrGPSRece = NULL;
-;;;85     void TIM2_IRQHandler(void)
+;;;85     
+;;;86     void TIM2_IRQHandler(void)
 000000  b510              PUSH     {r4,lr}
-;;;86     {
-;;;87     	OSIntEnter();//系统进入中断服务程序
+;;;87     {
+;;;88     	OSIntEnter();//系统进入中断服务程序
 000002  f7fffffe          BL       OSIntEnter
-;;;88     	
-;;;89     	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)  //检查TIM2更新中断发生与否
+;;;89     	
+;;;90     	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)  //检查TIM2更新中断发生与否
 000006  2101              MOVS     r1,#1
 000008  0788              LSLS     r0,r1,#30
 00000a  f7fffffe          BL       TIM_GetITStatus
 00000e  2800              CMP      r0,#0
 000010  d04f              BEQ      |L2.178|
-;;;90     	{
-;;;91     		TIM_ClearITPendingBit(TIM2, TIM_IT_Update  );  //清除TIMx更新中断标志 
+;;;91     	{
+;;;92     		TIM_ClearITPendingBit(TIM2, TIM_IT_Update  );  //清除TIMx更新中断标志 
 000012  2101              MOVS     r1,#1
 000014  0788              LSLS     r0,r1,#30
 000016  f7fffffe          BL       TIM_ClearITPendingBit
-;;;92     		rxGPSTimeOut ++;
+;;;93     		rxGPSTimeOut ++;
 00001a  4827              LDR      r0,|L2.184|
 00001c  7800              LDRB     r0,[r0,#0]  ; rxGPSTimeOut
 00001e  1c40              ADDS     r0,r0,#1
 000020  4925              LDR      r1,|L2.184|
 000022  7008              STRB     r0,[r1,#0]
-;;;93     		if(rxGPSTimeOut > 10)//10ms 接收超时
+;;;94     		if(rxGPSTimeOut > 10)//10ms 接收超时
 000024  4608              MOV      r0,r1
 000026  7800              LDRB     r0,[r0,#0]  ; rxGPSTimeOut
 000028  280a              CMP      r0,#0xa
 00002a  dd42              BLE      |L2.178|
-;;;94     		{
-;;;95     			rxGPSTimeOut = 0;
+;;;95     		{
+;;;96     			rxGPSTimeOut = 0;
 00002c  2000              MOVS     r0,#0
 00002e  7008              STRB     r0,[r1,#0]
-;;;96     			receGPSLen = Store_Getlength(receGPS_S);
+;;;97     			receGPSLen = Store_Getlength(receGPS_S);
 000030  4822              LDR      r0,|L2.188|
 000032  6800              LDR      r0,[r0,#0]  ; receGPS_S
 000034  f7fffffe          BL       Store_Getlength
 000038  4921              LDR      r1,|L2.192|
 00003a  8008              STRH     r0,[r1,#0]
-;;;97     			
-;;;98     			if(receGPSLen>2 )
+;;;98     			
+;;;99     			if(receGPSLen>2 )
 00003c  4608              MOV      r0,r1
 00003e  8800              LDRH     r0,[r0,#0]  ; receGPSLen
 000040  2802              CMP      r0,#2
 000042  dd2d              BLE      |L2.160|
-;;;99     			{
-;;;100    				ptrGPSRece = Mem_malloc(receGPSLen+2);
+;;;100    			{
+;;;101    				ptrGPSRece = Mem_malloc(receGPSLen+2);				
 000044  8809              LDRH     r1,[r1,#0]  ; receGPSLen
 000046  1c89              ADDS     r1,r1,#2
 000048  b288              UXTH     r0,r1
 00004a  f7fffffe          BL       Mem_malloc
 00004e  491d              LDR      r1,|L2.196|
 000050  6008              STR      r0,[r1,#0]  ; ptrGPSRece
-;;;101    				if(ptrGPSRece != NULL)
+;;;102    				if(ptrGPSRece != NULL)
 000052  4608              MOV      r0,r1
 000054  6800              LDR      r0,[r0,#0]  ; ptrGPSRece
 000056  b1f0              CBZ      r0,|L2.150|
-;;;102    				{
-;;;103    					ptrGPSRece[0] = (receGPSLen>>8)&0xff;
+;;;103    				{
+;;;104    					ptrGPSRece[0] = (receGPSLen>>8)&0xff;
 000058  4819              LDR      r0,|L2.192|
 00005a  8800              LDRH     r0,[r0,#0]  ; receGPSLen
 00005c  0a00              LSRS     r0,r0,#8
 00005e  6809              LDR      r1,[r1,#0]  ; ptrGPSRece
 000060  7008              STRB     r0,[r1,#0]
-;;;104    					ptrGPSRece[1] = receGPSLen&0xff;
+;;;105    					ptrGPSRece[1] = receGPSLen&0xff;
 000062  4817              LDR      r0,|L2.192|
 000064  7800              LDRB     r0,[r0,#0]  ; receGPSLen
 000066  4917              LDR      r1,|L2.196|
 000068  6809              LDR      r1,[r1,#0]  ; ptrGPSRece
 00006a  7048              STRB     r0,[r1,#1]
-;;;105    					Store_Getdates(receGPS_S,&ptrGPSRece[2],receGPSLen);
+;;;106    					Store_Getdates(receGPS_S,&ptrGPSRece[2],receGPSLen);
 00006c  4814              LDR      r0,|L2.192|
 00006e  7802              LDRB     r2,[r0,#0]  ; receGPSLen
 000070  4814              LDR      r0,|L2.196|
@@ -157,46 +157,46 @@
 000076  4811              LDR      r0,|L2.188|
 000078  6800              LDR      r0,[r0,#0]  ; receGPS_S
 00007a  f7fffffe          BL       Store_Getdates
-;;;106    					if(OSQPost(receGPSQ,ptrGPSRece)!=OS_ERR_NONE)
+;;;107    					if(OSQPost(receGPSQ,ptrGPSRece)!=OS_ERR_NONE)
 00007e  4811              LDR      r0,|L2.196|
 000080  6801              LDR      r1,[r0,#0]  ; ptrGPSRece
 000082  4811              LDR      r0,|L2.200|
 000084  6800              LDR      r0,[r0,#0]  ; receGPSQ
 000086  f7fffffe          BL       OSQPost
 00008a  b168              CBZ      r0,|L2.168|
-;;;107    						Mem_free(ptrGPSRece);
+;;;108    						Mem_free(ptrGPSRece);
 00008c  480d              LDR      r0,|L2.196|
 00008e  6800              LDR      r0,[r0,#0]  ; ptrGPSRece
 000090  f7fffffe          BL       Mem_free
 000094  e008              B        |L2.168|
                   |L2.150|
-;;;108    				}
-;;;109    				else
-;;;110    					Store_Clear(receGPS_S);
+;;;109    				}
+;;;110    				else
+;;;111    					Store_Clear(receGPS_S);
 000096  4809              LDR      r0,|L2.188|
 000098  6800              LDR      r0,[r0,#0]  ; receGPS_S
 00009a  f7fffffe          BL       Store_Clear
 00009e  e003              B        |L2.168|
                   |L2.160|
-;;;111    			}
-;;;112    			else
-;;;113    				Store_Clear(receGPS_S);
+;;;112    			}
+;;;113    			else
+;;;114    				Store_Clear(receGPS_S);
 0000a0  4806              LDR      r0,|L2.188|
 0000a2  6800              LDR      r0,[r0,#0]  ; receGPS_S
 0000a4  f7fffffe          BL       Store_Clear
                   |L2.168|
-;;;114    			TIM_Cmd(TIM2, DISABLE);
+;;;115    			TIM_Cmd(TIM2, DISABLE);
 0000a8  2100              MOVS     r1,#0
 0000aa  f04f4080          MOV      r0,#0x40000000
 0000ae  f7fffffe          BL       TIM_Cmd
                   |L2.178|
-;;;115    		}
-;;;116    	}
-;;;117    	OSIntExit();  //中断服务结束，系统进行任务调度
+;;;116    		}
+;;;117    	}
+;;;118    	OSIntExit();  //中断服务结束，系统进行任务调度
 0000b2  f7fffffe          BL       OSIntExit
-;;;118    }
+;;;119    }
 0000b6  bd10              POP      {r4,pc}
-;;;119    
+;;;120    
                           ENDP
 
                   |L2.184|

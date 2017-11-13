@@ -118,18 +118,25 @@ uint8_t Mem_free(void *ptr)
 	switch(*ptr_free)
 	{
 		case MEM_16B_COL: 
+			memset(ptr_free,0,MEM_16B_COL);
 			return OSMemPut(pMemBuf_16B,ptr_free);
 		case MEM_32B_COL: 
+			memset(ptr_free,0,MEM_32B_COL);
 			return OSMemPut(pMemBuf_32B,ptr_free);
 		case MEM_64B_COL: 
+			memset(ptr_free,0,MEM_64B_COL);
 			return OSMemPut(pMemBuf_64B,ptr_free);
 		case MEM_128B_COL: 
+			memset(ptr_free,0,MEM_128B_COL);
 			return OSMemPut(pMemBuf_128B,ptr_free);
 		case MEM_256B_COL: 
+			memset(ptr_free,0,MEM_256B_COL);
 			return OSMemPut(pMemBuf_256B,ptr_free);
 		case MEM_512B_COL: 
+			memset(ptr_free,0,MEM_512B_COL);
 			return OSMemPut(pMemBuf_512B,ptr_free);
 		case MEM_1KB_COL: 
+			memset(ptr_free,0,MEM_1KB_COL);
 			return OSMemPut(pMemBuf_1KB,ptr_free);
 		default :
 			return 255;

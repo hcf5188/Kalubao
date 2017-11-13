@@ -516,6 +516,11 @@
               <FileType>1</FileType>
               <FilePath>..\DEAL\crcCompute.c</FilePath>
             </File>
+            <File>
+              <FileName>varDeal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DEAL\varDeal.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -140,7 +140,7 @@
 00002c  d103              BNE      |L1.54|
 00002e  4842              LDR      r0,|L1.312|
 000030  6800              LDR      r0,[r0,#0]            ;90  ; OSTCBCur
-000032  f8909032          LDRB     r9,[r0,#0x32]         ;90
+000032  f890902a          LDRB     r9,[r0,#0x2a]         ;90
                   |L1.54|
 000036  483f              LDR      r0,|L1.308|
 000038  f8504029          LDR      r4,[r0,r9,LSL #2]     ;92
@@ -172,11 +172,11 @@
 000076  f8410029          STR      r0,[r1,r9,LSL #2]     ;111
 00007a  4608              MOV      r0,r1                 ;112
 00007c  f8404028          STR      r4,[r0,r8,LSL #2]     ;112
-000080  f8146f34          LDRB     r6,[r4,#0x34]!        ;113
+000080  f8146f2c          LDRB     r6,[r4,#0x2c]!        ;113
 000084  78a0              LDRB     r0,[r4,#2]            ;114
 000086  9002              STR      r0,[sp,#8]            ;114
 000088  7860              LDRB     r0,[r4,#1]            ;115
-00008a  3c34              SUBS     r4,r4,#0x34           ;115
+00008a  3c2c              SUBS     r4,r4,#0x2c           ;115
 00008c  9001              STR      r0,[sp,#4]            ;115
 00008e  482b              LDR      r0,|L1.316|
 000090  5d81              LDRB     r1,[r0,r6]            ;116
@@ -235,12 +235,12 @@
 000102  f105010b          ADD      r1,r5,#0xb            ;133
 000106  55c8              STRB     r0,[r1,r7]            ;133
                   |L1.264|
-000108  f8848032          STRB     r8,[r4,#0x32]         ;153
-00010c  f8847034          STRB     r7,[r4,#0x34]         ;154
+000108  f884802a          STRB     r8,[r4,#0x2a]         ;153
+00010c  f884702c          STRB     r7,[r4,#0x2c]         ;154
 000110  9803              LDR      r0,[sp,#0xc]          ;155
-000112  f8840033          STRB     r0,[r4,#0x33]         ;155
-000116  f884a036          STRB     r10,[r4,#0x36]        ;156
-00011a  f884b035          STRB     r11,[r4,#0x35]        ;157
+000112  f884002b          STRB     r0,[r4,#0x2b]         ;155
+000116  f884a02e          STRB     r10,[r4,#0x2e]        ;156
+00011a  f884b02d          STRB     r11,[r4,#0x2d]        ;157
 00011e  9800              LDR      r0,[sp,#0]            ;158
 000120  f7fffffe          BL       OS_CPU_SR_Restore
 000124  4807              LDR      r0,|L1.324|
@@ -545,27 +545,27 @@
                   OSTaskDel PROC
 ;;;426    #if OS_TASK_DEL_EN > 0u
 ;;;427    INT8U  OSTaskDel (INT8U prio)
-000000  e92d41f0          PUSH     {r4-r8,lr}
+000000  b570              PUSH     {r4-r6,lr}
 ;;;428    {
-000004  4605              MOV      r5,r0
+000002  4605              MOV      r5,r0
 ;;;429    #if (OS_FLAG_EN > 0u) && (OS_MAX_FLAGS > 0u)
 ;;;430        OS_FLAG_NODE *pnode;
 ;;;431    #endif
 ;;;432        OS_TCB       *ptcb;
 ;;;433    #if OS_CRITICAL_METHOD == 3u                            /* Allocate storage for CPU status register    */
 ;;;434        OS_CPU_SR     cpu_sr = 0u;
-000006  2700              MOVS     r7,#0
+000004  2600              MOVS     r6,#0
 ;;;435    #endif
 ;;;436    
 ;;;437    
 ;;;438    
 ;;;439        if (OSIntNesting > 0u) {                            /* See if trying to delete from ISR            */
-000008  4847              LDR      r0,|L4.296|
-00000a  7800              LDRB     r0,[r0,#0]  ; OSIntNesting
-00000c  b110              CBZ      r0,|L4.20|
+000006  4844              LDR      r0,|L4.280|
+000008  7800              LDRB     r0,[r0,#0]  ; OSIntNesting
+00000a  b108              CBZ      r0,|L4.16|
 ;;;440            return (OS_ERR_TASK_DEL_ISR);
-00000e  2040              MOVS     r0,#0x40
-                  |L4.16|
+00000c  2040              MOVS     r0,#0x40
+                  |L4.14|
 ;;;441        }
 ;;;442        if (prio == OS_TASK_IDLE_PRIO) {                    /* Not allowed to delete idle task             */
 ;;;443            return (OS_ERR_TASK_DEL_IDLE);
@@ -649,163 +649,157 @@
 ;;;521        }
 ;;;522        return (OS_ERR_NONE);
 ;;;523    }
-000010  e8bd81f0          POP      {r4-r8,pc}
-                  |L4.20|
-000014  2d3f              CMP      r5,#0x3f              ;442
-000016  d101              BNE      |L4.28|
-000018  203e              MOVS     r0,#0x3e              ;443
-00001a  e7f9              B        |L4.16|
-                  |L4.28|
-00001c  f7fffffe          BL       OS_CPU_SR_Save
-000020  4607              MOV      r7,r0                 ;454
-000022  2dff              CMP      r5,#0xff              ;455
-000024  d103              BNE      |L4.46|
-000026  4841              LDR      r0,|L4.300|
-000028  6800              LDR      r0,[r0,#0]            ;456  ; OSTCBCur
-00002a  f8905032          LDRB     r5,[r0,#0x32]         ;456
-                  |L4.46|
-00002e  4840              LDR      r0,|L4.304|
-000030  f8504025          LDR      r4,[r0,r5,LSL #2]     ;458
-000034  b924              CBNZ     r4,|L4.64|
-000036  4638              MOV      r0,r7                 ;460
-000038  f7fffffe          BL       OS_CPU_SR_Restore
-00003c  2043              MOVS     r0,#0x43              ;461
-00003e  e7e7              B        |L4.16|
-                  |L4.64|
-000040  2c01              CMP      r4,#1                 ;463
-000042  d104              BNE      |L4.78|
-000044  4638              MOV      r0,r7                 ;464
-000046  f7fffffe          BL       OS_CPU_SR_Restore
-00004a  203d              MOVS     r0,#0x3d              ;465
-00004c  e7e0              B        |L4.16|
-                  |L4.78|
-00004e  f8140f34          LDRB     r0,[r4,#0x34]!        ;468
-000052  4938              LDR      r1,|L4.308|
-000054  5c08              LDRB     r0,[r1,r0]            ;468
-000056  7861              LDRB     r1,[r4,#1]            ;468
-000058  4388              BICS     r0,r0,r1              ;468
-00005a  7821              LDRB     r1,[r4,#0]            ;468
-00005c  4a35              LDR      r2,|L4.308|
-00005e  5450              STRB     r0,[r2,r1]            ;468
-000060  f8140934          LDRB     r0,[r4],#-0x34        ;469
-000064  4611              MOV      r1,r2                 ;469
-000066  5c08              LDRB     r0,[r1,r0]            ;469
-000068  b930              CBNZ     r0,|L4.120|
-00006a  f8941036          LDRB     r1,[r4,#0x36]         ;470
-00006e  4832              LDR      r0,|L4.312|
-000070  7800              LDRB     r0,[r0,#0]            ;470  ; OSRdyGrp
-000072  4388              BICS     r0,r0,r1              ;470
-000074  4930              LDR      r1,|L4.312|
-000076  7008              STRB     r0,[r1,#0]            ;470
-                  |L4.120|
-000078  69e0              LDR      r0,[r4,#0x1c]         ;474
-00007a  b118              CBZ      r0,|L4.132|
-00007c  4620              MOV      r0,r4                 ;475
-00007e  69e1              LDR      r1,[r4,#0x1c]         ;475
-000080  f7fffffe          BL       OS_EventTaskRemove
-                  |L4.132|
-000084  6a66              LDR      r6,[r4,#0x24]         ;485
-000086  b116              CBZ      r6,|L4.142|
-000088  4630              MOV      r0,r6                 ;487
-00008a  f7fffffe          BL       OS_FlagUnlink
-                  |L4.142|
-00008e  2000              MOVS     r0,#0                 ;491
-000090  62e0              STR      r0,[r4,#0x2c]         ;491
-000092  f8840030          STRB     r0,[r4,#0x30]         ;492
-000096  f8840031          STRB     r0,[r4,#0x31]         ;493
-00009a  4828              LDR      r0,|L4.316|
-00009c  7800              LDRB     r0,[r0,#0]            ;494  ; OSLockNesting
-00009e  28ff              CMP      r0,#0xff              ;494
-0000a0  d204              BCS      |L4.172|
-0000a2  4826              LDR      r0,|L4.316|
-0000a4  7800              LDRB     r0,[r0,#0]            ;495  ; OSLockNesting
-0000a6  1c40              ADDS     r0,r0,#1              ;495
-0000a8  4924              LDR      r1,|L4.316|
-0000aa  7008              STRB     r0,[r1,#0]            ;495
-                  |L4.172|
-0000ac  4638              MOV      r0,r7                 ;497
-0000ae  f7fffffe          BL       OS_CPU_SR_Restore
-0000b2  f7fffffe          BL       OS_Dummy
-0000b6  f7fffffe          BL       OS_CPU_SR_Save
-0000ba  4607              MOV      r7,r0                 ;499
-0000bc  481f              LDR      r0,|L4.316|
-0000be  7800              LDRB     r0,[r0,#0]            ;500  ; OSLockNesting
-0000c0  b120              CBZ      r0,|L4.204|
-0000c2  481e              LDR      r0,|L4.316|
-0000c4  7800              LDRB     r0,[r0,#0]            ;501  ; OSLockNesting
-0000c6  1e40              SUBS     r0,r0,#1              ;501
-0000c8  491c              LDR      r1,|L4.316|
-0000ca  7008              STRB     r0,[r1,#0]            ;501
-                  |L4.204|
-0000cc  4620              MOV      r0,r4                 ;503
-0000ce  f7fffffe          BL       OSTaskDelHook
-0000d2  481b              LDR      r0,|L4.320|
-0000d4  7800              LDRB     r0,[r0,#0]            ;504  ; OSTaskCtr
-0000d6  1e40              SUBS     r0,r0,#1              ;504
-0000d8  4919              LDR      r1,|L4.320|
-0000da  7008              STRB     r0,[r1,#0]            ;504
-0000dc  2000              MOVS     r0,#0                 ;505
-0000de  4914              LDR      r1,|L4.304|
-0000e0  f8410025          STR      r0,[r1,r5,LSL #2]     ;505
-0000e4  69a0              LDR      r0,[r4,#0x18]         ;506
-0000e6  b930              CBNZ     r0,|L4.246|
-0000e8  2000              MOVS     r0,#0                 ;507
-0000ea  6961              LDR      r1,[r4,#0x14]         ;507
-0000ec  6188              STR      r0,[r1,#0x18]         ;507
-0000ee  4915              LDR      r1,|L4.324|
-0000f0  6960              LDR      r0,[r4,#0x14]         ;508
-0000f2  6008              STR      r0,[r1,#0]            ;508  ; OSTCBList
-0000f4  e005              B        |L4.258|
-                  |L4.246|
-0000f6  e9d40105          LDRD     r0,r1,[r4,#0x14]      ;510
-0000fa  6148              STR      r0,[r1,#0x14]         ;510
-0000fc  e9d41005          LDRD     r1,r0,[r4,#0x14]      ;511
-000100  6188              STR      r0,[r1,#0x18]         ;511
-                  |L4.258|
-000102  4811              LDR      r0,|L4.328|
-000104  6800              LDR      r0,[r0,#0]            ;513  ; OSTCBFreeList
-000106  6160              STR      r0,[r4,#0x14]         ;513
-000108  480f              LDR      r0,|L4.328|
-00010a  6004              STR      r4,[r0,#0]            ;514  ; OSTCBFreeList
-00010c  a00f              ADR      r0,|L4.332|
-00010e  64e0              STR      r0,[r4,#0x4c]         ;516
-000110  4638              MOV      r0,r7                 ;518
-000112  f7fffffe          BL       OS_CPU_SR_Restore
-000116  480e              LDR      r0,|L4.336|
-000118  7800              LDRB     r0,[r0,#0]            ;519  ; OSRunning
-00011a  2801              CMP      r0,#1                 ;519
-00011c  d101              BNE      |L4.290|
-00011e  f7fffffe          BL       OS_Sched
-                  |L4.290|
-000122  2000              MOVS     r0,#0                 ;522
-000124  e774              B        |L4.16|
+00000e  bd70              POP      {r4-r6,pc}
+                  |L4.16|
+000010  2d3f              CMP      r5,#0x3f              ;442
+000012  d101              BNE      |L4.24|
+000014  203e              MOVS     r0,#0x3e              ;443
+000016  e7fa              B        |L4.14|
+                  |L4.24|
+000018  f7fffffe          BL       OS_CPU_SR_Save
+00001c  4606              MOV      r6,r0                 ;454
+00001e  2dff              CMP      r5,#0xff              ;455
+000020  d103              BNE      |L4.42|
+000022  483e              LDR      r0,|L4.284|
+000024  6800              LDR      r0,[r0,#0]            ;456  ; OSTCBCur
+000026  f890502a          LDRB     r5,[r0,#0x2a]         ;456
+                  |L4.42|
+00002a  483d              LDR      r0,|L4.288|
+00002c  f8504025          LDR      r4,[r0,r5,LSL #2]     ;458
+000030  b924              CBNZ     r4,|L4.60|
+000032  4630              MOV      r0,r6                 ;460
+000034  f7fffffe          BL       OS_CPU_SR_Restore
+000038  2043              MOVS     r0,#0x43              ;461
+00003a  e7e8              B        |L4.14|
+                  |L4.60|
+00003c  2c01              CMP      r4,#1                 ;463
+00003e  d104              BNE      |L4.74|
+000040  4630              MOV      r0,r6                 ;464
+000042  f7fffffe          BL       OS_CPU_SR_Restore
+000046  203d              MOVS     r0,#0x3d              ;465
+000048  e7e1              B        |L4.14|
+                  |L4.74|
+00004a  f8140f2c          LDRB     r0,[r4,#0x2c]!        ;468
+00004e  4935              LDR      r1,|L4.292|
+000050  5c08              LDRB     r0,[r1,r0]            ;468
+000052  7861              LDRB     r1,[r4,#1]            ;468
+000054  4388              BICS     r0,r0,r1              ;468
+000056  7821              LDRB     r1,[r4,#0]            ;468
+000058  4a32              LDR      r2,|L4.292|
+00005a  5450              STRB     r0,[r2,r1]            ;468
+00005c  f814092c          LDRB     r0,[r4],#-0x2c        ;469
+000060  4611              MOV      r1,r2                 ;469
+000062  5c08              LDRB     r0,[r1,r0]            ;469
+000064  b930              CBNZ     r0,|L4.116|
+000066  f894102e          LDRB     r1,[r4,#0x2e]         ;470
+00006a  482f              LDR      r0,|L4.296|
+00006c  7800              LDRB     r0,[r0,#0]            ;470  ; OSRdyGrp
+00006e  4388              BICS     r0,r0,r1              ;470
+000070  492d              LDR      r1,|L4.296|
+000072  7008              STRB     r0,[r1,#0]            ;470
+                  |L4.116|
+000074  69e0              LDR      r0,[r4,#0x1c]         ;474
+000076  b118              CBZ      r0,|L4.128|
+000078  4620              MOV      r0,r4                 ;475
+00007a  69e1              LDR      r1,[r4,#0x1c]         ;475
+00007c  f7fffffe          BL       OS_EventTaskRemove
+                  |L4.128|
+000080  2000              MOVS     r0,#0                 ;491
+000082  6260              STR      r0,[r4,#0x24]         ;491
+000084  f8840028          STRB     r0,[r4,#0x28]         ;492
+000088  f8840029          STRB     r0,[r4,#0x29]         ;493
+00008c  4827              LDR      r0,|L4.300|
+00008e  7800              LDRB     r0,[r0,#0]            ;494  ; OSLockNesting
+000090  28ff              CMP      r0,#0xff              ;494
+000092  d204              BCS      |L4.158|
+000094  4825              LDR      r0,|L4.300|
+000096  7800              LDRB     r0,[r0,#0]            ;495  ; OSLockNesting
+000098  1c40              ADDS     r0,r0,#1              ;495
+00009a  4924              LDR      r1,|L4.300|
+00009c  7008              STRB     r0,[r1,#0]            ;495
+                  |L4.158|
+00009e  4630              MOV      r0,r6                 ;497
+0000a0  f7fffffe          BL       OS_CPU_SR_Restore
+0000a4  f7fffffe          BL       OS_Dummy
+0000a8  f7fffffe          BL       OS_CPU_SR_Save
+0000ac  4606              MOV      r6,r0                 ;499
+0000ae  481f              LDR      r0,|L4.300|
+0000b0  7800              LDRB     r0,[r0,#0]            ;500  ; OSLockNesting
+0000b2  b120              CBZ      r0,|L4.190|
+0000b4  481d              LDR      r0,|L4.300|
+0000b6  7800              LDRB     r0,[r0,#0]            ;501  ; OSLockNesting
+0000b8  1e40              SUBS     r0,r0,#1              ;501
+0000ba  491c              LDR      r1,|L4.300|
+0000bc  7008              STRB     r0,[r1,#0]            ;501
+                  |L4.190|
+0000be  4620              MOV      r0,r4                 ;503
+0000c0  f7fffffe          BL       OSTaskDelHook
+0000c4  481a              LDR      r0,|L4.304|
+0000c6  7800              LDRB     r0,[r0,#0]            ;504  ; OSTaskCtr
+0000c8  1e40              SUBS     r0,r0,#1              ;504
+0000ca  4919              LDR      r1,|L4.304|
+0000cc  7008              STRB     r0,[r1,#0]            ;504
+0000ce  2000              MOVS     r0,#0                 ;505
+0000d0  4913              LDR      r1,|L4.288|
+0000d2  f8410025          STR      r0,[r1,r5,LSL #2]     ;505
+0000d6  69a0              LDR      r0,[r4,#0x18]         ;506
+0000d8  b930              CBNZ     r0,|L4.232|
+0000da  2000              MOVS     r0,#0                 ;507
+0000dc  6961              LDR      r1,[r4,#0x14]         ;507
+0000de  6188              STR      r0,[r1,#0x18]         ;507
+0000e0  4914              LDR      r1,|L4.308|
+0000e2  6960              LDR      r0,[r4,#0x14]         ;508
+0000e4  6008              STR      r0,[r1,#0]            ;508  ; OSTCBList
+0000e6  e005              B        |L4.244|
+                  |L4.232|
+0000e8  e9d40105          LDRD     r0,r1,[r4,#0x14]      ;510
+0000ec  6148              STR      r0,[r1,#0x14]         ;510
+0000ee  e9d41005          LDRD     r1,r0,[r4,#0x14]      ;511
+0000f2  6188              STR      r0,[r1,#0x18]         ;511
+                  |L4.244|
+0000f4  4810              LDR      r0,|L4.312|
+0000f6  6800              LDR      r0,[r0,#0]            ;513  ; OSTCBFreeList
+0000f8  6160              STR      r0,[r4,#0x14]         ;513
+0000fa  480f              LDR      r0,|L4.312|
+0000fc  6004              STR      r4,[r0,#0]            ;514  ; OSTCBFreeList
+0000fe  a00f              ADR      r0,|L4.316|
+000100  6460              STR      r0,[r4,#0x44]         ;516
+000102  4630              MOV      r0,r6                 ;518
+000104  f7fffffe          BL       OS_CPU_SR_Restore
+000108  480d              LDR      r0,|L4.320|
+00010a  7800              LDRB     r0,[r0,#0]            ;519  ; OSRunning
+00010c  2801              CMP      r0,#1                 ;519
+00010e  d101              BNE      |L4.276|
+000110  f7fffffe          BL       OS_Sched
+                  |L4.276|
+000114  2000              MOVS     r0,#0                 ;522
+000116  e77a              B        |L4.14|
 ;;;524    #endif
                           ENDP
 
-000126  0000              DCW      0x0000
-                  |L4.296|
+                  |L4.280|
                           DCD      OSIntNesting
-                  |L4.300|
+                  |L4.284|
                           DCD      OSTCBCur
-                  |L4.304|
+                  |L4.288|
                           DCD      OSTCBPrioTbl
-                  |L4.308|
+                  |L4.292|
                           DCD      OSRdyTbl
-                  |L4.312|
+                  |L4.296|
                           DCD      OSRdyGrp
-                  |L4.316|
+                  |L4.300|
                           DCD      OSLockNesting
-                  |L4.320|
+                  |L4.304|
                           DCD      OSTaskCtr
-                  |L4.324|
+                  |L4.308|
                           DCD      OSTCBList
-                  |L4.328|
+                  |L4.312|
                           DCD      OSTCBFreeList
-                  |L4.332|
-00014c  3f00              DCB      "?",0
-00014e  00                DCB      0
-00014f  00                DCB      0
-                  |L4.336|
+                  |L4.316|
+00013c  3f00              DCB      "?",0
+00013e  00                DCB      0
+00013f  00                DCB      0
+                  |L4.320|
                           DCD      OSRunning
 
                           AREA ||i.OSTaskDelReq||, CODE, READONLY, ALIGN=2
@@ -867,7 +861,7 @@
 00001a  4607              MOV      r7,r0                 ;594
 00001c  4811              LDR      r0,|L5.100|
 00001e  6800              LDR      r0,[r0,#0]            ;595  ; OSTCBCur
-000020  f8906037          LDRB     r6,[r0,#0x37]         ;595
+000020  f890602f          LDRB     r6,[r0,#0x2f]         ;595
 000024  4638              MOV      r0,r7                 ;596
 000026  f7fffffe          BL       OS_CPU_SR_Restore
 00002a  4630              MOV      r0,r6                 ;597
@@ -891,7 +885,7 @@
 000052  e7dc              B        |L5.14|
                   |L5.84|
 000054  203f              MOVS     r0,#0x3f              ;609
-000056  f8850037          STRB     r0,[r5,#0x37]         ;609
+000056  f885002f          STRB     r0,[r5,#0x2f]         ;609
 00005a  4638              MOV      r0,r7                 ;610
 00005c  f7fffffe          BL       OS_CPU_SR_Restore
 000060  2000              MOVS     r0,#0                 ;611
@@ -983,7 +977,7 @@
 000026  d103              BNE      |L6.48|
 000028  4813              LDR      r0,|L6.120|
 00002a  6800              LDR      r0,[r0,#0]            ;676  ; OSTCBCur
-00002c  f8906032          LDRB     r6,[r0,#0x32]         ;676
+00002c  f890602a          LDRB     r6,[r0,#0x2a]         ;676
                   |L6.48|
 000030  4812              LDR      r0,|L6.124|
 000032  f8505026          LDR      r5,[r0,r6,LSL #2]     ;678
@@ -1004,7 +998,7 @@
 000054  2000              MOVS     r0,#0                 ;687
 000056  e7e0              B        |L6.26|
                   |L6.88|
-000058  6ce8              LDR      r0,[r5,#0x4c]         ;689
+000058  6c68              LDR      r0,[r5,#0x44]         ;689
 00005a  6038              STR      r0,[r7,#0]            ;689
 00005c  6838              LDR      r0,[r7,#0]            ;690
 00005e  f7fffffe          BL       OS_StrLen
@@ -1101,7 +1095,7 @@
 000024  d103              BNE      |L7.46|
 000026  4810              LDR      r0,|L7.104|
 000028  6800              LDR      r0,[r0,#0]            ;756  ; OSTCBCur
-00002a  f8906032          LDRB     r6,[r0,#0x32]         ;756
+00002a  f890602a          LDRB     r6,[r0,#0x2a]         ;756
                   |L7.46|
 00002e  480f              LDR      r0,|L7.108|
 000030  f8505026          LDR      r5,[r0,r6,LSL #2]     ;758
@@ -1120,7 +1114,7 @@
 00004e  7020              STRB     r0,[r4,#0]            ;766
 000050  e7e2              B        |L7.24|
                   |L7.82|
-000052  64ef              STR      r7,[r5,#0x4c]         ;769
+000052  646f              STR      r7,[r5,#0x44]         ;769
 000054  4640              MOV      r0,r8                 ;770
 000056  f7fffffe          BL       OS_CPU_SR_Restore
 00005a  2000              MOVS     r0,#0                 ;771
@@ -1175,7 +1169,7 @@
 ;;;1042           prio = OSTCBCur->OSTCBPrio;
 000014  480f              LDR      r0,|L8.84|
 000016  6800              LDR      r0,[r0,#0]  ; OSTCBCur
-000018  f8905032          LDRB     r5,[r0,#0x32]
+000018  f890502a          LDRB     r5,[r0,#0x2a]
                   |L8.28|
 ;;;1043       }
 ;;;1044       ptcb = OSTCBPrioTbl[prio];
@@ -1208,7 +1202,7 @@
 00003a  2043              MOVS     r0,#0x43              ;1051
 00003c  e7f6              B        |L8.44|
                   |L8.62|
-00003e  2254              MOVS     r2,#0x54              ;1054
+00003e  224c              MOVS     r2,#0x4c              ;1054
 000040  4621              MOV      r1,r4                 ;1054
 000042  4630              MOV      r0,r6                 ;1054
 000044  f7fffffe          BL       OS_MemCopy
@@ -1275,7 +1269,7 @@
                   |L9.36|
 ;;;1115       }
 ;;;1116       value = ptcb->OSTCBRegTbl[id];
-000024  f1050050          ADD      r0,r5,#0x50
+000024  f1050048          ADD      r0,r5,#0x48
 000028  f8508026          LDR      r8,[r0,r6,LSL #2]
 ;;;1117       OS_EXIT_CRITICAL();
 00002c  4648              MOV      r0,r9
@@ -1346,7 +1340,7 @@
                   |L10.38|
 ;;;1181       }
 ;;;1182       ptcb->OSTCBRegTbl[id] = value;
-000026  f1050050          ADD      r0,r5,#0x50
+000026  f1050048          ADD      r0,r5,#0x48
 00002a  f8407026          STR      r7,[r0,r6,LSL #2]
 ;;;1183       OS_EXIT_CRITICAL();
 00002e  4648              MOV      r0,r9
@@ -1435,17 +1429,17 @@
 000028  2043              MOVS     r0,#0x43              ;817
 00002a  e7f7              B        |L11.28|
                   |L11.44|
-00002c  f8940030          LDRB     r0,[r4,#0x30]         ;819
+00002c  f8940028          LDRB     r0,[r4,#0x28]         ;819
 000030  f0000008          AND      r0,r0,#8              ;819
 000034  b360              CBZ      r0,|L11.144|
-000036  f8140f30          LDRB     r0,[r4,#0x30]!        ;820
+000036  f8140f28          LDRB     r0,[r4,#0x28]!        ;820
 00003a  f00000f7          AND      r0,r0,#0xf7           ;820
 00003e  7020              STRB     r0,[r4,#0]            ;820
-000040  f8140930          LDRB     r0,[r4],#-0x30        ;821
+000040  f8140928          LDRB     r0,[r4],#-0x28        ;821
 000044  b9f8              CBNZ     r0,|L11.134|
-000046  6ae0              LDR      r0,[r4,#0x2c]         ;822
+000046  6a60              LDR      r0,[r4,#0x24]         ;822
 000048  b9c8              CBNZ     r0,|L11.126|
-00004a  3434              ADDS     r4,r4,#0x34           ;823
+00004a  342c              ADDS     r4,r4,#0x2c           ;823
 00004c  78a0              LDRB     r0,[r4,#2]            ;823
 00004e  4914              LDR      r1,|L11.160|
 000050  7809              LDRB     r1,[r1,#0]            ;823  ; OSRdyGrp
@@ -1457,7 +1451,7 @@
 00005c  5c08              LDRB     r0,[r1,r0]            ;824
 00005e  7861              LDRB     r1,[r4,#1]            ;824
 000060  4308              ORRS     r0,r0,r1              ;824
-000062  f8141934          LDRB     r1,[r4],#-0x34        ;824
+000062  f814192c          LDRB     r1,[r4],#-0x2c        ;824
 000066  4a0f              LDR      r2,|L11.164|
 000068  5450              STRB     r0,[r2,r1]            ;824
 00006a  4630              MOV      r0,r6                 ;825
@@ -1541,7 +1535,7 @@
 ;;;889            prio = OSTCBCur->OSTCBPrio;
 00001c  4819              LDR      r0,|L12.132|
 00001e  6800              LDR      r0,[r0,#0]  ; OSTCBCur
-000020  f8907032          LDRB     r7,[r0,#0x32]
+000020  f890702a          LDRB     r7,[r0,#0x2a]
                   |L12.36|
 ;;;890        }
 ;;;891        ptcb = OSTCBPrioTbl[prio];
@@ -1662,7 +1656,7 @@
 ;;;970            prio = OSTCBCur->OSTCBPrio;
 000014  4820              LDR      r0,|L13.152|
 000016  6800              LDR      r0,[r0,#0]  ; OSTCBCur
-000018  f8905032          LDRB     r5,[r0,#0x32]
+000018  f890502a          LDRB     r5,[r0,#0x2a]
 ;;;971            self = OS_TRUE;
 00001c  2601              MOVS     r6,#1
 00001e  e008              B        |L13.50|
@@ -1670,7 +1664,7 @@
 ;;;972        } else if (prio == OSTCBCur->OSTCBPrio) {                   /* See if suspending self              */
 000020  481d              LDR      r0,|L13.152|
 000022  6800              LDR      r0,[r0,#0]  ; OSTCBCur
-000024  f8900032          LDRB     r0,[r0,#0x32]
+000024  f890002a          LDRB     r0,[r0,#0x2a]
 000028  42a8              CMP      r0,r5
 00002a  d101              BNE      |L13.48|
 ;;;973            self = OS_TRUE;
@@ -1719,26 +1713,26 @@
 000050  2043              MOVS     r0,#0x43              ;984
 000052  e7f6              B        |L13.66|
                   |L13.84|
-000054  f8947034          LDRB     r7,[r4,#0x34]         ;986
+000054  f894702c          LDRB     r7,[r4,#0x2c]         ;986
 000058  4811              LDR      r0,|L13.160|
 00005a  5dc0              LDRB     r0,[r0,r7]            ;987
-00005c  f8941035          LDRB     r1,[r4,#0x35]         ;987
+00005c  f894102d          LDRB     r1,[r4,#0x2d]         ;987
 000060  4388              BICS     r0,r0,r1              ;987
 000062  490f              LDR      r1,|L13.160|
 000064  55c8              STRB     r0,[r1,r7]            ;987
 000066  4608              MOV      r0,r1                 ;988
 000068  5dc0              LDRB     r0,[r0,r7]            ;988
 00006a  b930              CBNZ     r0,|L13.122|
-00006c  f8941036          LDRB     r1,[r4,#0x36]         ;989
+00006c  f894102e          LDRB     r1,[r4,#0x2e]         ;989
 000070  480c              LDR      r0,|L13.164|
 000072  7800              LDRB     r0,[r0,#0]            ;989  ; OSRdyGrp
 000074  4388              BICS     r0,r0,r1              ;989
 000076  490b              LDR      r1,|L13.164|
 000078  7008              STRB     r0,[r1,#0]            ;989
                   |L13.122|
-00007a  f8940030          LDRB     r0,[r4,#0x30]         ;991
+00007a  f8940028          LDRB     r0,[r4,#0x28]         ;991
 00007e  f0400008          ORR      r0,r0,#8              ;991
-000082  f8840030          STRB     r0,[r4,#0x30]         ;991
+000082  f8840028          STRB     r0,[r4,#0x28]         ;991
 000086  4640              MOV      r0,r8                 ;992
 000088  f7fffffe          BL       OS_CPU_SR_Restore
 00008c  2e01              CMP      r6,#1                 ;993

@@ -62,13 +62,13 @@ NORMAL_STATE Store_Push(pSTORE S,uint8_t dat);
 *                  内存控制相关声明
 ***********************************************************/
 
-#define MEM_16B_ROW		60
+#define MEM_16B_ROW		100
 #define MEM_16B_COL		18
 
-#define MEM_32B_ROW		60
+#define MEM_32B_ROW		100
 #define MEM_32B_COL		34
 
-#define MEM_64B_ROW		80
+#define MEM_64B_ROW		100
 #define MEM_64B_COL		66
 
 #define MEM_128B_ROW	20
@@ -80,7 +80,7 @@ NORMAL_STATE Store_Push(pSTORE S,uint8_t dat);
 #define MEM_512B_ROW	10
 #define MEM_512B_COL	514
 
-#define MEM_1KB_ROW	    6
+#define MEM_1KB_ROW	    12
 #define MEM_1KB_COL	    1026
 
 void    *Mem_malloc(uint16_t size);

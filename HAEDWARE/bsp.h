@@ -3,6 +3,7 @@
 
 #include "includes.h"
 #include "memblock.h"
+#include "globalvar.h"
 
 #define GPIO_LED		GPIOB
 #define LED_GPIO_OBD 	GPIO_Pin_5

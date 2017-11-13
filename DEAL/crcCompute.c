@@ -109,9 +109,6 @@ uint16_t CRC_Compute2( uint8_t* data1, uint32_t length1, uint8_t* data2 ,uint32_
 	return crchl;
 }
 
-
-
-
 uint16_t CRC_ComputeFile(uint16_t srcCRC,uint8_t * data,uint32_t dataLength)
 {
 	uint16_t crch1 = 0;
@@ -129,7 +126,6 @@ uint16_t CRC_ComputeFile(uint16_t srcCRC,uint8_t * data,uint32_t dataLength)
 }
 
 //GPS 校验和计算
-
 void UbloxCheckSum(u8 *buf,u16 len,u8* cka,u8*ckb)
 {
 	u16 i;
@@ -139,6 +135,45 @@ void UbloxCheckSum(u8 *buf,u16 len,u8* cka,u8*ckb)
 		*cka=*cka+buf[i];
 		*ckb=*ckb+*cka;
 	}
+}
+
+
+
+
+// 本机大端返回1，小端返回0
+uint32_t checkCPUendian(void)
+{
+	union {
+		unsigned int i;
+		unsigned char s[4];
+	}c;
+
+	c.i = 0x12345678;
+	return (0x12 == c.s[0]);
+}
+
+// 模拟htonl函数，本机字节序转网络字节序
+uint32_t t_htonl(uint32_t h)
+{
+	return checkCPUendian() ? h : BigLittleSwap32(h);
+}
+
+// 模拟ntohl函数，网络字节序转本机字节序
+uint32_t t_ntohl(uint32_t n)
+{
+	return checkCPUendian() ? n : BigLittleSwap32(n);
+}
+
+// 模拟htons函数，本机字节序转网络字节序
+uint16_t t_htons(uint16_t  h)
+{
+	return checkCPUendian() ? h : BigLittleSwap16(h);
+}
+
+// 模拟ntohs函数，网络字节序转本机字节序
+uint16_t t_ntohs(uint16_t  n)
+{
+	return checkCPUendian() ? n : BigLittleSwap16(n);
 }
 
 

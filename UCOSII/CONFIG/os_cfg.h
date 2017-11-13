@@ -40,9 +40,9 @@
                                        /* ... MUST NEVER be higher than 254!                           */
 
 #define OS_MAX_EVENTS            25u   /* Max. number of event control blocks in your application      */
-#define OS_MAX_FLAGS              1u   /* Max. number of Event Flag Groups    in your application      */
-#define OS_MAX_MEM_PART           10u   /* Max. number of memory partitions                             */
-#define OS_MAX_QS                 5u   /* Max. number of queue control blocks in your application      */
+#define OS_MAX_FLAGS              0u   /* Max. number of Event Flag Groups    in your application      */
+#define OS_MAX_MEM_PART          10u   /* Max. number of memory partitions                             */
+#define OS_MAX_QS                10u   /* Max. number of queue control blocks in your application      */
 #define OS_MAX_TASKS             25u   /* Max. number of tasks in your application, MUST be >= 2       */
 
 #define OS_SCHED_LOCK_EN          1u   /* Include code for OSSchedLock() and OSSchedUnlock()           */
@@ -73,12 +73,12 @@
 
 
                                        /* ----------------------- EVENT FLAGS ------------------------ */
-#define OS_FLAG_EN                1u   /* Enable (1) or Disable (0) code generation for EVENT FLAGS    */
-#define OS_FLAG_ACCEPT_EN         1u   /*     Include code for OSFlagAccept()                          */
-#define OS_FLAG_DEL_EN            1u   /*     Include code for OSFlagDel()                             */
-#define OS_FLAG_NAME_EN           1u   /*     Enable names for event flag group                        */
-#define OS_FLAG_QUERY_EN          1u   /*     Include code for OSFlagQuery()                           */
-#define OS_FLAG_WAIT_CLR_EN       1u   /* Include code for Wait on Clear EVENT FLAGS                   */
+#define OS_FLAG_EN                0u   /* Enable (1) or Disable (0) code generation for EVENT FLAGS    */
+#define OS_FLAG_ACCEPT_EN         0u   /*     Include code for OSFlagAccept()                          */
+#define OS_FLAG_DEL_EN            0u   /*     Include code for OSFlagDel()                             */
+#define OS_FLAG_NAME_EN           0u   /*     Enable names for event flag group                        */
+#define OS_FLAG_QUERY_EN          0u   /*     Include code for OSFlagQuery()                           */
+#define OS_FLAG_WAIT_CLR_EN       0u   /* Include code for Wait on Clear EVENT FLAGS                   */
 #define OS_FLAGS_NBITS           16u   /* Size in #bits of OS_FLAGS data type (8, 16 or 32)            */
 
 

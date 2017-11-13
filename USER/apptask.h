@@ -8,6 +8,9 @@
 #include "globalvar.h"
 /************************   任务以及互斥型信号量的优先级定义   *************/
 
+
+#define CDMA_SEND_PRIO        8     //CDMA 发送互斥信号量优先级
+
 #define CDMA_TASK_PRIO       11     //网络通信GPRS任务优先级
 #define GPS_TASK_PRIO        12     //车辆定位GPS任务优先级
 #define OBD_TASK_PRIO        13     //故障诊断OBD任务优先级
@@ -16,7 +19,7 @@
 #define GPS_LED_PRIO         21     //车辆定位GPS-LED任务优先级
 #define OBD_LED_PRIO         22     //故障诊断OBD-LED任务优先级
 
-#define START_TASK_PRIO      50     //起始任务优先级
+#define START_TASK_PRIO      10     //起始任务优先级
 
 /************************   任务堆栈大小定义定义   ************************/
 

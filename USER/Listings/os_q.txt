@@ -646,18 +646,18 @@
                   |L5.110|
 00006e  482a              LDR      r0,|L5.280|
 000070  6800              LDR      r0,[r0,#0]            ;449  ; OSTCBCur
-000072  f8900030          LDRB     r0,[r0,#0x30]         ;449
+000072  f8900028          LDRB     r0,[r0,#0x28]         ;449
 000076  f0400004          ORR      r0,r0,#4              ;449
 00007a  4927              LDR      r1,|L5.280|
 00007c  6809              LDR      r1,[r1,#0]            ;449  ; OSTCBCur
-00007e  f8810030          STRB     r0,[r1,#0x30]         ;449
+00007e  f8810028          STRB     r0,[r1,#0x28]         ;449
 000082  2000              MOVS     r0,#0                 ;450
 000084  4924              LDR      r1,|L5.280|
 000086  6809              LDR      r1,[r1,#0]            ;450  ; OSTCBCur
-000088  f8810031          STRB     r0,[r1,#0x31]         ;450
+000088  f8810029          STRB     r0,[r1,#0x29]         ;450
 00008c  4822              LDR      r0,|L5.280|
 00008e  6800              LDR      r0,[r0,#0]            ;451  ; OSTCBCur
-000090  f8c0802c          STR      r8,[r0,#0x2c]         ;451
+000090  f8c08024          STR      r8,[r0,#0x24]         ;451
 000094  4638              MOV      r0,r7                 ;452
 000096  f7fffffe          BL       OS_EventTaskWait
 00009a  4648              MOV      r0,r9                 ;453
@@ -667,7 +667,7 @@
 0000a8  4681              MOV      r9,r0                 ;455
 0000aa  481b              LDR      r0,|L5.280|
 0000ac  6800              LDR      r0,[r0,#0]            ;456  ; OSTCBCur
-0000ae  f8900031          LDRB     r0,[r0,#0x31]         ;456
+0000ae  f8900029          LDRB     r0,[r0,#0x29]         ;456
 0000b2  b120              CBZ      r0,|L5.190|
 0000b4  2801              CMP      r0,#1                 ;456
 0000b6  d00d              BEQ      |L5.212|
@@ -702,10 +702,10 @@
 0000e8  2000              MOVS     r0,#0                 ;474
 0000ea  490b              LDR      r1,|L5.280|
 0000ec  6809              LDR      r1,[r1,#0]            ;474  ; OSTCBCur
-0000ee  f8810030          STRB     r0,[r1,#0x30]         ;474
+0000ee  f8810028          STRB     r0,[r1,#0x28]         ;474
 0000f2  4909              LDR      r1,|L5.280|
 0000f4  6809              LDR      r1,[r1,#0]            ;475  ; OSTCBCur
-0000f6  f8810031          STRB     r0,[r1,#0x31]         ;475
+0000f6  f8810029          STRB     r0,[r1,#0x29]         ;475
 0000fa  4907              LDR      r1,|L5.280|
 0000fc  6809              LDR      r1,[r1,#0]            ;476  ; OSTCBCur
 0000fe  61c8              STR      r0,[r1,#0x1c]         ;476
@@ -1322,7 +1322,7 @@
 ;;;878    
 ;;;879    
 ;;;880        OS_MemClr((INT8U *)&OSQTbl[0], sizeof(OSQTbl));  /* Clear the queue table                          */
-000004  2178              MOVS     r1,#0x78
+000004  21f0              MOVS     r1,#0xf0
 000006  4810              LDR      r0,|L11.72|
 000008  f7fffffe          BL       OS_MemClr
 ;;;881        for (ix = 0u; ix < (OS_MAX_QS - 1u); ix++) {     /* Init. list of free QUEUE control blocks        */
@@ -1344,7 +1344,7 @@
 000028  1c60              ADDS     r0,r4,#1              ;881
 00002a  b284              UXTH     r4,r0                 ;881
                   |L11.44|
-00002c  2c04              CMP      r4,#4                 ;881
+00002c  2c09              CMP      r4,#9                 ;881
 00002e  d3ef              BCC      |L11.16|
 ;;;886        }
 ;;;887        pq1         = &OSQTbl[ix];

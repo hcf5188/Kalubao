@@ -141,7 +141,7 @@ __packed typedef struct
 }_ublox_cfg_rate; 
 
 
-
+void GPSStartInit(void );
 int NMEA_Str2num(u8 *buf,u8*dx);
 void GPS_Analysis(nmea_msg *gpsx,u8 *buf);
 void NMEA_GPGSV_Analysis(nmea_msg *gpsx,u8 *buf);
@@ -157,7 +157,8 @@ u8 Ublox_Cfg_Prt(u32 baudrate);
 u8 Ublox_Cfg_Tp(u32 interval,u32 length,signed char status);
 u8 Ublox_Cfg_Rate(u16 measrate,u8 reftime);
 void Ublox_Send_Date(u8* dbuf,u16 len);
-
+uint32_t TimeCompare(uint32_t TYY,uint32_t TMO,uint32_t TDD,
+					uint32_t THH,uint32_t TMM,uint32_t TSS);//º∆À„ ±º‰¥¡
 
 
 #endif

@@ -4,7 +4,7 @@
 
 extern pCIR_QUEUE sendCDMA_Q;//指向 CDMA 串口发送队列  的指针
 extern pSTORE     receCDMA_S;//指向 CDMA 串口接收数据堆的指针
-uint8_t aa [1000];
+
 void CDMASendByte(uint8_t dat)
 {
 #if OS_CRITICAL_METHOD == 3u           /* Allocate storage for CPU status register           */
@@ -28,7 +28,7 @@ uint8_t CDMASendDatas(const uint8_t* s,uint16_t length)
 	if(length < 1 || length >1020)
 		return 1;
 	OS_ENTER_CRITICAL();
-	sendCDMA_Q->data = aa;
+	
 	if(CirQ_Pushs(sendCDMA_Q,s,length) != OK)
 	{
 		OS_EXIT_CRITICAL();
@@ -37,12 +37,10 @@ uint8_t CDMASendDatas(const uint8_t* s,uint16_t length)
 	OS_EXIT_CRITICAL();
 	if(CirQ_GetLength(sendCDMA_Q) > 0)
 	{
-//		OS_ENTER_CRITICAL();
-//		CirQ_Pop(sendCDMA_Q,&data);
-//		OS_EXIT_CRITICAL();
+
 		
 		USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
-//		USART_SendData(USART2, data);
+
 	}
 	return  0;
 	
@@ -107,6 +105,8 @@ void USART2_IRQHandler(void)
 extern OS_EVENT *CDMARecieveQ;
 uint8_t *ptrRece;
 uint16_t receDatalen= 0;
+uint8_t sdf[100];
+uint16_t sfdd=0;
 void TIM3_IRQHandler(void)   //CDMA接收超时处理定时器中断
 {
 	OSIntEnter();//系统进入中断服务程序
@@ -134,7 +134,12 @@ void TIM3_IRQHandler(void)   //CDMA接收超时处理定时器中断
 					Store_Clear(receCDMA_S);    //舍弃本次接收的数据
 			}
 			else
+			{
+				Store_Getdates(receCDMA_S,&sdf[sfdd],receDatalen);
+				sfdd += receDatalen; 
 				Store_Clear(receCDMA_S);//接收的数据长度<=2 视为无效数据，没有这么短的回复
+			}
+				
 			TIM_Cmd(TIM3, DISABLE);
 		}
 	}

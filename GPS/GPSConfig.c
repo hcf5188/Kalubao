@@ -7,7 +7,6 @@ void GPSConfigInit(uint16_t baud)
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
-	
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	
 	//USART4 RX
