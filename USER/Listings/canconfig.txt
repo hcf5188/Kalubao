@@ -19,7 +19,7 @@
 000006  0648              LSLS     r0,r1,#25
 000008  f7fffffe          BL       RCC_APB1PeriphClockCmd
 ;;;13     	CAN_DeInit(CAN1);
-00000c  482a              LDR      r0,|L1.184|
+00000c  4829              LDR      r0,|L1.180|
 00000e  f7fffffe          BL       CAN_DeInit
 ;;;14     	CAN_StructInit(&CAN_InitStructure);
 000012  a801              ADD      r0,sp,#4
@@ -38,11 +38,11 @@
 000028  f88d0013          STRB     r0,[sp,#0x13]
 ;;;21       	GPIO_Init(GPIOB, &GPIO_InitStructure);
 00002c  a904              ADD      r1,sp,#0x10
-00002e  4823              LDR      r0,|L1.188|
+00002e  4822              LDR      r0,|L1.184|
 000030  f7fffffe          BL       GPIO_Init
 ;;;22     	GPIO_ResetBits(GPIOB, GPIO_Pin_14);//使能CAN芯片 VP230
 000034  f44f4180          MOV      r1,#0x4000
-000038  4820              LDR      r0,|L1.188|
+000038  481f              LDR      r0,|L1.184|
 00003a  f7fffffe          BL       GPIO_ResetBits
 ;;;23     	
 ;;;24     	//CAN1_RX   -  PB8;
@@ -54,7 +54,7 @@
 000048  f88d0013          STRB     r0,[sp,#0x13]
 ;;;27     	GPIO_Init(GPIOB, &GPIO_InitStructure);
 00004c  a904              ADD      r1,sp,#0x10
-00004e  481b              LDR      r0,|L1.188|
+00004e  481a              LDR      r0,|L1.184|
 000050  f7fffffe          BL       GPIO_Init
 ;;;28     	//CAN1_TX   -  PB9;
 ;;;29     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
@@ -68,7 +68,7 @@
 000064  f88d0012          STRB     r0,[sp,#0x12]
 ;;;32     	GPIO_Init(GPIOB, &GPIO_InitStructure);
 000068  a904              ADD      r1,sp,#0x10
-00006a  4814              LDR      r0,|L1.188|
+00006a  4813              LDR      r0,|L1.184|
 00006c  f7fffffe          BL       GPIO_Init
 ;;;33     
 ;;;34     	GPIO_PinRemapConfig(GPIO_Remap1_CAN1 , ENABLE);
@@ -76,50 +76,51 @@
 000072  f44f10ea          MOV      r0,#0x1d4000
 000076  f7fffffe          BL       GPIO_PinRemapConfig
 ;;;35     	
-;;;36     //	CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
-;;;37     //	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);     //设置滤波器
-;;;38     
-;;;39     	CAN1_BaudSet(CANBAUD_500K);           //设置CAN波特率为500K
-00007a  2002              MOVS     r0,#2
+;;;36     	CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
+00007a  2001              MOVS     r0,#1
 00007c  f7fffffe          BL       CAN1_BaudSet
-;;;40     	CAN1_SetFilter(0x7E8,CAN_ID_STD);     //设置滤波器
-000080  2100              MOVS     r1,#0
-000082  f44f60fd          MOV      r0,#0x7e8
-000086  f7fffffe          BL       CAN1_SetFilter
+;;;37     	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);     //设置滤波器
+000080  2104              MOVS     r1,#4
+000082  480e              LDR      r0,|L1.188|
+000084  f7fffffe          BL       CAN1_SetFilter
+;;;38     
+;;;39     //	CAN1_BaudSet(CANBAUD_500K);           //设置CAN波特率为500K
+;;;40     //	CAN1_SetFilter(0x7E8,CAN_ID_STD);     //设置滤波器
 ;;;41     	
 ;;;42     //	CAN1_ClearFilter();                   //清除滤波器
 ;;;43     	
 ;;;44     	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);				//FIFO1消息挂号中断允许.		 
-00008a  2201              MOVS     r2,#1
-00008c  2110              MOVS     r1,#0x10
-00008e  480a              LDR      r0,|L1.184|
-000090  f7fffffe          BL       CAN_ITConfig
+000088  2201              MOVS     r2,#1
+00008a  2110              MOVS     r1,#0x10
+00008c  4809              LDR      r0,|L1.180|
+00008e  f7fffffe          BL       CAN_ITConfig
 ;;;45     	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;
-000094  2015              MOVS     r0,#0x15
-000096  f88d0000          STRB     r0,[sp,#0]
+000092  2015              MOVS     r0,#0x15
+000094  f88d0000          STRB     r0,[sp,#0]
 ;;;46     	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-00009a  2002              MOVS     r0,#2
-00009c  f88d0001          STRB     r0,[sp,#1]
+000098  2002              MOVS     r0,#2
+00009a  f88d0001          STRB     r0,[sp,#1]
 ;;;47     	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
-0000a0  2005              MOVS     r0,#5
-0000a2  f88d0002          STRB     r0,[sp,#2]
+00009e  2005              MOVS     r0,#5
+0000a0  f88d0002          STRB     r0,[sp,#2]
 ;;;48     	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-0000a6  2001              MOVS     r0,#1
-0000a8  f88d0003          STRB     r0,[sp,#3]
+0000a4  2001              MOVS     r0,#1
+0000a6  f88d0003          STRB     r0,[sp,#3]
 ;;;49     	NVIC_Init(&NVIC_InitStructure);	
-0000ac  4668              MOV      r0,sp
-0000ae  f7fffffe          BL       NVIC_Init
+0000aa  4668              MOV      r0,sp
+0000ac  f7fffffe          BL       NVIC_Init
 ;;;50     }
-0000b2  b005              ADD      sp,sp,#0x14
-0000b4  bd00              POP      {pc}
+0000b0  b005              ADD      sp,sp,#0x14
+0000b2  bd00              POP      {pc}
 ;;;51     //CAN1 波特率设置
                           ENDP
 
-0000b6  0000              DCW      0x0000
-                  |L1.184|
+                  |L1.180|
                           DCD      0x40006400
-                  |L1.188|
+                  |L1.184|
                           DCD      0x40010c00
+                  |L1.188|
+                          DCD      0x18dafb10
 
                           AREA ||i.CAN1_BaudSet||, CODE, READONLY, ALIGN=2
 

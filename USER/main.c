@@ -26,7 +26,12 @@ pCIR_QUEUE sendGPS_Q = NULL;     //指向 GPS 串口发送队列  的指针
 pSTORE     receGPS_S = NULL;     //指向 GPS 串口接收数据堆的指针
 
 _SystemInformation sysAllData;
-
+/****************************************************************
+*			void	int main(void )
+* 描	述 : 入口函数	 		
+* 输入参数 : 无
+* 返 回 值 : int
+****************************************************************/
 int main(void )
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
@@ -36,10 +41,10 @@ int main(void )
 	MemBuf_Init();   //建立内存块
 	
 	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列
-	receCDMA_S = Store_Init(1024);   //CDMA 串口接收 数据堆
+	receCDMA_S = Store_Init(1024);    //CDMA 串口接收 数据堆
 	
-	sendGPS_Q = Cir_Queue_Init(230); //GPS  串口发送 循环队列
-	receGPS_S = Store_Init(230);     //GPS  串口接收 数据堆
+	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列
+	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆
 	
 	SystemBspInit();
 	 
@@ -77,9 +82,11 @@ void StartTask(void *pdata)
  	OSTaskCreate(OBDLEDTask,(void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1],OBD_LED_PRIO);		
 	
 	CDMASendMutex = OSMutexCreate(CDMA_SEND_PRIO,&err);//向CDMA发送缓冲区发送数据 独占 互斥型信号量
-	
 	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
-	OSTimeDlyHMSM(0,0,15,4);        //todo:等待其他任务完成初始化之后，再进行数据的流动
+	
+	sysAllData.isDataFlow = 1;      //数据流未流动
+	OSTaskSuspend(OS_PRIO_SELF);    //todo:等待其他任务完成初始化之后，再进行数据的流动
+	
 	while(1)
 	{
 		OSTimeDlyHMSM(0,0,0,4);

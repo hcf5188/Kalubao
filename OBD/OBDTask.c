@@ -60,29 +60,27 @@ void OBDTask(void *pdata)
 {
 	INT8U     err;
 	uint8_t   i      = 0;
-	uint8_t   cmdLen = 0;//封包的时候要减去指令的长度
-	uint8_t   cmdNum = 0;//指令序号
+	uint8_t   cmdLen = 0;        //封包的时候要减去指令的长度
+	uint8_t   cmdNum = 0;        //指令序号
 	uint8_t   cmdManyPackNum = 0;//要接受的多包的数量
 	
-	CanRxMsg* CAN1_RxMsg;      //指向接收到的OBD信息
-	uint8_t * can1_Txbuff;     //指向要发送的OBD信息
+	CanRxMsg* CAN1_RxMsg;        //指向接收到的OBD信息
+	uint8_t * can1_Txbuff;       //指向要发送的OBD信息
 	uint8_t * ptrSaveBuff;
 	
 	CAN1Config();
 	canSendQ    = OSQCreate(&canSendBuf[0],CANSENDBUF_SIZE);//卡路宝向ECU发送指令的消息队列
 	canRecieveQ = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);  //卡路宝从ECU接收指令的循环队列
 	
-	OSTimeDlyHMSM(0,0,6,0);//CDMA还没启动，此处需要延时
+//	CANTestChannel();//完成CAN的ID、波特率设定，并且读取出ECU的版本号
 	
-//	CANTestChannel();
-	
-	dataToSend.canId = 0x7E0;
-	dataToSend.ide   = CAN_ID_STD;
-	dataToSend.testIsOK = 1; 
-	
-//	dataToSend.canId = 0x18DA10FB;
-//	dataToSend.ide   = CAN_ID_EXT;
+//	dataToSend.canId = 0x7E0;
+//	dataToSend.ide   = CAN_ID_STD;
 //	dataToSend.testIsOK = 1; 
+	
+	dataToSend.canId = 0x18DA10FB;
+	dataToSend.ide   = CAN_ID_EXT;
+	dataToSend.testIsOK = 1; 
 
 	
 	while(1)
@@ -97,7 +95,7 @@ void OBDTask(void *pdata)
 		Mem_free(can1_Txbuff);                 //释放内存块
 		
 		
-		CAN1_RxMsg = OSQPend(canRecieveQ,200,&err); //接收到OBD回复
+		CAN1_RxMsg = OSQPend(canRecieveQ,25,&err); //接收到OBD回复
 		if(err == OS_ERR_NONE)
 		{
 			freOBDLed = 300;                    //OBD 初始化成功
@@ -118,7 +116,7 @@ void OBDTask(void *pdata)
 					
 					for(i=0;i<cmdManyPackNum;i++)
 					{
-						CAN1_RxMsg = OSQPend(canRecieveQ,200,&err);//接收多包
+						CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);//接收多包
 						if(err == OS_ERR_NONE)
 						{
 							memcpy(&ptrSaveBuff[7*i + 9 - cmdLen],&CAN1_RxMsg->Data[1],7);

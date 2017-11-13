@@ -31,73 +31,73 @@
 00001e  f8a50001          STRH     r0,[r5,#1]
 ;;;25     	memcpy(pHead->device,sysAllData.imei,16);          //拷贝设备唯一标识码 IMEI
 000022  2210              MOVS     r2,#0x10
-000024  491e              LDR      r1,|L1.160|
+000024  491c              LDR      r1,|L1.152|
 000026  1ce8              ADDS     r0,r5,#3
 000028  f7fffffe          BL       __aeabi_memcpy
 ;;;26     	pHead->msgid    = t_htonl(sysAllData.sendId);      //发送帧流水号 
-00002c  491c              LDR      r1,|L1.160|
+00002c  491a              LDR      r1,|L1.152|
 00002e  3918              SUBS     r1,r1,#0x18
-000030  f8d1002a          LDR      r0,[r1,#0x2a]  ; sysAllData
-000034  f7fffffe          BL       t_htonl
-000038  f8c50013          STR      r0,[r5,#0x13]
+000030  6ac8              LDR      r0,[r1,#0x2c]  ; sysAllData
+000032  f7fffffe          BL       t_htonl
+000036  f8c50013          STR      r0,[r5,#0x13]
 ;;;27     	pHead->time_cli = t_htonl(sysAllData.currentTime); //todo: 记录当前包要发送的时间    RTC_GetCounter();
-00003c  4918              LDR      r1,|L1.160|
-00003e  3918              SUBS     r1,r1,#0x18
-000040  f8d1002e          LDR      r0,[r1,#0x2e]  ; sysAllData
-000044  f7fffffe          BL       t_htonl
-000048  f8c50017          STR      r0,[r5,#0x17]
+00003a  4917              LDR      r1,|L1.152|
+00003c  3918              SUBS     r1,r1,#0x18
+00003e  6b08              LDR      r0,[r1,#0x30]  ; sysAllData
+000040  f7fffffe          BL       t_htonl
+000044  f8c50017          STR      r0,[r5,#0x17]
 ;;;28     	
 ;;;29     	sysAllData.sendId++;
-00004c  4814              LDR      r0,|L1.160|
-00004e  3818              SUBS     r0,r0,#0x18
-000050  f8d0002a          LDR      r0,[r0,#0x2a]  ; sysAllData
-000054  1c40              ADDS     r0,r0,#1
-000056  4912              LDR      r1,|L1.160|
-000058  3918              SUBS     r1,r1,#0x18
-00005a  f8c1002a          STR      r0,[r1,#0x2a]  ; sysAllData
+000048  4813              LDR      r0,|L1.152|
+00004a  3818              SUBS     r0,r0,#0x18
+00004c  6ac0              LDR      r0,[r0,#0x2c]  ; sysAllData
+00004e  1c40              ADDS     r0,r0,#1
+000050  4911              LDR      r1,|L1.152|
+000052  3918              SUBS     r1,r1,#0x18
+000054  62c8              STR      r0,[r1,#0x2c]  ; sysAllData
 ;;;30     	
 ;;;31     	memcpy(ptr->data,pHead,sizeof(_PROTOCOL_HEAD));
-00005e  221b              MOVS     r2,#0x1b
-000060  4629              MOV      r1,r5
-000062  1d20              ADDS     r0,r4,#4
-000064  f7fffffe          BL       __aeabi_memcpy
+000056  221b              MOVS     r2,#0x1b
+000058  4629              MOV      r1,r5
+00005a  1d20              ADDS     r0,r4,#4
+00005c  f7fffffe          BL       __aeabi_memcpy
 ;;;32     	Mem_free(pHead);                              //申请的内存块，用完一定要释放啊
-000068  4628              MOV      r0,r5
-00006a  f7fffffe          BL       Mem_free
+000060  4628              MOV      r0,r5
+000062  f7fffffe          BL       Mem_free
 ;;;33     	
 ;;;34     	crc = CRC_Compute16(&ptr->data[1],ptr->datLength-1);
-00006e  8820              LDRH     r0,[r4,#0]
-000070  1e41              SUBS     r1,r0,#1
-000072  1d60              ADDS     r0,r4,#5
-000074  f7fffffe          BL       CRC_Compute16
-000078  4606              MOV      r6,r0
+000066  8820              LDRH     r0,[r4,#0]
+000068  1e41              SUBS     r1,r0,#1
+00006a  1d60              ADDS     r0,r4,#5
+00006c  f7fffffe          BL       CRC_Compute16
+000070  4606              MOV      r6,r0
 ;;;35     	
 ;;;36     	ptr->data[ptr->datLength++] = (crc>>8)&0xff;
-00007a  0a31              LSRS     r1,r6,#8
-00007c  8822              LDRH     r2,[r4,#0]
-00007e  1c50              ADDS     r0,r2,#1
-000080  8020              STRH     r0,[r4,#0]
-000082  1d20              ADDS     r0,r4,#4
-000084  5481              STRB     r1,[r0,r2]
+000072  0a31              LSRS     r1,r6,#8
+000074  8822              LDRH     r2,[r4,#0]
+000076  1c50              ADDS     r0,r2,#1
+000078  8020              STRH     r0,[r4,#0]
+00007a  1d20              ADDS     r0,r4,#4
+00007c  5481              STRB     r1,[r0,r2]
 ;;;37     	ptr->data[ptr->datLength++] = crc&0xff;
-000086  8822              LDRH     r2,[r4,#0]
-000088  1c50              ADDS     r0,r2,#1
-00008a  8020              STRH     r0,[r4,#0]
-00008c  1d20              ADDS     r0,r4,#4
-00008e  5486              STRB     r6,[r0,r2]
+00007e  8822              LDRH     r2,[r4,#0]
+000080  1c50              ADDS     r0,r2,#1
+000082  8020              STRH     r0,[r4,#0]
+000084  1d20              ADDS     r0,r4,#4
+000086  5486              STRB     r6,[r0,r2]
 ;;;38     	ptr->data[ptr->datLength++] = 0x7E;
-000090  217e              MOVS     r1,#0x7e
-000092  8822              LDRH     r2,[r4,#0]
-000094  1c50              ADDS     r0,r2,#1
-000096  8020              STRH     r0,[r4,#0]
-000098  1d20              ADDS     r0,r4,#4
-00009a  5481              STRB     r1,[r0,r2]
+000088  217e              MOVS     r1,#0x7e
+00008a  8822              LDRH     r2,[r4,#0]
+00008c  1c50              ADDS     r0,r2,#1
+00008e  8020              STRH     r0,[r4,#0]
+000090  1d20              ADDS     r0,r4,#4
+000092  5481              STRB     r1,[r0,r2]
 ;;;39     }
-00009c  bd70              POP      {r4-r6,pc}
+000094  bd70              POP      {r4-r6,pc}
                           ENDP
 
-00009e  0000              DCW      0x0000
-                  |L1.160|
+000096  0000              DCW      0x0000
+                  |L1.152|
                           DCD      sysAllData+0x18
 
                           AREA ||i.CDMNSendDataInit||, CODE, READONLY, ALIGN=1
@@ -110,7 +110,7 @@
 ;;;7      	_CDMADataToSend* ptr = NULL;
 000002  2400              MOVS     r4,#0
 ;;;8      	ptr = Mem_malloc(sizeof(_CDMADataToSend));
-000004  f44f7062          MOV      r0,#0x388
+000004  f24030ba          MOV      r0,#0x3ba
 000008  f7fffffe          BL       Mem_malloc
 00000c  4604              MOV      r4,r0
 ;;;9      	

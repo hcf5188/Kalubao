@@ -136,377 +136,375 @@
 ;;;61     	INT8U     err;
 ;;;62     	uint8_t   i      = 0;
 000002  f04f0800          MOV      r8,#0
-;;;63     	uint8_t   cmdLen = 0;//封包的时候要减去指令的长度
+;;;63     	uint8_t   cmdLen = 0;        //封包的时候要减去指令的长度
 000006  2600              MOVS     r6,#0
-;;;64     	uint8_t   cmdNum = 0;//指令序号
+;;;64     	uint8_t   cmdNum = 0;        //指令序号
 000008  46b1              MOV      r9,r6
 ;;;65     	uint8_t   cmdManyPackNum = 0;//要接受的多包的数量
 00000a  46b2              MOV      r10,r6
 ;;;66     	
-;;;67     	CanRxMsg* CAN1_RxMsg;      //指向接收到的OBD信息
-;;;68     	uint8_t * can1_Txbuff;     //指向要发送的OBD信息
+;;;67     	CanRxMsg* CAN1_RxMsg;        //指向接收到的OBD信息
+;;;68     	uint8_t * can1_Txbuff;       //指向要发送的OBD信息
 ;;;69     	uint8_t * ptrSaveBuff;
 ;;;70     	
 ;;;71     	CAN1Config();
 00000c  f7fffffe          BL       CAN1Config
 ;;;72     	canSendQ    = OSQCreate(&canSendBuf[0],CANSENDBUF_SIZE);//卡路宝向ECU发送指令的消息队列
 000010  2196              MOVS     r1,#0x96
-000012  488d              LDR      r0,|L2.584|
+000012  488a              LDR      r0,|L2.572|
 000014  f7fffffe          BL       OSQCreate
-000018  498c              LDR      r1,|L2.588|
+000018  4989              LDR      r1,|L2.576|
 00001a  6008              STR      r0,[r1,#0]  ; canSendQ
 ;;;73     	canRecieveQ = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);  //卡路宝从ECU接收指令的循环队列
 00001c  210a              MOVS     r1,#0xa
-00001e  488c              LDR      r0,|L2.592|
+00001e  4889              LDR      r0,|L2.580|
 000020  f7fffffe          BL       OSQCreate
-000024  498b              LDR      r1,|L2.596|
+000024  4988              LDR      r1,|L2.584|
 000026  6008              STR      r0,[r1,#0]  ; canRecieveQ
 ;;;74     	
-;;;75     	OSTimeDlyHMSM(0,0,6,0);//CDMA还没启动，此处需要延时
-000028  2300              MOVS     r3,#0
-00002a  2206              MOVS     r2,#6
-00002c  4619              MOV      r1,r3
-00002e  4618              MOV      r0,r3
-000030  f7fffffe          BL       OSTimeDlyHMSM
+;;;75     //	CANTestChannel();//完成CAN的ID、波特率设定，并且读取出ECU的版本号
 ;;;76     	
-;;;77     //	CANTestChannel();
-;;;78     	
-;;;79     	dataToSend.canId = 0x7E0;
-000034  f44f60fc          MOV      r0,#0x7e0
-000038  4987              LDR      r1,|L2.600|
-00003a  6008              STR      r0,[r1,#0]  ; dataToSend
-;;;80     	dataToSend.ide   = CAN_ID_STD;
-00003c  2000              MOVS     r0,#0
-00003e  6048              STR      r0,[r1,#4]  ; dataToSend
-;;;81     	dataToSend.testIsOK = 1; 
-000040  2001              MOVS     r0,#1
-000042  7208              STRB     r0,[r1,#8]
-                  |L2.68|
-;;;82     	
-;;;83     //	dataToSend.canId = 0x18DA10FB;
-;;;84     //	dataToSend.ide   = CAN_ID_EXT;
-;;;85     //	dataToSend.testIsOK = 1; 
-;;;86     
-;;;87     	
-;;;88     	while(1)
-000044  e0fe              B        |L2.580|
-                  |L2.70|
-;;;89     	{	
-;;;90     		can1_Txbuff = OSQPend(canSendQ,0,&err);//收到PID指令，进行发送
-000046  466a              MOV      r2,sp
-000048  2100              MOVS     r1,#0
-00004a  4880              LDR      r0,|L2.588|
-00004c  6800              LDR      r0,[r0,#0]  ; canSendQ
-00004e  f7fffffe          BL       OSQPend
-000052  4607              MOV      r7,r0
-;;;91     		
-;;;92     		cmdNum = can1_Txbuff[0];               //记录PID指令序号
-000054  f8979000          LDRB     r9,[r7,#0]
-;;;93     		cmdLen = can1_Txbuff[1];               //记录PID指令长度
-000058  787e              LDRB     r6,[r7,#1]
-;;;94     		
-;;;95     		dataToSend.pdat = &can1_Txbuff[1];     
-00005a  1c78              ADDS     r0,r7,#1
-00005c  497e              LDR      r1,|L2.600|
-00005e  60c8              STR      r0,[r1,#0xc]  ; dataToSend
-;;;96     		OBD_CAN_SendData(dataToSend);          //发送PID指令
-000060  4608              MOV      r0,r1
-000062  c80f              LDM      r0,{r0-r3}
-000064  f7fffffe          BL       OBD_CAN_SendData
-;;;97     		Mem_free(can1_Txbuff);                 //释放内存块
-000068  4638              MOV      r0,r7
-00006a  f7fffffe          BL       Mem_free
-;;;98     		
-;;;99     		
-;;;100    		CAN1_RxMsg = OSQPend(canRecieveQ,200,&err); //接收到OBD回复
-00006e  466a              MOV      r2,sp
-000070  21c8              MOVS     r1,#0xc8
-000072  4878              LDR      r0,|L2.596|
-000074  6800              LDR      r0,[r0,#0]  ; canRecieveQ
-000076  f7fffffe          BL       OSQPend
-00007a  4604              MOV      r4,r0
-;;;101    		if(err == OS_ERR_NONE)
-00007c  f89d0000          LDRB     r0,[sp,#0]
-000080  2800              CMP      r0,#0
-000082  d1df              BNE      |L2.68|
-;;;102    		{
-;;;103    			freOBDLed = 300;                    //OBD 初始化成功
-000084  f44f7096          MOV      r0,#0x12c
-000088  4974              LDR      r1,|L2.604|
-00008a  8008              STRH     r0,[r1,#0]
-;;;104    			if(CAN1_RxMsg->Data[0] == 0x10)     //多包处理
-00008c  7ae0              LDRB     r0,[r4,#0xb]
-00008e  2810              CMP      r0,#0x10
-000090  d17f              BNE      |L2.402|
-;;;105    			{
-;;;106    				ptrSaveBuff = Mem_malloc(CAN1_RxMsg->Data[1]+10);//申请的内存块足够长
-000092  7b21              LDRB     r1,[r4,#0xc]
-000094  f101000a          ADD      r0,r1,#0xa
-000098  f7fffffe          BL       Mem_malloc
-00009c  4605              MOV      r5,r0
-;;;107    				if(ptrSaveBuff != NULL)
-00009e  2d00              CMP      r5,#0
-0000a0  d0d0              BEQ      |L2.68|
-;;;108    				{
-;;;109    					ptrSaveBuff[0] = CAN1_RxMsg->Data[1] - cmdLen + 3;
-0000a2  7b20              LDRB     r0,[r4,#0xc]
-0000a4  1b80              SUBS     r0,r0,r6
-0000a6  1cc0              ADDS     r0,r0,#3
-0000a8  7028              STRB     r0,[r5,#0]
-;;;110    					ptrSaveBuff[1] = 0x60;
-0000aa  2060              MOVS     r0,#0x60
-0000ac  7068              STRB     r0,[r5,#1]
-;;;111    					ptrSaveBuff[2] = cmdNum;
-0000ae  f8859002          STRB     r9,[r5,#2]
-;;;112    					memcpy(&ptrSaveBuff[3],&CAN1_RxMsg->Data[cmdLen + 2],(6 - cmdLen));
-0000b2  f1c60206          RSB      r2,r6,#6
-0000b6  f104000b          ADD      r0,r4,#0xb
-0000ba  1cb3              ADDS     r3,r6,#2
-0000bc  18c1              ADDS     r1,r0,r3
-0000be  1ce8              ADDS     r0,r5,#3
-0000c0  f7fffffe          BL       __aeabi_memcpy
-;;;113    					cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6)%7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
-0000c4  7b20              LDRB     r0,[r4,#0xc]
-0000c6  1f80              SUBS     r0,r0,#6
-0000c8  2107              MOVS     r1,#7
-0000ca  fb90f2f1          SDIV     r2,r0,r1
-0000ce  fb010012          MLS      r0,r1,r2,r0
-0000d2  b920              CBNZ     r0,|L2.222|
-0000d4  7b20              LDRB     r0,[r4,#0xc]
-0000d6  1f80              SUBS     r0,r0,#6
-0000d8  fb90f0f1          SDIV     r0,r0,r1
-0000dc  e005              B        |L2.234|
-                  |L2.222|
-0000de  7b20              LDRB     r0,[r4,#0xc]
-0000e0  1f80              SUBS     r0,r0,#6
-0000e2  2107              MOVS     r1,#7
-0000e4  fb90f0f1          SDIV     r0,r0,r1
-0000e8  1c40              ADDS     r0,r0,#1
-                  |L2.234|
-0000ea  f0000aff          AND      r10,r0,#0xff
-;;;114    					Mem_free(CAN1_RxMsg);
-0000ee  4620              MOV      r0,r4
-0000f0  f7fffffe          BL       Mem_free
-;;;115    					
-;;;116    					dataToSend.pdat = pidManyBag;//发送0x30 请求接下来的多包
-0000f4  485a              LDR      r0,|L2.608|
-0000f6  4958              LDR      r1,|L2.600|
-0000f8  60c8              STR      r0,[r1,#0xc]  ; dataToSend
-;;;117    					OBD_CAN_SendData(dataToSend);
-0000fa  4608              MOV      r0,r1
-0000fc  c80f              LDM      r0,{r0-r3}
-0000fe  f7fffffe          BL       OBD_CAN_SendData
-;;;118    					
-;;;119    					for(i=0;i<cmdManyPackNum;i++)
-000102  f04f0800          MOV      r8,#0
-000106  e01d              B        |L2.324|
-                  |L2.264|
-;;;120    					{
-;;;121    						CAN1_RxMsg = OSQPend(canRecieveQ,200,&err);//接收多包
-000108  466a              MOV      r2,sp
-00010a  21c8              MOVS     r1,#0xc8
-00010c  4851              LDR      r0,|L2.596|
-00010e  6800              LDR      r0,[r0,#0]  ; canRecieveQ
-000110  f7fffffe          BL       OSQPend
-000114  4604              MOV      r4,r0
-;;;122    						if(err == OS_ERR_NONE)
-000116  f89d0000          LDRB     r0,[sp,#0]
-00011a  b970              CBNZ     r0,|L2.314|
-;;;123    						{
-;;;124    							memcpy(&ptrSaveBuff[7*i + 9 - cmdLen],&CAN1_RxMsg->Data[1],7);
-00011c  ebc800c8          RSB      r0,r8,r8,LSL #3
-000120  3009              ADDS     r0,r0,#9
-000122  1b80              SUBS     r0,r0,r6
-000124  1941              ADDS     r1,r0,r5
-000126  68e2              LDR      r2,[r4,#0xc]
-000128  600a              STR      r2,[r1,#0]
-00012a  8a22              LDRH     r2,[r4,#0x10]
-00012c  808a              STRH     r2,[r1,#4]
-00012e  7ca0              LDRB     r0,[r4,#0x12]
-000130  7188              STRB     r0,[r1,#6]
-;;;125    							Mem_free(CAN1_RxMsg);
-000132  4620              MOV      r0,r4
-000134  f7fffffe          BL       Mem_free
-000138  e000              B        |L2.316|
+;;;77     //	dataToSend.canId = 0x7E0;
+;;;78     //	dataToSend.ide   = CAN_ID_STD;
+;;;79     //	dataToSend.testIsOK = 1; 
+;;;80     	
+;;;81     	dataToSend.canId = 0x18DA10FB;
+000028  4888              LDR      r0,|L2.588|
+00002a  4989              LDR      r1,|L2.592|
+00002c  6008              STR      r0,[r1,#0]  ; dataToSend
+;;;82     	dataToSend.ide   = CAN_ID_EXT;
+00002e  2004              MOVS     r0,#4
+000030  6048              STR      r0,[r1,#4]  ; dataToSend
+;;;83     	dataToSend.testIsOK = 1; 
+000032  2001              MOVS     r0,#1
+000034  7208              STRB     r0,[r1,#8]
+                  |L2.54|
+;;;84     
+;;;85     	
+;;;86     	while(1)
+000036  e0ff              B        |L2.568|
+                  |L2.56|
+;;;87     	{	
+;;;88     		can1_Txbuff = OSQPend(canSendQ,0,&err);//收到PID指令，进行发送
+000038  466a              MOV      r2,sp
+00003a  2100              MOVS     r1,#0
+00003c  4880              LDR      r0,|L2.576|
+00003e  6800              LDR      r0,[r0,#0]  ; canSendQ
+000040  f7fffffe          BL       OSQPend
+000044  4607              MOV      r7,r0
+;;;89     		
+;;;90     		cmdNum = can1_Txbuff[0];               //记录PID指令序号
+000046  f8979000          LDRB     r9,[r7,#0]
+;;;91     		cmdLen = can1_Txbuff[1];               //记录PID指令长度
+00004a  787e              LDRB     r6,[r7,#1]
+;;;92     		
+;;;93     		dataToSend.pdat = &can1_Txbuff[1];     
+00004c  1c78              ADDS     r0,r7,#1
+00004e  4980              LDR      r1,|L2.592|
+000050  60c8              STR      r0,[r1,#0xc]  ; dataToSend
+;;;94     		OBD_CAN_SendData(dataToSend);          //发送PID指令
+000052  4608              MOV      r0,r1
+000054  c80f              LDM      r0,{r0-r3}
+000056  f7fffffe          BL       OBD_CAN_SendData
+;;;95     		Mem_free(can1_Txbuff);                 //释放内存块
+00005a  4638              MOV      r0,r7
+00005c  f7fffffe          BL       Mem_free
+;;;96     		
+;;;97     		
+;;;98     		CAN1_RxMsg = OSQPend(canRecieveQ,25,&err); //接收到OBD回复
+000060  466a              MOV      r2,sp
+000062  2119              MOVS     r1,#0x19
+000064  4878              LDR      r0,|L2.584|
+000066  6800              LDR      r0,[r0,#0]  ; canRecieveQ
+000068  f7fffffe          BL       OSQPend
+00006c  4604              MOV      r4,r0
+;;;99     		if(err == OS_ERR_NONE)
+00006e  f89d0000          LDRB     r0,[sp,#0]
+000072  2800              CMP      r0,#0
+000074  d1df              BNE      |L2.54|
+;;;100    		{
+;;;101    			freOBDLed = 300;                    //OBD 初始化成功
+000076  f44f7096          MOV      r0,#0x12c
+00007a  4976              LDR      r1,|L2.596|
+00007c  8008              STRH     r0,[r1,#0]
+;;;102    			if(CAN1_RxMsg->Data[0] == 0x10)     //多包处理
+00007e  7ae0              LDRB     r0,[r4,#0xb]
+000080  2810              CMP      r0,#0x10
+000082  d17c              BNE      |L2.382|
+;;;103    			{
+;;;104    				ptrSaveBuff = Mem_malloc(CAN1_RxMsg->Data[1]+10);//申请的内存块足够长
+000084  7b21              LDRB     r1,[r4,#0xc]
+000086  f101000a          ADD      r0,r1,#0xa
+00008a  f7fffffe          BL       Mem_malloc
+00008e  4605              MOV      r5,r0
+;;;105    				if(ptrSaveBuff != NULL)
+000090  2d00              CMP      r5,#0
+000092  d0d0              BEQ      |L2.54|
+;;;106    				{
+;;;107    					ptrSaveBuff[0] = CAN1_RxMsg->Data[1] - cmdLen + 3;
+000094  7b20              LDRB     r0,[r4,#0xc]
+000096  1b80              SUBS     r0,r0,r6
+000098  1cc0              ADDS     r0,r0,#3
+00009a  7028              STRB     r0,[r5,#0]
+;;;108    					ptrSaveBuff[1] = 0x60;
+00009c  2060              MOVS     r0,#0x60
+00009e  7068              STRB     r0,[r5,#1]
+;;;109    					ptrSaveBuff[2] = cmdNum;
+0000a0  f8859002          STRB     r9,[r5,#2]
+;;;110    					memcpy(&ptrSaveBuff[3],&CAN1_RxMsg->Data[cmdLen + 2],(6 - cmdLen));
+0000a4  f1c60206          RSB      r2,r6,#6
+0000a8  f104000b          ADD      r0,r4,#0xb
+0000ac  1cb3              ADDS     r3,r6,#2
+0000ae  18c1              ADDS     r1,r0,r3
+0000b0  1ce8              ADDS     r0,r5,#3
+0000b2  f7fffffe          BL       __aeabi_memcpy
+;;;111    					cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6)%7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
+0000b6  7b20              LDRB     r0,[r4,#0xc]
+0000b8  1f80              SUBS     r0,r0,#6
+0000ba  2107              MOVS     r1,#7
+0000bc  fb90f2f1          SDIV     r2,r0,r1
+0000c0  fb010012          MLS      r0,r1,r2,r0
+0000c4  b920              CBNZ     r0,|L2.208|
+0000c6  7b20              LDRB     r0,[r4,#0xc]
+0000c8  1f80              SUBS     r0,r0,#6
+0000ca  fb90f0f1          SDIV     r0,r0,r1
+0000ce  e005              B        |L2.220|
+                  |L2.208|
+0000d0  7b20              LDRB     r0,[r4,#0xc]
+0000d2  1f80              SUBS     r0,r0,#6
+0000d4  2107              MOVS     r1,#7
+0000d6  fb90f0f1          SDIV     r0,r0,r1
+0000da  1c40              ADDS     r0,r0,#1
+                  |L2.220|
+0000dc  f0000aff          AND      r10,r0,#0xff
+;;;112    					Mem_free(CAN1_RxMsg);
+0000e0  4620              MOV      r0,r4
+0000e2  f7fffffe          BL       Mem_free
+;;;113    					
+;;;114    					dataToSend.pdat = pidManyBag;//发送0x30 请求接下来的多包
+0000e6  485c              LDR      r0,|L2.600|
+0000e8  4959              LDR      r1,|L2.592|
+0000ea  60c8              STR      r0,[r1,#0xc]  ; dataToSend
+;;;115    					OBD_CAN_SendData(dataToSend);
+0000ec  4608              MOV      r0,r1
+0000ee  c80f              LDM      r0,{r0-r3}
+0000f0  f7fffffe          BL       OBD_CAN_SendData
+;;;116    					
+;;;117    					for(i=0;i<cmdManyPackNum;i++)
+0000f4  f04f0800          MOV      r8,#0
+0000f8  e01d              B        |L2.310|
+                  |L2.250|
+;;;118    					{
+;;;119    						CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);//接收多包
+0000fa  466a              MOV      r2,sp
+0000fc  2119              MOVS     r1,#0x19
+0000fe  4852              LDR      r0,|L2.584|
+000100  6800              LDR      r0,[r0,#0]  ; canRecieveQ
+000102  f7fffffe          BL       OSQPend
+000106  4604              MOV      r4,r0
+;;;120    						if(err == OS_ERR_NONE)
+000108  f89d0000          LDRB     r0,[sp,#0]
+00010c  b970              CBNZ     r0,|L2.300|
+;;;121    						{
+;;;122    							memcpy(&ptrSaveBuff[7*i + 9 - cmdLen],&CAN1_RxMsg->Data[1],7);
+00010e  ebc800c8          RSB      r0,r8,r8,LSL #3
+000112  3009              ADDS     r0,r0,#9
+000114  1b80              SUBS     r0,r0,r6
+000116  1941              ADDS     r1,r0,r5
+000118  68e2              LDR      r2,[r4,#0xc]
+00011a  600a              STR      r2,[r1,#0]
+00011c  8a22              LDRH     r2,[r4,#0x10]
+00011e  808a              STRH     r2,[r1,#4]
+000120  7ca0              LDRB     r0,[r4,#0x12]
+000122  7188              STRB     r0,[r1,#6]
+;;;123    							Mem_free(CAN1_RxMsg);
+000124  4620              MOV      r0,r4
+000126  f7fffffe          BL       Mem_free
+00012a  e000              B        |L2.302|
+                  |L2.300|
+;;;124    						}
+;;;125    						else break;
+00012c  e005              B        |L2.314|
+                  |L2.302|
+00012e  f1080001          ADD      r0,r8,#1              ;117
+000132  f00008ff          AND      r8,r0,#0xff           ;117
+                  |L2.310|
+000136  45d0              CMP      r8,r10                ;117
+000138  dbdf              BLT      |L2.250|
                   |L2.314|
-;;;126    						}
-;;;127    						else break;
-00013a  e005              B        |L2.328|
-                  |L2.316|
-00013c  f1080001          ADD      r0,r8,#1              ;119
-000140  f00008ff          AND      r8,r0,#0xff           ;119
-                  |L2.324|
-000144  45d0              CMP      r8,r10                ;119
-000146  dbdf              BLT      |L2.264|
-                  |L2.328|
-000148  bf00              NOP      
-;;;128    					}
-;;;129    					if(i == cmdManyPackNum)
-00014a  45d0              CMP      r8,r10
-00014c  d11c              BNE      |L2.392|
-;;;130    					{
-;;;131    						OSMutexPend(CDMASendMutex,0,&err);
-00014e  466a              MOV      r2,sp
-000150  2100              MOVS     r1,#0
-000152  4844              LDR      r0,|L2.612|
-000154  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-000156  f7fffffe          BL       OSMutexPend
-;;;132    						
-;;;133    						memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrSaveBuff,ptrSaveBuff[0]);
-00015a  782a              LDRB     r2,[r5,#0]
-00015c  4942              LDR      r1,|L2.616|
-00015e  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000160  880b              LDRH     r3,[r1,#0]
-000162  4941              LDR      r1,|L2.616|
-000164  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000166  1d09              ADDS     r1,r1,#4
-000168  1858              ADDS     r0,r3,r1
-00016a  4629              MOV      r1,r5
-00016c  f7fffffe          BL       __aeabi_memcpy
-;;;134    						cdmaDataToSend->datLength += ptrSaveBuff[0];
-000170  483d              LDR      r0,|L2.616|
-000172  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000174  8800              LDRH     r0,[r0,#0]
-000176  7829              LDRB     r1,[r5,#0]
-000178  4408              ADD      r0,r0,r1
-00017a  493b              LDR      r1,|L2.616|
-00017c  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-00017e  8008              STRH     r0,[r1,#0]
-;;;135    						
-;;;136    						OSMutexPost(CDMASendMutex);
-000180  4838              LDR      r0,|L2.612|
-000182  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-000184  f7fffffe          BL       OSMutexPost
-                  |L2.392|
-;;;137    					}
-;;;138    					Mem_free(ptrSaveBuff);
-000188  4628              MOV      r0,r5
-00018a  f7fffffe          BL       Mem_free
-00018e  e059              B        |L2.580|
-000190  e7ff              B        |L2.402|
-                  |L2.402|
-;;;139    				}
-;;;140    			}
-;;;141    			else  //单包处理
-;;;142    			{
-;;;143    				OSMutexPend(CDMASendMutex,0,&err);
-000192  466a              MOV      r2,sp
-000194  2100              MOVS     r1,#0
-000196  4833              LDR      r0,|L2.612|
-000198  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-00019a  f7fffffe          BL       OSMutexPend
-;;;144    				
-;;;145    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = CAN1_RxMsg->Data[0] - cmdLen + 3;
-00019e  7ae0              LDRB     r0,[r4,#0xb]
-0001a0  1b80              SUBS     r0,r0,r6
-0001a2  1cc0              ADDS     r0,r0,#3
-0001a4  b2c1              UXTB     r1,r0
-0001a6  4830              LDR      r0,|L2.616|
-0001a8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001aa  8802              LDRH     r2,[r0,#0]
-0001ac  482e              LDR      r0,|L2.616|
-0001ae  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001b0  8800              LDRH     r0,[r0,#0]
-0001b2  1c40              ADDS     r0,r0,#1
-0001b4  4b2c              LDR      r3,|L2.616|
-0001b6  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-0001b8  8018              STRH     r0,[r3,#0]
-0001ba  482b              LDR      r0,|L2.616|
-0001bc  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001be  1d00              ADDS     r0,r0,#4
-0001c0  5481              STRB     r1,[r0,r2]
-;;;146    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x60;
-0001c2  2160              MOVS     r1,#0x60
-0001c4  4828              LDR      r0,|L2.616|
-0001c6  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001c8  8802              LDRH     r2,[r0,#0]
-0001ca  4827              LDR      r0,|L2.616|
-0001cc  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001ce  8800              LDRH     r0,[r0,#0]
-0001d0  1c40              ADDS     r0,r0,#1
-0001d2  4b25              LDR      r3,|L2.616|
-0001d4  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-0001d6  8018              STRH     r0,[r3,#0]
-0001d8  4823              LDR      r0,|L2.616|
-0001da  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001dc  1d00              ADDS     r0,r0,#4
-0001de  5481              STRB     r1,[r0,r2]
-;;;147    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = cmdNum;
-0001e0  4821              LDR      r0,|L2.616|
-0001e2  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001e4  8801              LDRH     r1,[r0,#0]
-0001e6  4820              LDR      r0,|L2.616|
-0001e8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001ea  8800              LDRH     r0,[r0,#0]
-0001ec  1c40              ADDS     r0,r0,#1
-0001ee  4a1e              LDR      r2,|L2.616|
-0001f0  6812              LDR      r2,[r2,#0]  ; cdmaDataToSend
-0001f2  8010              STRH     r0,[r2,#0]
-0001f4  481c              LDR      r0,|L2.616|
-0001f6  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001f8  1d00              ADDS     r0,r0,#4
-0001fa  f8009001          STRB     r9,[r0,r1]
-;;;148    						
-;;;149    				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],&CAN1_RxMsg->Data[cmdLen+1],(CAN1_RxMsg->Data[0] - cmdLen));
-0001fe  7ae3              LDRB     r3,[r4,#0xb]
-000200  1b9a              SUBS     r2,r3,r6
-000202  f104030b          ADD      r3,r4,#0xb
-000206  f1060c01          ADD      r12,r6,#1
-00020a  eb03010c          ADD      r1,r3,r12
-00020e  4b16              LDR      r3,|L2.616|
-000210  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-000212  f8b3c000          LDRH     r12,[r3,#0]
-000216  4b14              LDR      r3,|L2.616|
-000218  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-00021a  1d1b              ADDS     r3,r3,#4
-00021c  eb0c0003          ADD      r0,r12,r3
-000220  f7fffffe          BL       __aeabi_memcpy
-;;;150    				cdmaDataToSend->datLength += CAN1_RxMsg->Data[0] - cmdLen;
-000224  4810              LDR      r0,|L2.616|
-000226  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000228  8800              LDRH     r0,[r0,#0]
-00022a  7ae1              LDRB     r1,[r4,#0xb]
-00022c  1b89              SUBS     r1,r1,r6
-00022e  4408              ADD      r0,r0,r1
-000230  490d              LDR      r1,|L2.616|
-000232  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000234  8008              STRH     r0,[r1,#0]
-;;;151    						
-;;;152    				OSMutexPost(CDMASendMutex);
-000236  480b              LDR      r0,|L2.612|
-000238  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-00023a  f7fffffe          BL       OSMutexPost
-;;;153    				
-;;;154    				Mem_free(CAN1_RxMsg);
-00023e  4620              MOV      r0,r4
-000240  f7fffffe          BL       Mem_free
-                  |L2.580|
-000244  e6ff              B        |L2.70|
-;;;155    			}
-;;;156    		}
-;;;157    	}
-;;;158    }
-;;;159    
+00013a  bf00              NOP      
+;;;126    					}
+;;;127    					if(i == cmdManyPackNum)
+00013c  45d0              CMP      r8,r10
+00013e  d11c              BNE      |L2.378|
+;;;128    					{
+;;;129    						OSMutexPend(CDMASendMutex,0,&err);
+000140  466a              MOV      r2,sp
+000142  2100              MOVS     r1,#0
+000144  4845              LDR      r0,|L2.604|
+000146  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+000148  f7fffffe          BL       OSMutexPend
+;;;130    						
+;;;131    						memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrSaveBuff,ptrSaveBuff[0]);
+00014c  782a              LDRB     r2,[r5,#0]
+00014e  4944              LDR      r1,|L2.608|
+000150  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000152  880b              LDRH     r3,[r1,#0]
+000154  4942              LDR      r1,|L2.608|
+000156  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000158  1d09              ADDS     r1,r1,#4
+00015a  1858              ADDS     r0,r3,r1
+00015c  4629              MOV      r1,r5
+00015e  f7fffffe          BL       __aeabi_memcpy
+;;;132    						cdmaDataToSend->datLength += ptrSaveBuff[0];
+000162  483f              LDR      r0,|L2.608|
+000164  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000166  8800              LDRH     r0,[r0,#0]
+000168  7829              LDRB     r1,[r5,#0]
+00016a  4408              ADD      r0,r0,r1
+00016c  493c              LDR      r1,|L2.608|
+00016e  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000170  8008              STRH     r0,[r1,#0]
+;;;133    						
+;;;134    						OSMutexPost(CDMASendMutex);
+000172  483a              LDR      r0,|L2.604|
+000174  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+000176  f7fffffe          BL       OSMutexPost
+                  |L2.378|
+;;;135    					}
+;;;136    					Mem_free(ptrSaveBuff);
+00017a  4628              MOV      r0,r5
+00017c  e000              B        |L2.384|
+                  |L2.382|
+00017e  e002              B        |L2.390|
+                  |L2.384|
+000180  f7fffffe          BL       Mem_free
+000184  e058              B        |L2.568|
+                  |L2.390|
+;;;137    				}
+;;;138    			}
+;;;139    			else  //单包处理
+;;;140    			{
+;;;141    				OSMutexPend(CDMASendMutex,0,&err);
+000186  466a              MOV      r2,sp
+000188  2100              MOVS     r1,#0
+00018a  4834              LDR      r0,|L2.604|
+00018c  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+00018e  f7fffffe          BL       OSMutexPend
+;;;142    				
+;;;143    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = CAN1_RxMsg->Data[0] - cmdLen + 3;
+000192  7ae0              LDRB     r0,[r4,#0xb]
+000194  1b80              SUBS     r0,r0,r6
+000196  1cc0              ADDS     r0,r0,#3
+000198  b2c1              UXTB     r1,r0
+00019a  4831              LDR      r0,|L2.608|
+00019c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00019e  8802              LDRH     r2,[r0,#0]
+0001a0  482f              LDR      r0,|L2.608|
+0001a2  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001a4  8800              LDRH     r0,[r0,#0]
+0001a6  1c40              ADDS     r0,r0,#1
+0001a8  4b2d              LDR      r3,|L2.608|
+0001aa  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0001ac  8018              STRH     r0,[r3,#0]
+0001ae  482c              LDR      r0,|L2.608|
+0001b0  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001b2  1d00              ADDS     r0,r0,#4
+0001b4  5481              STRB     r1,[r0,r2]
+;;;144    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x60;
+0001b6  2160              MOVS     r1,#0x60
+0001b8  4829              LDR      r0,|L2.608|
+0001ba  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001bc  8802              LDRH     r2,[r0,#0]
+0001be  4828              LDR      r0,|L2.608|
+0001c0  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001c2  8800              LDRH     r0,[r0,#0]
+0001c4  1c40              ADDS     r0,r0,#1
+0001c6  4b26              LDR      r3,|L2.608|
+0001c8  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0001ca  8018              STRH     r0,[r3,#0]
+0001cc  4824              LDR      r0,|L2.608|
+0001ce  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001d0  1d00              ADDS     r0,r0,#4
+0001d2  5481              STRB     r1,[r0,r2]
+;;;145    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = cmdNum;
+0001d4  4822              LDR      r0,|L2.608|
+0001d6  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001d8  8801              LDRH     r1,[r0,#0]
+0001da  4821              LDR      r0,|L2.608|
+0001dc  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001de  8800              LDRH     r0,[r0,#0]
+0001e0  1c40              ADDS     r0,r0,#1
+0001e2  4a1f              LDR      r2,|L2.608|
+0001e4  6812              LDR      r2,[r2,#0]  ; cdmaDataToSend
+0001e6  8010              STRH     r0,[r2,#0]
+0001e8  481d              LDR      r0,|L2.608|
+0001ea  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001ec  1d00              ADDS     r0,r0,#4
+0001ee  f8009001          STRB     r9,[r0,r1]
+;;;146    						
+;;;147    				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],&CAN1_RxMsg->Data[cmdLen+1],(CAN1_RxMsg->Data[0] - cmdLen));
+0001f2  7ae3              LDRB     r3,[r4,#0xb]
+0001f4  1b9a              SUBS     r2,r3,r6
+0001f6  f104030b          ADD      r3,r4,#0xb
+0001fa  f1060c01          ADD      r12,r6,#1
+0001fe  eb03010c          ADD      r1,r3,r12
+000202  4b17              LDR      r3,|L2.608|
+000204  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000206  f8b3c000          LDRH     r12,[r3,#0]
+00020a  4b15              LDR      r3,|L2.608|
+00020c  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+00020e  1d1b              ADDS     r3,r3,#4
+000210  eb0c0003          ADD      r0,r12,r3
+000214  f7fffffe          BL       __aeabi_memcpy
+;;;148    				cdmaDataToSend->datLength += CAN1_RxMsg->Data[0] - cmdLen;
+000218  4811              LDR      r0,|L2.608|
+00021a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00021c  8800              LDRH     r0,[r0,#0]
+00021e  7ae1              LDRB     r1,[r4,#0xb]
+000220  1b89              SUBS     r1,r1,r6
+000222  4408              ADD      r0,r0,r1
+000224  490e              LDR      r1,|L2.608|
+000226  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000228  8008              STRH     r0,[r1,#0]
+;;;149    						
+;;;150    				OSMutexPost(CDMASendMutex);
+00022a  480c              LDR      r0,|L2.604|
+00022c  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+00022e  f7fffffe          BL       OSMutexPost
+;;;151    				
+;;;152    				Mem_free(CAN1_RxMsg);
+000232  4620              MOV      r0,r4
+000234  f7fffffe          BL       Mem_free
+                  |L2.568|
+000238  e6fe              B        |L2.56|
+;;;153    			}
+;;;154    		}
+;;;155    	}
+;;;156    }
+;;;157    
                           ENDP
 
-000246  0000              DCW      0x0000
-                  |L2.584|
+00023a  0000              DCW      0x0000
+                  |L2.572|
                           DCD      canSendBuf
-                  |L2.588|
+                  |L2.576|
                           DCD      canSendQ
-                  |L2.592|
+                  |L2.580|
                           DCD      canRecBuf
-                  |L2.596|
+                  |L2.584|
                           DCD      canRecieveQ
-                  |L2.600|
+                  |L2.588|
+                          DCD      0x18da10fb
+                  |L2.592|
                           DCD      dataToSend
-                  |L2.604|
+                  |L2.596|
                           DCD      freOBDLed
-                  |L2.608|
+                  |L2.600|
                           DCD      pidManyBag
-                  |L2.612|
+                  |L2.604|
                           DCD      CDMASendMutex
-                  |L2.616|
+                  |L2.608|
                           DCD      cdmaDataToSend
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2

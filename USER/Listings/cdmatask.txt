@@ -5,161 +5,166 @@
                           AREA ||i.CDMAConfigInit||, CODE, READONLY, ALIGN=2
 
                   CDMAConfigInit PROC
-;;;159    }
-;;;160    static void CDMAConfigInit(void )
+;;;172    }
+;;;173    static void CDMAConfigInit(void )
 000000  b510              PUSH     {r4,lr}
-;;;161    {
-;;;162    	CDMASendCmd(atCmd,"OK",sizeof(atCmd));
+;;;174    {
+;;;175    	CDMASendCmd(atCmd,"OK",sizeof(atCmd));
 000002  2204              MOVS     r2,#4
-000004  a11e              ADR      r1,|L1.128|
-000006  481f              LDR      r0,|L1.132|
+000004  a11f              ADR      r1,|L1.132|
+000006  4820              LDR      r0,|L1.136|
 000008  f7fffffe          BL       CDMASendCmd
-;;;163    	CDMASendCmd(ate0Cmd,"OK",sizeof(ate0Cmd));
+;;;176    	CDMASendCmd(ate0Cmd,"OK",sizeof(ate0Cmd));
 00000c  2206              MOVS     r2,#6
-00000e  a11c              ADR      r1,|L1.128|
-000010  481d              LDR      r0,|L1.136|
+00000e  a11d              ADR      r1,|L1.132|
+000010  481e              LDR      r0,|L1.140|
 000012  f7fffffe          BL       CDMASendCmd
-;;;164    	CDMASendCmd(at_ZDSLEEP,"OK",sizeof(at_ZDSLEEP));
+;;;177    	CDMASendCmd(at_ZDSLEEP,"OK",sizeof(at_ZDSLEEP));
 000016  220e              MOVS     r2,#0xe
-000018  a119              ADR      r1,|L1.128|
-00001a  481c              LDR      r0,|L1.140|
+000018  a11a              ADR      r1,|L1.132|
+00001a  481d              LDR      r0,|L1.144|
 00001c  f7fffffe          BL       CDMASendCmd
-;;;165    	CDMASendCmd(at_CSQ,"+CSQ:",sizeof(at_CSQ));
+;;;178    	CDMASendCmd(at_CSQ,"+CSQ:",sizeof(at_CSQ));
 000020  2209              MOVS     r2,#9
-000022  a11b              ADR      r1,|L1.144|
-000024  481c              LDR      r0,|L1.152|
+000022  a11c              ADR      r1,|L1.148|
+000024  481d              LDR      r0,|L1.156|
 000026  f7fffffe          BL       CDMASendCmd
-;;;166    	CDMASendCmd(at_ICCID,"OK",sizeof(at_ICCID));
+;;;179    	CDMASendCmd(at_ICCID,"OK",sizeof(at_ICCID));
 00002a  220e              MOVS     r2,#0xe
-00002c  a114              ADR      r1,|L1.128|
-00002e  481b              LDR      r0,|L1.156|
+00002c  a115              ADR      r1,|L1.132|
+00002e  481c              LDR      r0,|L1.160|
 000030  f7fffffe          BL       CDMASendCmd
-;;;167    	CDMASendCmd(at_CNMI,"OK",sizeof(at_CNMI));
+;;;180    	CDMASendCmd(at_CNMI,"OK",sizeof(at_CNMI));
 000034  2213              MOVS     r2,#0x13
-000036  a112              ADR      r1,|L1.128|
-000038  4819              LDR      r0,|L1.160|
+000036  a113              ADR      r1,|L1.132|
+000038  481a              LDR      r0,|L1.164|
 00003a  f7fffffe          BL       CDMASendCmd
-;;;168    	
-;;;169    	CDMAReadIMEI();//读取IMEI号
+;;;181    	
+;;;182    	CDMAReadIMEI();//读取IMEI号
 00003e  f7fffffe          BL       CDMAReadIMEI
-;;;170    	
-;;;171    	CDMASendCmd(at_SetZpNum,"OK",sizeof(at_SetZpNum));
+;;;183    	
+;;;184    	CDMASendCmd(at_SetZpNum,"OK",sizeof(at_SetZpNum));
 000042  2218              MOVS     r2,#0x18
-000044  a10e              ADR      r1,|L1.128|
-000046  4817              LDR      r0,|L1.164|
+000044  a10f              ADR      r1,|L1.132|
+000046  4818              LDR      r0,|L1.168|
 000048  f7fffffe          BL       CDMASendCmd
-;;;172    	CDMASendCmd(at_ZPPPSTATUS,"+ZPPPSTATUS:",sizeof(at_ZPPPSTATUS));
+;;;185    	CDMASendCmd(at_ZPPPSTATUS,"+ZPPPSTATUS:",sizeof(at_ZPPPSTATUS));
 00004c  220f              MOVS     r2,#0xf
-00004e  a116              ADR      r1,|L1.168|
-000050  4819              LDR      r0,|L1.184|
+00004e  a117              ADR      r1,|L1.172|
+000050  481a              LDR      r0,|L1.188|
 000052  f7fffffe          BL       CDMASendCmd
-;;;173    	CDMASendCmd(at_ZPPPOPEN,"+ZPPPOPEN:CONNECTED",sizeof(at_ZPPPOPEN));
+;;;186    	CDMASendCmd(at_ZPPPOPEN,"+ZPPPOPEN:CONNECTED",sizeof(at_ZPPPOPEN));
 000056  220d              MOVS     r2,#0xd
-000058  a118              ADR      r1,|L1.188|
-00005a  481d              LDR      r0,|L1.208|
+000058  a119              ADR      r1,|L1.192|
+00005a  481e              LDR      r0,|L1.212|
 00005c  f7fffffe          BL       CDMASendCmd
-;;;174    	CDMASendCmd(at_ZIPSETUP,"+ZIPSETUP:CONNECTED",sizeof(at_ZIPSETUP));
-000060  2224              MOVS     r2,#0x24
-000062  a11c              ADR      r1,|L1.212|
-000064  4820              LDR      r0,|L1.232|
+;;;187    	CDMASendCmd(at_ZIPSETUP,"+ZIPSETUP:CONNECTED",sizeof(at_ZIPSETUP));
+000060  2222              MOVS     r2,#0x22
+000062  a11d              ADR      r1,|L1.216|
+000064  4821              LDR      r0,|L1.236|
 000066  f7fffffe          BL       CDMASendCmd
-;;;175    
-;;;176    	freCDMALed = 300;//网络连接成功
+;;;188    
+;;;189    	freCDMALed = 300;//网络连接成功
 00006a  f44f7096          MOV      r0,#0x12c
-00006e  491f              LDR      r1,|L1.236|
+00006e  4920              LDR      r1,|L1.240|
 000070  8008              STRH     r0,[r1,#0]
-;;;177    	OSTimeDlyHMSM(0,0,4,0);
-000072  2300              MOVS     r3,#0
-000074  2204              MOVS     r2,#4
-000076  4619              MOV      r1,r3
-000078  4618              MOV      r0,r3
-00007a  f7fffffe          BL       OSTimeDlyHMSM
-;;;178    }
-00007e  bd10              POP      {r4,pc}
-;;;179    
+;;;190    	
+;;;191    	OSTaskResume(START_TASK_PRIO);//恢复数据流任务
+000072  200a              MOVS     r0,#0xa
+000074  f7fffffe          BL       OSTaskResume
+;;;192    	sysAllData.isDataFlow = 0;      //开启数据流
+000078  2000              MOVS     r0,#0
+00007a  491e              LDR      r1,|L1.244|
+00007c  f881002a          STRB     r0,[r1,#0x2a]
+;;;193    }
+000080  bd10              POP      {r4,pc}
+;;;194    
                           ENDP
 
-                  |L1.128|
-000080  4f4b00            DCB      "OK",0
-000083  00                DCB      0
+000082  0000              DCW      0x0000
                   |L1.132|
-                          DCD      atCmd
+000084  4f4b00            DCB      "OK",0
+000087  00                DCB      0
                   |L1.136|
-                          DCD      ate0Cmd
+                          DCD      atCmd
                   |L1.140|
-                          DCD      at_ZDSLEEP
+                          DCD      ate0Cmd
                   |L1.144|
-000090  2b435351          DCB      "+CSQ:",0
-000094  3a00    
-000096  00                DCB      0
-000097  00                DCB      0
-                  |L1.152|
-                          DCD      at_CSQ
+                          DCD      at_ZDSLEEP
+                  |L1.148|
+000094  2b435351          DCB      "+CSQ:",0
+000098  3a00    
+00009a  00                DCB      0
+00009b  00                DCB      0
                   |L1.156|
-                          DCD      at_ICCID
+                          DCD      at_CSQ
                   |L1.160|
-                          DCD      at_CNMI
+                          DCD      at_ICCID
                   |L1.164|
-                          DCD      at_SetZpNum
+                          DCD      at_CNMI
                   |L1.168|
-0000a8  2b5a5050          DCB      "+ZPPPSTATUS:",0
-0000ac  50535441
-0000b0  5455533a
-0000b4  00      
-0000b5  00                DCB      0
-0000b6  00                DCB      0
-0000b7  00                DCB      0
-                  |L1.184|
-                          DCD      at_ZPPPSTATUS
+                          DCD      at_SetZpNum
+                  |L1.172|
+0000ac  2b5a5050          DCB      "+ZPPPSTATUS:",0
+0000b0  50535441
+0000b4  5455533a
+0000b8  00      
+0000b9  00                DCB      0
+0000ba  00                DCB      0
+0000bb  00                DCB      0
                   |L1.188|
-0000bc  2b5a5050          DCB      "+ZPPPOPEN:CONNECTED",0
-0000c0  504f5045
-0000c4  4e3a434f
-0000c8  4e4e4543
-0000cc  54454400
-                  |L1.208|
-                          DCD      at_ZPPPOPEN
+                          DCD      at_ZPPPSTATUS
+                  |L1.192|
+0000c0  2b5a5050          DCB      "+ZPPPOPEN:CONNECTED",0
+0000c4  504f5045
+0000c8  4e3a434f
+0000cc  4e4e4543
+0000d0  54454400
                   |L1.212|
-0000d4  2b5a4950          DCB      "+ZIPSETUP:CONNECTED",0
-0000d8  53455455
-0000dc  503a434f
-0000e0  4e4e4543
-0000e4  54454400
-                  |L1.232|
-                          DCD      at_ZIPSETUP
+                          DCD      at_ZPPPOPEN
+                  |L1.216|
+0000d8  2b5a4950          DCB      "+ZIPSETUP:CONNECTED",0
+0000dc  53455455
+0000e0  503a434f
+0000e4  4e4e4543
+0000e8  54454400
                   |L1.236|
+                          DCD      at_ZIPSETUP
+                  |L1.240|
                           DCD      freCDMALed
+                  |L1.244|
+                          DCD      sysAllData
 
                           AREA ||i.CDMAPowerOpen_Close||, CODE, READONLY, ALIGN=2
 
                   CDMAPowerOpen_Close PROC
-;;;89     }
-;;;90     static void CDMAPowerOpen_Close(void)//这段代码是用来启动/关闭CDMA
+;;;102    }
+;;;103    static void CDMAPowerOpen_Close(void)//这段代码是用来启动/关闭CDMA
 000000  b510              PUSH     {r4,lr}
-;;;91     {
-;;;92     	CDMA_POWER_LOW;
+;;;104    {
+;;;105    	CDMA_POWER_LOW;
 000002  f44f4100          MOV      r1,#0x8000
 000006  480b              LDR      r0,|L2.52|
 000008  f7fffffe          BL       GPIO_ResetBits
-;;;93     	OSTimeDlyHMSM(0,0,3,500);
+;;;106    	OSTimeDlyHMSM(0,0,3,500);
 00000c  f44f73fa          MOV      r3,#0x1f4
 000010  2203              MOVS     r2,#3
 000012  2100              MOVS     r1,#0
 000014  4608              MOV      r0,r1
 000016  f7fffffe          BL       OSTimeDlyHMSM
-;;;94     	CDMA_POWER_HIGH;
+;;;107    	CDMA_POWER_HIGH;
 00001a  f44f4100          MOV      r1,#0x8000
 00001e  4805              LDR      r0,|L2.52|
 000020  f7fffffe          BL       GPIO_SetBits
-;;;95     	OSTimeDlyHMSM(0,0,2,0);
+;;;108    	OSTimeDlyHMSM(0,0,4,0);
 000024  2300              MOVS     r3,#0
-000026  2202              MOVS     r2,#2
+000026  2204              MOVS     r2,#4
 000028  4619              MOV      r1,r3
 00002a  4618              MOV      r0,r3
 00002c  f7fffffe          BL       OSTimeDlyHMSM
-;;;96     }
+;;;109    }
 000030  bd10              POP      {r4,pc}
-;;;97     //配置以及发送数据的过程中，对CDMA返回的状态信息进行处理 0 接收正常
+;;;110    //配置以及发送数据的过程中，对CDMA返回的状态信息进行处理 0 接收正常
                           ENDP
 
 000032  0000              DCW      0x0000
@@ -169,86 +174,86 @@
                           AREA ||i.CDMAReadIMEI||, CODE, READONLY, ALIGN=2
 
                   CDMAReadIMEI PROC
-;;;133    extern _SystemInformation sysAllData;//系统全局变量信息
-;;;134    static void CDMAReadIMEI(void )
+;;;146    
+;;;147    static void CDMAReadIMEI(void )
 000000  b538              PUSH     {r3-r5,lr}
-;;;135    {
-;;;136    	uint8_t err;
-;;;137    	uint8_t i = 0;
+;;;148    {
+;;;149    	uint8_t err;
+;;;150    	uint8_t i = 0;
 000002  2400              MOVS     r4,#0
-;;;138    	uint8_t *ptrCDMACfg;
-;;;139    	do{
+;;;151    	uint8_t *ptrCDMACfg;
+;;;152    	do{
 000004  bf00              NOP      
                   |L3.6|
-;;;140    		CDMASendDatas(at_GSN,sizeof(at_GSN));
+;;;153    		CDMASendDatas(at_GSN,sizeof(at_GSN));
 000006  2108              MOVS     r1,#8
 000008  4819              LDR      r0,|L3.112|
 00000a  f7fffffe          BL       CDMASendDatas
-;;;141    		ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+;;;154    		ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
 00000e  466a              MOV      r2,sp
 000010  f24051dc          MOV      r1,#0x5dc
 000014  4817              LDR      r0,|L3.116|
 000016  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
 000018  f7fffffe          BL       OSQPend
 00001c  4605              MOV      r5,r0
-;;;142    		if(err == OS_ERR_NONE)
+;;;155    		if(err == OS_ERR_NONE)
 00001e  f89d0000          LDRB     r0,[sp,#0]
 000022  b9b0              CBNZ     r0,|L3.82|
-;;;143    		{
-;;;144    			while( (ptrCDMACfg[i]<0x30)|| (ptrCDMACfg[i]>0x39))
+;;;156    		{
+;;;157    			while( (ptrCDMACfg[i]<0x30)|| (ptrCDMACfg[i]>0x39))
 000024  e006              B        |L3.52|
                   |L3.38|
-;;;145    			{
-;;;146    				i++;
+;;;158    			{
+;;;159    				i++;
 000026  1c60              ADDS     r0,r4,#1
 000028  b2c4              UXTB     r4,r0
-;;;147    				if(i>10)
+;;;160    				if(i>10)
 00002a  2c0a              CMP      r4,#0xa
 00002c  dd02              BLE      |L3.52|
-;;;148    				{
-;;;149    					err = 2;
+;;;161    				{
+;;;162    					err = 2;
 00002e  2002              MOVS     r0,#2
 000030  9000              STR      r0,[sp,#0]
-;;;150    					break;
+;;;163    					break;
 000032  e005              B        |L3.64|
                   |L3.52|
-000034  5d28              LDRB     r0,[r5,r4]            ;144
-000036  2830              CMP      r0,#0x30              ;144
+000034  5d28              LDRB     r0,[r5,r4]            ;157
+000036  2830              CMP      r0,#0x30              ;157
 000038  dbf5              BLT      |L3.38|
-00003a  5d28              LDRB     r0,[r5,r4]            ;144
-00003c  2839              CMP      r0,#0x39              ;144
+00003a  5d28              LDRB     r0,[r5,r4]            ;157
+00003c  2839              CMP      r0,#0x39              ;157
 00003e  dcf2              BGT      |L3.38|
                   |L3.64|
 000040  bf00              NOP      
-;;;151    				}
-;;;152    			}
-;;;153    			memcpy(sysAllData.imei,&ptrCDMACfg[i],15);
+;;;164    				}
+;;;165    			}
+;;;166    			memcpy(sysAllData.imei,&ptrCDMACfg[i],15);
 000042  1929              ADDS     r1,r5,r4
 000044  220f              MOVS     r2,#0xf
 000046  480c              LDR      r0,|L3.120|
 000048  f7fffffe          BL       __aeabi_memcpy
-;;;154    			Mem_free(ptrCDMACfg);
+;;;167    			Mem_free(ptrCDMACfg);
 00004c  4628              MOV      r0,r5
 00004e  f7fffffe          BL       Mem_free
                   |L3.82|
-;;;155    		}
-;;;156    	}while(err != OS_ERR_NONE);
+;;;168    		}
+;;;169    	}while(err != OS_ERR_NONE);
 000052  f89d0000          LDRB     r0,[sp,#0]
 000056  2800              CMP      r0,#0
 000058  d1d5              BNE      |L3.6|
-;;;157    	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
+;;;170    	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
 00005a  466a              MOV      r2,sp
 00005c  2102              MOVS     r1,#2
 00005e  4805              LDR      r0,|L3.116|
 000060  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
 000062  f7fffffe          BL       OSQPend
 000066  4605              MOV      r5,r0
-;;;158    	Mem_free(ptrCDMACfg);
+;;;171    	Mem_free(ptrCDMACfg);
 000068  4628              MOV      r0,r5
 00006a  f7fffffe          BL       Mem_free
-;;;159    }
+;;;172    }
 00006e  bd38              POP      {r3-r5,pc}
-;;;160    static void CDMAConfigInit(void )
+;;;173    static void CDMAConfigInit(void )
                           ENDP
 
                   |L3.112|
@@ -261,42 +266,42 @@
                           AREA ||i.CDMAReceDeal||, CODE, READONLY, ALIGN=2
 
                   CDMAReceDeal PROC
-;;;97     //配置以及发送数据的过程中，对CDMA返回的状态信息进行处理 0 接收正常
-;;;98     static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2)
+;;;110    //配置以及发送数据的过程中，对CDMA返回的状态信息进行处理 0 接收正常
+;;;111    static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2)
 000000  b570              PUSH     {r4-r6,lr}
-;;;99     {
+;;;112    {
 000002  4605              MOV      r5,r0
 000004  460e              MOV      r6,r1
-;;;100    	char* p1 = NULL;
+;;;113    	char* p1 = NULL;
 000006  2400              MOVS     r4,#0
-;;;101    	p1 = strstr((const char*)ptrRece,"+CPIN");
+;;;114    	p1 = strstr((const char*)ptrRece,"+CPIN");
 000008  a108              ADR      r1,|L4.44|
 00000a  4628              MOV      r0,r5
 00000c  f7fffffe          BL       strstr
 000010  4604              MOV      r4,r0
-;;;102    	if(p1 != NULL)
+;;;115    	if(p1 != NULL)
 000012  b10c              CBZ      r4,|L4.24|
-;;;103    		return 1;
+;;;116    		return 1;
 000014  2001              MOVS     r0,#1
                   |L4.22|
-;;;104    	p1 = strstr((const char*)ptrRece,ptr2);
-;;;105    	if(p1 == NULL)
-;;;106    		return 1;
-;;;107    	return 0;
-;;;108    }
+;;;117    	p1 = strstr((const char*)ptrRece,ptr2);
+;;;118    	if(p1 == NULL)
+;;;119    		return 1;
+;;;120    	return 0;
+;;;121    }
 000016  bd70              POP      {r4-r6,pc}
                   |L4.24|
-000018  4631              MOV      r1,r6                 ;104
-00001a  4628              MOV      r0,r5                 ;104
+000018  4631              MOV      r1,r6                 ;117
+00001a  4628              MOV      r0,r5                 ;117
 00001c  f7fffffe          BL       strstr
-000020  4604              MOV      r4,r0                 ;104
+000020  4604              MOV      r4,r0                 ;117
 000022  b90c              CBNZ     r4,|L4.40|
-000024  2001              MOVS     r0,#1                 ;106
+000024  2001              MOVS     r0,#1                 ;119
 000026  e7f6              B        |L4.22|
                   |L4.40|
-000028  2000              MOVS     r0,#0                 ;107
+000028  2000              MOVS     r0,#0                 ;120
 00002a  e7f4              B        |L4.22|
-;;;109    //发送初始化配置指令
+;;;122    //发送初始化配置指令
                           ENDP
 
                   |L4.44|
@@ -308,48 +313,48 @@
                           AREA ||i.CDMASendCmd||, CODE, READONLY, ALIGN=2
 
                   CDMASendCmd PROC
-;;;109    //发送初始化配置指令
-;;;110    static void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength)
+;;;122    //发送初始化配置指令
+;;;123    static void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength)
 000000  b5f8              PUSH     {r3-r7,lr}
-;;;111    {
+;;;124    {
 000002  4605              MOV      r5,r0
 000004  460e              MOV      r6,r1
 000006  4614              MOV      r4,r2
-;;;112    	uint8_t err;
-;;;113    	uint8_t *ptrCDMACfg;
-;;;114    	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
+;;;125    	uint8_t err;
+;;;126    	uint8_t *ptrCDMACfg;
+;;;127    	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
 000008  466a              MOV      r2,sp
 00000a  2102              MOVS     r1,#2
 00000c  4818              LDR      r0,|L5.112|
 00000e  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
 000010  f7fffffe          BL       OSQPend
 000014  4607              MOV      r7,r0
-;;;115    	Mem_free(ptrCDMACfg);
+;;;128    	Mem_free(ptrCDMACfg);
 000016  4638              MOV      r0,r7
 000018  f7fffffe          BL       Mem_free
-;;;116    	do{
+;;;129    	do{
 00001c  bf00              NOP      
                   |L5.30|
-;;;117    		CDMASendDatas(sendDat,sendLength);
+;;;130    		CDMASendDatas(sendDat,sendLength);
 00001e  4621              MOV      r1,r4
 000020  4628              MOV      r0,r5
 000022  f7fffffe          BL       CDMASendDatas
-;;;118    		ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+;;;131    		ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
 000026  466a              MOV      r2,sp
 000028  f24051dc          MOV      r1,#0x5dc
 00002c  4810              LDR      r0,|L5.112|
 00002e  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
 000030  f7fffffe          BL       OSQPend
 000034  4607              MOV      r7,r0
-;;;119    		if(err != OS_ERR_NONE)        //接收超时
+;;;132    		if(err != OS_ERR_NONE)        //接收超时
 000036  f89d0000          LDRB     r0,[sp,#0]
 00003a  b160              CBZ      r0,|L5.86|
-;;;120    		{
-;;;121    			CDMASendDatas(sendDat,sendLength);
+;;;133    		{
+;;;134    			CDMASendDatas(sendDat,sendLength);
 00003c  4621              MOV      r1,r4
 00003e  4628              MOV      r0,r5
 000040  f7fffffe          BL       CDMASendDatas
-;;;122    			ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+;;;135    			ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
 000044  466a              MOV      r2,sp
 000046  f24051dc          MOV      r1,#0x5dc
 00004a  4809              LDR      r0,|L5.112|
@@ -358,28 +363,28 @@
 000052  4607              MOV      r7,r0
 000054  e007              B        |L5.102|
                   |L5.86|
-;;;123    		}
-;;;124    		else
-;;;125    		{
-;;;126    			err = CDMAReceDeal(ptrCDMACfg,compString);
+;;;136    		}
+;;;137    		else
+;;;138    		{
+;;;139    			err = CDMAReceDeal(ptrCDMACfg,compString);
 000056  4631              MOV      r1,r6
 000058  4638              MOV      r0,r7
 00005a  f7fffffe          BL       CDMAReceDeal
 00005e  9000              STR      r0,[sp,#0]
-;;;127    			Mem_free(ptrCDMACfg);
+;;;140    			Mem_free(ptrCDMACfg);
 000060  4638              MOV      r0,r7
 000062  f7fffffe          BL       Mem_free
                   |L5.102|
-;;;128    		}
-;;;129    	}while(err != 0);
+;;;141    		}
+;;;142    	}while(err != 0);
 000066  f89d0000          LDRB     r0,[sp,#0]
 00006a  2800              CMP      r0,#0
 00006c  d1d7              BNE      |L5.30|
-;;;130    //	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
-;;;131    //	Mem_free(ptrCDMACfg);
-;;;132    }
+;;;143    //	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
+;;;144    //	Mem_free(ptrCDMACfg);
+;;;145    }
 00006e  bdf8              POP      {r3-r7,pc}
-;;;133    extern _SystemInformation sysAllData;//系统全局变量信息
+;;;146    
                           ENDP
 
                   |L5.112|
@@ -392,142 +397,193 @@
                           REQUIRE _printf_d
                           REQUIRE _printf_int_dec
                   CDMATask PROC
-;;;46     
-;;;47     void CDMATask(void *pdata)
+;;;47     
+;;;48     void CDMATask(void *pdata)
 000000  b08a              SUB      sp,sp,#0x28
-;;;48     {
-;;;49     	uint8_t *pCDMARece = NULL;
+;;;49     {
+;;;50     	uint8_t *pCDMARece = NULL;
 000002  2500              MOVS     r5,#0
-;;;50     	_CDMADataToSend *pCDMASend = NULL;
+;;;51     	_CDMADataToSend *pCDMASend = NULL;
 000004  2400              MOVS     r4,#0
-;;;51     //	char *p1;
-;;;52     	uint8_t err;
-;;;53     	char sendCmd[30];
-;;;54     	uint16_t sendlen = 0;
+;;;52     //	char *p1;
+;;;53     	uint8_t err;
+;;;54     	char sendCmd[30];
+;;;55     	uint16_t sendlen = 0;
 000006  2600              MOVS     r6,#0
-;;;55     	
-;;;56     	CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);  //建立CDMA接收 消息队列
+;;;56     	
+;;;57     	CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);  //建立CDMA接收 消息队列
 000008  210a              MOVS     r1,#0xa
-00000a  482c              LDR      r0,|L6.188|
+00000a  483c              LDR      r0,|L6.252|
 00000c  f7fffffe          BL       OSQCreate
-000010  492b              LDR      r1,|L6.192|
+000010  493b              LDR      r1,|L6.256|
 000012  6008              STR      r0,[r1,#0]  ; CDMARecieveQ
-;;;57     	CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE);//建立CDMA发送 消息队列
+;;;58     	CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE);//建立CDMA发送 消息队列
 000014  2105              MOVS     r1,#5
-000016  482b              LDR      r0,|L6.196|
+000016  483b              LDR      r0,|L6.260|
 000018  f7fffffe          BL       OSQCreate
-00001c  492a              LDR      r1,|L6.200|
+00001c  493a              LDR      r1,|L6.264|
 00001e  6008              STR      r0,[r1,#0]  ; CDMASendQ
-;;;58     	
-;;;59     	CDMAPowerOpen_Close();           //启动MG2639模块
-000020  f7fffffe          BL       CDMAPowerOpen_Close
-;;;60     	
-;;;61     	CDMAConfigInit();                //初始化配置MG2639
-000024  f7fffffe          BL       CDMAConfigInit
-;;;62     	
-;;;63     	while(1)//todo:断网、断开TCP连接、OTA升级、配置文件下发、登录
-000028  e047              B        |L6.186|
-                  |L6.42|
-;;;64     	{
-;;;65     		pCDMASend = OSQPend(CDMASendQ,0,&err);
-00002a  aa09              ADD      r2,sp,#0x24
-00002c  2100              MOVS     r1,#0
-00002e  4826              LDR      r0,|L6.200|
-000030  6800              LDR      r0,[r0,#0]  ; CDMASendQ
-000032  f7fffffe          BL       OSQPend
-000036  4604              MOV      r4,r0
-;;;66     		
-;;;67     		sendlen = sprintf(sendCmd,at_TCPSend,pCDMASend->datLength);
-000038  8822              LDRH     r2,[r4,#0]
-00003a  4924              LDR      r1,|L6.204|
-00003c  a801              ADD      r0,sp,#4
-00003e  f7fffffe          BL       __2sprintf
-000042  b286              UXTH     r6,r0
-;;;68     
-;;;69     		CDMASendDatas((uint8_t *)sendCmd,sendlen); //通知CDMA要通过哪个通道发送多少个字节的数据
-000044  4631              MOV      r1,r6
-000046  a801              ADD      r0,sp,#4
-000048  f7fffffe          BL       CDMASendDatas
-;;;70     		pCDMARece = OSQPend(CDMARecieveQ,1500,&err);
-00004c  aa09              ADD      r2,sp,#0x24
-00004e  f24051dc          MOV      r1,#0x5dc
-000052  481b              LDR      r0,|L6.192|
+;;;59     	
+;;;60     resetCDMA:	CDMAPowerOpen_Close();           //启动MG2639模块
+000020  bf00              NOP      
+                  |L6.34|
+000022  f7fffffe          BL       CDMAPowerOpen_Close
+;;;61     	
+;;;62     	CDMAConfigInit();                //初始化配置MG2639
+000026  f7fffffe          BL       CDMAConfigInit
+;;;63     	
+;;;64     	while(1)//todo:断网、断开TCP连接、OTA升级、配置文件下发、登录
+00002a  e066              B        |L6.250|
+                  |L6.44|
+;;;65     	{
+;;;66     		pCDMASend = OSQPend(CDMASendQ,0,&err);
+00002c  aa09              ADD      r2,sp,#0x24
+00002e  2100              MOVS     r1,#0
+000030  4835              LDR      r0,|L6.264|
+000032  6800              LDR      r0,[r0,#0]  ; CDMASendQ
+000034  f7fffffe          BL       OSQPend
+000038  4604              MOV      r4,r0
+;;;67     		
+;;;68     		sendlen = sprintf(sendCmd,at_TCPSend,pCDMASend->datLength);
+00003a  8822              LDRH     r2,[r4,#0]
+00003c  4933              LDR      r1,|L6.268|
+00003e  a801              ADD      r0,sp,#4
+000040  f7fffffe          BL       __2sprintf
+000044  b286              UXTH     r6,r0
+;;;69     
+;;;70     		CDMASendDatas((uint8_t *)sendCmd,sendlen); //通知CDMA要通过哪个通道发送多少个字节的数据
+000046  4631              MOV      r1,r6
+000048  a801              ADD      r0,sp,#4
+00004a  f7fffffe          BL       CDMASendDatas
+;;;71     		pCDMARece = OSQPend(CDMARecieveQ,150,&err);
+00004e  aa09              ADD      r2,sp,#0x24
+000050  2196              MOVS     r1,#0x96
+000052  482b              LDR      r0,|L6.256|
 000054  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
 000056  f7fffffe          BL       OSQPend
 00005a  4605              MOV      r5,r0
-;;;71     		if(err == OS_ERR_NONE)
+;;;72     		if(err == OS_ERR_NONE)
 00005c  f89d0024          LDRB     r0,[sp,#0x24]
-000060  b9c8              CBNZ     r0,|L6.150|
-;;;72     		{
-;;;73     			err = CDMAReceDeal(pCDMARece,">");
-000062  a11b              ADR      r1,|L6.208|
-000064  4628              MOV      r0,r5
-000066  f7fffffe          BL       CDMAReceDeal
-00006a  9009              STR      r0,[sp,#0x24]
-;;;74     			Mem_free(pCDMARece);
-00006c  4628              MOV      r0,r5
-00006e  f7fffffe          BL       Mem_free
-;;;75     			if(err != 0)
-000072  f89d0024          LDRB     r0,[sp,#0x24]
-000076  b170              CBZ      r0,|L6.150|
+000060  2800              CMP      r0,#0
+000062  d138              BNE      |L6.214|
+;;;73     		{
+;;;74     			err = CDMAReceDeal(pCDMARece,"DISCONNECTED");
+000064  a12a              ADR      r1,|L6.272|
+000066  4628              MOV      r0,r5
+000068  f7fffffe          BL       CDMAReceDeal
+00006c  9009              STR      r0,[sp,#0x24]
+;;;75     			if(err == 0)                        //TCP断开连接，重连
+00006e  f89d0024          LDRB     r0,[sp,#0x24]
+000072  b9b0              CBNZ     r0,|L6.162|
 ;;;76     			{
-;;;77     				CDMASendDatas((uint8_t *)sendCmd,sendlen); //通知CDMA要通过哪个通道发送多少个字节的数据
-000078  4631              MOV      r1,r6
-00007a  a801              ADD      r0,sp,#4
-00007c  f7fffffe          BL       CDMASendDatas
-;;;78     				pCDMARece = OSQPend(CDMARecieveQ,1500,&err);
-000080  aa09              ADD      r2,sp,#0x24
-000082  f24051dc          MOV      r1,#0x5dc
-000086  480e              LDR      r0,|L6.192|
-000088  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
-00008a  f7fffffe          BL       OSQPend
-00008e  4605              MOV      r5,r0
-;;;79     				Mem_free(pCDMARece);
-000090  4628              MOV      r0,r5
-000092  f7fffffe          BL       Mem_free
-                  |L6.150|
-;;;80     			}
-;;;81     		}
-;;;82     
-;;;83     		CDMASendDatas((uint8_t *)pCDMASend->data,pCDMASend->datLength);//实际要发送的数据
-000096  8821              LDRH     r1,[r4,#0]
-000098  1d20              ADDS     r0,r4,#4
-00009a  f7fffffe          BL       CDMASendDatas
-;;;84     		pCDMARece = OSQPend(CDMARecieveQ,1500,&err);       //发送成功
-00009e  aa09              ADD      r2,sp,#0x24
-0000a0  f24051dc          MOV      r1,#0x5dc
-0000a4  4806              LDR      r0,|L6.192|
-0000a6  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
-0000a8  f7fffffe          BL       OSQPend
-0000ac  4605              MOV      r5,r0
-;;;85     		Mem_free(pCDMARece);
-0000ae  4628              MOV      r0,r5
-0000b0  f7fffffe          BL       Mem_free
-;;;86     	
-;;;87     		Mem_free(pCDMASend);
-0000b4  4620              MOV      r0,r4
-0000b6  f7fffffe          BL       Mem_free
-                  |L6.186|
-0000ba  e7b6              B        |L6.42|
-;;;88     	}
-;;;89     }
-;;;90     static void CDMAPowerOpen_Close(void)//这段代码是用来启动/关闭CDMA
+;;;77     				Mem_free(pCDMARece);
+000074  4628              MOV      r0,r5
+000076  f7fffffe          BL       Mem_free
+;;;78     				
+;;;79     				sysAllData.isDataFlow = 1;      //数据流未流动
+00007a  2001              MOVS     r0,#1
+00007c  4928              LDR      r1,|L6.288|
+00007e  f881002a          STRB     r0,[r1,#0x2a]
+;;;80     				OSTaskSuspend(START_TASK_PRIO); //挂起数据流任务
+000082  200a              MOVS     r0,#0xa
+000084  f7fffffe          BL       OSTaskSuspend
+;;;81     				freCDMALed = 100;               //CDMA小灯快闪
+000088  2064              MOVS     r0,#0x64
+00008a  4926              LDR      r1,|L6.292|
+00008c  8008              STRH     r0,[r1,#0]
+;;;82     				CDMAPowerOpen_Close();          //关闭CDMA电源
+00008e  f7fffffe          BL       CDMAPowerOpen_Close
+;;;83     				OSTimeDlyHMSM(0,0,8,500);       //关闭需要延时
+000092  f44f73fa          MOV      r3,#0x1f4
+000096  2208              MOVS     r2,#8
+000098  2100              MOVS     r1,#0
+00009a  4608              MOV      r0,r1
+00009c  f7fffffe          BL       OSTimeDlyHMSM
+;;;84     				goto resetCDMA;
+0000a0  e7bf              B        |L6.34|
+                  |L6.162|
+;;;85     			}
+;;;86     			err = CDMAReceDeal(pCDMARece,">");
+0000a2  a121              ADR      r1,|L6.296|
+0000a4  4628              MOV      r0,r5
+0000a6  f7fffffe          BL       CDMAReceDeal
+0000aa  9009              STR      r0,[sp,#0x24]
+;;;87     			Mem_free(pCDMARece);
+0000ac  4628              MOV      r0,r5
+0000ae  f7fffffe          BL       Mem_free
+;;;88     			if(err != 0)
+0000b2  f89d0024          LDRB     r0,[sp,#0x24]
+0000b6  b170              CBZ      r0,|L6.214|
+;;;89     			{
+;;;90     				CDMASendDatas((uint8_t *)sendCmd,sendlen); //通知CDMA要通过哪个通道发送多少个字节的数据
+0000b8  4631              MOV      r1,r6
+0000ba  a801              ADD      r0,sp,#4
+0000bc  f7fffffe          BL       CDMASendDatas
+;;;91     				pCDMARece = OSQPend(CDMARecieveQ,1500,&err);
+0000c0  aa09              ADD      r2,sp,#0x24
+0000c2  f24051dc          MOV      r1,#0x5dc
+0000c6  480e              LDR      r0,|L6.256|
+0000c8  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
+0000ca  f7fffffe          BL       OSQPend
+0000ce  4605              MOV      r5,r0
+;;;92     				Mem_free(pCDMARece);
+0000d0  4628              MOV      r0,r5
+0000d2  f7fffffe          BL       Mem_free
+                  |L6.214|
+;;;93     			}
+;;;94     		}
+;;;95     
+;;;96     		CDMASendDatas((uint8_t *)pCDMASend->data,pCDMASend->datLength);//实际要发送的数据
+0000d6  8821              LDRH     r1,[r4,#0]
+0000d8  1d20              ADDS     r0,r4,#4
+0000da  f7fffffe          BL       CDMASendDatas
+;;;97     		pCDMARece = OSQPend(CDMARecieveQ,1500,&err);       //发送成功
+0000de  aa09              ADD      r2,sp,#0x24
+0000e0  f24051dc          MOV      r1,#0x5dc
+0000e4  4806              LDR      r0,|L6.256|
+0000e6  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
+0000e8  f7fffffe          BL       OSQPend
+0000ec  4605              MOV      r5,r0
+;;;98     		Mem_free(pCDMARece);
+0000ee  4628              MOV      r0,r5
+0000f0  f7fffffe          BL       Mem_free
+;;;99     	
+;;;100    		Mem_free(pCDMASend);
+0000f4  4620              MOV      r0,r4
+0000f6  f7fffffe          BL       Mem_free
+                  |L6.250|
+0000fa  e797              B        |L6.44|
+;;;101    	}
+;;;102    }
+;;;103    static void CDMAPowerOpen_Close(void)//这段代码是用来启动/关闭CDMA
                           ENDP
 
-                  |L6.188|
+                  |L6.252|
                           DCD      cdmaRecBuf
-                  |L6.192|
+                  |L6.256|
                           DCD      CDMARecieveQ
-                  |L6.196|
+                  |L6.260|
                           DCD      cdmaSendBuf
-                  |L6.200|
+                  |L6.264|
                           DCD      CDMASendQ
-                  |L6.204|
+                  |L6.268|
                           DCD      at_TCPSend
-                  |L6.208|
-0000d0  3e00              DCB      ">",0
-0000d2  00                DCB      0
-0000d3  00                DCB      0
+                  |L6.272|
+000110  44495343          DCB      "DISCONNECTED",0
+000114  4f4e4e45
+000118  43544544
+00011c  00      
+00011d  00                DCB      0
+00011e  00                DCB      0
+00011f  00                DCB      0
+                  |L6.288|
+                          DCD      sysAllData
+                  |L6.292|
+                          DCD      freCDMALed
+                  |L6.296|
+000128  3e00              DCB      ">",0
+00012a  00                DCB      0
+00012b  00                DCB      0
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
@@ -608,33 +664,34 @@
 0000ac  50534554          DCB      0x50,0x53,0x45,0x54
 0000b0  55503d30          DCB      0x55,0x50,0x3d,0x30
 0000b4  2c313136          DCB      0x2c,0x31,0x31,0x36
-0000b8  2e323238          DCB      0x2e,0x32,0x32,0x38
-0000bc  2e38382e          DCB      0x2e,0x38,0x38,0x2e
-0000c0  3130312c          DCB      0x31,0x30,0x31,0x2c
-0000c4  32393939          DCB      0x32,0x39,0x39,0x39
-0000c8  390d00            DCB      0x39,0x0d,0x00
+0000b8  2e36322e          DCB      0x2e,0x36,0x32,0x2e
+0000bc  3139352e          DCB      0x31,0x39,0x35,0x2e
+0000c0  39392c39          DCB      0x39,0x39,0x2c,0x39
+0000c4  3532370d          DCB      0x35,0x32,0x37,0x0d
+0000c8  00                DCB      0x00
                   at_Check
-0000cb  41                DCB      0x41
-0000cc  542b5a49          DCB      0x54,0x2b,0x5a,0x49
-0000d0  50505354          DCB      0x50,0x50,0x53,0x54
-0000d4  41545553          DCB      0x41,0x54,0x55,0x53
-0000d8  3d300d00          DCB      0x3d,0x30,0x0d,0x00
+0000c9  41542b            DCB      0x41,0x54,0x2b
+0000cc  5a495050          DCB      0x5a,0x49,0x50,0x50
+0000d0  53544154          DCB      0x53,0x54,0x41,0x54
+0000d4  55533d30          DCB      0x55,0x53,0x3d,0x30
+0000d8  0d00              DCB      0x0d,0x00
                   at_TCPClose
-0000dc  41542b5a          DCB      0x41,0x54,0x2b,0x5a
-0000e0  4950434c          DCB      0x49,0x50,0x43,0x4c
-0000e4  4f53453d          DCB      0x4f,0x53,0x45,0x3d
-0000e8  300d00            DCB      0x30,0x0d,0x00
+0000da  4154              DCB      0x41,0x54
+0000dc  2b5a4950          DCB      0x2b,0x5a,0x49,0x50
+0000e0  434c4f53          DCB      0x43,0x4c,0x4f,0x53
+0000e4  453d300d          DCB      0x45,0x3d,0x30,0x0d
+0000e8  00                DCB      0x00
                   at_TCPSend
-0000eb  41                DCB      0x41
-0000ec  542b5a49          DCB      0x54,0x2b,0x5a,0x49
-0000f0  5053454e          DCB      0x50,0x53,0x45,0x4e
-0000f4  443d302c          DCB      0x44,0x3d,0x30,0x2c
-0000f8  25640d00          DCB      0x25,0x64,0x0d,0x00
+0000e9  41542b            DCB      0x41,0x54,0x2b
+0000ec  5a495053          DCB      0x5a,0x49,0x50,0x53
+0000f0  454e443d          DCB      0x45,0x4e,0x44,0x3d
+0000f4  302c2564          DCB      0x30,0x2c,0x25,0x64
+0000f8  0d00              DCB      0x0d,0x00
                   at_GetIP
-0000fc  41542b5a          DCB      0x41,0x54,0x2b,0x5a
-000100  49504745          DCB      0x49,0x50,0x47,0x45
-000104  5449500d          DCB      0x54,0x49,0x50,0x0d
-000108  00                DCB      0x00
+0000fa  4154              DCB      0x41,0x54
+0000fc  2b5a4950          DCB      0x2b,0x5a,0x49,0x50
+000100  47455449          DCB      0x47,0x45,0x54,0x49
+000104  500d00            DCB      0x50,0x0d,0x00
 
                           AREA ||.data||, DATA, ALIGN=2
 

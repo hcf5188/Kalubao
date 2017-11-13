@@ -15,36 +15,25 @@ extern uint16_t freGPSLed;
 void GPSTask(void *pdata)
 {
 	uint8_t err;
-	uint8_t i = 0;
+//	uint8_t i = 0;
 	uint8_t* ptrGPSRece;
 	uint8_t* ptrGPSPack = NULL;
 	uint16_t speed;
 	uint32_t timeStamp;//时间戳
-	uint16_t dataLen = 0;
-	uint8_t  datBuf[100];
-	uint8_t  index=1;
+//	uint16_t dataLen = 0;
+//	uint8_t  datBuf[100];
+//	uint8_t  index=1;
 
-	OSTimeDlyHMSM(0,0,10,500);
 	receGPSQ = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);  //建立GPS接收 消息队列
 	GPSStartInit();//初始化配置GPS
 	
-	OSTimeDlyHMSM(0,0,10,500);
 	while(1)
 	{
 		ptrGPSRece = OSQPend(receGPSQ,0,&err);//等待接收到应答
-		//
-		dataLen = ptrGPSRece[0];
-		dataLen = (dataLen<<8) + ptrGPSRece[1];
-//		datBuf[0] = '$';
-//		index=1;
-//		for(i=3;i<dataLen + 2;i++)
-//		{
-//			if(ptrGPSRece[i] == '$')
-//			{
-//				
-//			}
-//			datBuf[index] = ptrGPSRece[i];
-//		}
+		
+//		dataLen = ptrGPSRece[0];
+//		dataLen = (dataLen<<8) + ptrGPSRece[1];
+		
 		GPS_Analysis(&gpsMC,&ptrGPSRece[2]);
 		Mem_free(ptrGPSRece);
 		
@@ -69,13 +58,15 @@ void GPSTask(void *pdata)
 			memcpy(&ptrGPSPack[17],&speed,2);
 			memset(&ptrGPSPack[19],0,2);       //todo:当前车速
 			
+			if(sysAllData.isDataFlow == 0)     //数据流已经流动起来了
+			{	
+				OSMutexPend(CDMASendMutex,0,&err);
 			
-			OSMutexPend(CDMASendMutex,0,&err);
-			
-			memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrGPSPack,21);
-			cdmaDataToSend->datLength += 21;
-			
-			OSMutexPost(CDMASendMutex);
+				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrGPSPack,21);
+				cdmaDataToSend->datLength += 21;
+				
+				OSMutexPost(CDMASendMutex);
+			}
 			
 			Mem_free(ptrGPSPack);
 		}

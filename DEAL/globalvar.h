@@ -8,6 +8,7 @@ typedef enum
 	LinkFault
 }LinkStatus;
 
+#pragma pack(1)             //1字节对齐
 __packed typedef struct
 {
 	uint8_t  ipAddr[18];    //用来存储IP地址
@@ -16,18 +17,24 @@ __packed typedef struct
 	uint8_t  gprsStatus;    //链路连接状态
 	uint8_t  tcpStatus;     //TCP链路状态  
 	
-	uint32_t  sendId;        //要发送的指令流水号
-	uint32_t currentTime;   //GPS 时间      日/时/分/秒
+	uint8_t  isDataFlow;    //数据流是否流动起来  0 - 流动起来， 1 - 未流动
+	
+	uint8_t  isEngineRun;   //发动机引擎是否开启  0 - 开启，     1 - 未开启
+	
+	uint32_t sendId;        //要发送的指令流水号
+	uint32_t currentTime;   //GPS 时间        日/时/分/秒
+	
+	uint16_t pidVersion;    //PID版本号
+	uint16_t pidNum;        //PID指令的个数   用于配置文件
 	
 	uint16_t softVersion;   //软件版本号   用于OTA升级
-	
 }_SystemInformation;
 
 __packed typedef struct
 {
 	uint16_t datLength;    //要发送的数据长度
 	uint16_t timeCount;    //数据包已经存在的时间（ms）
-	uint8_t  data[900];    //要发送的数据
+	uint8_t  data[950];    //要发送的数据
 }_CDMADataToSend;
 
 __packed typedef struct
@@ -39,7 +46,7 @@ __packed typedef struct
 
 
 
-#pragma pack(1)
+
 typedef struct 
 {
 	uint8_t  magic;     //帧头标识符  0x7E
@@ -48,6 +55,7 @@ typedef struct
 	uint32_t msgid;     //发送的指令流水号
 	uint32_t time_cli;  //数据发送的时间
 }_PROTOCOL_HEAD;
+
 #pragma pack () 
 
 
