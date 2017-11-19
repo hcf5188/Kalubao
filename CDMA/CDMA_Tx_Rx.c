@@ -37,17 +37,10 @@ uint8_t CDMASendDatas(const uint8_t* s,uint16_t length)
 	OS_EXIT_CRITICAL();
 	if(CirQ_GetLength(sendCDMA_Q) > 0)
 	{
-
-		
 		USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
-
 	}
 	return  0;
-	
-	
 }
-
-
 
 uint8_t byteRece = 0;  //用于串口接收的字节
 uint8_t byteSend = 0;  //用于串口发送的字节 
@@ -66,8 +59,8 @@ void USART2_IRQHandler(void)
 		if(rxtxState == OK)
 		{
 			rxTimeOut = 1;
-			TIM_SetCounter(TIM3,0); //清空计数器
-			TIM_Cmd(TIM3, ENABLE);  //使能TIMx
+			TIM_SetCounter(TIM4,0); //清空计数器
+			TIM_Cmd(TIM4, ENABLE);  //使能TIMx
 		}
 		USART_ClearITPendingBit(USART2, USART_IT_RXNE) ;
 	}
@@ -102,19 +95,21 @@ void USART2_IRQHandler(void)
 	}
 	OSIntExit();  //中断服务结束，系统进行任务调度
 }
+
+
+extern OS_EVENT *ZIPRecv_Q;             //指向RECV消息队列的指针
 extern OS_EVENT *CDMARecieveQ;
 uint8_t *ptrRece;
 uint16_t receDatalen= 0;
-uint8_t sdf[100];
-uint16_t sfdd=0;
-void TIM3_IRQHandler(void)   //CDMA接收超时处理定时器中断
+char* pCmp = NULL;
+void TIM4_IRQHandler(void)   //CDMA接收超时处理定时器中断
 {
 	OSIntEnter();//系统进入中断服务程序
-	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
+	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)  //检查TIM4更新中断发生与否
 	{
-		TIM_ClearITPendingBit(TIM3, TIM_IT_Update  );  //清除TIMx更新中断标志 
+		TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx更新中断标志 
 		rxTimeOut ++;
-		if(rxTimeOut > 10)
+		if(rxTimeOut > 3)
 		{
 			rxTimeOut = 0;
 			receDatalen = Store_Getlength(receCDMA_S);
@@ -124,23 +119,31 @@ void TIM3_IRQHandler(void)   //CDMA接收超时处理定时器中断
 				if(ptrRece != NULL)//内存块申请成功
 				{
 					Store_Getdates(receCDMA_S,ptrRece,receDatalen);
-					if(OSQPost(CDMARecieveQ,ptrRece) != OS_ERR_NONE)//推送不成功需要释放内存块
+					pCmp = strstr((const char*)ptrRece,"ZIPRECV");  //如果接收到服务器主动下发的消息则发送给专门处理函数的消息队列
+					if(pCmp == NULL)
 					{
-						Mem_free(ptrRece);
-						Store_Clear(receCDMA_S);//舍弃本次接收的数据
+						if(OSQPost(CDMARecieveQ,ptrRece) != OS_ERR_NONE)//推送不成功需要释放内存块
+						{
+							Mem_free(ptrRece);
+							Store_Clear(receCDMA_S);//舍弃本次接收的数据
+						}
+					}
+					else
+					{
+						if(OSQPost(ZIPRecv_Q,ptrRece) != OS_ERR_NONE)// 推送给专门处理服务器下发的数据的消息队列
+						{
+							Mem_free(ptrRece);
+							Store_Clear(receCDMA_S);//舍弃本次接收的数据
+						}
 					}
 				}
 				else
 					Store_Clear(receCDMA_S);    //舍弃本次接收的数据
 			}
 			else
-			{
-				Store_Getdates(receCDMA_S,&sdf[sfdd],receDatalen);
-				sfdd += receDatalen; 
 				Store_Clear(receCDMA_S);//接收的数据长度<=2 视为无效数据，没有这么短的回复
-			}
 				
-			TIM_Cmd(TIM3, DISABLE);
+			TIM_Cmd(TIM4, DISABLE);
 		}
 	}
 	OSIntExit();  //中断服务结束，系统进行任务调度

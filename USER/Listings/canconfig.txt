@@ -79,7 +79,7 @@
 ;;;36     	CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
 00007a  2001              MOVS     r0,#1
 00007c  f7fffffe          BL       CAN1_BaudSet
-;;;37     	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);     //设置滤波器
+;;;37     	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);     //设置滤波器  //潍柴：0x18DAFB10   渣土车：0x18DAFA00
 000080  2104              MOVS     r1,#4
 000082  480e              LDR      r0,|L1.188|
 000084  f7fffffe          BL       CAN1_SetFilter

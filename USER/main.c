@@ -7,25 +7,32 @@
 OS_STK START_TASK_STK[START_STK_SIZE];//起始任务堆栈
 
 OS_STK CDMA_TASK_STK[CDMA_STK_SIZE];  //网络通讯CDMA任务堆栈
+
+OS_STK CDMARecv_TASK_STK[CDMARecv_STK_SIZE];  //网络通讯CDMA任务堆栈
+
 OS_STK GPS_TASK_STK[GPS_STK_SIZE];    //车辆定位GPS任务堆栈
 OS_STK OBD_TASK_STK[OBD_STK_SIZE];    //汽车诊断OBD任务堆栈
 
 OS_STK CDMA_LED_STK[LED_STK_SIZE];  //网络通讯CDMA-LED任务堆栈
 OS_STK GPS_LED_STK[LED_STK_SIZE];   //车辆定位GPS-LED任务堆栈
 OS_STK OBD_LED_STK[LED_STK_SIZE];   //汽车诊断OBD-LED任务堆栈
+OS_STK BEEP_STK[BEEP_STK_SIZE];     //蜂鸣器任务堆栈
 
-void StartTask(void *pdata);          
+void StartTask  (void *pdata);          
 void CDMALEDTask(void *pdata); 
-void GPSLEDTask(void *pdata); 
-void OBDLEDTask(void *pdata); 
+void GPSLEDTask (void *pdata); 
+void OBDLEDTask (void *pdata); 
+void BeepTask   (void *pdata); 
 
 pCIR_QUEUE sendCDMA_Q = NULL;     //指向 CDMA 串口发送队列  的指针
 pSTORE     receCDMA_S = NULL;     //指向 CDMA 串口接收数据堆的指针
 
-pCIR_QUEUE sendGPS_Q = NULL;     //指向 GPS 串口发送队列  的指针
-pSTORE     receGPS_S = NULL;     //指向 GPS 串口接收数据堆的指针
+pCIR_QUEUE sendGPS_Q = NULL;      //指向 GPS 串口发送队列  的指针
+pSTORE     receGPS_S = NULL;      //指向 GPS 串口接收数据堆的指针
 
-_SystemInformation sysAllData;
+
+
+_SystemInformation* sysAllData;
 /****************************************************************
 *			void	int main(void )
 * 描	述 : 入口函数	 		
@@ -40,11 +47,11 @@ int main(void )
 	
 	MemBuf_Init();   //建立内存块
 	
-	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列
-	receCDMA_S = Store_Init(1024);    //CDMA 串口接收 数据堆
+	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列 缓冲区
+	receCDMA_S = Store_Init(1020);    //CDMA 串口接收 数据堆   缓冲区
 	
-	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列
-	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆
+	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列 缓冲区
+	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
 	
 	SystemBspInit();
 	 
@@ -56,6 +63,7 @@ int main(void )
 _CDMADataToSend* cdmaDataToSend = NULL;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
 
 OS_EVENT * CDMASendMutex;//建立互斥型信号量，用来独占处理 发向服务器的消息
+OS_EVENT * beepSem;      //建立蜂鸣器响信号量
 extern OS_EVENT *canSendQ;        //向OBD发送PID指令
 extern OS_EVENT *CDMASendQ;       //通过CDMA向服务器发送采集到的OBD、GPS数据
 extern _OBD_PID_Cmd  obdPIDAll[];
@@ -67,31 +75,38 @@ void StartTask(void *pdata)
 	
 	OS_CPU_SR cpu_sr=0;
 	pdata = pdata; 
-	sysAllData.sendId = 0x80000000;     //全局发送指令流水号
 	
-	cdmaDataToSend = CDMNSendDataInit();//初始化获取发向CDMA的消息结构体
+	
+	GlobalVarInit();//全局变量初始化
+	
+	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
 	
   	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
 	
- 	OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);						   
+ 	OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);
+	
+	OSTaskCreate(CDMARecvTask,(void *)0,(OS_STK*)&CDMARecv_TASK_STK[CDMARecv_STK_SIZE-1],CDMARevc_TASK_PRIO);	
+	
  	OSTaskCreate(GPSTask, (void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);		
  	OSTaskCreate(OBDTask, (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);	
 
 	OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE-1],CDMA_LED_PRIO);						   
  	OSTaskCreate(GPSLEDTask,(void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1],GPS_LED_PRIO);		
- 	OSTaskCreate(OBDLEDTask,(void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1],OBD_LED_PRIO);		
+ 	OSTaskCreate(OBDLEDTask,(void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1],OBD_LED_PRIO);	
+	OSTaskCreate(BeepTask,(void *)0,(OS_STK*)&BEEP_STK[BEEP_STK_SIZE-1],BEEP_TASK_PRIO);		
 	
 	CDMASendMutex = OSMutexCreate(CDMA_SEND_PRIO,&err);//向CDMA发送缓冲区发送数据 独占 互斥型信号量
 	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
 	
-	sysAllData.isDataFlow = 1;      //数据流未流动
-	OSTaskSuspend(OS_PRIO_SELF);    //todo:等待其他任务完成初始化之后，再进行数据的流动
+	beepSem = OSSemCreate(1);//蜂鸣器信号量
 	
 	while(1)
 	{
 		OSTimeDlyHMSM(0,0,0,4);
-		//todo:遍历OBD的PID指令，如果时间到达，则向OBD发送队列，让其与ECU通信
-		for(i=0;i<10;i++)          //todo:PID指令的数目 后期需要配置
+		if(sysAllData->isDataFlow == 1)
+			continue;
+
+		for(i=0;i<sysAllData->pidNum;i++)          //todo:PID指令的数目 后期需要配置
 		{
 			obdPIDAll[i].timeCount += 4;
 			if(obdPIDAll[i].timeCount >= obdPIDAll[i].period)
@@ -100,18 +115,19 @@ void StartTask(void *pdata)
 				
 				ptrOBDSend = Mem_malloc(9);
 				memcpy(ptrOBDSend,obdPIDAll[i].data,9);
-				err = OSQPost(canSendQ,ptrOBDSend);  //向OBD推送要发送的PID指令
+				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
 				if(err != OS_ERR_NONE)
-					Mem_free(ptrOBDSend);//推送不成功，需要释放内存块
+					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
 			}
 		}
+		
 		if(cdmaDataToSend->datLength > 28)
 			cdmaDataToSend->timeCount += 4;
-		
 		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 850))
 		{
 			OSMutexPend(CDMASendMutex,0,&err);
-			//todo:将要发送的数据时间增加2，大于3000并且数据区不为0的时候，需要打包发送,申请新数据，并进行初始化
+			
+		
 			CDMASendDataPack(cdmaDataToSend);
 			err = OSQPost(CDMASendQ,cdmaDataToSend);
 			if(err != OS_ERR_NONE)
@@ -121,12 +137,24 @@ void StartTask(void *pdata)
 			}
 			else
 			{
-				cdmaDataToSend = CDMNSendDataInit();
+				cdmaDataToSend = CDMNSendDataInit(1000);
 			}	
+			
 			OSMutexPost(CDMASendMutex);
 		}
 	}
 }
+
+
+
+/***********************************************************
+*                LED、蜂鸣器控制任务
+*
+*
+*
+*
+*************************************************************/
+
 uint16_t freCDMALed = 100;
 void CDMALEDTask(void *pdata)
 {
@@ -170,6 +198,78 @@ void OBDLEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freOBDLed);
 		GPIO_SetBits(GPIO_LED,LED_GPIO_OBD);
 		OSTimeDlyHMSM(0,0,0,freOBDLed);
+	}
+}
+
+static void BSP_BeeperTimerInit(uint16_t ck_value)
+{
+	TIM_TimeBaseInitTypeDef TIM_BaseInitStructure;
+    TIM_OCInitTypeDef TIM_OCInitStructure;
+
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	uint16_t period=(18000000/ck_value);
+	uint16_t period_set=period-1;
+	uint16_t pluse=period/2-1;
+		
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB  | RCC_APB2Periph_AFIO, ENABLE); 
+	GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  	GPIO_Init(GPIOB,&GPIO_InitStructure);
+
+	//Timer3CH2 Beeper
+	TIM_InternalClockConfig(TIM3);
+
+
+	TIM_BaseInitStructure.TIM_Prescaler=3;//4分频，18M
+	TIM_BaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up;
+	TIM_BaseInitStructure.TIM_Period=period_set;
+	TIM_BaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1;
+	TIM_BaseInitStructure.TIM_RepetitionCounter=0;
+	TIM_TimeBaseInit(TIM3,&TIM_BaseInitStructure);
+	TIM_ARRPreloadConfig(TIM3, DISABLE);
+
+	TIM_Cmd(TIM3, ENABLE);  //使能TIMx外设
+	
+	TIM_OCInitStructure.TIM_OCMode=TIM_OCMode_PWM1;
+	TIM_OCInitStructure.TIM_OutputState=TIM_OutputState_Enable;
+	TIM_OCInitStructure.TIM_Pulse=pluse;
+	TIM_OCInitStructure.TIM_OCPolarity=TIM_OCPolarity_High;
+	TIM_OC3Init(TIM3,&TIM_OCInitStructure);
+	TIM_CtrlPWMOutputs(TIM3,ENABLE);
+}
+/* 关闭蜂鸣器 */
+void BSP_BeeperTimer_Off(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	
+	
+	TIM_CtrlPWMOutputs(TIM3,DISABLE);
+	TIM_Cmd(TIM3,DISABLE);  //使能TIMx外设
+
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);
+
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+  	GPIO_Init(GPIOB,&GPIO_InitStructure);
+
+	GPIO_ResetBits(GPIOB, GPIO_Pin_0);
+}
+void BeepTask(void *pdata)
+{
+	uint8_t err;
+	while(1)
+	{
+		OSSemPend(beepSem,0,&err);//想让蜂鸣器响，发送个信号量即可
+
+		BSP_BeeperTimerInit(1000);//打开蜂鸣器，频率可以设定
+		OSTimeDlyHMSM(0,0,0,300);
+		BSP_BeeperTimer_Off();    //关闭蜂鸣器
 	}
 }
 

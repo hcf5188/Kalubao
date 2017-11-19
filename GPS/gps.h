@@ -48,7 +48,7 @@ __packed typedef struct
 	u16 pdop;					//位置精度因子 0~500,对应实际值0~50.0
 	u16 hdop;					//水平精度因子 0~500,对应实际值0~50.0
 	u16 vdop;					//垂直精度因子 0~500,对应实际值0~50.0 
-
+	u16 direction;              //行动方向
 	int altitude;			 	//海拔高度,放大了10倍,实际除以10.单位:0.1m	 
 	u16 speed;					//地面速率,放大了1000倍,实际除以10.单位:0.001公里/小时	 
 }nmea_msg; 
@@ -80,11 +80,11 @@ __packed typedef struct
 								//06,GPGRS;07,GPGST;08,GPZDA;
 								//09,GPGBS;0A,GPDTM;0D,GPGNS;
 	u8  iicset;					//IIC消输出设置    0,关闭;1,使能.
-	u8  uart1set;				//UART1输出设置	   0,关闭;1,使能.
-	u8  uart2set;				//UART2输出设置	   0,关闭;1,使能.
-	u8  usbset;					//USB输出设置	   0,关闭;1,使能.
-	u8  spiset;					//SPI输出设置	   0,关闭;1,使能.
-	u8  ncset;					//未知输出设置	   默认为1即可.
+	u8  uart1set;				//UART1输出设置	  0,关闭;1,使能.
+	u8  uart2set;				//UART2输出设置	  0,关闭;1,使能.
+	u8  usbset;					//USB输出设置	  0,关闭;1,使能.
+	u8  spiset;					//SPI输出设置	  0,关闭;1,使能.
+	u8  ncset;					//未知输出设置	  默认为1即可.
  	u8  cka;			 		//校验CK_A 							 	 
 	u8  ckb;			    	//校验CK_B							 	 
 }_ublox_cfg_msg; 

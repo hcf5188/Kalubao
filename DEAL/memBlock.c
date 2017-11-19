@@ -111,6 +111,7 @@ void *Mem_malloc(uint16_t size)
 uint8_t Mem_free(void *ptr)
 {
 	uint16_t *ptr_free = ptr;
+	ptr = NULL;
 	if(ptr_free == NULL)
 		return 1;
 	

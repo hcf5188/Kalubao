@@ -5,6 +5,7 @@
 #include "memblock.h"
 #include "globalvar.h"
 
+
 #define GPIO_LED		GPIOB
 #define LED_GPIO_OBD 	GPIO_Pin_5
 #define LED_GPIO_MOD 	GPIO_Pin_4
@@ -28,13 +29,15 @@ void BspClockInit(void);   //外设时钟初始化
 void GPIOLEDInit(void);    //LED  IO口初始化
 void ADC1Init(void);
 void GPIO_ALL_IN(void);
+void RTCConfigureInit(void);//RTC实时时钟初始化
+void RTC_Time_Adjust(uint32_t value);//RTC实时时钟校正
 
 void GPSConfigInit(uint16_t baud);//设置GPS通信波特率
 	
 void CAN1Config(void);     //CAN1 初始化
 
 void CDMAUart2Init(void);  //CDMA 串口初始化
-void TIM3ConfigInit(void );//定时器3 用来判断CDMA接收超时
+void TIM4ConfigInit(void );//定时器3 用来判断CDMA接收超时
 void TIM2ConfigInit(void );//定时器2 用来处理GPRS接收逻辑
 
 void CDMASendByte(uint8_t dat);

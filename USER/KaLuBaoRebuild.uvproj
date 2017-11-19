@@ -452,19 +452,19 @@
               <FilePath>..\CDMA\CDMATask.c</FilePath>
             </File>
             <File>
+              <FileName>CDMARecvTask.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\CDMA\CDMARecvTask.c</FilePath>
+            </File>
+            <File>
               <FileName>CDMA_Tx_Rx.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\CDMA\CDMA_Tx_Rx.c</FilePath>
             </File>
             <File>
-              <FileName>CDMA_OTA_TASK.c</FileName>
+              <FileName>DataSaveToFlash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\CDMA\CDMA_OTA_TASK.c</FilePath>
-            </File>
-            <File>
-              <FileName>CDMAConfigTask.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\CDMA\CDMAConfigTask.c</FilePath>
+              <FilePath>..\CDMA\DataSaveToFlash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -485,6 +485,11 @@
               <FileName>caninformationlib.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\OBD\caninformationlib.c</FilePath>
+            </File>
+            <File>
+              <FileName>CANConfig.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HAEDWARE\CANConfig.c</FilePath>
             </File>
             <File>
               <FileName>OBDKLineTxRx.c</FileName>
@@ -530,11 +535,6 @@
               <FileName>bsp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HAEDWARE\bsp.c</FilePath>
-            </File>
-            <File>
-              <FileName>CANConfig.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HAEDWARE\CANConfig.c</FilePath>
             </File>
             <File>
               <FileName>time_systick.c</FileName>
@@ -628,6 +628,16 @@
               <FileName>stm32f10x_tim.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\LIB\src\stm32f10x_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\LIB\src\stm32f10x_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\LIB\src\stm32f10x_pwr.c</FilePath>
             </File>
           </Files>
         </Group>

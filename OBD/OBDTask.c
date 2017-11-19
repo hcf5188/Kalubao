@@ -45,11 +45,11 @@ uint8_t pidManyBag[8] = {0x30,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 
 
 
-#define CANRECBUF_SIZE  10       //CAN接收消息队列保存消息的最大量
+#define CANRECBUF_SIZE  20       //CAN接收消息队列保存消息的最大量
 OS_EVENT *canRecieveQ;           //指向CAN总线消息队列的指针
 void *canRecBuf[CANRECBUF_SIZE];
 
-#define CANSENDBUF_SIZE  150  //CAN接收消息队列保存消息的最大量
+#define CANSENDBUF_SIZE  80   //CAN接收消息队列保存消息的最大量
 OS_EVENT *canSendQ;           //指向CAN总线发送消息队列的指针
 void *canSendBuf[CANSENDBUF_SIZE];
 
@@ -78,7 +78,7 @@ void OBDTask(void *pdata)
 //	dataToSend.ide   = CAN_ID_STD;
 //	dataToSend.testIsOK = 1; 
 	
-	dataToSend.canId = 0x18DA10FB;
+	dataToSend.canId = 0x18DA10FB;//潍柴：0x18DA10FB   渣土车：0x18DA00FA
 	dataToSend.ide   = CAN_ID_EXT;
 	dataToSend.testIsOK = 1; 
 
@@ -93,8 +93,7 @@ void OBDTask(void *pdata)
 		dataToSend.pdat = &can1_Txbuff[1];     
 		OBD_CAN_SendData(dataToSend);          //发送PID指令
 		Mem_free(can1_Txbuff);                 //释放内存块
-		
-		
+
 		CAN1_RxMsg = OSQPend(canRecieveQ,25,&err); //接收到OBD回复
 		if(err == OS_ERR_NONE)
 		{
@@ -143,7 +142,6 @@ void OBDTask(void *pdata)
 				cdmaDataToSend->data[cdmaDataToSend->datLength++] = CAN1_RxMsg->Data[0] - cmdLen + 3;
 				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x60;
 				cdmaDataToSend->data[cdmaDataToSend->datLength++] = cmdNum;
-						
 				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],&CAN1_RxMsg->Data[cmdLen+1],(CAN1_RxMsg->Data[0] - cmdLen));
 				cdmaDataToSend->datLength += CAN1_RxMsg->Data[0] - cmdLen;
 						

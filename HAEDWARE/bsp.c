@@ -7,6 +7,7 @@
 void SystemBspInit(void )
 {
 	BspClockInit();
+	GPIO_ALL_IN();
 	
 	GPIOLEDInit();
 	
@@ -16,8 +17,10 @@ void SystemBspInit(void )
 	
 	GPSConfigInit(9600);
 	
-	TIM3ConfigInit();
+	TIM4ConfigInit();
 	TIM2ConfigInit();
+	RTCConfigureInit();
+	
 	
 	SysTickInit();
 }
@@ -77,13 +80,21 @@ void GPIOLEDInit(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStructure;
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);	 //使能PB端口时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5; //LED 端口配置
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  	GPIO_Init(GPIOB,&GPIO_InitStructure);
+									
+	GPIO_InitStructure.GPIO_Pin   =  GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5; //LED 端口配置
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP; 		 //推挽输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
 	GPIO_Init(GPIOB, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.5
+    
 
-	GPIO_ResetBits(GPIOB,GPIO_Pin_3 | GPIO_Pin_5|GPIO_Pin_4);		     //复位，双灯亮
+	
+	GPIO_ResetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);		     //复位，双灯亮
 	
 }
 void ADC1Init(void)
@@ -128,14 +139,14 @@ void ADC1Init(void)
 	/* Start ADC1 Software Conversion */ 
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 
-#ifdef ADC_USE_AWD
-	
-	/*zx 设置ADC模拟看门狗*/
-	ADC_AnalogWatchdogSingleChannelConfig(ADC1,ADC_Channel_1);
-	ADC_AnalogWatchdogThresholdsConfig(ADC1,1300,900);
-	ADC_AnalogWatchdogCmd(ADC1,ADC_AnalogWatchdog_SingleRegEnable);
-	ADC_ITConfig(ADC1,ADC_IT_AWD,ENABLE);
-#endif
+//#ifdef ADC_USE_AWD
+//	
+//	/*zx 设置ADC模拟看门狗*/
+//	ADC_AnalogWatchdogSingleChannelConfig(ADC1,ADC_Channel_1);
+//	ADC_AnalogWatchdogThresholdsConfig(ADC1,1300,900);
+//	ADC_AnalogWatchdogCmd(ADC1,ADC_AnalogWatchdog_SingleRegEnable);
+//	ADC_ITConfig(ADC1,ADC_IT_AWD,ENABLE);
+//#endif
 
 }
 
@@ -235,31 +246,103 @@ void KLineInit(void )
 	NVIC_Init(&NVIC_InitStructure);
 }
 
-void TIM3ConfigInit(void )
+void TIM4ConfigInit(void )
 {
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE); //时钟使能
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE); //时钟使能
 	
-	//定时器TIM3初始化
+	//定时器TIM4初始化
 	TIM_TimeBaseStructure.TIM_Period = 10;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
 	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
+	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
  
-	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE );       //使能指定的TIM3中断,允许更新中断
+	TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE );       //使能指定的TIM4中断,允许更新中断
 
 	//中断优先级NVIC设置
-	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn; //TIM3中断
+	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn; //TIM4中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//先占优先级0级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;       //从优先级3级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
 	
-//	TIM_Cmd(TIM3, ENABLE);  //使能TIMx		
+//	TIM_Cmd(TIM4, ENABLE);  //使能TIMx		
 }
+void RTCConfigureInit(void)
+{
+	EXTI_InitTypeDef EXTI_InitStructure;  
+	NVIC_InitTypeDef NVIC_InitStructure; 
+	/* Enable PWR and BKP clocks */
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+
+	/* Allow access to BKP Domain */
+	PWR_BackupAccessCmd(ENABLE);
+
+	/* Reset Backup Domain */
+	//BKP_DeInit();
+
+	//BKP_ClearFlag();
+	//RCC_LSEConfig(RCC_LSE_ON);
+	RCC_LSICmd(ENABLE);
+
+	//while(RCC_GetFlagStatus(RCC_FLAG_LSERDY)==RESET);//等待LSE就绪，如果谐振不对，就会死在这里
+
+	BKP_TamperPinCmd(DISABLE);
+
+	/* Select LSE as RTC Clock Source */
+	//RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
+	//RCC_RTCCLKConfig(RCC_RTCCLKSource_HSE_Div128); //			  RCC_RTCCLKSource_LSE RCC_RTCCLKSource_HSE_Div128
+	RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
+
+	/* Enable RTC Clock */
+	RCC_RTCCLKCmd(ENABLE);
+
+	/* Wait for RTC registers synchronization */
+	RTC_WaitForSynchro();
 
 
+	/* Wait until last write operation on RTC registers has finished */
+	RTC_WaitForLastTask();
+
+	/* Enable the RTC Second */
+	//RTC_ITConfig(RTC_IT_SEC, ENABLE);
+
+	RTC_ITConfig(RTC_IT_ALR, ENABLE);
+
+	/* Wait until last write operation on RTC registers has finished */
+	RTC_WaitForLastTask();
+
+	/* Set RTC prescaler: set RTC period to 1sec */
+	//RTC_SetPrescaler(32767); /* RTC period = RTCCLK/RTC_PR = (32.768 KHz)/(32767+1) */
+	RTC_SetPrescaler(39999);	  //8M/128=62500 //40k
+	//RTC_SetPrescaler(93749);	  //12M/128=93750
+	/* Wait until last write operation on RTC registers has finished */
+	RTC_WaitForLastTask();
+	
+	EXTI_ClearITPendingBit(EXTI_Line17);  
+	EXTI_InitStructure.EXTI_Line = EXTI_Line17;  
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;  
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;  
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;  
+	EXTI_Init(&EXTI_InitStructure);  
+
+	/* Enable the RTC Interrupt */  
+	NVIC_InitStructure.NVIC_IRQChannel = RTCAlarm_IRQn;  
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
+	NVIC_Init(&NVIC_InitStructure);  
+}
+void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
+{
+  /* Wait until last write operation on RTC registers has finished */
+  RTC_WaitForLastTask();
+  /* Change the current time */
+  RTC_SetCounter(value);
+  /* Wait until last write operation on RTC registers has finished */
+  RTC_WaitForLastTask();
+}
 

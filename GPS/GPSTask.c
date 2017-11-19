@@ -5,7 +5,7 @@ OS_EVENT* receGPSQ;              //接收GPS信息的消息队列
 #define GPSRECBUF_SIZE  10       //接收GPS消息队列保存消息的最大量
 void *gpsRecBuf[GPSRECBUF_SIZE]; //用于存放指向邮箱的指针
 
-extern _SystemInformation sysAllData;//系统全局变量信息
+extern _SystemInformation* sysAllData;//系统全局变量信息
 nmea_msg gpsMC; 	     //GPS信息
 extern OS_EVENT * CDMASendMutex;       //互斥型信号量，用来独占处理 发向服务器的消息
 extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
@@ -14,12 +14,14 @@ extern uint16_t freGPSLed;
 
 void GPSTask(void *pdata)
 {
+	static uint16_t sendNum = 0;
 	uint8_t err;
 //	uint8_t i = 0;
 	uint8_t* ptrGPSRece;
 	uint8_t* ptrGPSPack = NULL;
 	uint16_t speed;
 	uint32_t timeStamp;//时间戳
+	uint32_t osTime;
 //	uint16_t dataLen = 0;
 //	uint8_t  datBuf[100];
 //	uint8_t  index=1;
@@ -29,6 +31,7 @@ void GPSTask(void *pdata)
 	
 	while(1)
 	{
+		sendNum++;
 		ptrGPSRece = OSQPend(receGPSQ,0,&err);//等待接收到应答
 		
 //		dataLen = ptrGPSRece[0];
@@ -37,8 +40,12 @@ void GPSTask(void *pdata)
 		GPS_Analysis(&gpsMC,&ptrGPSRece[2]);
 		Mem_free(ptrGPSRece);
 		
+		if(gpsMC.longitude == 0) //todo：要根据有效无效判断位来解析， 此时若解析的经度为0  视为无效定位
+			continue;
+		
 		timeStamp = TimeCompare(gpsMC.utc.year,gpsMC.utc.month,gpsMC.utc.date,gpsMC.utc.hour,gpsMC.utc.min,gpsMC.utc.sec);
-		sysAllData.currentTime = timeStamp;
+		sysAllData->currentTime = timeStamp;
+		
 			
 		ptrGPSPack = Mem_malloc(40);
 		if(ptrGPSPack != NULL)
@@ -52,13 +59,13 @@ void GPSTask(void *pdata)
 			memcpy(&ptrGPSPack[7],&timeStamp,sizeof(timeStamp));//经度
 			timeStamp = t_htonl(gpsMC.latitude);
 			memcpy(&ptrGPSPack[11],&timeStamp,sizeof(timeStamp));//维度
-			
-			memset(&ptrGPSPack[15],0,2);       //todo:解析GPS方向，解析有效定位
+			speed = t_htons(gpsMC.direction);
+			memcpy(&ptrGPSPack[15],&speed,2);       //todo:解析GPS方向，解析有效定位
 			speed = t_htons(gpsMC.speed);
 			memcpy(&ptrGPSPack[17],&speed,2);
 			memset(&ptrGPSPack[19],0,2);       //todo:当前车速
 			
-			if(sysAllData.isDataFlow == 0)     //数据流已经流动起来了
+			if((sysAllData->isDataFlow == 0)&&(sendNum%2 == 0))     //数据流已经流动起来了
 			{	
 				OSMutexPend(CDMASendMutex,0,&err);
 			
@@ -70,8 +77,10 @@ void GPSTask(void *pdata)
 			
 			Mem_free(ptrGPSPack);
 		}
-		
-
+		osTime = RTC_GetCounter();
+		timeStamp = sysAllData->currentTime > osTime? (sysAllData->currentTime - osTime):(osTime - sysAllData->currentTime);
+		if(timeStamp > 300)
+			RTC_Time_Adjust(sysAllData->currentTime);
 		freGPSLed = 300;          //LED  指示，GPS定位正常
 	}
 }
@@ -294,6 +303,12 @@ void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
 	}
 	posx=NMEA_Comma_Pos(p1,6);								//东经还是西经
 	if(posx!=0XFF)gpsx->ewhemi=*(p1+posx);		 
+	posx=NMEA_Comma_Pos(p1,8);                              //行驶方向
+	if(posx!=0XFF)
+	{
+		temp=NMEA_Str2num(p1+posx,&dx);
+		gpsx->direction = temp;
+	}
 	posx=NMEA_Comma_Pos(p1,9);								//得到UTC日期
 	if(posx!=0XFF)
 	{

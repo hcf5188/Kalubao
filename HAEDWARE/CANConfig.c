@@ -34,7 +34,7 @@ void CAN1Config(void)
 	GPIO_PinRemapConfig(GPIO_Remap1_CAN1 , ENABLE);
 	
 	CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
-	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);     //设置滤波器
+	CAN1_SetFilter(0x18DAFB10,CAN_ID_EXT);     //设置滤波器  //潍柴：0x18DAFB10   渣土车：0x18DAFA00
 
 //	CAN1_BaudSet(CANBAUD_500K);           //设置CAN波特率为500K
 //	CAN1_SetFilter(0x7E8,CAN_ID_STD);     //设置滤波器
