@@ -68,7 +68,7 @@ void OBDTask(void *pdata)
 	uint8_t * can1_Txbuff;       //指向要发送的OBD信息
 	uint8_t * ptrSaveBuff;
 	
-	CAN1Config();
+	
 	canSendQ    = OSQCreate(&canSendBuf[0],CANSENDBUF_SIZE);//卡路宝向ECU发送指令的消息队列
 	canRecieveQ = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);  //卡路宝从ECU接收指令的循环队列
 	

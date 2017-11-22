@@ -5,49 +5,49 @@
                           AREA ||i.CRC_Compute16||, CODE, READONLY, ALIGN=2
 
                   CRC_Compute16 PROC
-;;;71     
-;;;72     uint16_t CRC_Compute16( uint8_t* data, uint32_t data_length)
+;;;37     
+;;;38     uint16_t CRC_Compute16( uint8_t* data, uint32_t data_length)
 000000  b570              PUSH     {r4-r6,lr}
-;;;73     {
+;;;39     {
 000002  4602              MOV      r2,r0
 000004  460b              MOV      r3,r1
-;;;74     	uint8_t da = 0;
+;;;40     	uint8_t da = 0;
 000006  2500              MOVS     r5,#0
-;;;75     	uint32_t ii = 0;
+;;;41     	uint32_t ii = 0;
 000008  2100              MOVS     r1,#0
-;;;76     	uint16_t crchl = 0;
+;;;42     	uint16_t crchl = 0;
 00000a  2000              MOVS     r0,#0
-;;;77     
-;;;78     	crchl = 0x00 ;
+;;;43     
+;;;44     	crchl = 0x00 ;
 00000c  bf00              NOP      
-;;;79     	for ( ii = 0x00 ; ii < data_length ; ii ++ )
+;;;45     	for ( ii = 0x00 ; ii < data_length ; ii ++ )
 00000e  bf00              NOP      
 000010  e010              B        |L1.52|
                   |L1.18|
-;;;80     	{
-;;;81     		da= ( crchl / 256 ) ;              // 以8位二进制数的形式暂存CRC的高8位 
+;;;46     	{
+;;;47     		da= ( crchl / 256 ) ;              // 以8位二进制数的形式暂存CRC的高8位 
 000012  4604              MOV      r4,r0
 000014  17c6              ASRS     r6,r0,#31
 000016  eb006616          ADD      r6,r0,r6,LSR #24
 00001a  f3c62507          UBFX     r5,r6,#8,#8
-;;;82     		crchl <<= 0x08 ;                   // 左移8位，相当于CRC的低8位乘以  
+;;;48     		crchl <<= 0x08 ;                   // 左移8位，相当于CRC的低8位乘以  
 00001e  f64f74ff          MOV      r4,#0xffff
 000022  ea042000          AND      r0,r4,r0,LSL #8
-;;;83     		crchl ^= crcTable [ da ^ data[ii]];// 高8位和当前字节相加后再查表求CRC ，再加上以前的CRC 
+;;;49     		crchl ^= crcTable [ da ^ data[ii]];// 高8位和当前字节相加后再查表求CRC ，再加上以前的CRC 
 000026  5c54              LDRB     r4,[r2,r1]
 000028  406c              EORS     r4,r4,r5
 00002a  4e04              LDR      r6,|L1.60|
 00002c  f8364014          LDRH     r4,[r6,r4,LSL #1]
 000030  4060              EORS     r0,r0,r4
-000032  1c49              ADDS     r1,r1,#1              ;79
+000032  1c49              ADDS     r1,r1,#1              ;45
                   |L1.52|
-000034  4299              CMP      r1,r3                 ;79
+000034  4299              CMP      r1,r3                 ;45
 000036  d3ec              BCC      |L1.18|
-;;;84     	}
-;;;85     	return crchl;
-;;;86     }
+;;;50     	}
+;;;51     	return crchl;
+;;;52     }
 000038  bd70              POP      {r4-r6,pc}
-;;;87     
+;;;53     
                           ENDP
 
 00003a  0000              DCW      0x0000
@@ -57,73 +57,73 @@
                           AREA ||i.CRC_Compute2||, CODE, READONLY, ALIGN=2
 
                   CRC_Compute2 PROC
-;;;89     
-;;;90     uint16_t CRC_Compute2( uint8_t* data1, uint32_t length1, uint8_t* data2 ,uint32_t length2 )
+;;;55     
+;;;56     uint16_t CRC_Compute2( uint8_t* data1, uint32_t length1, uint8_t* data2 ,uint32_t length2 )
 000000  b5f0              PUSH     {r4-r7,lr}
-;;;91     {
+;;;57     {
 000002  4604              MOV      r4,r0
 000004  460d              MOV      r5,r1
-;;;92     	uint8_t da = 0;
+;;;58     	uint8_t da = 0;
 000006  2600              MOVS     r6,#0
-;;;93     	uint32_t ii = 0;
+;;;59     	uint32_t ii = 0;
 000008  2100              MOVS     r1,#0
-;;;94     	uint16_t crchl = 0;
+;;;60     	uint16_t crchl = 0;
 00000a  2000              MOVS     r0,#0
-;;;95     
-;;;96     	crchl = 0x00 ;
+;;;61     
+;;;62     	crchl = 0x00 ;
 00000c  bf00              NOP      
-;;;97     	for ( ii = 0x00 ; ii < length1 ; ii ++ )
+;;;63     	for ( ii = 0x00 ; ii < length1 ; ii ++ )
 00000e  bf00              NOP      
 000010  e012              B        |L2.56|
                   |L2.18|
-;;;98     	{
-;;;99     		da = ( crchl / 256 ) ;               // 以8位二进制数的形式暂存CRC的高8位 
+;;;64     	{
+;;;65     		da = ( crchl / 256 ) ;               // 以8位二进制数的形式暂存CRC的高8位 
 000012  4607              MOV      r7,r0
 000014  ea4f7ce0          ASR      r12,r0,#31
 000018  eb006c1c          ADD      r12,r0,r12,LSR #24
 00001c  f3cc2607          UBFX     r6,r12,#8,#8
-;;;100    		crchl <<= 0x08 ;                     // 左移8位，相当于CRC的低8位乘以  
+;;;66     		crchl <<= 0x08 ;                     // 左移8位，相当于CRC的低8位乘以  
 000020  f64f77ff          MOV      r7,#0xffff
 000024  ea072000          AND      r0,r7,r0,LSL #8
-;;;101    		crchl ^= crcTable [ da ^ data1[ii]] ;// 高8位和当前字节相加后再查表求CRC ，再加上以前的CRC 
+;;;67     		crchl ^= crcTable [ da ^ data1[ii]] ;// 高8位和当前字节相加后再查表求CRC ，再加上以前的CRC 
 000028  5c67              LDRB     r7,[r4,r1]
 00002a  4077              EORS     r7,r7,r6
 00002c  f8dfc03c          LDR      r12,|L2.108|
 000030  f83c7017          LDRH     r7,[r12,r7,LSL #1]
 000034  4078              EORS     r0,r0,r7
-000036  1c49              ADDS     r1,r1,#1              ;97
+000036  1c49              ADDS     r1,r1,#1              ;63
                   |L2.56|
-000038  42a9              CMP      r1,r5                 ;97
+000038  42a9              CMP      r1,r5                 ;63
 00003a  d3ea              BCC      |L2.18|
-;;;102    	}
-;;;103    	for ( ii = 0x00 ; ii < length2 ; ii ++ )
+;;;68     	}
+;;;69     	for ( ii = 0x00 ; ii < length2 ; ii ++ )
 00003c  2100              MOVS     r1,#0
 00003e  e012              B        |L2.102|
                   |L2.64|
-;;;104    	{
-;;;105    		da = ( crchl / 256 ) ;               // 以8位二进制数的形式暂存CRC的高8位 
+;;;70     	{
+;;;71     		da = ( crchl / 256 ) ;               // 以8位二进制数的形式暂存CRC的高8位 
 000040  4607              MOV      r7,r0
 000042  ea4f7ce0          ASR      r12,r0,#31
 000046  eb006c1c          ADD      r12,r0,r12,LSR #24
 00004a  f3cc2607          UBFX     r6,r12,#8,#8
-;;;106    		crchl <<= 0x08 ;                     // 左移8位，相当于CRC的低8位乘以  
+;;;72     		crchl <<= 0x08 ;                     // 左移8位，相当于CRC的低8位乘以  
 00004e  f64f77ff          MOV      r7,#0xffff
 000052  ea072000          AND      r0,r7,r0,LSL #8
-;;;107    		crchl ^= crcTable [ da ^ data2[ii]]; // 高8位和当前字节相加后再查表求CRC ，再加上以前的CRC 
+;;;73     		crchl ^= crcTable [ da ^ data2[ii]]; // 高8位和当前字节相加后再查表求CRC ，再加上以前的CRC 
 000056  5c57              LDRB     r7,[r2,r1]
 000058  4077              EORS     r7,r7,r6
 00005a  f8dfc010          LDR      r12,|L2.108|
 00005e  f83c7017          LDRH     r7,[r12,r7,LSL #1]
 000062  4078              EORS     r0,r0,r7
-000064  1c49              ADDS     r1,r1,#1              ;103
+000064  1c49              ADDS     r1,r1,#1              ;69
                   |L2.102|
-000066  4299              CMP      r1,r3                 ;103
+000066  4299              CMP      r1,r3                 ;69
 000068  d3ea              BCC      |L2.64|
-;;;108    	}
-;;;109    	return crchl;
-;;;110    }
+;;;74     	}
+;;;75     	return crchl;
+;;;76     }
 00006a  bdf0              POP      {r4-r7,pc}
-;;;111    
+;;;77     
                           ENDP
 
                   |L2.108|
@@ -132,49 +132,49 @@
                           AREA ||i.CRC_ComputeFile||, CODE, READONLY, ALIGN=2
 
                   CRC_ComputeFile PROC
-;;;111    
-;;;112    uint16_t CRC_ComputeFile(uint16_t srcCRC,uint8_t * data,uint32_t dataLength)
+;;;77     
+;;;78     uint16_t CRC_ComputeFile(uint16_t srcCRC,uint8_t * data,uint32_t dataLength)
 000000  b5f0              PUSH     {r4-r7,lr}
-;;;113    {
+;;;79     {
 000002  4603              MOV      r3,r0
 000004  460c              MOV      r4,r1
-;;;114    	uint16_t crch1 = 0;
+;;;80     	uint16_t crch1 = 0;
 000006  2000              MOVS     r0,#0
-;;;115    	uint8_t da = 0;
+;;;81     	uint8_t da = 0;
 000008  2600              MOVS     r6,#0
-;;;116    	uint32_t ii = 0;
+;;;82     	uint32_t ii = 0;
 00000a  2100              MOVS     r1,#0
-;;;117    
-;;;118    	crch1 = srcCRC;
+;;;83     
+;;;84     	crch1 = srcCRC;
 00000c  4618              MOV      r0,r3
-;;;119    	for(ii=0;ii<dataLength;ii++)
+;;;85     	for(ii=0;ii<dataLength;ii++)
 00000e  bf00              NOP      
 000010  e010              B        |L3.52|
                   |L3.18|
-;;;120    	{
-;;;121    		da = (crch1 / 256);
+;;;86     	{
+;;;87     		da = (crch1 / 256);
 000012  4605              MOV      r5,r0
 000014  17c7              ASRS     r7,r0,#31
 000016  eb006717          ADD      r7,r0,r7,LSR #24
 00001a  f3c72607          UBFX     r6,r7,#8,#8
-;;;122    		crch1 <<= 0x08;
+;;;88     		crch1 <<= 0x08;
 00001e  f64f75ff          MOV      r5,#0xffff
 000022  ea052000          AND      r0,r5,r0,LSL #8
-;;;123    		crch1 ^=crcTable[da ^ data[ii]];
+;;;89     		crch1 ^=crcTable[da ^ data[ii]];
 000026  5c65              LDRB     r5,[r4,r1]
 000028  4075              EORS     r5,r5,r6
 00002a  4f04              LDR      r7,|L3.60|
 00002c  f8375015          LDRH     r5,[r7,r5,LSL #1]
 000030  4068              EORS     r0,r0,r5
-000032  1c49              ADDS     r1,r1,#1              ;119
+000032  1c49              ADDS     r1,r1,#1              ;85
                   |L3.52|
-000034  4291              CMP      r1,r2                 ;119
+000034  4291              CMP      r1,r2                 ;85
 000036  d3ec              BCC      |L3.18|
-;;;124    	}
-;;;125    	return crch1;
-;;;126    }
+;;;90     	}
+;;;91     	return crch1;
+;;;92     }
 000038  bdf0              POP      {r4-r7,pc}
-;;;127    
+;;;93     
                           ENDP
 
 00003a  0000              DCW      0x0000
@@ -184,70 +184,70 @@
                           AREA ||i.UbloxCheckSum||, CODE, READONLY, ALIGN=1
 
                   UbloxCheckSum PROC
-;;;128    //GPS 校验和计算
-;;;129    void UbloxCheckSum(u8 *buf,u16 len,u8* cka,u8*ckb)
+;;;94     //GPS 校验和计算
+;;;95     void UbloxCheckSum(u8 *buf,u16 len,u8* cka,u8*ckb)
 000000  b570              PUSH     {r4-r6,lr}
-;;;130    {
+;;;96     {
 000002  4604              MOV      r4,r0
-;;;131    	u16 i;
-;;;132    	*cka=0;*ckb=0;
+;;;97     	u16 i;
+;;;98     	*cka=0;*ckb=0;
 000004  2500              MOVS     r5,#0
 000006  7015              STRB     r5,[r2,#0]
 000008  701d              STRB     r5,[r3,#0]
-;;;133    	for(i=0;i<len;i++)
+;;;99     	for(i=0;i<len;i++)
 00000a  2000              MOVS     r0,#0
 00000c  e009              B        |L4.34|
                   |L4.14|
-;;;134    	{
-;;;135    		*cka=*cka+buf[i];
+;;;100    	{
+;;;101    		*cka=*cka+buf[i];
 00000e  7815              LDRB     r5,[r2,#0]
 000010  5c26              LDRB     r6,[r4,r0]
 000012  4435              ADD      r5,r5,r6
 000014  7015              STRB     r5,[r2,#0]
-;;;136    		*ckb=*ckb+*cka;
+;;;102    		*ckb=*ckb+*cka;
 000016  781d              LDRB     r5,[r3,#0]
 000018  7816              LDRB     r6,[r2,#0]
 00001a  4435              ADD      r5,r5,r6
 00001c  701d              STRB     r5,[r3,#0]
-00001e  1c45              ADDS     r5,r0,#1              ;133
-000020  b2a8              UXTH     r0,r5                 ;133
+00001e  1c45              ADDS     r5,r0,#1              ;99
+000020  b2a8              UXTH     r0,r5                 ;99
                   |L4.34|
-000022  4288              CMP      r0,r1                 ;133
+000022  4288              CMP      r0,r1                 ;99
 000024  dbf3              BLT      |L4.14|
-;;;137    	}
-;;;138    }
+;;;103    	}
+;;;104    }
 000026  bd70              POP      {r4-r6,pc}
-;;;139    
+;;;105    
                           ENDP
 
 
                           AREA ||i.checkCPUendian||, CODE, READONLY, ALIGN=2
 
                   checkCPUendian PROC
-;;;143    // 本机大端返回1，小端返回0
-;;;144    uint32_t checkCPUendian(void)
+;;;106    // 本机大端返回1，小端返回0
+;;;107    uint32_t checkCPUendian(void)
 000000  b508              PUSH     {r3,lr}
-;;;145    {
-;;;146    	union {
-;;;147    		unsigned int i;
-;;;148    		unsigned char s[4];
-;;;149    	}c;
-;;;150    
-;;;151    	c.i = 0x12345678;
+;;;108    {
+;;;109    	union {
+;;;110    		unsigned int i;
+;;;111    		unsigned char s[4];
+;;;112    	}c;
+;;;113    
+;;;114    	c.i = 0x12345678;
 000002  4805              LDR      r0,|L5.24|
 000004  9000              STR      r0,[sp,#0]
-;;;152    	return (0x12 == c.s[0]);
+;;;115    	return (0x12 == c.s[0]);
 000006  f89d0000          LDRB     r0,[sp,#0]
 00000a  2812              CMP      r0,#0x12
 00000c  d101              BNE      |L5.18|
 00000e  2001              MOVS     r0,#1
                   |L5.16|
-;;;153    }
+;;;116    }
 000010  bd08              POP      {r3,pc}
                   |L5.18|
-000012  2000              MOVS     r0,#0                 ;152
+000012  2000              MOVS     r0,#0                 ;115
 000014  e7fc              B        |L5.16|
-;;;154    
+;;;117    
                           ENDP
 
 000016  0000              DCW      0x0000
@@ -257,102 +257,102 @@
                           AREA ||i.t_htonl||, CODE, READONLY, ALIGN=1
 
                   t_htonl PROC
-;;;155    // 模拟htonl函数，本机字节序转网络字节序
-;;;156    uint32_t t_htonl(uint32_t h)
+;;;118    // 模拟htonl函数，本机字节序转网络字节序
+;;;119    uint32_t t_htonl(uint32_t h)
 000000  b500              PUSH     {lr}
-;;;157    {
+;;;120    {
 000002  4601              MOV      r1,r0
-;;;158    	return checkCPUendian() ? h : BigLittleSwap32(h);
+;;;121    	return checkCPUendian() ? h : BigLittleSwap32(h);
 000004  f7fffffe          BL       checkCPUendian
 000008  b108              CBZ      r0,|L6.14|
 00000a  4608              MOV      r0,r1
                   |L6.12|
-;;;159    }
+;;;122    }
 00000c  bd00              POP      {pc}
                   |L6.14|
-00000e  0e08              LSRS     r0,r1,#24             ;158
-000010  f401027f          AND      r2,r1,#0xff0000       ;158
-000014  ea402012          ORR      r0,r0,r2,LSR #8       ;158
-000018  f401427f          AND      r2,r1,#0xff00         ;158
-00001c  ea402002          ORR      r0,r0,r2,LSL #8       ;158
-000020  ea406001          ORR      r0,r0,r1,LSL #24      ;158
+00000e  0e08              LSRS     r0,r1,#24             ;121
+000010  f401027f          AND      r2,r1,#0xff0000       ;121
+000014  ea402012          ORR      r0,r0,r2,LSR #8       ;121
+000018  f401427f          AND      r2,r1,#0xff00         ;121
+00001c  ea402002          ORR      r0,r0,r2,LSL #8       ;121
+000020  ea406001          ORR      r0,r0,r1,LSL #24      ;121
 000024  e7f2              B        |L6.12|
-;;;160    
+;;;123    
                           ENDP
 
 
                           AREA ||i.t_htons||, CODE, READONLY, ALIGN=1
 
                   t_htons PROC
-;;;167    // 模拟htons函数，本机字节序转网络字节序
-;;;168    uint16_t t_htons(uint16_t  h)
+;;;130    // 模拟htons函数，本机字节序转网络字节序
+;;;131    uint16_t t_htons(uint16_t  h)
 000000  b500              PUSH     {lr}
-;;;169    {
+;;;132    {
 000002  4601              MOV      r1,r0
-;;;170    	return checkCPUendian() ? h : BigLittleSwap16(h);
+;;;133    	return checkCPUendian() ? h : BigLittleSwap16(h);
 000004  f7fffffe          BL       checkCPUendian
 000008  b108              CBZ      r0,|L7.14|
 00000a  4608              MOV      r0,r1
                   |L7.12|
-;;;171    }
+;;;134    }
 00000c  bd00              POP      {pc}
                   |L7.14|
-00000e  0a08              LSRS     r0,r1,#8              ;170
-000010  b2ca              UXTB     r2,r1                 ;170
-000012  ea402002          ORR      r0,r0,r2,LSL #8       ;170
+00000e  0a08              LSRS     r0,r1,#8              ;133
+000010  b2ca              UXTB     r2,r1                 ;133
+000012  ea402002          ORR      r0,r0,r2,LSL #8       ;133
 000016  e7f9              B        |L7.12|
-;;;172    
+;;;135    
                           ENDP
 
 
                           AREA ||i.t_ntohl||, CODE, READONLY, ALIGN=1
 
                   t_ntohl PROC
-;;;161    // 模拟ntohl函数，网络字节序转本机字节序
-;;;162    uint32_t t_ntohl(uint32_t n)
+;;;124    // 模拟ntohl函数，网络字节序转本机字节序
+;;;125    uint32_t t_ntohl(uint32_t n)
 000000  b500              PUSH     {lr}
-;;;163    {
+;;;126    {
 000002  4601              MOV      r1,r0
-;;;164    	return checkCPUendian() ? n : BigLittleSwap32(n);
+;;;127    	return checkCPUendian() ? n : BigLittleSwap32(n);
 000004  f7fffffe          BL       checkCPUendian
 000008  b108              CBZ      r0,|L8.14|
 00000a  4608              MOV      r0,r1
                   |L8.12|
-;;;165    }
+;;;128    }
 00000c  bd00              POP      {pc}
                   |L8.14|
-00000e  0e08              LSRS     r0,r1,#24             ;164
-000010  f401027f          AND      r2,r1,#0xff0000       ;164
-000014  ea402012          ORR      r0,r0,r2,LSR #8       ;164
-000018  f401427f          AND      r2,r1,#0xff00         ;164
-00001c  ea402002          ORR      r0,r0,r2,LSL #8       ;164
-000020  ea406001          ORR      r0,r0,r1,LSL #24      ;164
+00000e  0e08              LSRS     r0,r1,#24             ;127
+000010  f401027f          AND      r2,r1,#0xff0000       ;127
+000014  ea402012          ORR      r0,r0,r2,LSR #8       ;127
+000018  f401427f          AND      r2,r1,#0xff00         ;127
+00001c  ea402002          ORR      r0,r0,r2,LSL #8       ;127
+000020  ea406001          ORR      r0,r0,r1,LSL #24      ;127
 000024  e7f2              B        |L8.12|
-;;;166    
+;;;129    
                           ENDP
 
 
                           AREA ||i.t_ntohs||, CODE, READONLY, ALIGN=1
 
                   t_ntohs PROC
-;;;173    // 模拟ntohs函数，网络字节序转本机字节序
-;;;174    uint16_t t_ntohs(uint16_t  n)
+;;;136    // 模拟ntohs函数，网络字节序转本机字节序
+;;;137    uint16_t t_ntohs(uint16_t  n)
 000000  b500              PUSH     {lr}
-;;;175    {
+;;;138    {
 000002  4601              MOV      r1,r0
-;;;176    	return checkCPUendian() ? n : BigLittleSwap16(n);
+;;;139    	return checkCPUendian() ? n : BigLittleSwap16(n);
 000004  f7fffffe          BL       checkCPUendian
 000008  b108              CBZ      r0,|L9.14|
 00000a  4608              MOV      r0,r1
                   |L9.12|
-;;;177    }
+;;;140    }
 00000c  bd00              POP      {pc}
                   |L9.14|
-00000e  0a08              LSRS     r0,r1,#8              ;176
-000010  b2ca              UXTB     r2,r1                 ;176
-000012  ea402002          ORR      r0,r0,r2,LSL #8       ;176
+00000e  0a08              LSRS     r0,r1,#8              ;139
+000010  b2ca              UXTB     r2,r1                 ;139
+000012  ea402002          ORR      r0,r0,r2,LSL #8       ;139
 000016  e7f9              B        |L9.12|
-;;;178    
+;;;141    
                           ENDP
 
 

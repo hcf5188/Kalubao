@@ -2,11 +2,11 @@
 ; commandline ArmCC [--list --split_sections --debug -c --asm --interleave -o..\obj\datasavetoflash.o --asm_dir=.\Listings\ --list_dir=.\Listings\ --depend=..\obj\datasavetoflash.d --cpu=Cortex-M3 --apcs=interwork -O0 -I..\OBD -I..\SYSTEM -I..\USER -I..\LIB\inc -I..\UCOSII\CONFIG -I..\UCOSII\PORT -I..\UCOSII\CORE -I..\HAEDWARE -I..\GPS -I..\CDMA -I..\DEAL -IC:\Keil_v5\ARM\RV31\INC -IC:\Keil_v5\ARM\CMSIS\Include -IC:\Keil_v5\ARM\Inc\ST\STM32F10x -D__MICROLIB -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER --omf_browse=..\obj\datasavetoflash.crf ..\CDMA\DataSaveToFlash.c]
                           THUMB
 
-                          AREA ||i.Flash_Read||, CODE, READONLY, ALIGN=1
+                          AREA ||i.Flash_ReadDat||, CODE, READONLY, ALIGN=1
 
-                  Flash_Read PROC
+                  Flash_ReadDat PROC
 ;;;119    
-;;;120    int Flash_Read(uint32_t iAddress, uint8_t *buf, int32_t readLength) 
+;;;120    int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength) 
 000000  b510              PUSH     {r4,lr}
 ;;;121    {
 000002  4603              MOV      r3,r0
@@ -162,7 +162,7 @@
 ;;;68     		if(FLASHStatus==FLASH_COMPLETE)
 000034  f89d0008          LDRB     r0,[sp,#8]
 000038  2804              CMP      r0,#4
-00003a  d11e              BNE      |L3.122|
+00003a  d11f              BNE      |L3.124|
 ;;;69     		{
 ;;;70     			w_addr = (uint32_t)(SBOOT_UPGREAD_ADDR);	
 00003c  4811              LDR      r0,|L3.132|
@@ -175,7 +175,7 @@
 000042  6828              LDR      r0,[r5,#0]
 000044  9000              STR      r0,[sp,#0]
 ;;;75     
-;;;76     			for(i=0;(i<(sizeof(200)/4))&&(FLASHStatus == FLASH_COMPLETE);i++) //
+;;;76     			for(i=0;(i<(sizeof(_SystemInformation)/4 + 1))&&(FLASHStatus == FLASH_COMPLETE);i++) //
 000046  2600              MOVS     r6,#0
 000048  e011              B        |L3.110|
                   |L3.74|
@@ -190,7 +190,7 @@
 000058  2804              CMP      r0,#4
 00005a  d000              BEQ      |L3.94|
 ;;;81     					break;
-00005c  e00c              B        |L3.120|
+00005c  e00d              B        |L3.122|
                   |L3.94|
 ;;;82     		 		w_addr = w_addr + 4;
 00005e  9801              LDR      r0,[sp,#4]
@@ -204,25 +204,25 @@
 00006a  1c70              ADDS     r0,r6,#1              ;76
 00006c  b286              UXTH     r6,r0                 ;76
                   |L3.110|
-00006e  b91e              CBNZ     r6,|L3.120|
-000070  f89d0008          LDRB     r0,[sp,#8]            ;76
-000074  2804              CMP      r0,#4                 ;76
-000076  d0e8              BEQ      |L3.74|
-                  |L3.120|
-000078  bf00              NOP                            ;81
+00006e  2e07              CMP      r6,#7                 ;76
+000070  d203              BCS      |L3.122|
+000072  f89d0008          LDRB     r0,[sp,#8]            ;76
+000076  2804              CMP      r0,#4                 ;76
+000078  d0e7              BEQ      |L3.74|
                   |L3.122|
+00007a  bf00              NOP                            ;81
+                  |L3.124|
 ;;;85     			}
 ;;;86     		}
 ;;;87     	}	
 ;;;88     	OS_EXIT_CRITICAL(); //´ò¿ªÖÐ¶Ï
-00007a  4638              MOV      r0,r7
-00007c  f7fffffe          BL       OS_CPU_SR_Restore
+00007c  4638              MOV      r0,r7
+00007e  f7fffffe          BL       OS_CPU_SR_Restore
 ;;;89     }
-000080  bdfe              POP      {r1-r7,pc}
+000082  bdfe              POP      {r1-r7,pc}
 ;;;90     
                           ENDP
 
-000082  0000              DCW      0x0000
                   |L3.132|
                           DCD      0x08007800
 

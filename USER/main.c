@@ -30,9 +30,7 @@ pSTORE     receCDMA_S = NULL;     //指向 CDMA 串口接收数据堆的指针
 pCIR_QUEUE sendGPS_Q = NULL;      //指向 GPS 串口发送队列  的指针
 pSTORE     receGPS_S = NULL;      //指向 GPS 串口接收数据堆的指针
 
-
-
-_SystemInformation* sysAllData;
+extern SYS_OperationVar  varOperation;//程序运行过程中的全局变量参数
 /****************************************************************
 *			void	int main(void )
 * 描	述 : 入口函数	 		
@@ -42,6 +40,8 @@ _SystemInformation* sysAllData;
 int main(void )
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	
+	
 	
 	OSInit(); 
 	
@@ -66,7 +66,7 @@ OS_EVENT * CDMASendMutex;//建立互斥型信号量，用来独占处理 发向服务器的消息
 OS_EVENT * beepSem;      //建立蜂鸣器响信号量
 extern OS_EVENT *canSendQ;        //向OBD发送PID指令
 extern OS_EVENT *CDMASendQ;       //通过CDMA向服务器发送采集到的OBD、GPS数据
-extern _OBD_PID_Cmd  obdPIDAll[];
+extern _OBD_PID_Cmd *ptrPIDAllDat;
 void StartTask(void *pdata)
 {
 	uint8_t err;
@@ -76,9 +76,7 @@ void StartTask(void *pdata)
 	OS_CPU_SR cpu_sr=0;
 	pdata = pdata; 
 	
-	
 	GlobalVarInit();//全局变量初始化
-	
 	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
 	
   	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
@@ -103,18 +101,18 @@ void StartTask(void *pdata)
 	while(1)
 	{
 		OSTimeDlyHMSM(0,0,0,4);
-		if(sysAllData->isDataFlow == 1)
+		if(varOperation.isDataFlow == 1)
 			continue;
 
-		for(i=0;i<sysAllData->pidNum;i++)          //todo:PID指令的数目 后期需要配置
+		for(i=0;i<varOperation.pidNum;i++)          //todo:PID指令的数目 后期需要配置
 		{
-			obdPIDAll[i].timeCount += 4;
-			if(obdPIDAll[i].timeCount >= obdPIDAll[i].period)
+			(ptrPIDAllDat + i)->timeCount += 4;
+			if((ptrPIDAllDat + i)->timeCount >=(ptrPIDAllDat + i)->period)
 			{
-				obdPIDAll[i].timeCount = 0;
+				(ptrPIDAllDat + i)->timeCount = 0;
 				
 				ptrOBDSend = Mem_malloc(9);
-				memcpy(ptrOBDSend,obdPIDAll[i].data,9);
+				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
 				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
 				if(err != OS_ERR_NONE)
 					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
@@ -127,8 +125,8 @@ void StartTask(void *pdata)
 		{
 			OSMutexPend(CDMASendMutex,0,&err);
 			
-		
 			CDMASendDataPack(cdmaDataToSend);
+			
 			err = OSQPost(CDMASendQ,cdmaDataToSend);
 			if(err != OS_ERR_NONE)
 			{
@@ -155,7 +153,7 @@ void StartTask(void *pdata)
 *
 *************************************************************/
 
-uint16_t freCDMALed = 100;
+uint16_t freCDMALed = 100;//黄灯
 void CDMALEDTask(void *pdata)
 {
 	while(1)
@@ -170,7 +168,7 @@ void CDMALEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freCDMALed);
 	}
 }
-uint16_t freGPSLed = 100;
+uint16_t freGPSLed = 100;//绿灯
 void GPSLEDTask(void *pdata)
 {
 	while(1)
@@ -185,7 +183,7 @@ void GPSLEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freGPSLed);
 	}
 }
-uint16_t freOBDLed = 100;
+uint16_t freOBDLed = 100;//红灯
 void OBDLEDTask(void *pdata)
 {
 	while(1)
@@ -246,18 +244,13 @@ static void BSP_BeeperTimerInit(uint16_t ck_value)
 void BSP_BeeperTimer_Off(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	
 	TIM_CtrlPWMOutputs(TIM3,DISABLE);
 	TIM_Cmd(TIM3,DISABLE);  //使能TIMx外设
-
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);
-
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
   	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   	GPIO_Init(GPIOB,&GPIO_InitStructure);
-
 	GPIO_ResetBits(GPIOB, GPIO_Pin_0);
 }
 void BeepTask(void *pdata)

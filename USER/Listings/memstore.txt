@@ -74,7 +74,7 @@
 
                   Store_Getdates PROC
 ;;;114    ****************************************************************/
-;;;115    NORMAL_STATE Store_Getdates(pSTORE S,uint8_t *pdate,uint8_t num)
+;;;115    NORMAL_STATE Store_Getdates(pSTORE S,uint8_t *pdate,uint16_t num)
 000000  b570              PUSH     {r4-r6,lr}
 ;;;116    {
 000002  4604              MOV      r4,r0

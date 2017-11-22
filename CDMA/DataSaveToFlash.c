@@ -73,7 +73,7 @@ void SbootParameterSaveToFlash(_SystemInformation* parameter)
 
 			w_data=(uint32_t)(*p_w_data);//取得相应数据
 
-			for(i=0;(i<(sizeof(200)/4))&&(FLASHStatus == FLASH_COMPLETE);i++) //
+			for(i=0;(i<(sizeof(_SystemInformation)/4 + 1))&&(FLASHStatus == FLASH_COMPLETE);i++) //
 			{
 				FLASHStatus = FLASH_ProgramWord(w_addr, w_data);
 
@@ -117,7 +117,7 @@ void SaveConfigToFlash(uint8_t* ptrBuff,uint16_t datLength)
 }
 //程序启动的时候，从Flash中读取全局参数用
 
-int Flash_Read(uint32_t iAddress, uint8_t *buf, int32_t readLength) 
+int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength) 
 {
 	int i = 0;
 	while(i < readLength ) 

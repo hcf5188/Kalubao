@@ -10,17 +10,14 @@ void SystemBspInit(void )
 	GPIO_ALL_IN();
 	
 	GPIOLEDInit();
-	
-//	ADC1Init();
-	
 	CDMAUart2Init();
-	
 	GPSConfigInit(9600);
-	
+	CAN1Config();
 	TIM4ConfigInit();
 	TIM2ConfigInit();
 	RTCConfigureInit();
 	
+	NVIC_AllConfig();
 	
 	SysTickInit();
 }
@@ -153,7 +150,7 @@ void ADC1Init(void)
 void CDMAUart2Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
+	
 	USART_InitTypeDef USART_InitStructure;
 	
 	//USART2 RX
@@ -203,18 +200,11 @@ void CDMAUart2Init(void)
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);//使能串口接收中断
 	USART_ITConfig(USART2, USART_IT_TC, ENABLE);  //使能串口发送中断
 	USART_Cmd(USART2, ENABLE);                    //使能串口2
-	
-	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;  //为串口2中断配置中断优先级
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
 }
 
 void KLineInit(void )
 {
 	GPIO_InitTypeDef  GPIO_InitStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
 	
 	
@@ -238,19 +228,12 @@ void KLineInit(void )
 	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
 	USART_ITConfig(USART3, USART_IT_TC, ENABLE);
 	USART_Cmd(USART3, ENABLE); 
-	
-	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
 }
 
 void TIM4ConfigInit(void )
 {
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
-
+	
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE); //时钟使能
 	
 	//定时器TIM4初始化
@@ -260,21 +243,13 @@ void TIM4ConfigInit(void )
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
 	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
  
-	TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE );       //使能指定的TIM4中断,允许更新中断
-
-	//中断优先级NVIC设置
-	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn; //TIM4中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//先占优先级0级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;       //从优先级3级
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
-	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
-	
+	TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE );       //使能指定的TIM4中断,允许更新中断	
 //	TIM_Cmd(TIM4, ENABLE);  //使能TIMx		
 }
 void RTCConfigureInit(void)
 {
 	EXTI_InitTypeDef EXTI_InitStructure;  
-	NVIC_InitTypeDef NVIC_InitStructure; 
+ 
 	/* Enable PWR and BKP clocks */
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
 
@@ -328,13 +303,6 @@ void RTCConfigureInit(void)
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;  
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;  
 	EXTI_Init(&EXTI_InitStructure);  
-
-	/* Enable the RTC Interrupt */  
-	NVIC_InitStructure.NVIC_IRQChannel = RTCAlarm_IRQn;  
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
-	NVIC_Init(&NVIC_InitStructure);  
 }
 void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
 {
@@ -345,4 +313,62 @@ void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
   /* Wait until last write operation on RTC registers has finished */
   RTC_WaitForLastTask();
 }
+
+void NVIC_AllConfig(void )
+{
+	NVIC_InitTypeDef NVIC_InitStructure; 
+	NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x8000);
+	
+	/* Enable the RTC Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = RTCAlarm_IRQn;  
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
+	NVIC_Init(&NVIC_InitStructure);  
+	
+	//定时器4 中断优先级NVIC设置
+	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn; //TIM4中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//先占优先级0级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;       //从优先级3级
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
+	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+	
+	//串口3 中断初始化
+	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	//串口2 中断初始化
+	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;  //为串口2中断配置中断优先级
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);	
+	
+	//GPS 串口初始化
+	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 6;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	//定时器2 辅助GPS接收 中断初始化
+	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn; //TIM2中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
+	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+}
+
+
+
+
 

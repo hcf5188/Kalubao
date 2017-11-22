@@ -102,6 +102,8 @@ extern OS_EVENT *CDMARecieveQ;
 uint8_t *ptrRece;
 uint16_t receDatalen= 0;
 char* pCmp = NULL;
+uint8_t adf[3000];
+uint16_t offadf = 0;
 void TIM4_IRQHandler(void)   //CDMA接收超时处理定时器中断
 {
 	OSIntEnter();//系统进入中断服务程序
@@ -109,7 +111,7 @@ void TIM4_IRQHandler(void)   //CDMA接收超时处理定时器中断
 	{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx更新中断标志 
 		rxTimeOut ++;
-		if(rxTimeOut > 3)
+		if(rxTimeOut > 2)
 		{
 			rxTimeOut = 0;
 			receDatalen = Store_Getlength(receCDMA_S);
@@ -130,6 +132,8 @@ void TIM4_IRQHandler(void)   //CDMA接收超时处理定时器中断
 					}
 					else
 					{
+						memcpy(adf,ptrRece,receDatalen);
+						offadf += receDatalen;
 						if(OSQPost(ZIPRecv_Q,ptrRece) != OS_ERR_NONE)// 推送给专门处理服务器下发的数据的消息队列
 						{
 							Mem_free(ptrRece);

@@ -7,7 +7,6 @@ void CAN1Config(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStructure;
 	CAN_InitTypeDef   CAN_InitStructure;
-	NVIC_InitTypeDef  NVIC_InitStructure;
 	
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);//使能CAN1时钟	
 	CAN_DeInit(CAN1);
@@ -41,12 +40,9 @@ void CAN1Config(void)
 	
 //	CAN1_ClearFilter();                   //清除滤波器
 	
-	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);				//FIFO1消息挂号中断允许.		 
-	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);	
+	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);				//FIFO1消息挂号中断允许.	
+	
+	
 }
 //CAN1 波特率设置
 void CAN1_BaudSet(CANBAUD_Enum baud)

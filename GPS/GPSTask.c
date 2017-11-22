@@ -5,7 +5,10 @@ OS_EVENT* receGPSQ;              //接收GPS信息的消息队列
 #define GPSRECBUF_SIZE  10       //接收GPS消息队列保存消息的最大量
 void *gpsRecBuf[GPSRECBUF_SIZE]; //用于存放指向邮箱的指针
 
-extern _SystemInformation* sysAllData;//系统全局变量信息
+
+extern SYS_OperationVar  varOperation;    //程序正常运行的全局变量参数
+
+
 nmea_msg gpsMC; 	     //GPS信息
 extern OS_EVENT * CDMASendMutex;       //互斥型信号量，用来独占处理 发向服务器的消息
 extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
@@ -14,7 +17,7 @@ extern uint16_t freGPSLed;
 
 void GPSTask(void *pdata)
 {
-	static uint16_t sendNum = 0;
+	static uint32_t sendNum = 0;
 	uint8_t err;
 //	uint8_t i = 0;
 	uint8_t* ptrGPSRece;
@@ -40,13 +43,16 @@ void GPSTask(void *pdata)
 		GPS_Analysis(&gpsMC,&ptrGPSRece[2]);
 		Mem_free(ptrGPSRece);
 		
-		if(gpsMC.longitude == 0) //todo：要根据有效无效判断位来解析， 此时若解析的经度为0  视为无效定位
+		//todo：要根据有效无效判断位来解析， 此时若解析的经度为0  视为无效定位
+		if(gpsMC.longitude == 0) 
+		{
+			freGPSLed = 100;//GPS 绿灯快闪，GPS定位不成功
 			continue;
+		}	
 		
 		timeStamp = TimeCompare(gpsMC.utc.year,gpsMC.utc.month,gpsMC.utc.date,gpsMC.utc.hour,gpsMC.utc.min,gpsMC.utc.sec);
-		sysAllData->currentTime = timeStamp;
+		varOperation.currentTime = timeStamp;
 		
-			
 		ptrGPSPack = Mem_malloc(40);
 		if(ptrGPSPack != NULL)
 		{
@@ -55,18 +61,24 @@ void GPSTask(void *pdata)
 			ptrGPSPack[2] = 0x02;
 			timeStamp = t_htonl(timeStamp);	
 			memcpy(&ptrGPSPack[3],&timeStamp,sizeof(timeStamp));//UTC时间戳
+			
 			timeStamp = t_htonl(gpsMC.longitude);
 			memcpy(&ptrGPSPack[7],&timeStamp,sizeof(timeStamp));//经度
+			
 			timeStamp = t_htonl(gpsMC.latitude);
 			memcpy(&ptrGPSPack[11],&timeStamp,sizeof(timeStamp));//维度
+			
 			speed = t_htons(gpsMC.direction);
 			memcpy(&ptrGPSPack[15],&speed,2);       //todo:解析GPS方向，解析有效定位
+			
 			speed = t_htons(gpsMC.speed);
 			memcpy(&ptrGPSPack[17],&speed,2);
 			memset(&ptrGPSPack[19],0,2);       //todo:当前车速
 			
-			if((sysAllData->isDataFlow == 0)&&(sendNum%2 == 0))     //数据流已经流动起来了
+			if((varOperation.isDataFlow == 0)&&(sendNum != varOperation.currentTime))     //数据流已经流动起来了  确保1秒发送一次
 			{	
+				sendNum = varOperation.currentTime;
+				
 				OSMutexPend(CDMASendMutex,0,&err);
 			
 				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrGPSPack,21);
@@ -78,12 +90,15 @@ void GPSTask(void *pdata)
 			Mem_free(ptrGPSPack);
 		}
 		osTime = RTC_GetCounter();
-		timeStamp = sysAllData->currentTime > osTime? (sysAllData->currentTime - osTime):(osTime - sysAllData->currentTime);
-		if(timeStamp > 300)
-			RTC_Time_Adjust(sysAllData->currentTime);
+		timeStamp = varOperation.currentTime > osTime? (varOperation.currentTime - osTime):(osTime - varOperation.currentTime);
+		if(timeStamp > 300)//时间相差5分钟后，校时（以GPS时间为准）
+			RTC_Time_Adjust(varOperation.currentTime);
 		freGPSLed = 300;          //LED  指示，GPS定位正常
 	}
 }
+
+
+
 
 /*********************以下为GPS配置、数据处理函数************************/
 #define SecsPerDay      (3600*24)
@@ -330,7 +345,7 @@ void NMEA_GPVTG_Analysis(nmea_msg *gpsx,u8 *buf)
 	if(posx!=0XFF)
 	{
 		gpsx->speed=NMEA_Str2num(p1+posx,&dx);
-		if(dx<3)gpsx->speed*=NMEA_Pow(10,3-dx);	 	 		//确保扩大1000倍
+		if(dx<3)gpsx->speed *= 10;//NMEA_Pow(10,3-dx);	 	 		//确保扩大1000倍
 	}
 }  
 //提取NMEA-0183信息

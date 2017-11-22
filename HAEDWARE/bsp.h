@@ -32,6 +32,8 @@ void GPIO_ALL_IN(void);
 void RTCConfigureInit(void);//RTC实时时钟初始化
 void RTC_Time_Adjust(uint32_t value);//RTC实时时钟校正
 
+void NVIC_AllConfig(void );//中断方面的重定向
+
 void GPSConfigInit(uint16_t baud);//设置GPS通信波特率
 	
 void CAN1Config(void);     //CAN1 初始化

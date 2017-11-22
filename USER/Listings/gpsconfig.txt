@@ -13,175 +13,144 @@
 000004  4604              MOV      r4,r0
 ;;;6      	GPIO_InitTypeDef GPIO_InitStructure;
 ;;;7      	USART_InitTypeDef USART_InitStructure;
-;;;8      	NVIC_InitTypeDef NVIC_InitStructure;
-;;;9      	
-;;;10     	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+;;;8      	
+;;;9      	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 000006  2003              MOVS     r0,#3
 000008  f88d0016          STRB     r0,[sp,#0x16]
-;;;11     	
-;;;12     	//USART4 RX
-;;;13     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+;;;10     	
+;;;11     	//USART4 RX
+;;;12     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
 00000c  f44f6000          MOV      r0,#0x800
 000010  f8ad0014          STRH     r0,[sp,#0x14]
-;;;14       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+;;;13       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 000014  2004              MOVS     r0,#4
 000016  f88d0017          STRB     r0,[sp,#0x17]
-;;;15       	GPIO_Init(GPIOC, &GPIO_InitStructure);
+;;;14       	GPIO_Init(GPIOC, &GPIO_InitStructure);
 00001a  a905              ADD      r1,sp,#0x14
-00001c  4829              LDR      r0,|L1.196|
+00001c  4821              LDR      r0,|L1.164|
 00001e  f7fffffe          BL       GPIO_Init
-;;;16     
-;;;17     	//USART4 TX
-;;;18     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+;;;15     
+;;;16     	//USART4 TX
+;;;17     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
 000022  f44f6080          MOV      r0,#0x400
 000026  f8ad0014          STRH     r0,[sp,#0x14]
-;;;19       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+;;;18       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 00002a  2018              MOVS     r0,#0x18
 00002c  f88d0017          STRB     r0,[sp,#0x17]
-;;;20       	GPIO_Init(GPIOC, &GPIO_InitStructure);
+;;;19       	GPIO_Init(GPIOC, &GPIO_InitStructure);
 000030  a905              ADD      r1,sp,#0x14
-000032  4824              LDR      r0,|L1.196|
+000032  481c              LDR      r0,|L1.164|
 000034  f7fffffe          BL       GPIO_Init
-;;;21     	
-;;;22     	//GPS 电源
-;;;23     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+;;;20     	
+;;;21     	//GPS 电源
+;;;22     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 000038  f44f7080          MOV      r0,#0x100
 00003c  f8ad0014          STRH     r0,[sp,#0x14]
-;;;24       	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+;;;23       	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 000040  2003              MOVS     r0,#3
 000042  f88d0016          STRB     r0,[sp,#0x16]
-;;;25       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+;;;24       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 000046  2010              MOVS     r0,#0x10
 000048  f88d0017          STRB     r0,[sp,#0x17]
-;;;26       	GPIO_Init(GPIOC, &GPIO_InitStructure);
+;;;25       	GPIO_Init(GPIOC, &GPIO_InitStructure);
 00004c  a905              ADD      r1,sp,#0x14
-00004e  481d              LDR      r0,|L1.196|
+00004e  4815              LDR      r0,|L1.164|
 000050  f7fffffe          BL       GPIO_Init
-;;;27     
-;;;28     	GPIO_ResetBits(GPIOC,GPIO_Pin_8);	//默认上电的时候开启GPS电源
+;;;26     
+;;;27     	GPIO_ResetBits(GPIOC,GPIO_Pin_8);	//默认上电的时候开启GPS电源
 000054  f44f7180          MOV      r1,#0x100
-000058  481a              LDR      r0,|L1.196|
+000058  4812              LDR      r0,|L1.164|
 00005a  f7fffffe          BL       GPIO_ResetBits
-;;;29     	
-;;;30     	USART_InitStructure.USART_BaudRate            = baud  ;	//GPS  通信波特率
+;;;28     	
+;;;29     	USART_InitStructure.USART_BaudRate            = baud  ;	//GPS  通信波特率
 00005e  9401              STR      r4,[sp,#4]
-;;;31     	USART_InitStructure.USART_WordLength          = USART_WordLength_8b;
+;;;30     	USART_InitStructure.USART_WordLength          = USART_WordLength_8b;
 000060  2000              MOVS     r0,#0
 000062  f8ad0008          STRH     r0,[sp,#8]
-;;;32     	USART_InitStructure.USART_StopBits            = USART_StopBits_1;
+;;;31     	USART_InitStructure.USART_StopBits            = USART_StopBits_1;
 000066  f8ad000a          STRH     r0,[sp,#0xa]
-;;;33     	USART_InitStructure.USART_Parity              = USART_Parity_No ;
+;;;32     	USART_InitStructure.USART_Parity              = USART_Parity_No ;
 00006a  f8ad000c          STRH     r0,[sp,#0xc]
-;;;34     	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+;;;33     	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 00006e  f8ad0010          STRH     r0,[sp,#0x10]
-;;;35     	USART_InitStructure.USART_Mode                = USART_Mode_Rx | USART_Mode_Tx;
+;;;34     	USART_InitStructure.USART_Mode                = USART_Mode_Rx | USART_Mode_Tx;
 000072  200c              MOVS     r0,#0xc
 000074  f8ad000e          STRH     r0,[sp,#0xe]
-;;;36     	
-;;;37     	USART_Init(UART4, &USART_InitStructure);
+;;;35     	
+;;;36     	USART_Init(UART4, &USART_InitStructure);
 000078  a901              ADD      r1,sp,#4
-00007a  4813              LDR      r0,|L1.200|
+00007a  480b              LDR      r0,|L1.168|
 00007c  f7fffffe          BL       USART_Init
-;;;38     	USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
+;;;37     	USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
 000080  2201              MOVS     r2,#1
 000082  f2405125          MOV      r1,#0x525
-000086  4810              LDR      r0,|L1.200|
+000086  4808              LDR      r0,|L1.168|
 000088  f7fffffe          BL       USART_ITConfig
-;;;39     	USART_ITConfig(UART4, USART_IT_TC, ENABLE);    //UBX协议对GPS模块进行配置
+;;;38     	USART_ITConfig(UART4, USART_IT_TC, ENABLE);    //UBX协议对GPS模块进行配置
 00008c  2201              MOVS     r2,#1
 00008e  f2406126          MOV      r1,#0x626
-000092  480d              LDR      r0,|L1.200|
+000092  4805              LDR      r0,|L1.168|
 000094  f7fffffe          BL       USART_ITConfig
-;;;40     	USART_Cmd(UART4, ENABLE);
+;;;39     	USART_Cmd(UART4, ENABLE);
 000098  2101              MOVS     r1,#1
-00009a  480b              LDR      r0,|L1.200|
+00009a  4803              LDR      r0,|L1.168|
 00009c  f7fffffe          BL       USART_Cmd
+;;;40     	
 ;;;41     	
-;;;42     	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
-0000a0  2034              MOVS     r0,#0x34
-0000a2  f88d0000          STRB     r0,[sp,#0]
-;;;43     	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-0000a6  2002              MOVS     r0,#2
-0000a8  f88d0001          STRB     r0,[sp,#1]
-;;;44     	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 6;
-0000ac  2006              MOVS     r0,#6
-0000ae  f88d0002          STRB     r0,[sp,#2]
-;;;45     	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-0000b2  2001              MOVS     r0,#1
-0000b4  f88d0003          STRB     r0,[sp,#3]
-;;;46     	NVIC_Init(&NVIC_InitStructure);
-0000b8  4668              MOV      r0,sp
-0000ba  f7fffffe          BL       NVIC_Init
-;;;47     }
-0000be  b006              ADD      sp,sp,#0x18
-0000c0  bd10              POP      {r4,pc}
-;;;48     void TIM2ConfigInit(void )
+;;;42     }
+0000a0  b006              ADD      sp,sp,#0x18
+0000a2  bd10              POP      {r4,pc}
+;;;43     void TIM2ConfigInit(void )
                           ENDP
 
-0000c2  0000              DCW      0x0000
-                  |L1.196|
+                  |L1.164|
                           DCD      0x40011000
-                  |L1.200|
+                  |L1.168|
                           DCD      0x40004c00
 
                           AREA ||i.TIM2ConfigInit||, CODE, READONLY, ALIGN=1
 
                   TIM2ConfigInit PROC
-;;;47     }
-;;;48     void TIM2ConfigInit(void )
-000000  b51f              PUSH     {r0-r4,lr}
-;;;49     {
-;;;50     	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-;;;51     	NVIC_InitTypeDef NVIC_InitStructure;
-;;;52     
-;;;53     	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE); //时钟使能
+;;;42     }
+;;;43     void TIM2ConfigInit(void )
+000000  b50e              PUSH     {r1-r3,lr}
+;;;44     {
+;;;45     	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+;;;46     
+;;;47     	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE); //时钟使能
 000002  2101              MOVS     r1,#1
 000004  4608              MOV      r0,r1
 000006  f7fffffe          BL       RCC_APB1PeriphClockCmd
-;;;54     	
-;;;55     	//定时器TIM2初始化
-;;;56     	TIM_TimeBaseStructure.TIM_Period = 10;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
+;;;48     	
+;;;49     	//定时器TIM2初始化
+;;;50     	TIM_TimeBaseStructure.TIM_Period = 10;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
 00000a  200a              MOVS     r0,#0xa
-00000c  f8ad0008          STRH     r0,[sp,#8]
-;;;57     	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
+00000c  f8ad0004          STRH     r0,[sp,#4]
+;;;51     	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
 000010  f641401f          MOV      r0,#0x1c1f
-000014  f8ad0004          STRH     r0,[sp,#4]
-;;;58     	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
+000014  f8ad0000          STRH     r0,[sp,#0]
+;;;52     	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
 000018  2000              MOVS     r0,#0
-00001a  f8ad000a          STRH     r0,[sp,#0xa]
-;;;59     	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
-00001e  f8ad0006          STRH     r0,[sp,#6]
-;;;60     	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
-000022  a901              ADD      r1,sp,#4
+00001a  f8ad0006          STRH     r0,[sp,#6]
+;;;53     	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+00001e  f8ad0002          STRH     r0,[sp,#2]
+;;;54     	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
+000022  4669              MOV      r1,sp
 000024  f04f4080          MOV      r0,#0x40000000
 000028  f7fffffe          BL       TIM_TimeBaseInit
-;;;61      
-;;;62     	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE );       //使能指定的TIM2中断,允许更新中断
+;;;55      
+;;;56     	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE );       //使能指定的TIM2中断,允许更新中断
 00002c  2201              MOVS     r2,#1
 00002e  4611              MOV      r1,r2
 000030  0790              LSLS     r0,r2,#30
 000032  f7fffffe          BL       TIM_ITConfig
-;;;63     
-;;;64     	//中断优先级NVIC设置
-;;;65     	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn; //TIM2中断
-000036  201c              MOVS     r0,#0x1c
-000038  f88d0000          STRB     r0,[sp,#0]
-;;;66     	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
-00003c  2002              MOVS     r0,#2
-00003e  f88d0001          STRB     r0,[sp,#1]
-;;;67     	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
-000042  2001              MOVS     r0,#1
-000044  f88d0002          STRB     r0,[sp,#2]
-;;;68     	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
-000048  f88d0003          STRB     r0,[sp,#3]
-;;;69     	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
-00004c  4668              MOV      r0,sp
-00004e  f7fffffe          BL       NVIC_Init
-;;;70     	
-;;;71     //	TIM_Cmd(TIM2, ENABLE);  //使能TIMx		
-;;;72     }
-000052  bd1f              POP      {r0-r4,pc}
-;;;73     
+;;;57     
+;;;58     	
+;;;59     	
+;;;60     //	TIM_Cmd(TIM2, ENABLE);  //使能TIMx		
+;;;61     }
+000036  bd0e              POP      {r1-r3,pc}
+;;;62     
                           ENDP
 
 

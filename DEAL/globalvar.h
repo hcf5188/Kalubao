@@ -4,7 +4,7 @@
 #include "includes.h"
 
 #define SOFTVersion             0x10001001    //软件固件版本号
-
+#define ECUVersion              0x00000001    //ECU版本号
 
 #define SBOOT_UPGREAD_ADDR   	0x08007800    //此地址存放SBOOT升级用的参数
 
@@ -19,53 +19,56 @@ typedef enum
 }LinkStatus;
 
 #pragma pack(1)             //1字节对齐
-__packed typedef struct
+__packed typedef struct  //与升级相关的结构体
 {
 	uint32_t softVersion;   //软件版本号       用于OTA升级
-	uint32_t newSoftVersion;//新的软件版本号   用于OTA升级
 	uint32_t pageNum;
 	uint8_t  isSoftUpdate;  //程序是否需要升级  1 - 需要升级    0 - 不需要升级
-	uint8_t  isSbootSucc;   //SBoot升级成功
+
+	uint32_t ecuVersion;    //ECU 版本ID
+	uint16_t pidNum;        //PID 指令的个数   配置文件
+	
+	uint8_t  busType;       //当前用到的总线（CAN线还是K线）
+	uint8_t  canIdType;     //标准帧还是扩展帧
+	uint32_t canTxId;       //保存CAN发送ID
+	uint32_t canRxId;       //保存CAN接收ID
+	uint8_t  canBaud;       //CAN通讯波特率
+}_SystemInformation;
+
+__packed typedef struct//程序正常运行时候的各个参数
+{
+	uint32_t newSoftVersion;//新的软件版本号   用于OTA升级
 	uint16_t newSoftCRC;    //新程序文件的CRC校验
 	uint16_t frameNum;      //程序帧的数量，一帧128字节
 	
 	uint8_t  imei[16];      //存储IMEI号
 	uint8_t  iccID[20];     //存储SIM卡的ICCID号
 	
-	char     ipAddr[18];    //用来存储IP地址
-	uint16_t ipPotr;        //存储IP端口号
+	uint8_t  isDataFlow;    //数据流是否流动起来  0 - 流动起来， 1 - 未流动
+	uint8_t  isEngineRun;   //发动机引擎是否开启  0 - 开启，     1 - 未开启	
+	
+	uint8_t  isIPUpdate;    //IP地址是否需要更新   1 - 需要更新   0 - 不需要更新
+	char     ipAddr[18];    //当前运行的IP地址
+	uint16_t ipPotr;        //当前程序运行的IP端口号
 	char     newIP_Addr[18];//存储服务器下发的IP地址
 	uint16_t newIP_Potr;    //存储服务器下发的IP端口号
-	uint8_t  isIPUpdate;    //IP地址是否需要更新   1 - 需要更新   0 - 不需要更新
-	uint8_t  isSendData;    //是否正在发送数据     1 - 正在发送   0 - 没有发送
+	
 	uint8_t  gprsStatus;    //链路连接状态
 	uint8_t  tcpStatus;     //TCP链路状态 
-	
-	uint8_t  isDataFlow;    //数据流是否流动起来  0 - 流动起来， 1 - 未流动
-	
-	uint8_t  isEngineRun;   //发动机引擎是否开启  0 - 开启，     1 - 未开启
 	
 	uint32_t sendId;        //要发送的指令流水号
 	uint32_t currentTime;   //GPS 时间        日/时/分/秒
 	
-	uint32_t ecuVersion;    //ECU 版本ID
-	uint16_t pidNum;        //PID 指令的个数   用于配置文件
+	uint16_t pidNum;        //PID 参数的数量
 	uint32_t newECUVersion; //保存 登录报文下发的ECU版本
 	uint8_t  newPidNum;     //PID 新的个数 
-	uint8_t  busType;       //当前用到的总线（CAN线还是K线）
-	uint8_t  canIdType;
-	uint8_t  canTxId;       //保存CAN发送ID
-	uint8_t  canRxId;       //保存CAN接收ID
-	uint8_t  canBaud;       //CAN通讯波特率
-	uint8_t  isEcuUpdate;   //ECU 是否需要升级
-	
-}_SystemInformation;
+}SYS_OperationVar;
 
 __packed typedef struct
 {
-	uint16_t datLength;    //要发送的数据长度
-	uint16_t timeCount;    //数据包已经存在的时间（ms）
-	uint8_t* data;    //要发送的数据
+	uint16_t datLength;  //要发送的数据长度
+	uint16_t timeCount;  //数据包已经存在的时间（ms）
+	uint8_t* data;       //要发送的数据
 }_CDMADataToSend;
 
 __packed typedef struct
@@ -95,6 +98,7 @@ uint16_t CRC_ComputeFile(uint16_t srcCRC,uint8_t * data,uint32_t dataLength);
 
 void UbloxCheckSum(u8 *buf,u16 len,u8* cka,u8*ckb);//GPS校验和计算
 
+void CDMAPowerOpen_Close(void);//打开-关闭CDMA
 _CDMADataToSend* CDMNSendDataInit(uint16_t length);//封包前的初始化
 void CDMASendDataPack(_CDMADataToSend* ptr);//对将要发送的数据进行打包
 uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal);//对接收到的数据包进行解析，并返回有效数据
@@ -104,7 +108,7 @@ void SoftErasePage(uint32_t addr);//擦除单页 2K
 void SoftProgramUpdate(uint32_t wAddr,uint8_t* ptrBuff,uint16_t datLength);//写入单页
 void SaveConfigToFlash(uint8_t* ptrBuff,uint16_t datLength);
 void SbootParameterSaveToFlash(_SystemInformation* parameter);//保存Sboot参数
-
+int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength);
 // 短整型大小端互换
 #define BigLittleSwap16(A)  ((((uint16_t)(A) & 0xff00) >> 8) | (((uint16_t)(A) & 0x00ff) << 8))
 // 长整型大小端互换

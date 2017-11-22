@@ -54,7 +54,7 @@ NORMAL_STATE Store_Delete(pSTORE S);
 NORMAL_STATE Store_Clear(pSTORE S);
 NORMAL_STATE Store_Pop(pSTORE S,uint8_t *pdat);
 uint16_t     Store_Getlength(pSTORE S);
-NORMAL_STATE Store_Getdates(pSTORE S,uint8_t *pdate,uint8_t num);
+NORMAL_STATE Store_Getdates(pSTORE S,uint8_t *pdate,uint16_t num);
 NORMAL_STATE Store_Push(pSTORE S,uint8_t dat);
 
 

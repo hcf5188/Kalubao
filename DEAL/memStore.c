@@ -112,7 +112,7 @@ uint16_t Store_Getlength(pSTORE S)
 * 输入参数 : 指向堆栈的指针，指向目的地指针，数据数目
 * 返 回 值 : NORMAL_STATE类型，操作是否成功状态
 ****************************************************************/
-NORMAL_STATE Store_Getdates(pSTORE S,uint8_t *pdate,uint8_t num)
+NORMAL_STATE Store_Getdates(pSTORE S,uint8_t *pdate,uint16_t num)
 {
 	if(S->base == NULL) return FAULT;
 	if(num > S->top)    return FAULT;

@@ -129,173 +129,192 @@
                           AREA ||i.TIM4_IRQHandler||, CODE, READONLY, ALIGN=2
 
                   TIM4_IRQHandler PROC
-;;;104    char* pCmp = NULL;
-;;;105    void TIM4_IRQHandler(void)   //CDMA接收超时处理定时器中断
+;;;106    uint16_t offadf = 0;
+;;;107    void TIM4_IRQHandler(void)   //CDMA接收超时处理定时器中断
 000000  b510              PUSH     {r4,lr}
-;;;106    {
-;;;107    	OSIntEnter();//系统进入中断服务程序
+;;;108    {
+;;;109    	OSIntEnter();//系统进入中断服务程序
 000002  f7fffffe          BL       OSIntEnter
-;;;108    	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)  //检查TIM4更新中断发生与否
+;;;110    	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)  //检查TIM4更新中断发生与否
 000006  2101              MOVS     r1,#1
-000008  4834              LDR      r0,|L3.220|
+000008  483b              LDR      r0,|L3.248|
 00000a  f7fffffe          BL       TIM_GetITStatus
 00000e  2800              CMP      r0,#0
-000010  d061              BEQ      |L3.214|
-;;;109    	{
-;;;110    		TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx更新中断标志 
+000010  d06f              BEQ      |L3.242|
+;;;111    	{
+;;;112    		TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx更新中断标志 
 000012  2101              MOVS     r1,#1
-000014  4831              LDR      r0,|L3.220|
+000014  4838              LDR      r0,|L3.248|
 000016  f7fffffe          BL       TIM_ClearITPendingBit
-;;;111    		rxTimeOut ++;
-00001a  4831              LDR      r0,|L3.224|
+;;;113    		rxTimeOut ++;
+00001a  4838              LDR      r0,|L3.252|
 00001c  8800              LDRH     r0,[r0,#0]  ; rxTimeOut
 00001e  1c40              ADDS     r0,r0,#1
-000020  492f              LDR      r1,|L3.224|
+000020  4936              LDR      r1,|L3.252|
 000022  8008              STRH     r0,[r1,#0]
-;;;112    		if(rxTimeOut > 3)
+;;;114    		if(rxTimeOut > 2)
 000024  4608              MOV      r0,r1
 000026  8800              LDRH     r0,[r0,#0]  ; rxTimeOut
-000028  2803              CMP      r0,#3
-00002a  dd54              BLE      |L3.214|
-;;;113    		{
-;;;114    			rxTimeOut = 0;
+000028  2802              CMP      r0,#2
+00002a  dd62              BLE      |L3.242|
+;;;115    		{
+;;;116    			rxTimeOut = 0;
 00002c  2000              MOVS     r0,#0
 00002e  8008              STRH     r0,[r1,#0]
-;;;115    			receDatalen = Store_Getlength(receCDMA_S);
-000030  482c              LDR      r0,|L3.228|
+;;;117    			receDatalen = Store_Getlength(receCDMA_S);
+000030  4833              LDR      r0,|L3.256|
 000032  6800              LDR      r0,[r0,#0]  ; receCDMA_S
 000034  f7fffffe          BL       Store_Getlength
-000038  492b              LDR      r1,|L3.232|
+000038  4932              LDR      r1,|L3.260|
 00003a  8008              STRH     r0,[r1,#0]
-;;;116    			if(receDatalen>2 )
+;;;118    			if(receDatalen>2 )
 00003c  4608              MOV      r0,r1
 00003e  8800              LDRH     r0,[r0,#0]  ; receDatalen
 000040  2802              CMP      r0,#2
-000042  dd40              BLE      |L3.198|
-;;;117    			{
-;;;118    				ptrRece = Mem_malloc(receDatalen);
+000042  dd4e              BLE      |L3.226|
+;;;119    			{
+;;;120    				ptrRece = Mem_malloc(receDatalen);
 000044  4608              MOV      r0,r1
 000046  8800              LDRH     r0,[r0,#0]  ; receDatalen
 000048  f7fffffe          BL       Mem_malloc
-00004c  4927              LDR      r1,|L3.236|
+00004c  492e              LDR      r1,|L3.264|
 00004e  6008              STR      r0,[r1,#0]  ; ptrRece
-;;;119    				if(ptrRece != NULL)//内存块申请成功
+;;;121    				if(ptrRece != NULL)//内存块申请成功
 000050  4608              MOV      r0,r1
 000052  6800              LDR      r0,[r0,#0]  ; ptrRece
-000054  b388              CBZ      r0,|L3.186|
-;;;120    				{
-;;;121    					Store_Getdates(receCDMA_S,ptrRece,receDatalen);
-000056  4824              LDR      r0,|L3.232|
-000058  7802              LDRB     r2,[r0,#0]  ; receDatalen
-00005a  4608              MOV      r0,r1
-00005c  6801              LDR      r1,[r0,#0]  ; ptrRece
-00005e  4821              LDR      r0,|L3.228|
-000060  6800              LDR      r0,[r0,#0]  ; receCDMA_S
-000062  f7fffffe          BL       Store_Getdates
-;;;122    					pCmp = strstr((const char*)ptrRece,"ZIPRECV");  //如果接收到服务器主动下发的消息则发送给专门处理函数的消息队列
-000066  a122              ADR      r1,|L3.240|
-000068  4820              LDR      r0,|L3.236|
-00006a  6800              LDR      r0,[r0,#0]  ; ptrRece
-00006c  f7fffffe          BL       strstr
-000070  4921              LDR      r1,|L3.248|
-000072  6008              STR      r0,[r1,#0]  ; pCmp
-;;;123    					if(pCmp == NULL)
-000074  4608              MOV      r0,r1
-000076  6800              LDR      r0,[r0,#0]  ; pCmp
-000078  b978              CBNZ     r0,|L3.154|
-;;;124    					{
-;;;125    						if(OSQPost(CDMARecieveQ,ptrRece) != OS_ERR_NONE)//推送不成功需要释放内存块
-00007a  481c              LDR      r0,|L3.236|
-00007c  6801              LDR      r1,[r0,#0]  ; ptrRece
-00007e  481f              LDR      r0,|L3.252|
-000080  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
-000082  f7fffffe          BL       OSQPost
-000086  b310              CBZ      r0,|L3.206|
-;;;126    						{
-;;;127    							Mem_free(ptrRece);
-000088  4818              LDR      r0,|L3.236|
-00008a  6800              LDR      r0,[r0,#0]  ; ptrRece
-00008c  f7fffffe          BL       Mem_free
-;;;128    							Store_Clear(receCDMA_S);//舍弃本次接收的数据
-000090  4814              LDR      r0,|L3.228|
-000092  6800              LDR      r0,[r0,#0]  ; receCDMA_S
-000094  f7fffffe          BL       Store_Clear
-000098  e019              B        |L3.206|
-                  |L3.154|
-;;;129    						}
-;;;130    					}
-;;;131    					else
-;;;132    					{
-;;;133    						if(OSQPost(ZIPRecv_Q,ptrRece) != OS_ERR_NONE)// 推送给专门处理服务器下发的数据的消息队列
-00009a  4814              LDR      r0,|L3.236|
-00009c  6801              LDR      r1,[r0,#0]  ; ptrRece
-00009e  4818              LDR      r0,|L3.256|
-0000a0  6800              LDR      r0,[r0,#0]  ; ZIPRecv_Q
-0000a2  f7fffffe          BL       OSQPost
-0000a6  b190              CBZ      r0,|L3.206|
-;;;134    						{
-;;;135    							Mem_free(ptrRece);
-0000a8  4810              LDR      r0,|L3.236|
-0000aa  6800              LDR      r0,[r0,#0]  ; ptrRece
-0000ac  f7fffffe          BL       Mem_free
-;;;136    							Store_Clear(receCDMA_S);//舍弃本次接收的数据
-0000b0  480c              LDR      r0,|L3.228|
-0000b2  6800              LDR      r0,[r0,#0]  ; receCDMA_S
-0000b4  f7fffffe          BL       Store_Clear
-0000b8  e009              B        |L3.206|
-                  |L3.186|
-0000ba  e7ff              B        |L3.188|
-                  |L3.188|
-;;;137    						}
-;;;138    					}
-;;;139    				}
-;;;140    				else
-;;;141    					Store_Clear(receCDMA_S);    //舍弃本次接收的数据
-0000bc  4809              LDR      r0,|L3.228|
-0000be  6800              LDR      r0,[r0,#0]  ; receCDMA_S
-0000c0  f7fffffe          BL       Store_Clear
-0000c4  e003              B        |L3.206|
-                  |L3.198|
-;;;142    			}
-;;;143    			else
-;;;144    				Store_Clear(receCDMA_S);//接收的数据长度<=2 视为无效数据，没有这么短的回复
-0000c6  4807              LDR      r0,|L3.228|
-0000c8  6800              LDR      r0,[r0,#0]  ; receCDMA_S
-0000ca  f7fffffe          BL       Store_Clear
-                  |L3.206|
-;;;145    				
-;;;146    			TIM_Cmd(TIM4, DISABLE);
-0000ce  2100              MOVS     r1,#0
-0000d0  4802              LDR      r0,|L3.220|
-0000d2  f7fffffe          BL       TIM_Cmd
+000054  2800              CMP      r0,#0
+000056  d03f              BEQ      |L3.216|
+;;;122    				{
+;;;123    					Store_Getdates(receCDMA_S,ptrRece,receDatalen);
+000058  482a              LDR      r0,|L3.260|
+00005a  8802              LDRH     r2,[r0,#0]  ; receDatalen
+00005c  4608              MOV      r0,r1
+00005e  6801              LDR      r1,[r0,#0]  ; ptrRece
+000060  4827              LDR      r0,|L3.256|
+000062  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+000064  f7fffffe          BL       Store_Getdates
+;;;124    					pCmp = strstr((const char*)ptrRece,"ZIPRECV");  //如果接收到服务器主动下发的消息则发送给专门处理函数的消息队列
+000068  a128              ADR      r1,|L3.268|
+00006a  4827              LDR      r0,|L3.264|
+00006c  6800              LDR      r0,[r0,#0]  ; ptrRece
+00006e  f7fffffe          BL       strstr
+000072  4928              LDR      r1,|L3.276|
+000074  6008              STR      r0,[r1,#0]  ; pCmp
+;;;125    					if(pCmp == NULL)
+000076  4608              MOV      r0,r1
+000078  6800              LDR      r0,[r0,#0]  ; pCmp
+00007a  b978              CBNZ     r0,|L3.156|
+;;;126    					{
+;;;127    						if(OSQPost(CDMARecieveQ,ptrRece) != OS_ERR_NONE)//推送不成功需要释放内存块
+00007c  4822              LDR      r0,|L3.264|
+00007e  6801              LDR      r1,[r0,#0]  ; ptrRece
+000080  4825              LDR      r0,|L3.280|
+000082  6800              LDR      r0,[r0,#0]  ; CDMARecieveQ
+000084  f7fffffe          BL       OSQPost
+000088  b328              CBZ      r0,|L3.214|
+;;;128    						{
+;;;129    							Mem_free(ptrRece);
+00008a  481f              LDR      r0,|L3.264|
+00008c  6800              LDR      r0,[r0,#0]  ; ptrRece
+00008e  f7fffffe          BL       Mem_free
+;;;130    							Store_Clear(receCDMA_S);//舍弃本次接收的数据
+000092  481b              LDR      r0,|L3.256|
+000094  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+000096  f7fffffe          BL       Store_Clear
+00009a  e026              B        |L3.234|
+                  |L3.156|
+;;;131    						}
+;;;132    					}
+;;;133    					else
+;;;134    					{
+;;;135    						memcpy(adf,ptrRece,receDatalen);
+00009c  4819              LDR      r0,|L3.260|
+00009e  8802              LDRH     r2,[r0,#0]  ; receDatalen
+0000a0  4819              LDR      r0,|L3.264|
+0000a2  6801              LDR      r1,[r0,#0]  ; ptrRece
+0000a4  481d              LDR      r0,|L3.284|
+0000a6  f7fffffe          BL       __aeabi_memcpy
+;;;136    						offadf += receDatalen;
+0000aa  481d              LDR      r0,|L3.288|
+0000ac  8800              LDRH     r0,[r0,#0]  ; offadf
+0000ae  4915              LDR      r1,|L3.260|
+0000b0  8809              LDRH     r1,[r1,#0]  ; receDatalen
+0000b2  4408              ADD      r0,r0,r1
+0000b4  491a              LDR      r1,|L3.288|
+0000b6  8008              STRH     r0,[r1,#0]
+;;;137    						if(OSQPost(ZIPRecv_Q,ptrRece) != OS_ERR_NONE)// 推送给专门处理服务器下发的数据的消息队列
+0000b8  4813              LDR      r0,|L3.264|
+0000ba  6801              LDR      r1,[r0,#0]  ; ptrRece
+0000bc  4819              LDR      r0,|L3.292|
+0000be  6800              LDR      r0,[r0,#0]  ; ZIPRecv_Q
+0000c0  f7fffffe          BL       OSQPost
+0000c4  b138              CBZ      r0,|L3.214|
+;;;138    						{
+;;;139    							Mem_free(ptrRece);
+0000c6  4810              LDR      r0,|L3.264|
+0000c8  6800              LDR      r0,[r0,#0]  ; ptrRece
+0000ca  f7fffffe          BL       Mem_free
+;;;140    							Store_Clear(receCDMA_S);//舍弃本次接收的数据
+0000ce  480c              LDR      r0,|L3.256|
+0000d0  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+0000d2  f7fffffe          BL       Store_Clear
                   |L3.214|
-;;;147    		}
-;;;148    	}
-;;;149    	OSIntExit();  //中断服务结束，系统进行任务调度
-0000d6  f7fffffe          BL       OSIntExit
-;;;150    }
-0000da  bd10              POP      {r4,pc}
-;;;151    
+0000d6  e008              B        |L3.234|
+                  |L3.216|
+;;;141    						}
+;;;142    					}
+;;;143    				}
+;;;144    				else
+;;;145    					Store_Clear(receCDMA_S);    //舍弃本次接收的数据
+0000d8  4809              LDR      r0,|L3.256|
+0000da  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+0000dc  f7fffffe          BL       Store_Clear
+0000e0  e003              B        |L3.234|
+                  |L3.226|
+;;;146    			}
+;;;147    			else
+;;;148    				Store_Clear(receCDMA_S);//接收的数据长度<=2 视为无效数据，没有这么短的回复
+0000e2  4807              LDR      r0,|L3.256|
+0000e4  6800              LDR      r0,[r0,#0]  ; receCDMA_S
+0000e6  f7fffffe          BL       Store_Clear
+                  |L3.234|
+;;;149    				
+;;;150    			TIM_Cmd(TIM4, DISABLE);
+0000ea  2100              MOVS     r1,#0
+0000ec  4802              LDR      r0,|L3.248|
+0000ee  f7fffffe          BL       TIM_Cmd
+                  |L3.242|
+;;;151    		}
+;;;152    	}
+;;;153    	OSIntExit();  //中断服务结束，系统进行任务调度
+0000f2  f7fffffe          BL       OSIntExit
+;;;154    }
+0000f6  bd10              POP      {r4,pc}
+;;;155    
                           ENDP
 
-                  |L3.220|
-                          DCD      0x40000800
-                  |L3.224|
-                          DCD      rxTimeOut
-                  |L3.228|
-                          DCD      receCDMA_S
-                  |L3.232|
-                          DCD      receDatalen
-                  |L3.236|
-                          DCD      ptrRece
-                  |L3.240|
-0000f0  5a495052          DCB      "ZIPRECV",0
-0000f4  45435600
                   |L3.248|
-                          DCD      pCmp
+                          DCD      0x40000800
                   |L3.252|
-                          DCD      CDMARecieveQ
+                          DCD      rxTimeOut
                   |L3.256|
+                          DCD      receCDMA_S
+                  |L3.260|
+                          DCD      receDatalen
+                  |L3.264|
+                          DCD      ptrRece
+                  |L3.268|
+00010c  5a495052          DCB      "ZIPRECV",0
+000110  45435600
+                  |L3.276|
+                          DCD      pCmp
+                  |L3.280|
+                          DCD      CDMARecieveQ
+                  |L3.284|
+                          DCD      adf
+                  |L3.288|
+                          DCD      offadf
+                  |L3.292|
                           DCD      ZIPRecv_Q
 
                           AREA ||i.USART2_IRQHandler||, CODE, READONLY, ALIGN=2
@@ -474,6 +493,11 @@
                   |L4.276|
                           DCD      byteSend
 
+                          AREA ||.bss||, DATA, NOINIT, ALIGN=0
+
+                  adf
+                          %        3000
+
                           AREA ||.data||, DATA, ALIGN=2
 
                   byteRece
@@ -493,6 +517,8 @@
 000012  0000              DCB      0x00,0x00
                   pCmp
                           DCD      0x00000000
+                  offadf
+000018  0000              DCW      0x0000
 
 ;*** Start embedded assembler ***
 

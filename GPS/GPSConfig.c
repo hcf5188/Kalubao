@@ -5,7 +5,6 @@ void GPSConfigInit(uint16_t baud)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
 	
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	
@@ -39,16 +38,11 @@ void GPSConfigInit(uint16_t baud)
 	USART_ITConfig(UART4, USART_IT_TC, ENABLE);    //UBX协议对GPS模块进行配置
 	USART_Cmd(UART4, ENABLE);
 	
-	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 6;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
+	
 }
 void TIM2ConfigInit(void )
 {
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE); //时钟使能
 	
@@ -61,12 +55,7 @@ void TIM2ConfigInit(void )
  
 	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE );       //使能指定的TIM2中断,允许更新中断
 
-	//中断优先级NVIC设置
-	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn; //TIM2中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
-	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+	
 	
 //	TIM_Cmd(TIM2, ENABLE);  //使能TIMx		
 }
