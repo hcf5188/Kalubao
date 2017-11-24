@@ -56,6 +56,7 @@ void *canSendBuf[CANSENDBUF_SIZE];
 extern uint16_t freOBDLed;
 extern OS_EVENT * CDMASendMutex;//建立互斥型信号量，用来独占处理 发向服务器的消息
 extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
+extern SYS_OperationVar  varOperation;
 void OBDTask(void *pdata)
 {
 	INT8U     err;
@@ -78,8 +79,8 @@ void OBDTask(void *pdata)
 //	dataToSend.ide   = CAN_ID_STD;
 //	dataToSend.testIsOK = 1; 
 	
-	dataToSend.canId = 0x18DA10FB;//潍柴：0x18DA10FB   渣土车：0x18DA00FA
-	dataToSend.ide   = CAN_ID_EXT;
+	dataToSend.canId = varOperation.canTxId;//潍柴：0x18DA10FB   渣土车：0x18DA00FA
+	dataToSend.ide   = varOperation.canIdType;
 	dataToSend.testIsOK = 1; 
 
 	
@@ -92,7 +93,7 @@ void OBDTask(void *pdata)
 		
 		dataToSend.pdat = &can1_Txbuff[1];     
 		OBD_CAN_SendData(dataToSend);          //发送PID指令
-		Mem_free(can1_Txbuff);                 //释放内存块
+		
 
 		CAN1_RxMsg = OSQPend(canRecieveQ,25,&err); //接收到OBD回复
 		if(err == OS_ERR_NONE)
@@ -150,6 +151,12 @@ void OBDTask(void *pdata)
 				Mem_free(CAN1_RxMsg);
 			}
 		}
+		else
+		{
+			OSTimeDlyHMSM(0,0,0,4);
+		}
+		
+		Mem_free(can1_Txbuff);                 //释放内存块
 	}
 }
 

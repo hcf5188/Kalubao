@@ -11,9 +11,9 @@
 ;;;128    {
 ;;;129    	u8 key=0XFF;
 000002  24ff              MOVS     r4,#0xff
-;;;130    	OSTimeDlyHMSM(0,0,28,0);                //CDMA还没启动，此处需要延时
+;;;130    	OSTimeDlyHMSM(0,0,8,0);          
 000004  2300              MOVS     r3,#0
-000006  221c              MOVS     r2,#0x1c
+000006  2208              MOVS     r2,#8
 000008  4619              MOV      r1,r3
 00000a  4618              MOV      r0,r3
 00000c  f7fffffe          BL       OSTimeDlyHMSM
@@ -151,7 +151,7 @@
 000074  4605              MOV      r5,r0
 ;;;54     		varOperation.currentTime = timeStamp;
 000076  4849              LDR      r0,|L2.412|
-000078  f8c0505d          STR      r5,[r0,#0x5d]  ; varOperation
+000078  f8c0505f          STR      r5,[r0,#0x5f]  ; varOperation
 ;;;55     		
 ;;;56     		ptrGPSPack = Mem_malloc(40);
 00007c  2028              MOVS     r0,#0x28
@@ -199,7 +199,7 @@
 0000c2  f8b10063          LDRH     r0,[r1,#0x63]  ; gpsMC
 0000c6  f7fffffe          BL       t_htons
 0000ca  9002              STR      r0,[sp,#8]
-;;;72     			memcpy(&ptrGPSPack[15],&speed,2);       //todo:解析GPS方向，解析有效定位
+;;;72     			memcpy(&ptrGPSPack[15],&speed,2);   //todo:解析GPS方向，解析有效定位
 0000cc  f8bd0008          LDRH     r0,[sp,#8]
 0000d0  81a0              STRH     r0,[r4,#0xc]
 ;;;73     			
@@ -221,7 +221,7 @@
 0000ec  f890002c          LDRB     r0,[r0,#0x2c]  ; varOperation
 0000f0  bb38              CBNZ     r0,|L2.322|
 0000f2  482a              LDR      r0,|L2.412|
-0000f4  f8d0005d          LDR      r0,[r0,#0x5d]  ; varOperation
+0000f4  f8d0005f          LDR      r0,[r0,#0x5f]  ; varOperation
 0000f8  4925              LDR      r1,|L2.400|
 0000fa  6809              LDR      r1,[r1,#0]  ; sendNum
 0000fc  4288              CMP      r0,r1
@@ -229,7 +229,7 @@
 ;;;79     			{	
 ;;;80     				sendNum = varOperation.currentTime;
 000100  4826              LDR      r0,|L2.412|
-000102  f8d0005d          LDR      r0,[r0,#0x5d]  ; varOperation
+000102  f8d0005f          LDR      r0,[r0,#0x5f]  ; varOperation
 000106  4922              LDR      r1,|L2.400|
 000108  6008              STR      r0,[r1,#0]  ; sendNum
 ;;;81     				
@@ -277,15 +277,15 @@
 00014c  4606              MOV      r6,r0
 ;;;93     		timeStamp = varOperation.currentTime > osTime? (varOperation.currentTime - osTime):(osTime - varOperation.currentTime);
 00014e  4813              LDR      r0,|L2.412|
-000150  f8d0105d          LDR      r1,[r0,#0x5d]  ; varOperation
+000150  f8d0105f          LDR      r1,[r0,#0x5f]  ; varOperation
 000154  42b1              CMP      r1,r6
 000156  d903              BLS      |L2.352|
-000158  f8d0005d          LDR      r0,[r0,#0x5d]  ; varOperation
+000158  f8d0005f          LDR      r0,[r0,#0x5f]  ; varOperation
 00015c  1b80              SUBS     r0,r0,r6
 00015e  e003              B        |L2.360|
                   |L2.352|
 000160  480e              LDR      r0,|L2.412|
-000162  f8d0005d          LDR      r0,[r0,#0x5d]  ; varOperation
+000162  f8d0005f          LDR      r0,[r0,#0x5f]  ; varOperation
 000166  1a30              SUBS     r0,r6,r0
                   |L2.360|
 000168  4605              MOV      r5,r0
@@ -294,7 +294,7 @@
 00016e  d904              BLS      |L2.378|
 ;;;95     			RTC_Time_Adjust(varOperation.currentTime);
 000170  490a              LDR      r1,|L2.412|
-000172  f8d1005d          LDR      r0,[r1,#0x5d]  ; varOperation
+000172  f8d1005f          LDR      r0,[r1,#0x5f]  ; varOperation
 000176  f7fffffe          BL       RTC_Time_Adjust
                   |L2.378|
 ;;;96     		freGPSLed = 300;          //LED  指示，GPS定位正常

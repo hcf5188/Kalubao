@@ -3,7 +3,7 @@
 
 #include "includes.h"
 
-#define SOFTVersion             0x10001001    //软件固件版本号
+#define SOFTVersion                   1001    //软件固件版本号
 #define ECUVersion              0x00000001    //ECU版本号
 
 #define SBOOT_UPGREAD_ADDR   	0x08007800    //此地址存放SBOOT升级用的参数
@@ -11,12 +11,23 @@
 #define PIDConfig_ADDR          0x0802E000    //此地址存放服务器下发PID参数
 
 #define NEW_SOFT_ADDR           0x08030000    //此地址存放新程序代码
+#define CDMA_OPEN               0             //打开CDMA
+#define CDMA_CLOSE              1             //关闭CDMA
+#define ENGINE_RUN              0             //发动机正常运行
+#define ENGINE_STOP             1             //发动机停止运行
 
 typedef enum
 {
 	LinkOK = 0,
 	LinkFault
 }LinkStatus;
+typedef enum 
+{
+	CAN_BAUD_500K1 = 6,
+	CAN_BAUD_500K2 = 7,
+	CAN_BAUD_250K1 = 8,
+	CAN_BAUD_250K2 = 9
+}CANB_BAUD_Type;
 
 #pragma pack(1)             //1字节对齐
 __packed typedef struct  //与升级相关的结构体
@@ -35,6 +46,7 @@ __packed typedef struct  //与升级相关的结构体
 	uint8_t  canBaud;       //CAN通讯波特率
 }_SystemInformation;
 
+
 __packed typedef struct//程序正常运行时候的各个参数
 {
 	uint32_t newSoftVersion;//新的软件版本号   用于OTA升级
@@ -45,7 +57,9 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint8_t  iccID[20];     //存储SIM卡的ICCID号
 	
 	uint8_t  isDataFlow;    //数据流是否流动起来  0 - 流动起来， 1 - 未流动
-	uint8_t  isEngineRun;   //发动机引擎是否开启  0 - 开启，     1 - 未开启	
+	uint8_t  isEngineRun;   //发动机引擎是否开启  0 - 开启，     1 - 未开启
+	uint8_t  isCDMAStart;   //CDMA电源是否开启    0 - 开启，    1 - 关闭
+	uint8_t  isLoginDeal;   //登录报文是否正在处理
 	
 	uint8_t  isIPUpdate;    //IP地址是否需要更新   1 - 需要更新   0 - 不需要更新
 	char     ipAddr[18];    //当前运行的IP地址
@@ -60,9 +74,34 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint32_t currentTime;   //GPS 时间        日/时/分/秒
 	
 	uint16_t pidNum;        //PID 参数的数量
+	uint32_t ecuVersion;    //当前程序运行的ECU版本号
 	uint32_t newECUVersion; //保存 登录报文下发的ECU版本
 	uint8_t  newPidNum;     //PID 新的个数 
+	
+	uint8_t  busType;       //当前用到的总线（CAN线还是K线）
+	uint8_t  canIdType;     //标准帧还是扩展帧
+	uint32_t canTxId;       //保存CAN发送ID
+	uint32_t canRxId;       //保存CAN接收ID
+	uint8_t  canBaud;       //CAN通讯波特率
 }SYS_OperationVar;
+
+__packed typedef struct     //内存监控变量
+{
+	uint8_t memUsedNum1;    //内存块1当前正在使用的数量
+	uint8_t memUsedMax1;    //内存块1历史同一时间使用最大的数量
+	uint8_t memUsedNum2;
+	uint8_t memUsedMax2;
+	uint8_t memUsedNum3;
+	uint8_t memUsedMax3;
+	uint8_t memUsedNum4;
+	uint8_t memUsedMax4;
+	uint8_t memUsedNum5;
+	uint8_t memUsedMax5;
+	uint8_t memUsedNum6;
+	uint8_t memUsedMax6;
+	uint8_t memUsedNum7;
+	uint8_t memUsedMax7;
+}MEM_Check;
 
 __packed typedef struct
 {
@@ -98,11 +137,14 @@ uint16_t CRC_ComputeFile(uint16_t srcCRC,uint8_t * data,uint32_t dataLength);
 
 void UbloxCheckSum(u8 *buf,u16 len,u8* cka,u8*ckb);//GPS校验和计算
 
-void CDMAPowerOpen_Close(void);//打开-关闭CDMA
+void CDMAPowerOpen_Close(uint8_t flag);            //打开-关闭CDMA  flag 0 - 打开CDMA    1 - 关闭CDMA
+void CDMAConfigInit(void );                        //初始化配置CDMA
 _CDMADataToSend* CDMNSendDataInit(uint16_t length);//封包前的初始化
-void CDMASendDataPack(_CDMADataToSend* ptr);//对将要发送的数据进行打包
-uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal);//对接收到的数据包进行解析，并返回有效数据
-void GlobalVarInit(void );//全局变量初始化
+_CDMADataToSend* CDMNSendInfoInit(uint16_t length);//不带6000的报文
+void CDMASendDataPack(_CDMADataToSend* ptr);       //对将要发送的数据进行打包
+uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal); //对接收到的数据包进行解析，并返回有效数据
+void GlobalVarInit(void );                         //全局变量初始化
+void LoginDataSend(void);                          //登录报文
 
 void SoftErasePage(uint32_t addr);//擦除单页 2K
 void SoftProgramUpdate(uint32_t wAddr,uint8_t* ptrBuff,uint16_t datLength);//写入单页
@@ -124,8 +166,6 @@ uint32_t t_ntohl(uint32_t n);
 uint16_t t_htons(uint16_t  h);
 // 模拟ntohs函数，网络字节序转本机字节序
 uint16_t t_ntohs(uint16_t  n);
-
-
 
 #endif
 

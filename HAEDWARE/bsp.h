@@ -22,6 +22,9 @@
 #define CDMA_MOS_HIGH    GPIO_SetBits(GPIOB,GPIO_Pin_12)
 #define CDMA_MOS_LOW     GPIO_ResetBits(GPIOB,GPIO_Pin_12)
 
+#define GPS_POWER_ON     GPIO_ResetBits(GPIOC,GPIO_Pin_8);  //打开GPS电源
+#define GPS_POWER_OFF    GPIO_SetBits(GPIOC,GPIO_Pin_8);    //关闭GPS电源
+
 void SystemBspInit(void );
 
 void SysTickInit(void);    //系统时钟初始化

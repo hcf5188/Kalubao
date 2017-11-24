@@ -41,8 +41,6 @@ int main(void )
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	
-	
-	
 	OSInit(); 
 	
 	MemBuf_Init();   //建立内存块
@@ -53,20 +51,24 @@ int main(void )
 	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列 缓冲区
 	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
 	
-	SystemBspInit();
+	SystemBspInit();                  //硬件初始化
 	 
 	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
 	
 	OSStart();	 
 }
+
+static void UpLog(_CDMADataToSend* ptr);//日志文件
 #define SEND_MAX_TIME  3000     //3000ms计时时间到，则发送数据
 _CDMADataToSend* cdmaDataToSend = NULL;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
 
-OS_EVENT * CDMASendMutex;//建立互斥型信号量，用来独占处理 发向服务器的消息
-OS_EVENT * beepSem;      //建立蜂鸣器响信号量
-extern OS_EVENT *canSendQ;        //向OBD发送PID指令
-extern OS_EVENT *CDMASendQ;       //通过CDMA向服务器发送采集到的OBD、GPS数据
+OS_EVENT * CDMASendMutex;            //建立互斥型信号量，用来独占处理 发向服务器的消息
+OS_EVENT * CDMAPowerMutex;           //CDMA 电源互斥型信号量
+OS_EVENT * beepSem;                  //建立蜂鸣器响信号量
+extern OS_EVENT *canSendQ;           //向OBD发送PID指令
+extern OS_EVENT *CDMASendQ;          //通过CDMA向服务器发送采集到的OBD、GPS数据
 extern _OBD_PID_Cmd *ptrPIDAllDat;
+extern MEM_Check allMemState;        //内存监控变量
 void StartTask(void *pdata)
 {
 	uint8_t err;
@@ -76,7 +78,7 @@ void StartTask(void *pdata)
 	OS_CPU_SR cpu_sr=0;
 	pdata = pdata; 
 	
-	GlobalVarInit();//全局变量初始化
+	
 	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
 	
   	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
@@ -89,11 +91,13 @@ void StartTask(void *pdata)
  	OSTaskCreate(OBDTask, (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);	
 
 	OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE-1],CDMA_LED_PRIO);						   
- 	OSTaskCreate(GPSLEDTask,(void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1],GPS_LED_PRIO);		
- 	OSTaskCreate(OBDLEDTask,(void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1],OBD_LED_PRIO);	
-	OSTaskCreate(BeepTask,(void *)0,(OS_STK*)&BEEP_STK[BEEP_STK_SIZE-1],BEEP_TASK_PRIO);		
+ 	OSTaskCreate(GPSLEDTask, (void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1], GPS_LED_PRIO);		
+ 	OSTaskCreate(OBDLEDTask, (void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1], OBD_LED_PRIO);	
+	OSTaskCreate(BeepTask,   (void *)0,(OS_STK*)&BEEP_STK[BEEP_STK_SIZE-1],   BEEP_TASK_PRIO);		
 	
-	CDMASendMutex = OSMutexCreate(CDMA_SEND_PRIO,&err);//向CDMA发送缓冲区发送数据 独占 互斥型信号量
+	CDMASendMutex  = OSMutexCreate(CDMA_SEND_PRIO,&err);//向CDMA发送缓冲区发送数据 独占 互斥型信号量
+	CDMAPowerMutex = OSMutexCreate(CDMAPOWER_PRIO,&err);//CDMA电源独占管理
+	
 	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
 	
 	beepSem = OSSemCreate(1);//蜂鸣器信号量
@@ -119,11 +123,13 @@ void StartTask(void *pdata)
 			}
 		}
 		
-		if(cdmaDataToSend->datLength > 28)
+		if(cdmaDataToSend->datLength > 36)
 			cdmaDataToSend->timeCount += 4;
 		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 850))
 		{
 			OSMutexPend(CDMASendMutex,0,&err);
+			
+			UpLog(cdmaDataToSend);
 			
 			CDMASendDataPack(cdmaDataToSend);
 			
@@ -142,7 +148,27 @@ void StartTask(void *pdata)
 		}
 	}
 }
-
+//上报内存使用日志文件  用于前期研发阶段的内存块使用情况监视
+static void UpLog(_CDMADataToSend* ptr)
+{
+	ptr->data[ptr->datLength++] = 17;
+	ptr->data[ptr->datLength++] = 0x50;
+	ptr->data[ptr->datLength++] = 0x03;
+	ptr->data[ptr->datLength++] = allMemState.memUsedNum1;
+	ptr->data[ptr->datLength++] = allMemState.memUsedMax1;
+	ptr->data[ptr->datLength++] = allMemState.memUsedNum2;
+	ptr->data[ptr->datLength++] = allMemState.memUsedMax2;
+	ptr->data[ptr->datLength++] = allMemState.memUsedNum3;
+	ptr->data[ptr->datLength++] = allMemState.memUsedMax3;
+	ptr->data[ptr->datLength++] = allMemState.memUsedNum4;
+	ptr->data[ptr->datLength++] = allMemState.memUsedMax4;
+	ptr->data[ptr->datLength++] = allMemState.memUsedNum5;
+	ptr->data[ptr->datLength++] = allMemState.memUsedMax5;
+	ptr->data[ptr->datLength++] = allMemState.memUsedNum6;
+	ptr->data[ptr->datLength++] = allMemState.memUsedMax6;
+	ptr->data[ptr->datLength++] = allMemState.memUsedNum7;
+	ptr->data[ptr->datLength++] = allMemState.memUsedMax7;	
+}
 
 
 /***********************************************************

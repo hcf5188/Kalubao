@@ -2,17 +2,21 @@
 
 #include "bsp.h"
 
-
+extern SYS_OperationVar  varOperation;
 //芯片初始化，包括系统时钟、芯片外设、时钟滴答等等
 void SystemBspInit(void )
 {
 	BspClockInit();
-	GPIO_ALL_IN();
+	
+	GlobalVarInit();//全局变量初始化
+	
+	GPIO_ALL_IN();  //IO口设置为输入
 	
 	GPIOLEDInit();
 	CDMAUart2Init();
 	GPSConfigInit(9600);
-	CAN1Config();
+	if(varOperation.ecuVersion != 0x00000000)
+		CAN1Config();
 	TIM4ConfigInit();
 	TIM2ConfigInit();
 	RTCConfigureInit();
@@ -89,8 +93,6 @@ void GPIOLEDInit(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
 	GPIO_Init(GPIOB, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.5
     
-
-	
 	GPIO_ResetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);		     //复位，双灯亮
 	
 }
@@ -174,6 +176,8 @@ void CDMAUart2Init(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	GPIO_SetBits(GPIOB, GPIO_Pin_15);
+	
+	
 	//GPS 电源
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
   	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -312,6 +316,11 @@ void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
   RTC_SetCounter(value);
   /* Wait until last write operation on RTC registers has finished */
   RTC_WaitForLastTask();
+}
+
+void WatchDogInit(void )
+{
+
 }
 
 void NVIC_AllConfig(void )

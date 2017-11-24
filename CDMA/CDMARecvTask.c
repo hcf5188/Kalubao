@@ -1,8 +1,9 @@
 #include "includes.h"
 #include "bsp.h"
+#include "apptask.h"
 
 /*************************     处理函数声明          **********************/
-static void LoginDataSend(void);
+
 static void RecvDatDeal(uint8_t* ptr);
 static void SendFrameNum(uint16_t frameNum);
 static void OTA_Updata(void );
@@ -17,46 +18,51 @@ extern void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLe
 OS_EVENT *ZIPRecv_Q;             //指向RECV消息队列的指针
 void *ZIPRecBuf[ZIPRECVBUF_SIZE];
 
-extern _SystemInformation sysUpdateVar;//升级用变量
+extern _SystemInformation sysUpdateVar; //升级用变量
 extern SYS_OperationVar  varOperation;  //系统运行中的全局变量
-extern OS_EVENT *CDMASendQ;       //通过CDMA向服务器发送采集到的OBD、GPS、登录报文等数据
+extern OS_EVENT *CDMASendQ;      //通过CDMA向服务器发送采集到的OBD、GPS、登录报文等数据
 
-extern OS_EVENT *sendMsg;         //如果系统正在通过CDMA发送数据，此时不可以断开TCP，要等待发送完毕后，再断开TCP，重新连接新的IP
+extern OS_EVENT *sendMsg;        //如果系统正在通过CDMA发送数据，此时不可以断开TCP，要等待发送完毕后，再断开TCP，重新连接新的IP
 
+OS_EVENT * loginSend;
 //本任务用来上发登录报文、处理OTA升级、配置文件升级、模式切换（强动力模式、节油模式等）
 void CDMARecvTask(void *pdata)
 {
 	uint8_t err;
 	uint8_t* ptrRECV = NULL;
 	uint8_t* ptrDeal = NULL;
+	loginSend = OSSemCreate(0);
 	
 	ZIPRecv_Q    = OSQCreate(&ZIPRecBuf[0],ZIPRECVBUF_SIZE);//建立“ZIPRECV”处理消息队列
 	
-	OSTimeDlyHMSM(0,0,20,200);     //todo:此处应该挂起
-	LoginDataSend();               //发送登录报文
 	while(1)
 	{
-		ptrRECV = OSQPend(ZIPRecv_Q,0,&err);
+		OSSemPend(loginSend,0,&err);//等待发送登录报文
+		ptrRECV = OSQPend(ZIPRecv_Q,10000,&err);  //等待12s后服务器无响应，则退出
 		if(err == OS_ERR_NONE)
 		{
 			ptrDeal = RecvDataAnalysis(ptrRECV);
-			
 			RecvDatDeal(ptrDeal);
+			varOperation.isLoginDeal = 1;//登录报文处理完毕
+			varOperation.isDataFlow  = 0;
 		}
 		else
 		{
-			OSTimeDlyHMSM(1,0,0,0);//todo:如果是客户手机选定模式切换的话，就不能延时等待了
-			//todo:判断时间是否在凌晨1-3点，判断发动机停机
-			//LoginDataSend();        //发送登录报文
+			varOperation.isLoginDeal = 1;//没有登录报文需要处理
+			if(varOperation.isEngineRun == ENGINE_STOP)//发动机转速为0，关闭CDMA
+			{
+//				OSTaskSuspend(CDMA_TASK_PRIO);//todo:需要再考虑一下
+//				CDMAPowerOpen_Close(CDMA_CLOSE);
+			}
 		}
 	}
 }
 //登录报文
-static void LoginDataSend(void)
+void LoginDataSend(void)
 {
 	uint8_t err;
 	uint32_t buff;
-	_CDMADataToSend* loginData = CDMNSendDataInit(100);        //发送登录报文
+	_CDMADataToSend* loginData = CDMNSendInfoInit(100);        //发送登录报文
 	
 	loginData->data[loginData->datLength++] = 31;
 	loginData->data[loginData->datLength++] = 0x50;
@@ -79,6 +85,8 @@ static void LoginDataSend(void)
 	{
 		Mem_free(loginData);
 	}
+	varOperation.isLoginDeal = 0;//正在处理登录报文
+	OSSemPost(loginSend);        //通知接收处理任务已经发送登录报文，等待处理服务器数据。
 }
 
 
@@ -89,7 +97,7 @@ static void RecvDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 	uint32_t ecuId = 0;
 	uint32_t serverTime  = 0;
 	uint32_t softVersion = 0;
-	int      isIpEqual   = 0;
+//	int      isIpEqual   = 0;
 	uint16_t offset = 3;
 	
 	cmdId = ptr[offset++];
@@ -97,12 +105,15 @@ static void RecvDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 	if(cmdId != 0x5001)         //服务器下发的登录信息  todo:以后可能会有模式切换的主动下发的帧，在此处要稍加修改
 	{
 		Mem_free(ptr);
+		//todo：接收队列自我消耗处理，消耗空闲期间接收到的  +ZIPRECV 一个while循环就可以啦
 		return ;
 	}
 	serverTime = ptr[offset++];     //得到服务器时间
 	serverTime = (serverTime << 8) + ptr[offset++];
 	serverTime = (serverTime << 8) + ptr[offset++];
 	serverTime = (serverTime << 8) + ptr[offset++];
+	
+	RTC_Time_Adjust(serverTime);//登录的时候，跟服务器时间进行校时。
 	
 	softVersion = ptr[offset++];    //得到软件版本号
 	softVersion = (softVersion << 8) + ptr[offset++];
@@ -130,7 +141,6 @@ static void RecvDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 		sysUpdateVar.isSoftUpdate   = 0;  
 		
 		OTA_Updata();
-		
 	}
 	if(ecuId != sysUpdateVar.ecuVersion)//再考虑配置文件升级
 	{
@@ -138,26 +148,26 @@ static void RecvDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
 		varOperation.isDataFlow     = 1;  //配置文件升级，停止数据流，一心只为配置
 		
-		//todo:配置文件升级
-		GetConfigInfo();
+		ConfigUpdata();
 	}
 	
-	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
-	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
-	{
-		memset(varOperation.ipAddr,0,18);//将原始IP清零
-		memcpy(varOperation.ipAddr,varOperation.newIP_Addr,18);//新IP
-		varOperation.ipPotr = varOperation.newIP_Potr;         //新端口
-		varOperation.isDataFlow = 1; //停止数据流
-		OSSemPend(sendMsg,0,&ipLen);//等待CDMA发送空闲，不能在其发送数据的时候，重新TCP连接
-		
-		CDMASendCmd((const uint8_t*)"AT+ZIPCLOSE=0\r","ZIPCLOSE",sizeof("AT+ZIPCLOSE=0\r"));//关闭TCP连接
-	}
+	//todo:IP更改，后期会有需要
+//	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
+//	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
+//	{
+//		memset(varOperation.ipAddr,0,18);//将原始IP清零
+//		memcpy(varOperation.ipAddr,varOperation.newIP_Addr,18);//新IP
+//		varOperation.ipPotr = varOperation.newIP_Potr;         //新端口
+//		varOperation.isDataFlow = 1; //停止数据流
+//		OSSemPend(sendMsg,0,&ipLen);//等待CDMA发送空闲，不能在其发送数据的时候，重新TCP连接
+//		
+//		CDMASendCmd((const uint8_t*)"AT+ZIPCLOSE=0\r","ZIPCLOSE",sizeof("AT+ZIPCLOSE=0\r"));//关闭TCP连接
+//	}
 }
 static void SendFrameNum(uint16_t frameNum)
 {
 	_CDMADataToSend* otaUpdatSend;
-	otaUpdatSend = CDMNSendDataInit(60);//
+	otaUpdatSend = CDMNSendInfoInit(60);//
 	otaUpdatSend->data[otaUpdatSend->datLength++] =  3;   //长度
 	otaUpdatSend->data[otaUpdatSend->datLength++] = (frameNum >> 8) &0x00FF;
 	otaUpdatSend->data[otaUpdatSend->datLength++] = frameNum & 0x00FF;
@@ -177,8 +187,8 @@ static void OTA_Updata(void )
 	uint16_t datLength = 0;
 	uint16_t i = 0,offset = 0;
 	uint8_t  frameNum;            //此次一共接收到128字节的包数
-	uint16_t currentNum = 0x8001; //发送下一个请求包
-	uint16_t fileCRC = 0;         //文件CRC校验
+	uint16_t currentNum = 0;      //发送下一个请求包
+	uint16_t fileCRC    = 0;      //文件CRC校验
 	uint32_t flashAddr  = 0;      //地址信息，写2K便自增0x800,向Flash一次写2K字节
 	uint8_t  frameIndex = 0;      //要保存的帧索引
 	uint8_t  frameLen   = 0;      //每一帧的每一小包到底有多少个字节
@@ -211,6 +221,7 @@ static void OTA_Updata(void )
 			varOperation.frameNum = (varOperation.frameNum << 8) + ptrDeal[offset++];
 			varOperation.newSoftCRC = ptrDeal[offset++];//得到文件校验码
 			varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrDeal[offset++];
+			currentNum              = 0x8001;
 			SendFrameNum(currentNum);//发送第一包程序请求帧0x8001
 		}
 		else if(cmdId>0x8000)        //程序代码
@@ -268,9 +279,6 @@ static void OTA_Updata(void )
 				
 				SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
 				
-				CDMAPowerOpen_Close();          //关闭CDMA电源
-				OSTimeDlyHMSM(0,0,8,500);
-				
 				__disable_fault_irq();          //重启
 				NVIC_SystemReset();
 			}
@@ -284,36 +292,59 @@ static void OTA_Updata(void )
 static void GetConfigInfo(void)
 {
 	_CDMADataToSend* otaUpdatSend;
-	otaUpdatSend = CDMNSendDataInit(60);//升级请求帧
+	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
 
-	otaUpdatSend->data[otaUpdatSend->datLength++] = 7;   //长度
+	otaUpdatSend->data[otaUpdatSend->datLength++] = 11;   //长度
 	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;
 	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x00;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (sysUpdateVar.ecuVersion >> 8) & 0x00FF;   //当前版本
-	otaUpdatSend->data[otaUpdatSend->datLength++] = sysUpdateVar.ecuVersion & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;//请求升级的版本
+	//当前版本
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 24) & 0x00FF; 
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 16) & 0x00FF; 
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 8) & 0x00FF;   
+	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.ecuVersion & 0x00FF;
+	
+	//请求升级的版本
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
 	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
 	
-	CDMASendDataPack(otaUpdatSend);//将0x8000请求包进行封包
+	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
 	
 	OSQPost(CDMASendQ,otaUpdatSend);
-	//todo:配置文件升级
-	ConfigUpdata();
+}
+static void SendConfigNum(uint16_t cmd)
+{
+	_CDMADataToSend* otaUpdatSend;
+	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
+
+	otaUpdatSend->data[otaUpdatSend->datLength++] = 7;   //长度
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (cmd>>8) &0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = cmd &0x00FF;
+	//请求升级的版本
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
+	
+	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
+	
+	OSQPost(CDMASendQ,otaUpdatSend);
 }
 static void ConfigUpdata(void )
 {
 	uint8_t  err;
 	uint8_t* ptrRECV_Soft;
 	uint8_t* ptrDeal;
-	uint8_t  frameLen;
+	uint16_t  frameLen;
 	uint8_t  pidPackNum = 0;//PID 总包数
-	uint8_t  pidNum = 0;    //当前单帧的PID包数
 	uint16_t cmdId;
 	uint16_t frameIndex = 0;
-	uint16_t datLength = 0;
 	uint16_t i = 0,offset = 0;
-	uint16_t currentNum = 0x4001; //发送下一个配置请求包
+   uint16_t currentNum = 0x4001; //发送下一个配置请求包
+	
 	memset(updateBuff,0,2048);
+	GetConfigInfo();
 	while(1)
 	{
 		ptrRECV_Soft = OSQPend(ZIPRecv_Q,0,&err);//等待12S   一个时钟滴答是2ms
@@ -324,70 +355,80 @@ static void ConfigUpdata(void )
 			return;//等待超时，则退出配置文件升级
 		}
 		ptrDeal   = RecvDataAnalysis(ptrRECV_Soft);
-		
-		datLength = ptrDeal[0];
-		datLength = (datLength << 8) + ptrDeal[1];
-		
+			
 		cmdId     = ptrDeal[3];
 		cmdId     = (cmdId << 8) + ptrDeal[4];
 		if(cmdId == 0x4000)
 		{
 			offset = 5;
-			sysUpdateVar.busType   = ptrDeal[offset++];//总线类型  CAN总线还是K线
-			sysUpdateVar.canIdType = ptrDeal[offset++];//CAN ID类型，扩展帧还是标准帧
+			varOperation.busType   = ptrDeal[offset++];//总线类型  CAN总线还是K线
+			varOperation.canIdType = ptrDeal[offset++];//CAN ID类型，扩展帧还是标准帧
 			
-			sysUpdateVar.canTxId = ptrDeal[offset++];  //CAN 发送ID
-			sysUpdateVar.canTxId = (sysUpdateVar.canTxId << 8) + ptrDeal[offset++];
-			sysUpdateVar.canTxId = (sysUpdateVar.canTxId << 8) + ptrDeal[offset++];
-			sysUpdateVar.canTxId = (sysUpdateVar.canTxId << 8) + ptrDeal[offset++];
+			varOperation.canRxId = ptrDeal[offset++];  //卡路宝CAN 接收ID
+			varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+			varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+			varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
 			
-			sysUpdateVar.canRxId = ptrDeal[offset++];  //CAN 接收ID
-			sysUpdateVar.canRxId = (sysUpdateVar.canRxId << 8) + ptrDeal[offset++];
-			sysUpdateVar.canRxId = (sysUpdateVar.canRxId << 8) + ptrDeal[offset++];
-			sysUpdateVar.canRxId = (sysUpdateVar.canRxId << 8) + ptrDeal[offset++];
+			varOperation.canTxId = ptrDeal[offset++];  //卡路宝CAN 发送ID
+			varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+			varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+			varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 			
 			varOperation.newPidNum = ptrDeal[offset++];//新的PID命令个数
 			
-			pidPackNum = ptrDeal[offset++];           //一共有多少包PID
+			pidPackNum = ptrDeal[offset++];            //一共有多少包PID
 			
-			sysUpdateVar.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
-			
-			SendFrameNum(currentNum);//发送第一包程序请求帧0x4001
-		}else if(cmdId > 0x4001)
+			varOperation.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
+			currentNum = 0x4001;
+			SendConfigNum(currentNum);//发送第一包程序请求帧0x4001
+		}else if(cmdId > 0x4000)
 		{
-			if(cmdId != currentNum)//接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
+			if(cmdId != currentNum)   //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
 			{
-				SendFrameNum(currentNum);
+				SendConfigNum(currentNum);
 				Mem_free(ptrDeal);
 				continue;
 			}
-			pidNum = (datLength%198) == 0? (datLength/198) : (datLength/198) + 1;//得到此帧数据一共有多少包15个PID参数的小包
+			
 			offset = 2;
-			for(i = 0;i < pidNum;i ++)
-			{
-				frameLen = ptrDeal[offset++];
-				cmdId    = ptrDeal[offset++];
-				cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-				memcpy(&updateBuff[frameIndex * 195],&ptrDeal[offset],frameLen);
-			    offset += 195;
-			}
+			frameLen = ptrDeal[offset++] - 3;
+			cmdId    = ptrDeal[offset++];
+			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+			memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
+			frameIndex += frameLen;
+			
 			if((cmdId - pidPackNum) == 0x4000)
 			{
 				//todo:保存参数，包括全局变量参数和配置参数,启动数据流
 				sysUpdateVar.ecuVersion = varOperation.newECUVersion;
 				sysUpdateVar.pidNum     = varOperation.newPidNum;
 				
+				sysUpdateVar.busType    = varOperation.busType;//todo:CAN线和K线的切换，后期处理
+				sysUpdateVar.canIdType  = varOperation.canIdType;
+				sysUpdateVar.canTxId    = varOperation.canTxId;
+				sysUpdateVar.canRxId    = varOperation.canRxId;
+				sysUpdateVar.canBaud    = varOperation.canBaud;
+				
+				for(i = 0;i < frameIndex;i += 13)      //更改 指令发送周期 的字节序
+				{
+					err             = updateBuff[i];
+					updateBuff[i]   = updateBuff[i+1];
+					updateBuff[i+1] = err;
+				}
+				
 				SaveConfigToFlash(updateBuff,2048);
 				SbootParameterSaveToFlash(&sysUpdateVar);
 				
 				Mem_free(ptrDeal);
-				varOperation.isDataFlow    = 0;//数据流重新流动
+				
+				__disable_fault_irq();          //重启
+				NVIC_SystemReset();
 				break;
 			}
 			else
 			{
 				currentNum = cmdId + 1;
-				SendFrameNum(currentNum);//请求下一包数据
+				SendConfigNum(currentNum);//请求下一包数据
 			}
 		}
 		Mem_free(ptrDeal);

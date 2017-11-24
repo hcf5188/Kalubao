@@ -1,5 +1,5 @@
 #include "bsp.h"
-
+#include "apptask.h"
 
 _SystemInformation sysUpdateVar; //用来保存升级用
 SYS_OperationVar  varOperation;   //程序正常运行的全局变量参数
@@ -16,7 +16,7 @@ _CDMADataToSend* CDMNSendDataInit(uint16_t length)//要发送的数据，进行初始化
 	ptr->datLength = FRAME_HEAD_LEN;
 	ptr->data = Mem_malloc(length);
 	
-	ptr->data[ptr->datLength ++] = 7;
+	ptr->data[ptr->datLength ++] = 7;     //ECU 配置文件版本号
 	ptr->data[ptr->datLength ++] = 0x60;
 	ptr->data[ptr->datLength ++] = 0x00;
 	
@@ -24,6 +24,17 @@ _CDMADataToSend* CDMNSendDataInit(uint16_t length)//要发送的数据，进行初始化
 	ptr->data[ptr->datLength ++] = (sysUpdateVar.ecuVersion >> 16) &0x000000FF;
 	ptr->data[ptr->datLength ++] = (sysUpdateVar.ecuVersion >>  8) &0x000000FF;
 	ptr->data[ptr->datLength ++] =  sysUpdateVar.ecuVersion & 0x000000FF;
+
+	return ptr;
+}
+_CDMADataToSend* CDMNSendInfoInit(uint16_t length)//要发送的数据，进行初始化
+{
+	_CDMADataToSend* ptr = NULL;
+	ptr = Mem_malloc(sizeof(_CDMADataToSend));
+	
+	ptr->timeCount = 0;
+	ptr->datLength = FRAME_HEAD_LEN;
+	ptr->data = Mem_malloc(length);
 
 	return ptr;
 }
@@ -58,12 +69,13 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 
 extern _SystemInformation sysUpdateVar;   //系统全局变量信息
 
-const uint8_t ipAddr[] ="116.228.88.101"; //内网：116.228.88.101  29999  外网：116.62.195.99
+const uint8_t ipAddr[] ="116.228.88.101"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
 #define IP_Port          29999            //端口号
 
 _OBD_PID_Cmd *ptrPIDAllDat;    //指向
 
 uint8_t configData[2048] = {0};//用来存储配置PID
+
 
 
 void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
@@ -74,14 +86,23 @@ void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要
 	Flash_ReadDat(PIDConfig_ADDR,configData,2048);
 	ptrPIDAllDat = (_OBD_PID_Cmd *)configData;
 		
-	varOperation.pidNum = sysUpdateVar.pidNum;//得到PID指令的个数
+	varOperation.pidNum = sysUpdateVar.pidNum; //得到PID指令的个数
 	varOperation.isDataFlow   = 1;             //设备启动的时候，数据流未流动
-	varOperation.isEngineRun  = 0;             //初始认为发动机是启动了的
-	varOperation.sendId = 0x80000000;          //发送的帧流水号
+	varOperation.isCDMAStart  = CDMA_CLOSE;    //CDMA初始状态为关闭
+	varOperation.isEngineRun  = ENGINE_RUN;    //初始认为发动机是启动了的
+	varOperation.sendId       = 0x80000000;    //发送的帧流水号
 	
-	varOperation.ipPotr = IP_Port;             //初始化端口号
+	varOperation.ecuVersion = sysUpdateVar.ecuVersion;
+	varOperation.busType    = sysUpdateVar.busType;
+	varOperation.canIdType  = sysUpdateVar.canIdType;
+	varOperation.canTxId    = sysUpdateVar.canTxId;
+	varOperation.canRxId    = sysUpdateVar.canRxId;
+	varOperation.canBaud    = sysUpdateVar.canBaud;
+	
+	
+	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
 	memset(varOperation.ipAddr,0,18);
-	memcpy(varOperation.ipAddr,ipAddr,sizeof(ipAddr));//todo：IP地址，程序升级后用flash中的IP及端口号
+	memcpy(varOperation.ipAddr,ipAddr,sizeof(ipAddr));//todo：IP地址，程序升级后用flash中的IP及端口号	
 }
 
  uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
@@ -122,6 +143,83 @@ void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要
 	return ptr;
 }
 
+extern uint16_t freOBDLed; //红
+extern uint16_t freCDMALed;//黄
+extern uint16_t freGPSLed; //绿
+
+extern OS_EVENT *sendMsg;
+void RevolvingSpeedDeal(void)//发动机转速处理
+{
+	static uint8_t openClose = 0;
+	static uint8_t loginFlag = 0;
+//	uint8_t err;
+	uint32_t currentTime = 0;  //当前时间
+	uint32_t currentHour = 0;//当前小时     0点-1点   发送登录报文，请求升级
+	
+	currentTime = RTC_GetCounter();
+	currentHour = (currentTime/3600) %24;  //得到当前的小时数
+	if(currentHour > 0)
+		loginFlag = 0;
+	
+	if(varOperation.isEngineRun == ENGINE_RUN)//发动机正在运行中
+	{
+		if(openClose != 1)
+		{
+			openClose = 1;
+			//todo:打开CDMA电源、GPS电源、数据流动标志、三个小灯
+			freOBDLed = 100;
+			freCDMALed = 100;
+			freGPSLed = 100;
+			OSTaskResume(CDMA_LED_PRIO);
+			OSTaskResume(GPS_LED_PRIO);
+			OSTaskResume(OBD_LED_PRIO);
+			
+			CDMAPowerOpen_Close(CDMA_OPEN);//打开CDMA电源
+			CDMAConfigInit();              //初始化CDMA
+			OSTaskResume(CDMA_TASK_PRIO);  //回复CDMA发送任务
+			
+			
+			GPS_POWER_ON;  //打开
+			
+		}
+	}
+	else if(varOperation.isEngineRun == ENGINE_STOP)//发动机已停止运行
+	{
+		if(currentHour == 0 && loginFlag == 0 && openClose == 0)//零点到,CDMA已关闭，发送登录报文
+		{
+			loginFlag = 1;
+			openClose = 1;
+			CDMAPowerOpen_Close(CDMA_OPEN);//打开CDMA电源
+			CDMAConfigInit();              //初始化CDMA
+			OSTaskResume(CDMA_TASK_PRIO);  //回复CDMA发送任务
+			LoginDataSend();               //发送登录报文
+		}
+		if(openClose != 0 && varOperation.isLoginDeal == 1)//需要关闭并且无正在处理的登录报文
+		{
+			openClose = 0;
+			varOperation.isDataFlow  = 1; //禁止数据流
+			GPS_POWER_OFF;                //关闭GPS电源
+			
+			OSTimeDlyHMSM(0,0,5,0);       //5s的时间，应该能将所有要发送的数据都发送完毕了
+			
+			//todo：关闭CDMA电源、GPS电源、数据流动标志、三个小灯任务挂起并关闭
+		
+			OSTaskSuspend(GPS_TASK_PRIO);     //挂起GPS任务
+			
+			OSTaskSuspend(CDMA_TASK_PRIO);    //挂起CDMA任务
+			CDMAPowerOpen_Close(CDMA_CLOSE);  //关闭CDMA电源
+			
+			//挂起LED灯
+			OSTaskSuspend(CDMA_LED_PRIO);
+			OSTaskSuspend(GPS_LED_PRIO);
+			OSTaskSuspend(OBD_LED_PRIO);
+			GPIO_SetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);//关闭所有小灯
+			
+			//关闭LED灯光提示  发送蜂鸣器关机提示音  
+		}
+		
+	}
+}
 
 
 

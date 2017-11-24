@@ -5,121 +5,121 @@
                           AREA ||i.ADC1Init||, CODE, READONLY, ALIGN=2
 
                   ADC1Init PROC
-;;;96     }
-;;;97     void ADC1Init(void)
+;;;98     }
+;;;99     void ADC1Init(void)
 000000  b500              PUSH     {lr}
-;;;98     {
+;;;100    {
 000002  b085              SUB      sp,sp,#0x14
-;;;99     	ADC_InitTypeDef  ADC_InitStructure;
-;;;100    
-;;;101    	ADC_Cmd(ADC1, DISABLE);
+;;;101    	ADC_InitTypeDef  ADC_InitStructure;
+;;;102    
+;;;103    	ADC_Cmd(ADC1, DISABLE);
 000004  2100              MOVS     r1,#0
 000006  4824              LDR      r0,|L1.152|
 000008  f7fffffe          BL       ADC_Cmd
-;;;102    	ADC_DMACmd(ADC1, DISABLE);
+;;;104    	ADC_DMACmd(ADC1, DISABLE);
 00000c  2100              MOVS     r1,#0
 00000e  4822              LDR      r0,|L1.152|
 000010  f7fffffe          BL       ADC_DMACmd
-;;;103    
-;;;104    	
-;;;105    	//BSP_ADC_DMA_Init();
+;;;105    
 ;;;106    	
-;;;107    	ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+;;;107    	//BSP_ADC_DMA_Init();
+;;;108    	
+;;;109    	ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
 000014  2000              MOVS     r0,#0
 000016  9000              STR      r0,[sp,#0]
-;;;108    	ADC_InitStructure.ADC_ScanConvMode = ENABLE;
+;;;110    	ADC_InitStructure.ADC_ScanConvMode = ENABLE;
 000018  2001              MOVS     r0,#1
 00001a  f88d0004          STRB     r0,[sp,#4]
-;;;109    	ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+;;;111    	ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
 00001e  f88d0005          STRB     r0,[sp,#5]
-;;;110    	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
+;;;112    	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
 000022  f44f2060          MOV      r0,#0xe0000
 000026  9002              STR      r0,[sp,#8]
-;;;111    	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+;;;113    	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
 000028  2000              MOVS     r0,#0
 00002a  9003              STR      r0,[sp,#0xc]
-;;;112    	ADC_InitStructure.ADC_NbrOfChannel = 2;
+;;;114    	ADC_InitStructure.ADC_NbrOfChannel = 2;
 00002c  2002              MOVS     r0,#2
 00002e  f88d0010          STRB     r0,[sp,#0x10]
-;;;113    	ADC_Init(ADC1, &ADC_InitStructure);
+;;;115    	ADC_Init(ADC1, &ADC_InitStructure);
 000032  4669              MOV      r1,sp
 000034  4818              LDR      r0,|L1.152|
 000036  f7fffffe          BL       ADC_Init
-;;;114    
-;;;115    	ADC_TempSensorVrefintCmd(ENABLE);
+;;;116    
+;;;117    	ADC_TempSensorVrefintCmd(ENABLE);
 00003a  2001              MOVS     r0,#1
 00003c  f7fffffe          BL       ADC_TempSensorVrefintCmd
-;;;116    
-;;;117    	/* ADC1 regular channel8 configuration */ 
-;;;118    	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 1, ADC_SampleTime_28Cycles5);//ADC_SampleTime_239Cycles5
+;;;118    
+;;;119    	/* ADC1 regular channel8 configuration */ 
+;;;120    	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 1, ADC_SampleTime_28Cycles5);//ADC_SampleTime_239Cycles5
 000040  2303              MOVS     r3,#3
 000042  2201              MOVS     r2,#1
 000044  4611              MOV      r1,r2
 000046  4814              LDR      r0,|L1.152|
 000048  f7fffffe          BL       ADC_RegularChannelConfig
-;;;119    	ADC_RegularChannelConfig(ADC1, ADC_Channel_16, 2, ADC_SampleTime_28Cycles5);//ADC_SampleTime_239Cycles5
+;;;121    	ADC_RegularChannelConfig(ADC1, ADC_Channel_16, 2, ADC_SampleTime_28Cycles5);//ADC_SampleTime_239Cycles5
 00004c  2303              MOVS     r3,#3
 00004e  2202              MOVS     r2,#2
 000050  2110              MOVS     r1,#0x10
 000052  4811              LDR      r0,|L1.152|
 000054  f7fffffe          BL       ADC_RegularChannelConfig
-;;;120    
-;;;121    	/* Enable ADC1 */
-;;;122    	ADC_Cmd(ADC1, ENABLE);
+;;;122    
+;;;123    	/* Enable ADC1 */
+;;;124    	ADC_Cmd(ADC1, ENABLE);
 000058  2101              MOVS     r1,#1
 00005a  480f              LDR      r0,|L1.152|
 00005c  f7fffffe          BL       ADC_Cmd
-;;;123    
-;;;124    	ADC_DMACmd(ADC1, ENABLE);
+;;;125    
+;;;126    	ADC_DMACmd(ADC1, ENABLE);
 000060  2101              MOVS     r1,#1
 000062  480d              LDR      r0,|L1.152|
 000064  f7fffffe          BL       ADC_DMACmd
-;;;125    
-;;;126    	/* Enable ADC1 reset calibaration register */   
-;;;127    	ADC_ResetCalibration(ADC1);
+;;;127    
+;;;128    	/* Enable ADC1 reset calibaration register */   
+;;;129    	ADC_ResetCalibration(ADC1);
 000068  480b              LDR      r0,|L1.152|
 00006a  f7fffffe          BL       ADC_ResetCalibration
-;;;128    	/* Check the end of ADC1 reset calibration register */
-;;;129    	while(ADC_GetResetCalibrationStatus(ADC1));
+;;;130    	/* Check the end of ADC1 reset calibration register */
+;;;131    	while(ADC_GetResetCalibrationStatus(ADC1));
 00006e  bf00              NOP      
                   |L1.112|
 000070  4809              LDR      r0,|L1.152|
 000072  f7fffffe          BL       ADC_GetResetCalibrationStatus
 000076  2800              CMP      r0,#0
 000078  d1fa              BNE      |L1.112|
-;;;130    
-;;;131    	/* Start ADC1 calibaration */
-;;;132    	ADC_StartCalibration(ADC1);
+;;;132    
+;;;133    	/* Start ADC1 calibaration */
+;;;134    	ADC_StartCalibration(ADC1);
 00007a  4807              LDR      r0,|L1.152|
 00007c  f7fffffe          BL       ADC_StartCalibration
-;;;133    	/* Check the end of ADC1 calibration */
-;;;134    	while(ADC_GetCalibrationStatus(ADC1));
+;;;135    	/* Check the end of ADC1 calibration */
+;;;136    	while(ADC_GetCalibrationStatus(ADC1));
 000080  bf00              NOP      
                   |L1.130|
 000082  4805              LDR      r0,|L1.152|
 000084  f7fffffe          BL       ADC_GetCalibrationStatus
 000088  2800              CMP      r0,#0
 00008a  d1fa              BNE      |L1.130|
-;;;135    
-;;;136    	/* Start ADC1 Software Conversion */ 
-;;;137    	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+;;;137    
+;;;138    	/* Start ADC1 Software Conversion */ 
+;;;139    	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 00008c  2101              MOVS     r1,#1
 00008e  4802              LDR      r0,|L1.152|
 000090  f7fffffe          BL       ADC_SoftwareStartConvCmd
-;;;138    
-;;;139    //#ifdef ADC_USE_AWD
-;;;140    //	
-;;;141    //	/*zx 设置ADC模拟看门狗*/
-;;;142    //	ADC_AnalogWatchdogSingleChannelConfig(ADC1,ADC_Channel_1);
-;;;143    //	ADC_AnalogWatchdogThresholdsConfig(ADC1,1300,900);
-;;;144    //	ADC_AnalogWatchdogCmd(ADC1,ADC_AnalogWatchdog_SingleRegEnable);
-;;;145    //	ADC_ITConfig(ADC1,ADC_IT_AWD,ENABLE);
-;;;146    //#endif
-;;;147    
-;;;148    }
+;;;140    
+;;;141    //#ifdef ADC_USE_AWD
+;;;142    //	
+;;;143    //	/*zx 设置ADC模拟看门狗*/
+;;;144    //	ADC_AnalogWatchdogSingleChannelConfig(ADC1,ADC_Channel_1);
+;;;145    //	ADC_AnalogWatchdogThresholdsConfig(ADC1,1300,900);
+;;;146    //	ADC_AnalogWatchdogCmd(ADC1,ADC_AnalogWatchdog_SingleRegEnable);
+;;;147    //	ADC_ITConfig(ADC1,ADC_IT_AWD,ENABLE);
+;;;148    //#endif
+;;;149    
+;;;150    }
 000094  b005              ADD      sp,sp,#0x14
 000096  bd00              POP      {pc}
-;;;149    
+;;;151    
                           ENDP
 
                   |L1.152|
@@ -128,35 +128,35 @@
                           AREA ||i.BspClockInit||, CODE, READONLY, ALIGN=2
 
                   BspClockInit PROC
-;;;31     //使能外设时钟
-;;;32     void BspClockInit(void)
+;;;35     //使能外设时钟
+;;;36     void BspClockInit(void)
 000000  b510              PUSH     {r4,lr}
-;;;33     {
-;;;34     	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+;;;37     {
+;;;38     	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
 000002  2101              MOVS     r1,#1
 000004  4608              MOV      r0,r1
 000006  f7fffffe          BL       RCC_AHBPeriphClockCmd
-;;;35     	
-;;;36     	//RCC_APB1Periph_CAN1	
-;;;37     	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2|RCC_APB1Periph_USART3|RCC_APB1Periph_UART4|RCC_APB1Periph_I2C1|RCC_APB1Periph_TIM2|RCC_APB1Periph_TIM3, ENABLE);
+;;;39     	
+;;;40     	//RCC_APB1Periph_CAN1	
+;;;41     	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2|RCC_APB1Periph_USART3|RCC_APB1Periph_UART4|RCC_APB1Periph_I2C1|RCC_APB1Periph_TIM2|RCC_APB1Periph_TIM3, ENABLE);
 00000a  2101              MOVS     r1,#1
 00000c  4806              LDR      r0,|L2.40|
 00000e  f7fffffe          BL       RCC_APB1PeriphClockCmd
-;;;38     
-;;;39       	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |RCC_APB2Periph_GPIOC|
+;;;42     
+;;;43       	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |RCC_APB2Periph_GPIOC|
 000012  2101              MOVS     r1,#1
 000014  f245201d          MOV      r0,#0x521d
 000018  f7fffffe          BL       RCC_APB2PeriphClockCmd
-;;;40     								   RCC_APB2Periph_AFIO|RCC_APB2Periph_SPI1|RCC_APB2Periph_ADC1, ENABLE);
-;;;41     
-;;;42     	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable,ENABLE);
+;;;44     								   RCC_APB2Periph_AFIO|RCC_APB2Periph_SPI1|RCC_APB2Periph_ADC1, ENABLE);
+;;;45     
+;;;46     	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable,ENABLE);
 00001c  2101              MOVS     r1,#1
 00001e  4803              LDR      r0,|L2.44|
 000020  f7fffffe          BL       GPIO_PinRemapConfig
-;;;43     //	GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
-;;;44     }
+;;;47     //	GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
+;;;48     }
 000024  bd10              POP      {r4,pc}
-;;;45     
+;;;49     
                           ENDP
 
 000026  0000              DCW      0x0000
@@ -168,144 +168,146 @@
                           AREA ||i.CDMAUart2Init||, CODE, READONLY, ALIGN=2
 
                   CDMAUart2Init PROC
-;;;149    
-;;;150    void CDMAUart2Init(void)
+;;;151    
+;;;152    void CDMAUart2Init(void)
 000000  b500              PUSH     {lr}
-;;;151    {
+;;;153    {
 000002  b085              SUB      sp,sp,#0x14
-;;;152    	GPIO_InitTypeDef GPIO_InitStructure;
-;;;153    	
-;;;154    	USART_InitTypeDef USART_InitStructure;
+;;;154    	GPIO_InitTypeDef GPIO_InitStructure;
 ;;;155    	
-;;;156    	//USART2 RX
-;;;157    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+;;;156    	USART_InitTypeDef USART_InitStructure;
+;;;157    	
+;;;158    	//USART2 RX
+;;;159    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
 000004  2008              MOVS     r0,#8
 000006  f8ad0010          STRH     r0,[sp,#0x10]
-;;;158    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+;;;160    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 00000a  2004              MOVS     r0,#4
 00000c  f88d0013          STRB     r0,[sp,#0x13]
-;;;159    	GPIO_Init(GPIOA, &GPIO_InitStructure);
+;;;161    	GPIO_Init(GPIOA, &GPIO_InitStructure);
 000010  a904              ADD      r1,sp,#0x10
 000012  4839              LDR      r0,|L3.248|
 000014  f7fffffe          BL       GPIO_Init
-;;;160    
-;;;161    	//USART2 TX
-;;;162    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+;;;162    
+;;;163    	//USART2 TX
+;;;164    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
 000018  2004              MOVS     r0,#4
 00001a  f8ad0010          STRH     r0,[sp,#0x10]
-;;;163    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+;;;165    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 00001e  2018              MOVS     r0,#0x18
 000020  f88d0013          STRB     r0,[sp,#0x13]
-;;;164    	GPIO_Init(GPIOA, &GPIO_InitStructure);
+;;;166    	GPIO_Init(GPIOA, &GPIO_InitStructure);
 000024  a904              ADD      r1,sp,#0x10
 000026  4834              LDR      r0,|L3.248|
 000028  f7fffffe          BL       GPIO_Init
-;;;165    	
-;;;166    	//GPRS 模块复位按钮默认L
-;;;167    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//GPIOB_12
+;;;167    	
+;;;168    	//GPRS 模块复位按钮默认L
+;;;169    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//GPIOB_12
 00002c  f44f5080          MOV      r0,#0x1000
 000030  f8ad0010          STRH     r0,[sp,#0x10]
-;;;168    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+;;;170    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 000034  2010              MOVS     r0,#0x10
 000036  f88d0013          STRB     r0,[sp,#0x13]
-;;;169    	GPIO_Init(GPIOB, &GPIO_InitStructure);
+;;;171    	GPIO_Init(GPIOB, &GPIO_InitStructure);
 00003a  a904              ADD      r1,sp,#0x10
 00003c  482f              LDR      r0,|L3.252|
 00003e  f7fffffe          BL       GPIO_Init
-;;;170    	GPIO_SetBits(GPIOB, GPIO_Pin_12);
+;;;172    	GPIO_SetBits(GPIOB, GPIO_Pin_12);
 000042  f44f5180          MOV      r1,#0x1000
 000046  482d              LDR      r0,|L3.252|
 000048  f7fffffe          BL       GPIO_SetBits
-;;;171    
-;;;172    	//GPRS 电源
-;;;173    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+;;;173    
+;;;174    	//GPRS 电源
+;;;175    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
 00004c  f44f4000          MOV      r0,#0x8000
 000050  f8ad0010          STRH     r0,[sp,#0x10]
-;;;174    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+;;;176    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 000054  2010              MOVS     r0,#0x10
 000056  f88d0013          STRB     r0,[sp,#0x13]
-;;;175    	GPIO_Init(GPIOB, &GPIO_InitStructure);
+;;;177    	GPIO_Init(GPIOB, &GPIO_InitStructure);
 00005a  a904              ADD      r1,sp,#0x10
 00005c  4827              LDR      r0,|L3.252|
 00005e  f7fffffe          BL       GPIO_Init
-;;;176    	GPIO_SetBits(GPIOB, GPIO_Pin_15);
+;;;178    	GPIO_SetBits(GPIOB, GPIO_Pin_15);
 000062  f44f4100          MOV      r1,#0x8000
 000066  4825              LDR      r0,|L3.252|
 000068  f7fffffe          BL       GPIO_SetBits
-;;;177    	//GPS 电源
-;;;178    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+;;;179    	
+;;;180    	
+;;;181    	//GPS 电源
+;;;182    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 00006c  f44f7080          MOV      r0,#0x100
 000070  f8ad0010          STRH     r0,[sp,#0x10]
-;;;179      	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+;;;183      	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 000074  2003              MOVS     r0,#3
 000076  f88d0012          STRB     r0,[sp,#0x12]
-;;;180      	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+;;;184      	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 00007a  2010              MOVS     r0,#0x10
 00007c  f88d0013          STRB     r0,[sp,#0x13]
-;;;181      	GPIO_Init(GPIOC, &GPIO_InitStructure);
+;;;185      	GPIO_Init(GPIOC, &GPIO_InitStructure);
 000080  a904              ADD      r1,sp,#0x10
 000082  481f              LDR      r0,|L3.256|
 000084  f7fffffe          BL       GPIO_Init
-;;;182    	GPIO_ResetBits(GPIOC,GPIO_Pin_8);//默认上电开启GPS电源
+;;;186    	GPIO_ResetBits(GPIOC,GPIO_Pin_8);//默认上电开启GPS电源
 000088  f44f7180          MOV      r1,#0x100
 00008c  481c              LDR      r0,|L3.256|
 00008e  f7fffffe          BL       GPIO_ResetBits
-;;;183    
-;;;184    	//GPRS Status 状态
-;;;185    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+;;;187    
+;;;188    	//GPRS Status 状态
+;;;189    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
 000092  f44f5000          MOV      r0,#0x2000
 000096  f8ad0010          STRH     r0,[sp,#0x10]
-;;;186    	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+;;;190    	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 00009a  2003              MOVS     r0,#3
 00009c  f88d0012          STRB     r0,[sp,#0x12]
-;;;187    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+;;;191    	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 0000a0  2004              MOVS     r0,#4
 0000a2  f88d0013          STRB     r0,[sp,#0x13]
-;;;188    	GPIO_Init(GPIOB, &GPIO_InitStructure);
+;;;192    	GPIO_Init(GPIOB, &GPIO_InitStructure);
 0000a6  a904              ADD      r1,sp,#0x10
 0000a8  4814              LDR      r0,|L3.252|
 0000aa  f7fffffe          BL       GPIO_Init
-;;;189    	
-;;;190    	
-;;;191    	
-;;;192    	USART_InitStructure.USART_BaudRate            = 115200  ; //波特率为115200
+;;;193    	
+;;;194    	
+;;;195    	
+;;;196    	USART_InitStructure.USART_BaudRate            = 115200  ; //波特率为115200
 0000ae  f44f30e1          MOV      r0,#0x1c200
 0000b2  9000              STR      r0,[sp,#0]
-;;;193    	USART_InitStructure.USART_WordLength          = USART_WordLength_8b;
+;;;197    	USART_InitStructure.USART_WordLength          = USART_WordLength_8b;
 0000b4  2000              MOVS     r0,#0
 0000b6  f8ad0004          STRH     r0,[sp,#4]
-;;;194    	USART_InitStructure.USART_StopBits            = USART_StopBits_1;
+;;;198    	USART_InitStructure.USART_StopBits            = USART_StopBits_1;
 0000ba  f8ad0006          STRH     r0,[sp,#6]
-;;;195    	USART_InitStructure.USART_Parity              = USART_Parity_No ;
+;;;199    	USART_InitStructure.USART_Parity              = USART_Parity_No ;
 0000be  f8ad0008          STRH     r0,[sp,#8]
-;;;196    	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+;;;200    	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 0000c2  f8ad000c          STRH     r0,[sp,#0xc]
-;;;197    	USART_InitStructure.USART_Mode                = USART_Mode_Rx | USART_Mode_Tx;	
+;;;201    	USART_InitStructure.USART_Mode                = USART_Mode_Rx | USART_Mode_Tx;	
 0000c6  200c              MOVS     r0,#0xc
 0000c8  f8ad000a          STRH     r0,[sp,#0xa]
-;;;198    	USART_Init(USART2, &USART_InitStructure);
+;;;202    	USART_Init(USART2, &USART_InitStructure);
 0000cc  4669              MOV      r1,sp
 0000ce  480d              LDR      r0,|L3.260|
 0000d0  f7fffffe          BL       USART_Init
-;;;199    	
-;;;200    	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);//使能串口接收中断
+;;;203    	
+;;;204    	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);//使能串口接收中断
 0000d4  2201              MOVS     r2,#1
 0000d6  f2405125          MOV      r1,#0x525
 0000da  480a              LDR      r0,|L3.260|
 0000dc  f7fffffe          BL       USART_ITConfig
-;;;201    	USART_ITConfig(USART2, USART_IT_TC, ENABLE);  //使能串口发送中断
+;;;205    	USART_ITConfig(USART2, USART_IT_TC, ENABLE);  //使能串口发送中断
 0000e0  2201              MOVS     r2,#1
 0000e2  f2406126          MOV      r1,#0x626
 0000e6  4807              LDR      r0,|L3.260|
 0000e8  f7fffffe          BL       USART_ITConfig
-;;;202    	USART_Cmd(USART2, ENABLE);                    //使能串口2
+;;;206    	USART_Cmd(USART2, ENABLE);                    //使能串口2
 0000ec  2101              MOVS     r1,#1
 0000ee  4805              LDR      r0,|L3.260|
 0000f0  f7fffffe          BL       USART_Cmd
-;;;203    }
+;;;207    }
 0000f4  b005              ADD      sp,sp,#0x14
 0000f6  bd00              POP      {pc}
-;;;204    
+;;;208    
                           ENDP
 
                   |L3.248|
@@ -320,58 +322,56 @@
                           AREA ||i.GPIOLEDInit||, CODE, READONLY, ALIGN=2
 
                   GPIOLEDInit PROC
-;;;75     
-;;;76     void GPIOLEDInit(void)
+;;;79     
+;;;80     void GPIOLEDInit(void)
 000000  b508              PUSH     {r3,lr}
-;;;77     {
-;;;78     	GPIO_InitTypeDef  GPIO_InitStructure;
-;;;79     	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);	 //使能PB端口时钟
+;;;81     {
+;;;82     	GPIO_InitTypeDef  GPIO_InitStructure;
+;;;83     	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);	 //使能PB端口时钟
 000002  2101              MOVS     r1,#1
 000004  2008              MOVS     r0,#8
 000006  f7fffffe          BL       RCC_APB2PeriphClockCmd
-;;;80     	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+;;;84     	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 00000a  2101              MOVS     r1,#1
 00000c  2002              MOVS     r0,#2
 00000e  f7fffffe          BL       RCC_APB1PeriphClockCmd
-;;;81     
-;;;82     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+;;;85     
+;;;86     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
 000012  2001              MOVS     r0,#1
 000014  f8ad0000          STRH     r0,[sp,#0]
-;;;83       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+;;;87       	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 000018  2018              MOVS     r0,#0x18
 00001a  f88d0003          STRB     r0,[sp,#3]
-;;;84       	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+;;;88       	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 00001e  2003              MOVS     r0,#3
 000020  f88d0002          STRB     r0,[sp,#2]
-;;;85       	GPIO_Init(GPIOB,&GPIO_InitStructure);
+;;;89       	GPIO_Init(GPIOB,&GPIO_InitStructure);
 000024  4669              MOV      r1,sp
 000026  480a              LDR      r0,|L4.80|
 000028  f7fffffe          BL       GPIO_Init
-;;;86     									
-;;;87     	GPIO_InitStructure.GPIO_Pin   =  GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5; //LED 端口配置
+;;;90     									
+;;;91     	GPIO_InitStructure.GPIO_Pin   =  GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5; //LED 端口配置
 00002c  2038              MOVS     r0,#0x38
 00002e  f8ad0000          STRH     r0,[sp,#0]
-;;;88     	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP; 		 //推挽输出
+;;;92     	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP; 		 //推挽输出
 000032  2010              MOVS     r0,#0x10
 000034  f88d0003          STRB     r0,[sp,#3]
-;;;89     	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
+;;;93     	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
 000038  2003              MOVS     r0,#3
 00003a  f88d0002          STRB     r0,[sp,#2]
-;;;90     	GPIO_Init(GPIOB, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.5
+;;;94     	GPIO_Init(GPIOB, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.5
 00003e  4669              MOV      r1,sp
 000040  4803              LDR      r0,|L4.80|
 000042  f7fffffe          BL       GPIO_Init
-;;;91         
-;;;92     
-;;;93     	
-;;;94     	GPIO_ResetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);		     //复位，双灯亮
+;;;95         
+;;;96     	GPIO_ResetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);		     //复位，双灯亮
 000046  2139              MOVS     r1,#0x39
 000048  4801              LDR      r0,|L4.80|
 00004a  f7fffffe          BL       GPIO_ResetBits
-;;;95     	
-;;;96     }
+;;;97     	
+;;;98     }
 00004e  bd08              POP      {r3,pc}
-;;;97     void ADC1Init(void)
+;;;99     void ADC1Init(void)
                           ENDP
 
                   |L4.80|
@@ -380,77 +380,77 @@
                           AREA ||i.GPIO_ALL_IN||, CODE, READONLY, ALIGN=2
 
                   GPIO_ALL_IN PROC
-;;;45     
-;;;46     void GPIO_ALL_IN(void)
-000000  b508              PUSH     {r3,lr}
-;;;47     {
-;;;48     	GPIO_InitTypeDef GPIO_InitStructure;
 ;;;49     
-;;;50     	/* Enable GPIOD and GPIOE clock */
-;;;51     	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB 
+;;;50     void GPIO_ALL_IN(void)
+000000  b508              PUSH     {r3,lr}
+;;;51     {
+;;;52     	GPIO_InitTypeDef GPIO_InitStructure;
+;;;53     
+;;;54     	/* Enable GPIOD and GPIOE clock */
+;;;55     	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB 
 000002  2101              MOVS     r1,#1
 000004  207d              MOVS     r0,#0x7d
 000006  f7fffffe          BL       RCC_APB2PeriphClockCmd
-;;;52     	                     | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD 
-;;;53     	                     | RCC_APB2Periph_GPIOE| RCC_APB2Periph_AFIO, ENABLE);
-;;;54     	/* PA  */
-;;;55     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
+;;;56     	                     | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD 
+;;;57     	                     | RCC_APB2Periph_GPIOE| RCC_APB2Periph_AFIO, ENABLE);
+;;;58     	/* PA  */
+;;;59     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
 00000a  f64f70ff          MOV      r0,#0xffff
 00000e  f8ad0000          STRH     r0,[sp,#0]
-;;;56     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+;;;60     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
 000012  2000              MOVS     r0,#0
 000014  f88d0003          STRB     r0,[sp,#3]
-;;;57     	GPIO_Init(GPIOA, &GPIO_InitStructure);
+;;;61     	GPIO_Init(GPIOA, &GPIO_InitStructure);
 000018  4669              MOV      r1,sp
 00001a  4818              LDR      r0,|L5.124|
 00001c  f7fffffe          BL       GPIO_Init
-;;;58     	  /* PB  */
-;;;59     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
+;;;62     	  /* PB  */
+;;;63     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
 000020  f64f70ff          MOV      r0,#0xffff
 000024  f8ad0000          STRH     r0,[sp,#0]
-;;;60     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+;;;64     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
 000028  2000              MOVS     r0,#0
 00002a  f88d0003          STRB     r0,[sp,#3]
-;;;61     	GPIO_Init(GPIOB, &GPIO_InitStructure);
+;;;65     	GPIO_Init(GPIOB, &GPIO_InitStructure);
 00002e  4669              MOV      r1,sp
 000030  4813              LDR      r0,|L5.128|
 000032  f7fffffe          BL       GPIO_Init
-;;;62     	  /* PC  */
-;;;63     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All&(~GPIO_Pin_8);//GPS EN Keep Output
+;;;66     	  /* PC  */
+;;;67     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All&(~GPIO_Pin_8);//GPS EN Keep Output
 000036  f64f60ff          MOV      r0,#0xfeff
 00003a  f8ad0000          STRH     r0,[sp,#0]
-;;;64     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+;;;68     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
 00003e  2000              MOVS     r0,#0
 000040  f88d0003          STRB     r0,[sp,#3]
-;;;65     	GPIO_Init(GPIOC, &GPIO_InitStructure);
+;;;69     	GPIO_Init(GPIOC, &GPIO_InitStructure);
 000044  4669              MOV      r1,sp
 000046  480f              LDR      r0,|L5.132|
 000048  f7fffffe          BL       GPIO_Init
-;;;66     	    /* PD  */
-;;;67     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
+;;;70     	    /* PD  */
+;;;71     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
 00004c  f64f70ff          MOV      r0,#0xffff
 000050  f8ad0000          STRH     r0,[sp,#0]
-;;;68     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+;;;72     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
 000054  2000              MOVS     r0,#0
 000056  f88d0003          STRB     r0,[sp,#3]
-;;;69     	GPIO_Init(GPIOD, &GPIO_InitStructure);
+;;;73     	GPIO_Init(GPIOD, &GPIO_InitStructure);
 00005a  4669              MOV      r1,sp
 00005c  480a              LDR      r0,|L5.136|
 00005e  f7fffffe          BL       GPIO_Init
-;;;70     
-;;;71     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
+;;;74     
+;;;75     	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
 000062  f64f70ff          MOV      r0,#0xffff
 000066  f8ad0000          STRH     r0,[sp,#0]
-;;;72     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+;;;76     	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
 00006a  2000              MOVS     r0,#0
 00006c  f88d0003          STRB     r0,[sp,#3]
-;;;73     	GPIO_Init(GPIOE, &GPIO_InitStructure);
+;;;77     	GPIO_Init(GPIOE, &GPIO_InitStructure);
 000070  4669              MOV      r1,sp
 000072  4806              LDR      r0,|L5.140|
 000074  f7fffffe          BL       GPIO_Init
-;;;74     }
+;;;78     }
 000078  bd08              POP      {r3,pc}
-;;;75     
+;;;79     
                           ENDP
 
 00007a  0000              DCW      0x0000
@@ -468,76 +468,76 @@
                           AREA ||i.KLineInit||, CODE, READONLY, ALIGN=2
 
                   KLineInit PROC
-;;;204    
-;;;205    void KLineInit(void )
+;;;208    
+;;;209    void KLineInit(void )
 000000  b500              PUSH     {lr}
-;;;206    {
+;;;210    {
 000002  b085              SUB      sp,sp,#0x14
-;;;207    	GPIO_InitTypeDef  GPIO_InitStructure;
-;;;208    	USART_InitTypeDef USART_InitStructure;
-;;;209    	
-;;;210    	
-;;;211    	//USART3 RX
-;;;212    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_KWP_RX;
+;;;211    	GPIO_InitTypeDef  GPIO_InitStructure;
+;;;212    	USART_InitTypeDef USART_InitStructure;
+;;;213    	
+;;;214    	
+;;;215    	//USART3 RX
+;;;216    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_KWP_RX;
 000004  f44f6000          MOV      r0,#0x800
 000008  f8ad0010          STRH     r0,[sp,#0x10]
-;;;213      	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+;;;217      	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 00000c  2004              MOVS     r0,#4
 00000e  f88d0013          STRB     r0,[sp,#0x13]
-;;;214      	GPIO_Init(GPIOB, &GPIO_InitStructure);
+;;;218      	GPIO_Init(GPIOB, &GPIO_InitStructure);
 000012  a904              ADD      r1,sp,#0x10
 000014  4819              LDR      r0,|L6.124|
 000016  f7fffffe          BL       GPIO_Init
-;;;215    	//USART3 TX
-;;;216    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_KWP_TX;
+;;;219    	//USART3 TX
+;;;220    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_KWP_TX;
 00001a  f44f6080          MOV      r0,#0x400
 00001e  f8ad0010          STRH     r0,[sp,#0x10]
-;;;217      	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+;;;221      	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 000022  2018              MOVS     r0,#0x18
 000024  f88d0013          STRB     r0,[sp,#0x13]
-;;;218      	GPIO_Init(GPIOB, &GPIO_InitStructure);
+;;;222      	GPIO_Init(GPIOB, &GPIO_InitStructure);
 000028  a904              ADD      r1,sp,#0x10
 00002a  4814              LDR      r0,|L6.124|
 00002c  f7fffffe          BL       GPIO_Init
-;;;219    	
-;;;220    	USART_InitStructure.USART_BaudRate            = 10400  ;		  //KWP2000 波特率10400
+;;;223    	
+;;;224    	USART_InitStructure.USART_BaudRate            = 10400  ;		  //KWP2000 波特率10400
 000030  f64200a0          MOV      r0,#0x28a0
 000034  9000              STR      r0,[sp,#0]
-;;;221    	USART_InitStructure.USART_WordLength          = USART_WordLength_8b;
+;;;225    	USART_InitStructure.USART_WordLength          = USART_WordLength_8b;
 000036  2000              MOVS     r0,#0
 000038  f8ad0004          STRH     r0,[sp,#4]
-;;;222    	USART_InitStructure.USART_StopBits            = USART_StopBits_1;
+;;;226    	USART_InitStructure.USART_StopBits            = USART_StopBits_1;
 00003c  f8ad0006          STRH     r0,[sp,#6]
-;;;223    	USART_InitStructure.USART_Parity              = USART_Parity_No ;
+;;;227    	USART_InitStructure.USART_Parity              = USART_Parity_No ;
 000040  f8ad0008          STRH     r0,[sp,#8]
-;;;224    	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+;;;228    	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 000044  f8ad000c          STRH     r0,[sp,#0xc]
-;;;225    	USART_InitStructure.USART_Mode                = USART_Mode_Rx | USART_Mode_Tx;
+;;;229    	USART_InitStructure.USART_Mode                = USART_Mode_Rx | USART_Mode_Tx;
 000048  200c              MOVS     r0,#0xc
 00004a  f8ad000a          STRH     r0,[sp,#0xa]
-;;;226    
-;;;227    	USART_Init(USART3, &USART_InitStructure);
+;;;230    
+;;;231    	USART_Init(USART3, &USART_InitStructure);
 00004e  4669              MOV      r1,sp
 000050  480b              LDR      r0,|L6.128|
 000052  f7fffffe          BL       USART_Init
-;;;228    	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+;;;232    	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
 000056  2201              MOVS     r2,#1
 000058  f2405125          MOV      r1,#0x525
 00005c  4808              LDR      r0,|L6.128|
 00005e  f7fffffe          BL       USART_ITConfig
-;;;229    	USART_ITConfig(USART3, USART_IT_TC, ENABLE);
+;;;233    	USART_ITConfig(USART3, USART_IT_TC, ENABLE);
 000062  2201              MOVS     r2,#1
 000064  f2406126          MOV      r1,#0x626
 000068  4805              LDR      r0,|L6.128|
 00006a  f7fffffe          BL       USART_ITConfig
-;;;230    	USART_Cmd(USART3, ENABLE); 
+;;;234    	USART_Cmd(USART3, ENABLE); 
 00006e  2101              MOVS     r1,#1
 000070  4803              LDR      r0,|L6.128|
 000072  f7fffffe          BL       USART_Cmd
-;;;231    }
+;;;235    }
 000076  b005              ADD      sp,sp,#0x14
 000078  bd00              POP      {pc}
-;;;232    
+;;;236    
                           ENDP
 
 00007a  0000              DCW      0x0000
@@ -549,275 +549,275 @@
                           AREA ||i.NVIC_AllConfig||, CODE, READONLY, ALIGN=1
 
                   NVIC_AllConfig PROC
-;;;316    
-;;;317    void NVIC_AllConfig(void )
+;;;325    
+;;;326    void NVIC_AllConfig(void )
 000000  b508              PUSH     {r3,lr}
-;;;318    {
-;;;319    	NVIC_InitTypeDef NVIC_InitStructure; 
-;;;320    	NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x8000);
+;;;327    {
+;;;328    	NVIC_InitTypeDef NVIC_InitStructure; 
+;;;329    	NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x8000);
 000002  f44f4100          MOV      r1,#0x8000
 000006  0308              LSLS     r0,r1,#12
 000008  f7fffffe          BL       NVIC_SetVectorTable
-;;;321    	
-;;;322    	/* Enable the RTC Interrupt */
-;;;323    	NVIC_InitStructure.NVIC_IRQChannel = RTCAlarm_IRQn;  
+;;;330    	
+;;;331    	/* Enable the RTC Interrupt */
+;;;332    	NVIC_InitStructure.NVIC_IRQChannel = RTCAlarm_IRQn;  
 00000c  2029              MOVS     r0,#0x29
 00000e  f88d0000          STRB     r0,[sp,#0]
-;;;324    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  
+;;;333    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  
 000012  2000              MOVS     r0,#0
 000014  f88d0001          STRB     r0,[sp,#1]
-;;;325    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  
+;;;334    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  
 000018  f88d0002          STRB     r0,[sp,#2]
-;;;326    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
+;;;335    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
 00001c  2001              MOVS     r0,#1
 00001e  f88d0003          STRB     r0,[sp,#3]
-;;;327    	NVIC_Init(&NVIC_InitStructure);  
+;;;336    	NVIC_Init(&NVIC_InitStructure);  
 000022  4668              MOV      r0,sp
 000024  f7fffffe          BL       NVIC_Init
-;;;328    	
-;;;329    	//定时器4 中断优先级NVIC设置
-;;;330    	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn; //TIM4中断
+;;;337    	
+;;;338    	//定时器4 中断优先级NVIC设置
+;;;339    	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn; //TIM4中断
 000028  201e              MOVS     r0,#0x1e
 00002a  f88d0000          STRB     r0,[sp,#0]
-;;;331    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//先占优先级0级
+;;;340    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//先占优先级0级
 00002e  2000              MOVS     r0,#0
 000030  f88d0001          STRB     r0,[sp,#1]
-;;;332    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;       //从优先级3级
+;;;341    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;       //从优先级3级
 000034  2003              MOVS     r0,#3
 000036  f88d0002          STRB     r0,[sp,#2]
-;;;333    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
+;;;342    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 00003a  2001              MOVS     r0,#1
 00003c  f88d0003          STRB     r0,[sp,#3]
-;;;334    	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+;;;343    	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
 000040  4668              MOV      r0,sp
 000042  f7fffffe          BL       NVIC_Init
-;;;335    	
-;;;336    	//串口3 中断初始化
-;;;337    	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+;;;344    	
+;;;345    	//串口3 中断初始化
+;;;346    	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
 000046  2027              MOVS     r0,#0x27
 000048  f88d0000          STRB     r0,[sp,#0]
-;;;338    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+;;;347    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
 00004c  2002              MOVS     r0,#2
 00004e  f88d0001          STRB     r0,[sp,#1]
-;;;339    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+;;;348    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 000052  2001              MOVS     r0,#1
 000054  f88d0002          STRB     r0,[sp,#2]
-;;;340    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+;;;349    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 000058  f88d0003          STRB     r0,[sp,#3]
-;;;341    	NVIC_Init(&NVIC_InitStructure);
+;;;350    	NVIC_Init(&NVIC_InitStructure);
 00005c  4668              MOV      r0,sp
 00005e  f7fffffe          BL       NVIC_Init
-;;;342    	
-;;;343    	//串口2 中断初始化
-;;;344    	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;  //为串口2中断配置中断优先级
+;;;351    	
+;;;352    	//串口2 中断初始化
+;;;353    	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;  //为串口2中断配置中断优先级
 000062  2026              MOVS     r0,#0x26
 000064  f88d0000          STRB     r0,[sp,#0]
-;;;345    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+;;;354    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
 000068  2002              MOVS     r0,#2
 00006a  f88d0001          STRB     r0,[sp,#1]
-;;;346    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
+;;;355    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
 00006e  2004              MOVS     r0,#4
 000070  f88d0002          STRB     r0,[sp,#2]
-;;;347    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+;;;356    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 000074  2001              MOVS     r0,#1
 000076  f88d0003          STRB     r0,[sp,#3]
-;;;348    	NVIC_Init(&NVIC_InitStructure);
+;;;357    	NVIC_Init(&NVIC_InitStructure);
 00007a  4668              MOV      r0,sp
 00007c  f7fffffe          BL       NVIC_Init
-;;;349    	
-;;;350    	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;
+;;;358    	
+;;;359    	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX1_IRQn;
 000080  2015              MOVS     r0,#0x15
 000082  f88d0000          STRB     r0,[sp,#0]
-;;;351    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+;;;360    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
 000086  2002              MOVS     r0,#2
 000088  f88d0001          STRB     r0,[sp,#1]
-;;;352    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
+;;;361    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 5;
 00008c  2005              MOVS     r0,#5
 00008e  f88d0002          STRB     r0,[sp,#2]
-;;;353    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+;;;362    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 000092  2001              MOVS     r0,#1
 000094  f88d0003          STRB     r0,[sp,#3]
-;;;354    	NVIC_Init(&NVIC_InitStructure);	
+;;;363    	NVIC_Init(&NVIC_InitStructure);	
 000098  4668              MOV      r0,sp
 00009a  f7fffffe          BL       NVIC_Init
-;;;355    	
-;;;356    	//GPS 串口初始化
-;;;357    	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
+;;;364    	
+;;;365    	//GPS 串口初始化
+;;;366    	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
 00009e  2034              MOVS     r0,#0x34
 0000a0  f88d0000          STRB     r0,[sp,#0]
-;;;358    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+;;;367    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
 0000a4  2002              MOVS     r0,#2
 0000a6  f88d0001          STRB     r0,[sp,#1]
-;;;359    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 6;
+;;;368    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 6;
 0000aa  2006              MOVS     r0,#6
 0000ac  f88d0002          STRB     r0,[sp,#2]
-;;;360    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+;;;369    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 0000b0  2001              MOVS     r0,#1
 0000b2  f88d0003          STRB     r0,[sp,#3]
-;;;361    	NVIC_Init(&NVIC_InitStructure);
+;;;370    	NVIC_Init(&NVIC_InitStructure);
 0000b6  4668              MOV      r0,sp
 0000b8  f7fffffe          BL       NVIC_Init
-;;;362    	
-;;;363    	//定时器2 辅助GPS接收 中断初始化
-;;;364    	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn; //TIM2中断
+;;;371    	
+;;;372    	//定时器2 辅助GPS接收 中断初始化
+;;;373    	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn; //TIM2中断
 0000bc  201c              MOVS     r0,#0x1c
 0000be  f88d0000          STRB     r0,[sp,#0]
-;;;365    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
+;;;374    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
 0000c2  2002              MOVS     r0,#2
 0000c4  f88d0001          STRB     r0,[sp,#1]
-;;;366    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
+;;;375    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
 0000c8  2001              MOVS     r0,#1
 0000ca  f88d0002          STRB     r0,[sp,#2]
-;;;367    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
+;;;376    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 0000ce  f88d0003          STRB     r0,[sp,#3]
-;;;368    	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+;;;377    	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
 0000d2  4668              MOV      r0,sp
 0000d4  f7fffffe          BL       NVIC_Init
-;;;369    }
+;;;378    }
 0000d8  bd08              POP      {r3,pc}
-;;;370    
+;;;379    
                           ENDP
 
 
                           AREA ||i.RTCConfigureInit||, CODE, READONLY, ALIGN=1
 
                   RTCConfigureInit PROC
-;;;248    }
-;;;249    void RTCConfigureInit(void)
+;;;252    }
+;;;253    void RTCConfigureInit(void)
 000000  b51c              PUSH     {r2-r4,lr}
-;;;250    {
-;;;251    	EXTI_InitTypeDef EXTI_InitStructure;  
-;;;252     
-;;;253    	/* Enable PWR and BKP clocks */
-;;;254    	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+;;;254    {
+;;;255    	EXTI_InitTypeDef EXTI_InitStructure;  
+;;;256     
+;;;257    	/* Enable PWR and BKP clocks */
+;;;258    	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
 000002  2101              MOVS     r1,#1
 000004  f04f50c0          MOV      r0,#0x18000000
 000008  f7fffffe          BL       RCC_APB1PeriphClockCmd
-;;;255    
-;;;256    	/* Allow access to BKP Domain */
-;;;257    	PWR_BackupAccessCmd(ENABLE);
+;;;259    
+;;;260    	/* Allow access to BKP Domain */
+;;;261    	PWR_BackupAccessCmd(ENABLE);
 00000c  2001              MOVS     r0,#1
 00000e  f7fffffe          BL       PWR_BackupAccessCmd
-;;;258    
-;;;259    	/* Reset Backup Domain */
-;;;260    	//BKP_DeInit();
-;;;261    
-;;;262    	//BKP_ClearFlag();
-;;;263    	//RCC_LSEConfig(RCC_LSE_ON);
-;;;264    	RCC_LSICmd(ENABLE);
+;;;262    
+;;;263    	/* Reset Backup Domain */
+;;;264    	//BKP_DeInit();
+;;;265    
+;;;266    	//BKP_ClearFlag();
+;;;267    	//RCC_LSEConfig(RCC_LSE_ON);
+;;;268    	RCC_LSICmd(ENABLE);
 000012  2001              MOVS     r0,#1
 000014  f7fffffe          BL       RCC_LSICmd
-;;;265    
-;;;266    	//while(RCC_GetFlagStatus(RCC_FLAG_LSERDY)==RESET);//等待LSE就绪，如果谐振不对，就会死在这里
-;;;267    
-;;;268    	BKP_TamperPinCmd(DISABLE);
+;;;269    
+;;;270    	//while(RCC_GetFlagStatus(RCC_FLAG_LSERDY)==RESET);//等待LSE就绪，如果谐振不对，就会死在这里
+;;;271    
+;;;272    	BKP_TamperPinCmd(DISABLE);
 000018  2000              MOVS     r0,#0
 00001a  f7fffffe          BL       BKP_TamperPinCmd
-;;;269    
-;;;270    	/* Select LSE as RTC Clock Source */
-;;;271    	//RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
-;;;272    	//RCC_RTCCLKConfig(RCC_RTCCLKSource_HSE_Div128); //			  RCC_RTCCLKSource_LSE RCC_RTCCLKSource_HSE_Div128
-;;;273    	RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
+;;;273    
+;;;274    	/* Select LSE as RTC Clock Source */
+;;;275    	//RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
+;;;276    	//RCC_RTCCLKConfig(RCC_RTCCLKSource_HSE_Div128); //			  RCC_RTCCLKSource_LSE RCC_RTCCLKSource_HSE_Div128
+;;;277    	RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
 00001e  f44f7000          MOV      r0,#0x200
 000022  f7fffffe          BL       RCC_RTCCLKConfig
-;;;274    
-;;;275    	/* Enable RTC Clock */
-;;;276    	RCC_RTCCLKCmd(ENABLE);
+;;;278    
+;;;279    	/* Enable RTC Clock */
+;;;280    	RCC_RTCCLKCmd(ENABLE);
 000026  2001              MOVS     r0,#1
 000028  f7fffffe          BL       RCC_RTCCLKCmd
-;;;277    
-;;;278    	/* Wait for RTC registers synchronization */
-;;;279    	RTC_WaitForSynchro();
-00002c  f7fffffe          BL       RTC_WaitForSynchro
-;;;280    
 ;;;281    
-;;;282    	/* Wait until last write operation on RTC registers has finished */
-;;;283    	RTC_WaitForLastTask();
-000030  f7fffffe          BL       RTC_WaitForLastTask
+;;;282    	/* Wait for RTC registers synchronization */
+;;;283    	RTC_WaitForSynchro();
+00002c  f7fffffe          BL       RTC_WaitForSynchro
 ;;;284    
-;;;285    	/* Enable the RTC Second */
-;;;286    	//RTC_ITConfig(RTC_IT_SEC, ENABLE);
-;;;287    
-;;;288    	RTC_ITConfig(RTC_IT_ALR, ENABLE);
+;;;285    
+;;;286    	/* Wait until last write operation on RTC registers has finished */
+;;;287    	RTC_WaitForLastTask();
+000030  f7fffffe          BL       RTC_WaitForLastTask
+;;;288    
+;;;289    	/* Enable the RTC Second */
+;;;290    	//RTC_ITConfig(RTC_IT_SEC, ENABLE);
+;;;291    
+;;;292    	RTC_ITConfig(RTC_IT_ALR, ENABLE);
 000034  2101              MOVS     r1,#1
 000036  2002              MOVS     r0,#2
 000038  f7fffffe          BL       RTC_ITConfig
-;;;289    
-;;;290    	/* Wait until last write operation on RTC registers has finished */
-;;;291    	RTC_WaitForLastTask();
+;;;293    
+;;;294    	/* Wait until last write operation on RTC registers has finished */
+;;;295    	RTC_WaitForLastTask();
 00003c  f7fffffe          BL       RTC_WaitForLastTask
-;;;292    
-;;;293    	/* Set RTC prescaler: set RTC period to 1sec */
-;;;294    	//RTC_SetPrescaler(32767); /* RTC period = RTCCLK/RTC_PR = (32.768 KHz)/(32767+1) */
-;;;295    	RTC_SetPrescaler(39999);	  //8M/128=62500 //40k
+;;;296    
+;;;297    	/* Set RTC prescaler: set RTC period to 1sec */
+;;;298    	//RTC_SetPrescaler(32767); /* RTC period = RTCCLK/RTC_PR = (32.768 KHz)/(32767+1) */
+;;;299    	RTC_SetPrescaler(39999);	  //8M/128=62500 //40k
 000040  f649403f          MOV      r0,#0x9c3f
 000044  f7fffffe          BL       RTC_SetPrescaler
-;;;296    	//RTC_SetPrescaler(93749);	  //12M/128=93750
-;;;297    	/* Wait until last write operation on RTC registers has finished */
-;;;298    	RTC_WaitForLastTask();
+;;;300    	//RTC_SetPrescaler(93749);	  //12M/128=93750
+;;;301    	/* Wait until last write operation on RTC registers has finished */
+;;;302    	RTC_WaitForLastTask();
 000048  f7fffffe          BL       RTC_WaitForLastTask
-;;;299    	
-;;;300    	EXTI_ClearITPendingBit(EXTI_Line17);  
+;;;303    	
+;;;304    	EXTI_ClearITPendingBit(EXTI_Line17);  
 00004c  f44f3000          MOV      r0,#0x20000
 000050  f7fffffe          BL       EXTI_ClearITPendingBit
-;;;301    	EXTI_InitStructure.EXTI_Line = EXTI_Line17;  
+;;;305    	EXTI_InitStructure.EXTI_Line = EXTI_Line17;  
 000054  f44f3000          MOV      r0,#0x20000
 000058  9000              STR      r0,[sp,#0]
-;;;302    	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;  
+;;;306    	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;  
 00005a  2000              MOVS     r0,#0
 00005c  f88d0004          STRB     r0,[sp,#4]
-;;;303    	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;  
+;;;307    	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;  
 000060  2008              MOVS     r0,#8
 000062  f88d0005          STRB     r0,[sp,#5]
-;;;304    	EXTI_InitStructure.EXTI_LineCmd = ENABLE;  
+;;;308    	EXTI_InitStructure.EXTI_LineCmd = ENABLE;  
 000066  2001              MOVS     r0,#1
 000068  f88d0006          STRB     r0,[sp,#6]
-;;;305    	EXTI_Init(&EXTI_InitStructure);  
+;;;309    	EXTI_Init(&EXTI_InitStructure);  
 00006c  4668              MOV      r0,sp
 00006e  f7fffffe          BL       EXTI_Init
-;;;306    }
+;;;310    }
 000072  bd1c              POP      {r2-r4,pc}
-;;;307    void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
+;;;311    void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
                           ENDP
 
 
                           AREA ||i.RTC_Time_Adjust||, CODE, READONLY, ALIGN=1
 
                   RTC_Time_Adjust PROC
-;;;306    }
-;;;307    void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
+;;;310    }
+;;;311    void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
 000000  b510              PUSH     {r4,lr}
-;;;308    {
+;;;312    {
 000002  4604              MOV      r4,r0
-;;;309      /* Wait until last write operation on RTC registers has finished */
-;;;310      RTC_WaitForLastTask();
-000004  f7fffffe          BL       RTC_WaitForLastTask
-;;;311      /* Change the current time */
-;;;312      RTC_SetCounter(value);
-000008  4620              MOV      r0,r4
-00000a  f7fffffe          BL       RTC_SetCounter
 ;;;313      /* Wait until last write operation on RTC registers has finished */
 ;;;314      RTC_WaitForLastTask();
+000004  f7fffffe          BL       RTC_WaitForLastTask
+;;;315      /* Change the current time */
+;;;316      RTC_SetCounter(value);
+000008  4620              MOV      r0,r4
+00000a  f7fffffe          BL       RTC_SetCounter
+;;;317      /* Wait until last write operation on RTC registers has finished */
+;;;318      RTC_WaitForLastTask();
 00000e  f7fffffe          BL       RTC_WaitForLastTask
-;;;315    }
+;;;319    }
 000012  bd10              POP      {r4,pc}
-;;;316    
+;;;320    
                           ENDP
 
 
                           AREA ||i.SysTickInit||, CODE, READONLY, ALIGN=2
 
                   SysTickInit PROC
-;;;24     //系统时钟滴答初始化
-;;;25     void SysTickInit(void)
+;;;28     //系统时钟滴答初始化
+;;;29     void SysTickInit(void)
 000000  b570              PUSH     {r4-r6,lr}
-;;;26     {
-;;;27     	SystemCoreClockUpdate();
+;;;30     {
+;;;31     	SystemCoreClockUpdate();
 000002  f7fffffe          BL       SystemCoreClockUpdate
-;;;28     	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
+;;;32     	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 000006  2004              MOVS     r0,#4
 000008  f7fffffe          BL       SysTick_CLKSourceConfig
-;;;29     	SysTick_Config(SystemCoreClock / OS_TICKS_PER_SEC);
+;;;33     	SysTick_Config(SystemCoreClock / OS_TICKS_PER_SEC);
 00000c  4813              LDR      r0,|L10.92|
 00000e  6800              LDR      r0,[r0,#0]  ; SystemCoreClock
 000010  f44f72fa          MOV      r2,#0x1f4
@@ -855,9 +855,9 @@
 000056  6110              STR      r0,[r2,#0x10]
 000058  bf00              NOP      
                   |L10.90|
-;;;30     }
+;;;34     }
 00005a  bd70              POP      {r4-r6,pc}
-;;;31     //使能外设时钟
+;;;35     //使能外设时钟
                           ENDP
 
                   |L10.92|
@@ -867,7 +867,7 @@
                   |L10.100|
                           DCD      0xe000e400
 
-                          AREA ||i.SystemBspInit||, CODE, READONLY, ALIGN=1
+                          AREA ||i.SystemBspInit||, CODE, READONLY, ALIGN=2
 
                   SystemBspInit PROC
 ;;;6      //芯片初始化，包括系统时钟、芯片外设、时钟滴答等等
@@ -876,81 +876,105 @@
 ;;;8      {
 ;;;9      	BspClockInit();
 000002  f7fffffe          BL       BspClockInit
-;;;10     	GPIO_ALL_IN();
-000006  f7fffffe          BL       GPIO_ALL_IN
-;;;11     	
-;;;12     	GPIOLEDInit();
-00000a  f7fffffe          BL       GPIOLEDInit
-;;;13     	CDMAUart2Init();
-00000e  f7fffffe          BL       CDMAUart2Init
-;;;14     	GPSConfigInit(9600);
-000012  f44f5016          MOV      r0,#0x2580
-000016  f7fffffe          BL       GPSConfigInit
-;;;15     	CAN1Config();
-00001a  f7fffffe          BL       CAN1Config
-;;;16     	TIM4ConfigInit();
-00001e  f7fffffe          BL       TIM4ConfigInit
-;;;17     	TIM2ConfigInit();
-000022  f7fffffe          BL       TIM2ConfigInit
-;;;18     	RTCConfigureInit();
-000026  f7fffffe          BL       RTCConfigureInit
-;;;19     	
-;;;20     	NVIC_AllConfig();
-00002a  f7fffffe          BL       NVIC_AllConfig
-;;;21     	
-;;;22     	SysTickInit();
-00002e  f7fffffe          BL       SysTickInit
-;;;23     }
-000032  bd10              POP      {r4,pc}
-;;;24     //系统时钟滴答初始化
+;;;10     	
+;;;11     	GlobalVarInit();//全局变量初始化
+000006  f7fffffe          BL       GlobalVarInit
+;;;12     	
+;;;13     	GPIO_ALL_IN();  //IO口设置为输入
+00000a  f7fffffe          BL       GPIO_ALL_IN
+;;;14     	
+;;;15     	GPIOLEDInit();
+00000e  f7fffffe          BL       GPIOLEDInit
+;;;16     	CDMAUart2Init();
+000012  f7fffffe          BL       CDMAUart2Init
+;;;17     	GPSConfigInit(9600);
+000016  f44f5016          MOV      r0,#0x2580
+00001a  f7fffffe          BL       GPSConfigInit
+;;;18     	if(varOperation.ecuVersion != 0x00000000)
+00001e  4808              LDR      r0,|L11.64|
+000020  f8d00065          LDR      r0,[r0,#0x65]  ; varOperation
+000024  b108              CBZ      r0,|L11.42|
+;;;19     		CAN1Config();
+000026  f7fffffe          BL       CAN1Config
+                  |L11.42|
+;;;20     	TIM4ConfigInit();
+00002a  f7fffffe          BL       TIM4ConfigInit
+;;;21     	TIM2ConfigInit();
+00002e  f7fffffe          BL       TIM2ConfigInit
+;;;22     	RTCConfigureInit();
+000032  f7fffffe          BL       RTCConfigureInit
+;;;23     	
+;;;24     	NVIC_AllConfig();
+000036  f7fffffe          BL       NVIC_AllConfig
+;;;25     	
+;;;26     	SysTickInit();
+00003a  f7fffffe          BL       SysTickInit
+;;;27     }
+00003e  bd10              POP      {r4,pc}
+;;;28     //系统时钟滴答初始化
                           ENDP
 
+                  |L11.64|
+                          DCD      varOperation
 
                           AREA ||i.TIM4ConfigInit||, CODE, READONLY, ALIGN=2
 
                   TIM4ConfigInit PROC
-;;;232    
-;;;233    void TIM4ConfigInit(void )
+;;;236    
+;;;237    void TIM4ConfigInit(void )
 000000  b50e              PUSH     {r1-r3,lr}
-;;;234    {
-;;;235    	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-;;;236    	
-;;;237    	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE); //时钟使能
+;;;238    {
+;;;239    	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+;;;240    	
+;;;241    	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE); //时钟使能
 000002  2101              MOVS     r1,#1
 000004  2004              MOVS     r0,#4
 000006  f7fffffe          BL       RCC_APB1PeriphClockCmd
-;;;238    	
-;;;239    	//定时器TIM4初始化
-;;;240    	TIM_TimeBaseStructure.TIM_Period = 10;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
+;;;242    	
+;;;243    	//定时器TIM4初始化
+;;;244    	TIM_TimeBaseStructure.TIM_Period = 10;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
 00000a  200a              MOVS     r0,#0xa
 00000c  f8ad0004          STRH     r0,[sp,#4]
-;;;241    	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
+;;;245    	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
 000010  f641401f          MOV      r0,#0x1c1f
 000014  f8ad0000          STRH     r0,[sp,#0]
-;;;242    	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
+;;;246    	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
 000018  2000              MOVS     r0,#0
 00001a  f8ad0006          STRH     r0,[sp,#6]
-;;;243    	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+;;;247    	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
 00001e  f8ad0002          STRH     r0,[sp,#2]
-;;;244    	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
+;;;248    	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
 000022  4669              MOV      r1,sp
 000024  4804              LDR      r0,|L12.56|
 000026  f7fffffe          BL       TIM_TimeBaseInit
-;;;245     
-;;;246    	TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE );       //使能指定的TIM4中断,允许更新中断	
+;;;249     
+;;;250    	TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE );       //使能指定的TIM4中断,允许更新中断	
 00002a  2201              MOVS     r2,#1
 00002c  4611              MOV      r1,r2
 00002e  4802              LDR      r0,|L12.56|
 000030  f7fffffe          BL       TIM_ITConfig
-;;;247    //	TIM_Cmd(TIM4, ENABLE);  //使能TIMx		
-;;;248    }
+;;;251    //	TIM_Cmd(TIM4, ENABLE);  //使能TIMx		
+;;;252    }
 000034  bd0e              POP      {r1-r3,pc}
-;;;249    void RTCConfigureInit(void)
+;;;253    void RTCConfigureInit(void)
                           ENDP
 
 000036  0000              DCW      0x0000
                   |L12.56|
                           DCD      0x40000800
+
+                          AREA ||i.WatchDogInit||, CODE, READONLY, ALIGN=1
+
+                  WatchDogInit PROC
+;;;320    
+;;;321    void WatchDogInit(void )
+000000  4770              BX       lr
+;;;322    {
+;;;323    
+;;;324    }
+;;;325    
+                          ENDP
+
 
 ;*** Start embedded assembler ***
 

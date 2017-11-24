@@ -69,7 +69,7 @@ void GPSTask(void *pdata)
 			memcpy(&ptrGPSPack[11],&timeStamp,sizeof(timeStamp));//维度
 			
 			speed = t_htons(gpsMC.direction);
-			memcpy(&ptrGPSPack[15],&speed,2);       //todo:解析GPS方向，解析有效定位
+			memcpy(&ptrGPSPack[15],&speed,2);   //todo:解析GPS方向，解析有效定位
 			
 			speed = t_htons(gpsMC.speed);
 			memcpy(&ptrGPSPack[17],&speed,2);
@@ -127,7 +127,7 @@ uint32_t TimeCompare(uint32_t TYY,uint32_t TMO,uint32_t TDD,
 void GPSStartInit(void )
 {
 	u8 key=0XFF;
-	OSTimeDlyHMSM(0,0,28,0);                //CDMA还没启动，此处需要延时
+	OSTimeDlyHMSM(0,0,8,0);          
 	if(Ublox_Cfg_Rate(1000,1)!=0)          //1s采集一次 MC数据
 	{
 		while((Ublox_Cfg_Rate(1000,1)!=0)&&key)	//持续判断,直到可以检查到NEO-6M,且数据保存成功

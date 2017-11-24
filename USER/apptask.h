@@ -9,6 +9,7 @@
 /************************   任务以及互斥型信号量的优先级定义   *************/
 
 
+#define CDMAPOWER_PRIO        7     //CDMA 电源独占管理
 #define CDMA_SEND_PRIO        8     //CDMA 发送互斥信号量优先级
 
 #define START_TASK_PRIO      10     //起始任务优先级
@@ -22,6 +23,8 @@
 #define GPS_LED_PRIO         21     //车辆定位GPS-LED任务优先级
 #define OBD_LED_PRIO         22     //故障诊断OBD-LED任务优先级
 #define BEEP_TASK_PRIO       23     //蜂鸣器任务
+
+#define POWER_CONTROL_PRIO   27     //电源管理任务   
 
 
 /************************   任务堆栈大小定义定义   ************************/

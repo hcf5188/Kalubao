@@ -3,8 +3,6 @@
 
 
 /*************************   CDMA服务函数声明部分   *****************************/
-void CDMAPowerOpen_Close(void);//这段代码是用来启动/关闭CDMA
-static void CDMAConfigInit(void );    //初始化配置CDMA
 void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength);
 /*************************   MG2639常用的 “AT”指令     ***********************/
 const uint8_t atCmd[]      = "AT\r";                //AT 测试指令
@@ -60,15 +58,15 @@ void CDMATask(void *pdata)
 	CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);  //建立CDMA接收 消息队列
 	CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE);//建立CDMA发送 消息队列
 	
-resetCDMA:	
-	CDMAPowerOpen_Close();           //启动MG2639模块
-	
 	CDMAConfigInit();                //初始化配置MG2639
+	LoginDataSend();                 //发送登录报文
+	varOperation.isDataFlow = 0;     //开启数据流
 	
 	while(1)//todo:断网、断开TCP连接、OTA升级、配置文件下发、登录
 	{
 		OSSemPost(sendMsg); //没有发送数据
 		
+receCDMA:	
 		pCDMASend = OSQPend(CDMASendQ,0,&err);
 		
 		OSSemAccept(sendMsg); //正在发送数据 消耗掉发送时的信号量
@@ -80,18 +78,19 @@ resetCDMA:
 		if(err == OS_ERR_NONE)
 		{
 			err = CDMAReceDeal(pCDMARece,"DISCONNECTED");
-			if(err == 0)                        //TCP断开连接，重连
+			if(err == 0)                        //TCP断开连接，需要重新连接
 			{
-				Mem_free(pCDMARece);
-				
+				Mem_free(pCDMARece);            //释放占用的内存块
 				Mem_free(pCDMASend->data);
 				Mem_free(pCDMASend);
-				
+			
 				varOperation.isDataFlow = 1;    //数据流未流动
 				freCDMALed = 100;               //CDMA小灯快闪
-				CDMAPowerOpen_Close();          //关闭CDMA电源
-				OSTimeDlyHMSM(0,0,8,500);       //关闭需要延时
-				goto resetCDMA;
+				CDMAPowerOpen_Close(CDMA_CLOSE);//关闭CDMA电源
+				
+				CDMAConfigInit();               //重新启动CDMA
+				varOperation.isDataFlow = 0;    //开启数据流
+				goto receCDMA;
 			}
 			err = CDMAReceDeal(pCDMARece,">");
 			Mem_free(pCDMARece);
@@ -110,12 +109,25 @@ resetCDMA:
 		Mem_free(pCDMASend);
 	}
 }
-void CDMAPowerOpen_Close(void)//这段代码是用来启动/关闭CDMA
+extern OS_EVENT * CDMAPowerMutex;     //互斥型信号量，CDMA电源的独占式管理
+void CDMAPowerOpen_Close(uint8_t flag)//这段代码是用来启动/关闭CDMA
 {
-	CDMA_POWER_LOW;
-	OSTimeDlyHMSM(0,0,3,500);
-	CDMA_POWER_HIGH;
-	OSTimeDlyHMSM(0,0,4,0);
+	uint8_t err;
+	//互斥型信号量，确保开启和关闭
+	OSMutexPend(CDMAPowerMutex,0,&err);
+	
+	if(((flag == CDMA_CLOSE)&&(varOperation.isCDMAStart%2 == 0))||((flag == CDMA_OPEN)&&(varOperation.isCDMAStart%2 == 1)))
+	{
+		varOperation.isCDMAStart++;
+		CDMA_POWER_LOW;
+		OSTimeDlyHMSM(0,0,3,500);
+		CDMA_POWER_HIGH;
+		if(varOperation.isCDMAStart%2 == 1)
+			OSTimeDlyHMSM(0,0,4,0);
+		else
+			OSTimeDlyHMSM(0,0,12,0);
+	}
+	OSMutexPost(CDMAPowerMutex);
 }
 //配置以及发送数据的过程中，对CDMA返回的状态信息进行处理 0 接收正常
 static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2)
@@ -133,10 +145,12 @@ static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2)
 void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength)
 {
 	uint8_t err;
+	uint8_t count = 0;
 	uint8_t *ptrCDMACfg;
 	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
 	Mem_free(ptrCDMACfg);
 	do{
+		count ++;
 		CDMASendDatas(sendDat,sendLength);
 		ptrCDMACfg = OSQPend(CDMARecieveQ,500,&err);
 		if(err != OS_ERR_NONE)        //接收超时
@@ -149,7 +163,7 @@ void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength)
 			err = CDMAReceDeal(ptrCDMACfg,compString);
 			Mem_free(ptrCDMACfg);
 		}
-	}while(err != 0);
+	}while((err != 0) && (count < 200));
 //	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
 //	Mem_free(ptrCDMACfg);
 }
@@ -180,10 +194,11 @@ static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t 
 	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
 	Mem_free(ptrCDMACfg);
 }
-static void CDMAConfigInit(void )
+void CDMAConfigInit(void )
 {
 	char sendCmd[45];
 	uint8_t sendlen = 0;
+	CDMAPowerOpen_Close(CDMA_OPEN);  //启动MG2639模块
 	
 	CDMASendCmd(atCmd,"OK",sizeof(atCmd));
 	CDMASendCmd(ate0Cmd,"OK",sizeof(ate0Cmd));
@@ -199,12 +214,11 @@ static void CDMAConfigInit(void )
 	CDMASendCmd(at_ZPPPSTATUS,"+ZPPPSTATUS:",sizeof(at_ZPPPSTATUS));
 	CDMASendCmd(at_ZPPPOPEN,"+ZPPPOPEN:CONNECTED",sizeof(at_ZPPPOPEN));
 	
-	
 	sendlen = sprintf(sendCmd,(const char*)at_ZIPSETUP,varOperation.ipAddr,varOperation.ipPotr);//TCP连接
 	CDMASendCmd((uint8_t *)sendCmd,"+ZIPSETUP:CONNECTED",sendlen);
 
 	freCDMALed = 300;           //网络连接成功
-	varOperation.isDataFlow = 0; //开启数据流
+	
 }
 
 

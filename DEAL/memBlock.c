@@ -23,6 +23,8 @@ uint8_t MemBuf_256B[MEM_256B_ROW][MEM_256B_COL];
 uint8_t MemBuf_512B[MEM_512B_ROW][MEM_512B_COL];
 uint8_t MemBuf_1KB[MEM_1KB_ROW][MEM_1KB_COL];
 
+MEM_Check allMemState;
+
 /****************************************************************
 *			void	*Mem_malloc(uint16_t size)
 * 描	述 : 获取一个内存块首地址			 		
@@ -41,6 +43,8 @@ void *Mem_malloc(uint16_t size)
 		if((ptr = OSMemGet(pMemBuf_16B,&err)) != NULL)
 		{
 			*ptr = MEM_16B_COL;
+			allMemState.memUsedNum1 ++;
+			allMemState.memUsedMax1 = allMemState.memUsedMax1>allMemState.memUsedNum1?allMemState.memUsedMax1:allMemState.memUsedNum1;
 			return ptr + 1;
 		}
 		else 
@@ -50,6 +54,8 @@ void *Mem_malloc(uint16_t size)
 		if((ptr = OSMemGet(pMemBuf_32B,&err)) != NULL)
 		{
 			*ptr = MEM_32B_COL;
+			allMemState.memUsedNum2 ++;
+			allMemState.memUsedMax2 = allMemState.memUsedMax2>allMemState.memUsedNum2?allMemState.memUsedMax2:allMemState.memUsedNum2;
 			return ptr + 1;
 		}
 		else 
@@ -59,6 +65,8 @@ void *Mem_malloc(uint16_t size)
 		if((ptr = OSMemGet(pMemBuf_64B,&err)) != NULL)
 		{
 			*ptr = MEM_64B_COL;
+			allMemState.memUsedNum3 ++;
+			allMemState.memUsedMax3 = allMemState.memUsedMax3>allMemState.memUsedNum3?allMemState.memUsedMax3:allMemState.memUsedNum3;
 			return ptr + 1;
 		}
 		else 
@@ -68,6 +76,8 @@ void *Mem_malloc(uint16_t size)
 		if((ptr = OSMemGet(pMemBuf_128B,&err)) != NULL)
 		{
 			*ptr = MEM_128B_COL;
+			allMemState.memUsedNum4 ++;
+			allMemState.memUsedMax4 = allMemState.memUsedMax4>allMemState.memUsedNum4?allMemState.memUsedMax4:allMemState.memUsedNum4;
 			return ptr + 1;
 		}
 		else 
@@ -77,6 +87,8 @@ void *Mem_malloc(uint16_t size)
 		if((ptr = OSMemGet(pMemBuf_256B,&err)) != NULL)
 		{
 			*ptr = MEM_256B_COL;
+			allMemState.memUsedNum5 ++;
+			allMemState.memUsedMax5 = allMemState.memUsedMax5>allMemState.memUsedNum5?allMemState.memUsedMax5:allMemState.memUsedNum5;
 			return ptr + 1;
 		}
 		else 
@@ -86,6 +98,8 @@ void *Mem_malloc(uint16_t size)
 		if((ptr = OSMemGet(pMemBuf_512B,&err)) != NULL)
 		{
 			*ptr = MEM_512B_COL;
+			allMemState.memUsedNum6 ++;
+			allMemState.memUsedMax6 = allMemState.memUsedMax6>allMemState.memUsedNum6?allMemState.memUsedMax6:allMemState.memUsedNum6;
 			return ptr + 1;
 		}
 		else 
@@ -95,6 +109,8 @@ void *Mem_malloc(uint16_t size)
 		if((ptr = OSMemGet(pMemBuf_1KB,&err)) != NULL)
 		{
 			*ptr = MEM_1KB_COL;
+			allMemState.memUsedNum7 ++;
+			allMemState.memUsedMax7 = allMemState.memUsedMax7>allMemState.memUsedNum7?allMemState.memUsedMax7:allMemState.memUsedNum7;
 			return ptr + 1;
 		}
 		else 
@@ -119,24 +135,31 @@ uint8_t Mem_free(void *ptr)
 	switch(*ptr_free)
 	{
 		case MEM_16B_COL: 
+			allMemState.memUsedNum1 --;
 			memset(ptr_free,0,MEM_16B_COL);
 			return OSMemPut(pMemBuf_16B,ptr_free);
 		case MEM_32B_COL: 
+			allMemState.memUsedNum2 --;
 			memset(ptr_free,0,MEM_32B_COL);
 			return OSMemPut(pMemBuf_32B,ptr_free);
 		case MEM_64B_COL: 
+			allMemState.memUsedNum3 --;
 			memset(ptr_free,0,MEM_64B_COL);
 			return OSMemPut(pMemBuf_64B,ptr_free);
 		case MEM_128B_COL: 
+			allMemState.memUsedNum4 --;
 			memset(ptr_free,0,MEM_128B_COL);
 			return OSMemPut(pMemBuf_128B,ptr_free);
 		case MEM_256B_COL: 
+			allMemState.memUsedNum5 --;
 			memset(ptr_free,0,MEM_256B_COL);
 			return OSMemPut(pMemBuf_256B,ptr_free);
 		case MEM_512B_COL: 
+			allMemState.memUsedNum6 --;
 			memset(ptr_free,0,MEM_512B_COL);
 			return OSMemPut(pMemBuf_512B,ptr_free);
 		case MEM_1KB_COL: 
+			allMemState.memUsedNum7 --;
 			memset(ptr_free,0,MEM_1KB_COL);
 			return OSMemPut(pMemBuf_1KB,ptr_free);
 		default :
@@ -180,6 +203,22 @@ uint8_t MemBuf_Init(void)
 	pMemBuf_1KB = OSMemCreate(MemBuf_1KB,MEM_1KB_ROW,MEM_1KB_COL,&err);
 	if(err != OS_ERR_NONE)
 		return err;
+		
+	allMemState.memUsedMax1 = 0;
+	allMemState.memUsedNum1 = 0;
+	allMemState.memUsedMax2 = 0;
+	allMemState.memUsedNum2 = 0;
+	allMemState.memUsedMax3 = 0;
+	allMemState.memUsedNum3 = 0;
+	allMemState.memUsedMax4 = 0;
+	allMemState.memUsedNum4 = 0;
+	allMemState.memUsedMax5 = 0;
+	allMemState.memUsedNum5 = 0;
+	allMemState.memUsedMax6 = 0;
+	allMemState.memUsedNum6 = 0;
+	allMemState.memUsedMax7 = 0;
+	allMemState.memUsedNum7 = 0;
+	
 	return err;
 }
 
