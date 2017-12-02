@@ -14,7 +14,7 @@
 #define GPIO_Pin_KWP_RX		GPIO_Pin_11
 #define GPIO_Pin_KWP_TX		GPIO_Pin_10
 
-
+extern SYS_OperationVar  varOperation;//程序运行过程中的全局变量参数
 
 #define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB,GPIO_Pin_15)
 #define CDMA_POWER_LOW   GPIO_ResetBits(GPIOB,GPIO_Pin_15)
@@ -44,6 +44,7 @@ void CAN1Config(void);     //CAN1 初始化
 void CDMAUart2Init(void);  //CDMA 串口初始化
 void TIM4ConfigInit(void );//定时器3 用来判断CDMA接收超时
 void TIM2ConfigInit(void );//定时器2 用来处理GPRS接收逻辑
+void TIM5ConfigInit(void );//定时器5 用来处理USB接收
 
 void CDMASendByte(uint8_t dat);
 uint8_t CDMASendDatas(const uint8_t* s,uint16_t length);//CDMA 发送字符串

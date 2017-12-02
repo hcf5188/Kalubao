@@ -17,7 +17,7 @@ extern uint16_t freGPSLed;
 
 void GPSTask(void *pdata)
 {
-	static uint32_t sendNum = 0;
+	
 	uint8_t err;
 //	uint8_t i = 0;
 	uint8_t* ptrGPSRece;
@@ -25,21 +25,16 @@ void GPSTask(void *pdata)
 	uint16_t speed;
 	uint32_t timeStamp;//时间戳
 	uint32_t osTime;
-//	uint16_t dataLen = 0;
-//	uint8_t  datBuf[100];
-//	uint8_t  index=1;
+	uint32_t sendNum = 0;
+
 
 	receGPSQ = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);  //建立GPS接收 消息队列
 	GPSStartInit();//初始化配置GPS
 	
 	while(1)
 	{
-		sendNum++;
 		ptrGPSRece = OSQPend(receGPSQ,0,&err);//等待接收到应答
-		
-//		dataLen = ptrGPSRece[0];
-//		dataLen = (dataLen<<8) + ptrGPSRece[1];
-		
+			
 		GPS_Analysis(&gpsMC,&ptrGPSRece[2]);
 		Mem_free(ptrGPSRece);
 		
@@ -75,9 +70,9 @@ void GPSTask(void *pdata)
 			memcpy(&ptrGPSPack[17],&speed,2);
 			memset(&ptrGPSPack[19],0,2);       //todo:当前车速
 			
-			if((varOperation.isDataFlow == 0)&&(sendNum != varOperation.currentTime))     //数据流已经流动起来了  确保1秒发送一次
+			if((varOperation.isDataFlow == 0)&&(sendNum != osTime))     //数据流已经流动起来了  确保1秒发送一次
 			{	
-				sendNum = varOperation.currentTime;
+				sendNum = osTime;
 				
 				OSMutexPend(CDMASendMutex,0,&err);
 			

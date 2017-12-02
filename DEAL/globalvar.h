@@ -37,7 +37,8 @@ __packed typedef struct  //与升级相关的结构体
 	uint8_t  isSoftUpdate;  //程序是否需要升级  1 - 需要升级    0 - 不需要升级
 
 	uint32_t ecuVersion;    //ECU 版本ID
-	uint16_t pidNum;        //PID 指令的个数   配置文件
+	uint16_t pidNum;        //PID 指令的个数  -  配置文件
+	uint16_t pidVarNum;     //需要计算的 ECU 变量的个数
 	
 	uint8_t  busType;       //当前用到的总线（CAN线还是K线）
 	uint8_t  canIdType;     //标准帧还是扩展帧
@@ -52,6 +53,7 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint32_t newSoftVersion;//新的软件版本号   用于OTA升级
 	uint16_t newSoftCRC;    //新程序文件的CRC校验
 	uint16_t frameNum;      //程序帧的数量，一帧128字节
+	uint8_t  USB_NormalMode;//USB升级模式还是正常模式 0-正常模式，1 - USB模式
 	
 	uint8_t  imei[16];      //存储IMEI号
 	uint8_t  iccID[20];     //存储SIM卡的ICCID号
@@ -78,13 +80,30 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint32_t newECUVersion; //保存 登录报文下发的ECU版本
 	uint8_t  newPidNum;     //PID 新的个数 
 	
+	uint16_t pidVarNum;     //需要运算的 ECU 变量的个数
+	
 	uint8_t  busType;       //当前用到的总线（CAN线还是K线）
 	uint8_t  canIdType;     //标准帧还是扩展帧
 	uint32_t canTxId;       //保存CAN发送ID
 	uint32_t canRxId;       //保存CAN接收ID
 	uint8_t  canBaud;       //CAN通讯波特率
+	 
+	uint16_t canTest;       //CAN 测试波特率、ID
+	
+	uint8_t  isUSBSendDat;  //USB是否要发送数据  0 - 不要   1 - 正在发送
 }SYS_OperationVar;
 
+__packed typedef struct//第二个配置文件的结构体
+{
+	uint8_t  pidId;         //对应的PID序号
+	uint8_t  varId;         //变量类型 1-车速 2-转速 3-总喷油量 4-主喷油量 5-预喷油量 6-后喷油量 7-当前喷油量
+	uint8_t  startByte;     //开始字节
+	uint8_t  startBit;      //开始位
+	uint8_t  bitLen;        //总位长度
+	float    ceo;           //系数
+	int      offset;        //偏移量
+
+}VARConfig;
 __packed typedef struct     //内存监控变量
 {
 	uint8_t memUsedNum1;    //内存块1当前正在使用的数量

@@ -4,10 +4,10 @@
 
 /*************************     ´¦Àíº¯ÊıÉùÃ÷          **********************/
 
-static void RecvDatDeal(uint8_t* ptr);
+static void RecvLoginDatDeal(uint8_t* ptr);
 static void SendFrameNum(uint16_t frameNum);
-static void OTA_Updata(void );
-static void ConfigUpdata(void );
+static void OTA_Updata(uint8_t* ptrDeal );
+static void ConfigUpdata(uint8_t* ptrDeal  );
 static void GetConfigInfo(void);
 extern void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength);
 
@@ -24,36 +24,48 @@ extern OS_EVENT *CDMASendQ;      //Í¨¹ıCDMAÏò·şÎñÆ÷·¢ËÍ²É¼¯µ½µÄOBD¡¢GPS¡¢µÇÂ¼±¨Î
 
 extern OS_EVENT *sendMsg;        //Èç¹ûÏµÍ³ÕıÔÚÍ¨¹ıCDMA·¢ËÍÊı¾İ£¬´ËÊ±²»¿ÉÒÔ¶Ï¿ªTCP£¬ÒªµÈ´ı·¢ËÍÍê±Ïºó£¬ÔÙ¶Ï¿ªTCP£¬ÖØĞÂÁ¬½ÓĞÂµÄIP
 
-OS_EVENT * loginSend;
+
 //±¾ÈÎÎñÓÃÀ´ÉÏ·¢µÇÂ¼±¨ÎÄ¡¢´¦ÀíOTAÉı¼¶¡¢ÅäÖÃÎÄ¼şÉı¼¶¡¢Ä£Ê½ÇĞ»»£¨Ç¿¶¯Á¦Ä£Ê½¡¢½ÚÓÍÄ£Ê½µÈ£©
 void CDMARecvTask(void *pdata)
 {
 	uint8_t err;
 	uint8_t* ptrRECV = NULL;
 	uint8_t* ptrDeal = NULL;
-	loginSend = OSSemCreate(0);
+
+	uint16_t cmdId   = 0;
 	
 	ZIPRecv_Q    = OSQCreate(&ZIPRecBuf[0],ZIPRECVBUF_SIZE);//½¨Á¢¡°ZIPRECV¡±´¦ÀíÏûÏ¢¶ÓÁĞ
 	
 	while(1)
 	{
-		OSSemPend(loginSend,0,&err);//µÈ´ı·¢ËÍµÇÂ¼±¨ÎÄ
-		ptrRECV = OSQPend(ZIPRecv_Q,10000,&err);  //µÈ´ı12sºó·şÎñÆ÷ÎŞÏìÓ¦£¬ÔòÍË³ö
+		ptrRECV = OSQPend(ZIPRecv_Q,40000,&err);  //µÈ´ı12sºó·şÎñÆ÷ÎŞÏìÓ¦£¬ÔòÍË³ö
 		if(err == OS_ERR_NONE)
 		{
-			ptrDeal = RecvDataAnalysis(ptrRECV);
-			RecvDatDeal(ptrDeal);
-			varOperation.isLoginDeal = 1;//µÇÂ¼±¨ÎÄ´¦ÀíÍê±Ï
-			varOperation.isDataFlow  = 0;
-		}
-		else
-		{
-			varOperation.isLoginDeal = 1;//Ã»ÓĞµÇÂ¼±¨ÎÄĞèÒª´¦Àí
-			if(varOperation.isEngineRun == ENGINE_STOP)//·¢¶¯»ú×ªËÙÎª0£¬¹Ø±ÕCDMA
+			ptrDeal = RecvDataAnalysis(ptrRECV);  //½«½ÓÊÕµ½µÄÊı¾İ½øĞĞ¼Ó¹¤
+			if(ptrDeal == NULL)                   //½ÓÊÕµ½´íÎóµÄÊı¾İ
+				continue; 
+			
+			cmdId = ptrDeal[3];
+			cmdId = (cmdId<<8) + ptrDeal[4];
+			
+			if(cmdId == 0x5001)                          //½ÓÊÕµ½µÇÂ¼±¨ÎÄ
+				RecvLoginDatDeal(ptrDeal);
+			
+			else if(cmdId == 0x5012)                     //µÚ¶ş²¿·ÖµÄÅäÖÃÎÄ¼ş
+				ConfigUpdata(ptrDeal);
+			else if((cmdId >= 0x4000)&&(cmdId < 0x5000)) //µÚÒ»²¿·ÖµÄÅäÖÃÎÄ¼ş
+				ConfigUpdata(ptrDeal);
+			else if((cmdId >= 0x8000)&&(cmdId < 0x9000)) //³ÌĞòÉı¼¶±¨ÎÄ    
 			{
-//				OSTaskSuspend(CDMA_TASK_PRIO);//todo:ĞèÒªÔÙ¿¼ÂÇÒ»ÏÂ
-//				CDMAPowerOpen_Close(CDMA_CLOSE);
+				OTA_Updata(ptrDeal);
 			}
+			Mem_free(ptrDeal);             //ÊÍ·ÅÄÚ´æ¿é
+			varOperation.isLoginDeal = 1;  //µÇÂ¼±¨ÎÄ´¦ÀíÍê±Ï
+		}
+		else   //µÈ´ı³¬Ê±
+		{
+			varOperation.isDataFlow  = 0;  //´¦Àí·şÎñÆ÷ÏÂ·¢µÄÊı¾İ³¬Ê±£¬¿ªÆôÊı¾İÁ÷
+			varOperation.isLoginDeal = 1;  //Ã»ÓĞµÇÂ¼±¨ÎÄĞèÒª´¦Àí
 		}
 	}
 }
@@ -86,28 +98,44 @@ void LoginDataSend(void)
 		Mem_free(loginData);
 	}
 	varOperation.isLoginDeal = 0;//ÕıÔÚ´¦ÀíµÇÂ¼±¨ÎÄ
-	OSSemPost(loginSend);        //Í¨Öª½ÓÊÕ´¦ÀíÈÎÎñÒÑ¾­·¢ËÍµÇÂ¼±¨ÎÄ£¬µÈ´ı´¦Àí·şÎñÆ÷Êı¾İ¡£
+}
+static void GetConfigInfo(void)
+{
+	_CDMADataToSend* otaUpdatSend;
+	otaUpdatSend = CDMNSendInfoInit(60);//Éı¼¶ÇëÇóÖ¡
+
+	otaUpdatSend->data[otaUpdatSend->datLength++] = 11;   //³¤¶È
+	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x00;
+	//µ±Ç°°æ±¾
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 24) & 0x00FF; 
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 16) & 0x00FF; 
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 8) & 0x00FF;   
+	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.ecuVersion & 0x00FF;
+	
+	//ÇëÇóÉı¼¶µÄ°æ±¾
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
+	
+	CDMASendDataPack(otaUpdatSend);//½«ÇëÇó°ü½øĞĞ·â°ü
+	
+	OSQPost(CDMASendQ,otaUpdatSend);
 }
 
-
-static void RecvDatDeal(uint8_t* ptr)//¶Ô·şÎñÆ÷»Ø¸´µÄµÇÂ¼±¨ÎÄ½øĞĞ½âÎö
+static void RecvLoginDatDeal(uint8_t* ptr)//¶Ô·şÎñÆ÷»Ø¸´µÄµÇÂ¼±¨ÎÄ½øĞĞ½âÎö
 {
 	uint16_t cmdId = 0;
 	uint8_t  ipLen = 0;
 	uint32_t ecuId = 0;
 	uint32_t serverTime  = 0;
 	uint32_t softVersion = 0;
-//	int      isIpEqual   = 0;
 	uint16_t offset = 3;
 	
 	cmdId = ptr[offset++];
 	cmdId = (cmdId<<8) + ptr[offset++];
-	if(cmdId != 0x5001)         //·şÎñÆ÷ÏÂ·¢µÄµÇÂ¼ĞÅÏ¢  todo:ÒÔºó¿ÉÄÜ»áÓĞÄ£Ê½ÇĞ»»µÄÖ÷¶¯ÏÂ·¢µÄÖ¡£¬ÔÚ´Ë´¦ÒªÉÔ¼ÓĞŞ¸Ä
-	{
-		Mem_free(ptr);
-		//todo£º½ÓÊÕ¶ÓÁĞ×ÔÎÒÏûºÄ´¦Àí£¬ÏûºÄ¿ÕÏĞÆÚ¼ä½ÓÊÕµ½µÄ  +ZIPRECV Ò»¸öwhileÑ­»·¾Í¿ÉÒÔÀ²
-		return ;
-	}
+
 	serverTime = ptr[offset++];     //µÃµ½·şÎñÆ÷Ê±¼ä
 	serverTime = (serverTime << 8) + ptr[offset++];
 	serverTime = (serverTime << 8) + ptr[offset++];
@@ -131,24 +159,23 @@ static void RecvDatDeal(uint8_t* ptr)//¶Ô·şÎñÆ÷»Ø¸´µÄµÇÂ¼±¨ÎÄ½øĞĞ½âÎö
 	
 	varOperation.newIP_Potr = ptr[offset + ipLen];      //µÃµ½¶Ë¿ÚºÅ
 	varOperation.newIP_Potr = (varOperation.newIP_Potr << 8) + ptr[offset + ipLen + 1];
-	Mem_free(ptr);//ÓÃÍê¾ÍÊÍ·Å
 	
 	if(softVersion != sysUpdateVar.softVersion) //ÏÈ¿¼ÂÇOTAÉı¼¶
 	{
 		varOperation.newSoftVersion = softVersion;
 		OSSemPend(sendMsg,100,&ipLen);    //µÈ´ı200ms  È·±£CDMAµ±Ç°Ã»ÓĞ·¢ËÍÊı¾İ
-		varOperation.isDataFlow     = 1;   // OTA½øĞĞÉı¼¶ Í£Ö¹Êı¾İÁ÷£¬Ò»ĞÄÖ»ÎªOTAÉı¼¶
-		sysUpdateVar.isSoftUpdate   = 0;  
+		varOperation.isDataFlow     = 1;  // OTA½øĞĞÉı¼¶ Í£Ö¹Êı¾İÁ÷£¬Ò»ĞÄÖ»ÎªOTAÉı¼¶
+		sysUpdateVar.isSoftUpdate   = 1;  
 		
-		OTA_Updata();
+		SendFrameNum(0x8000);             //·¢ËÍ0x8000ÒÔÇëÇó³ÌĞòÎÄ¼ş´óĞ¡ÒÔ¼°CRCĞ£Ñé
 	}
-	if(ecuId != sysUpdateVar.ecuVersion)//ÔÙ¿¼ÂÇÅäÖÃÎÄ¼şÉı¼¶
+	else if(ecuId != sysUpdateVar.ecuVersion && sysUpdateVar.isSoftUpdate ==0)  //ÔÙ¿¼ÂÇÅäÖÃÎÄ¼şÉı¼¶
 	{
 		varOperation.newECUVersion = ecuId;
 		OSSemPend(sendMsg,100,&ipLen);    //µÈ´ı200ms  È·±£CDMAµ±Ç°Ã»ÓĞ·¢ËÍÊı¾İ
 		varOperation.isDataFlow     = 1;  //ÅäÖÃÎÄ¼şÉı¼¶£¬Í£Ö¹Êı¾İÁ÷£¬Ò»ĞÄÖ»ÎªÅäÖÃ
 		
-		ConfigUpdata();
+		GetConfigInfo();                  //ÇëÇóÅäÖÃÎÄ¼ş - ·¢ËÍ0x4000¼°°æ±¾ĞÅÏ¢
 	}
 	
 	//todo:IP¸ü¸Ä£¬ºóÆÚ»áÓĞĞèÒª
@@ -178,141 +205,105 @@ static void SendFrameNum(uint16_t frameNum)
 }
 extern uint8_t configData[2048];//ÓÃÀ´´æ´¢ÅäÖÃPID
 uint8_t updateBuff[2048];       //Éı¼¶ÓÃ
-static void OTA_Updata(void )
+static void OTA_Updata(uint8_t* ptrDeal)
 {
-	uint8_t  err;
-	uint8_t* ptrRECV_Soft;
-	uint8_t* ptrDeal;
 	uint16_t cmdId;
 	uint16_t datLength = 0;
-	uint16_t i = 0,offset = 0;
+	uint16_t i = 0;
 	uint8_t  frameNum;            //´Ë´ÎÒ»¹²½ÓÊÕµ½128×Ö½ÚµÄ°üÊı
-	uint16_t currentNum = 0;      //·¢ËÍÏÂÒ»¸öÇëÇó°ü
-	uint16_t fileCRC    = 0;      //ÎÄ¼şCRCĞ£Ñé
-	uint32_t flashAddr  = 0;      //µØÖ·ĞÅÏ¢£¬Ğ´2K±ã×ÔÔö0x800,ÏòFlashÒ»´ÎĞ´2K×Ö½Ú
-	uint8_t  frameIndex = 0;      //Òª±£´æµÄÖ¡Ë÷Òı
-	uint8_t  frameLen   = 0;      //Ã¿Ò»Ö¡µÄÃ¿Ò»Ğ¡°üµ½µ×ÓĞ¶àÉÙ¸ö×Ö½Ú
+	uint16_t offset;
 	
-	memset(updateBuff,0,2048);    //Çå¿ÕÊı¾İ½ÓÊÕ»º³åÇø
-	SendFrameNum(0x8000);         //·¢ËÍ0x8000ÇëÇóÎÄ¼ş´óĞ¡ÒÔ¼°CRCĞ£Ñé
-	while(1)
+	static uint16_t currentNum = 0;      //·¢ËÍÏÂÒ»¸öÇëÇó°ü
+	static uint16_t fileCRC    = 0;      //ÎÄ¼şCRCĞ£Ñé
+	static uint32_t flashAddr  = 0;      //µØÖ·ĞÅÏ¢£¬Ğ´2K±ã×ÔÔö0x800,ÏòFlashÒ»´ÎĞ´2K×Ö½Ú
+	static uint8_t  frameIndex = 0;      //Òª±£´æµÄÖ¡Ë÷Òı
+	static uint8_t  frameLen   = 0;      //Ã¿Ò»Ö¡µÄÃ¿Ò»Ğ¡°üµ½µ×ÓĞ¶àÉÙ¸ö×Ö½Ú
+	
+	datLength = ptrDeal[0];
+	datLength = (datLength << 8) + ptrDeal[1];
+	
+	cmdId     = ptrDeal[3];
+	cmdId     = (cmdId << 8) + ptrDeal[4];
+	if(cmdId == 0x8000)
 	{
-		ptrRECV_Soft = OSQPend(ZIPRecv_Q,0,&err);//µÈ´ı12S
-		if(err != OS_ERR_NONE)
-		{
-			varOperation.isDataFlow     = 0;
-			return;//µÈ´ı³¬Ê±£¬ÔòÍË³öOTAÉı¼¶
-		}
-		ptrDeal   = RecvDataAnalysis(ptrRECV_Soft);
-		if(ptrDeal == NULL)//±¨ÎÄ½âÎö³ö´í£¬ÕâÖÖÇé¿öºÜ¿ÉÄÜÖ»ÔÚ¿ª·¢µÄÊ±ºò³öÏÖ
-		{
-			varOperation.isDataFlow     = 0;
-			return;//Êı¾İ´íÎó£¬ÔòÍË³öOTAÉı¼¶
-		}
-		datLength = ptrDeal[0];
-		datLength = (datLength << 8) + ptrDeal[1];
+		offset = 5;
+		varOperation.frameNum = ptrDeal[offset++] + 0x80;//µÃµ½ĞÂ³ÌĞòµÄ128×Ö½ÚµÄ°üÊı
+		varOperation.frameNum = (varOperation.frameNum << 8) + ptrDeal[offset++];
+		varOperation.newSoftCRC = ptrDeal[offset++];//µÃµ½ÎÄ¼şĞ£ÑéÂë
+		varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrDeal[offset++];
 		
-		cmdId     = ptrDeal[3];
-		cmdId     = (cmdId << 8) + ptrDeal[4];
-		if(cmdId == 0x8000)
+		currentNum = 0x8001;
+		fileCRC    = 0;
+		flashAddr  = 0;
+		frameIndex = 0;
+		SendFrameNum(currentNum);//·¢ËÍµÚÒ»°ü³ÌĞòÇëÇóÖ¡0x8001
+		memset(configData,0,2048);
+	}
+	else if(cmdId>0x8000)        //³ÌĞò´úÂë
+	{
+		if(cmdId != currentNum)  //½ÓÊÕµ½µÄÖ¡ĞòºÅ£¬ÓëËùÉêÇëµÄÖ¡ĞòºÅ²»Í¬£¬Ôò·ÅÆúÊı¾İ²¢ÖØĞÂÉêÇë
 		{
-			offset = 5;
-			varOperation.frameNum = ptrDeal[offset++] + 0x80;//µÃµ½ĞÂ³ÌĞòµÄ128×Ö½ÚµÄ°üÊı
-			varOperation.frameNum = (varOperation.frameNum << 8) + ptrDeal[offset++];
-			varOperation.newSoftCRC = ptrDeal[offset++];//µÃµ½ÎÄ¼şĞ£ÑéÂë
-			varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrDeal[offset++];
-			currentNum              = 0x8001;
-			SendFrameNum(currentNum);//·¢ËÍµÚÒ»°ü³ÌĞòÇëÇóÖ¡0x8001
+//			SendFrameNum(currentNum);//todo£ºÖØĞÂ½ÓÊÕÊı¾İ£¿
+			return;
 		}
-		else if(cmdId>0x8000)        //³ÌĞò´úÂë
+			
+		
+		frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//µÃµ½´ËÖ¡Êı¾İÒ»¹²ÓĞ¶àÉÙ°ü128×Ö½ÚµÄ³ÌĞò´úÂë
+		
+		offset = 2;
+		for(i=0;i<frameNum;i++)//
 		{
-			if(cmdId != currentNum)  //½ÓÊÕµ½µÄÖ¡ĞòºÅ£¬ÓëËùÉêÇëµÄÖ¡ĞòºÅ²»Í¬£¬Ôò·ÅÆúÊı¾İ²¢ÖØĞÂÉêÇë
+			frameLen = ptrDeal[offset++] - 3;//Êµ¼ÊµÄĞ¡°ü³ÌĞòµÄ×Ö½ÚÊı
+			cmdId    = ptrDeal[offset++];
+			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+			memcpy(&updateBuff[frameIndex*128],&ptrDeal[offset],frameLen);
+			offset += 128;
+			frameIndex ++;
+			if((frameIndex >= 16) && (cmdId != varOperation.frameNum))
 			{
-				SendFrameNum(currentNum);
-				Mem_free(ptrDeal);
-				continue;
+				frameIndex = 0;
+				SoftErasePage(flashAddr);
+				SoftProgramUpdate(flashAddr,updateBuff,2048);
+				//¼ÆËãCRCĞ£Ñé
+				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,2048);
+				memset(updateBuff,0,2048);//Çå¿ÕÊı¾İÇø
+				flashAddr += 0x800;
 			}
-			frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//µÃµ½´ËÖ¡Êı¾İÒ»¹²ÓĞ¶àÉÙ°ü128×Ö½ÚµÄ³ÌĞò´úÂë
-			
-			offset = 2;
-			for(i=0;i<frameNum;i++)//
+			else if(cmdId == varOperation.frameNum)
 			{
-				frameLen = ptrDeal[offset++] - 3;//Êµ¼ÊµÄ
-				cmdId    = ptrDeal[offset++];
-				cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-				memcpy(&updateBuff[frameIndex*128],&ptrDeal[offset],frameLen);
-				offset += 128;
-				frameIndex ++;
-				if((frameIndex>=16) && (cmdId != varOperation.frameNum))
-				{
-					frameIndex = 0;
-					SoftErasePage(flashAddr);
-					SoftProgramUpdate(flashAddr,updateBuff,2048);
-					//¼ÆËãCRCĞ£Ñé
-					fileCRC = CRC_ComputeFile(fileCRC,updateBuff,2048);
-					memset(updateBuff,0,2048);//Çå¿ÕÊı¾İÇø
-					flashAddr += 0x800;
-				}
-				else if(cmdId == varOperation.frameNum)
-				{
-					SoftErasePage(flashAddr);
-					SoftProgramUpdate(flashAddr,updateBuff,((frameIndex - 1)*128 + frameLen));
-					//¼ÆËãCRCĞ£Ñé
-					fileCRC = CRC_ComputeFile(fileCRC,updateBuff,((frameIndex - 1)*128 + frameLen));
-					memset(updateBuff,0,2048);
-					flashAddr += 0x800;
-				}
-			
+				SoftErasePage(flashAddr);
+				SoftProgramUpdate(flashAddr,updateBuff,((frameIndex - 1)*128 + frameLen));
+				//¼ÆËãCRCĞ£Ñé
+				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,((frameIndex - 1)*128 + frameLen));
+				memset(updateBuff,0,2048);
+				flashAddr += 0x800;
 			}
-			if(cmdId == varOperation.frameNum)
-			{
-				if(fileCRC != varOperation.newSoftCRC)
-				{
-					Mem_free(ptrDeal);
-					varOperation.isDataFlow     = 0;
-					break;//CRCĞ£Ñé´íÎó£¬³ÌĞòÉı¼¶Ê§°Ü
-				}
-				Mem_free(ptrDeal);
-				sysUpdateVar.isSoftUpdate = 1;      //¸æËßSboot,³ÌĞòĞèÒªÉı¼¶
-				sysUpdateVar.pageNum      = flashAddr/0x800;
-				sysUpdateVar.softVersion  = varOperation.newSoftVersion;
-				
-				SbootParameterSaveToFlash(&sysUpdateVar);//½«Éı¼¶²ÎÊı±£´æµ½FlashÖĞ
-				
-				__disable_fault_irq();          //ÖØÆô
-				NVIC_SystemReset();
-			}
-			currentNum = cmdId + 1;
-			SendFrameNum(currentNum);//ÇëÇóÏÂÒ»Ö¡Êı¾İ£»
 		}
-		Mem_free(ptrDeal);
+		if(cmdId == varOperation.frameNum)
+		{
+			if(fileCRC != varOperation.newSoftCRC)//CRCĞ£Ñé´íÎó£¬³ÌĞòÉı¼¶Ê§°Ü
+			{
+				Mem_free(ptrDeal);
+				varOperation.isDataFlow     = 0;
+//				SendFrameNum(0x8000);      //todo:ÖØĞÂÉı¼¶£¿
+				return;	
+			}
+			Mem_free(ptrDeal);
+			sysUpdateVar.isSoftUpdate = 1;      //¸æËßSboot,³ÌĞòĞèÒªÉı¼¶
+			sysUpdateVar.pageNum      = flashAddr/0x800;
+			sysUpdateVar.softVersion  = varOperation.newSoftVersion;
+			
+			SbootParameterSaveToFlash(&sysUpdateVar);//½«Éı¼¶²ÎÊı±£´æµ½FlashÖĞ
+			
+			__disable_fault_irq();          //ÖØÆô
+			NVIC_SystemReset();
+		}
+		currentNum = cmdId + 1;
+		SendFrameNum(currentNum);//ÇëÇóÏÂÒ»Ö¡Êı¾İ£»
 	}
 }
 
-static void GetConfigInfo(void)
-{
-	_CDMADataToSend* otaUpdatSend;
-	otaUpdatSend = CDMNSendInfoInit(60);//Éı¼¶ÇëÇóÖ¡
 
-	otaUpdatSend->data[otaUpdatSend->datLength++] = 11;   //³¤¶È
-	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x00;
-	//µ±Ç°°æ±¾
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 24) & 0x00FF; 
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 16) & 0x00FF; 
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 8) & 0x00FF;   
-	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.ecuVersion & 0x00FF;
-	
-	//ÇëÇóÉı¼¶µÄ°æ±¾
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
-	
-	CDMASendDataPack(otaUpdatSend);//½«ÇëÇó°ü½øĞĞ·â°ü
-	
-	OSQPost(CDMASendQ,otaUpdatSend);
-}
 static void SendConfigNum(uint16_t cmd)
 {
 	_CDMADataToSend* otaUpdatSend;
@@ -331,107 +322,103 @@ static void SendConfigNum(uint16_t cmd)
 	
 	OSQPost(CDMASendQ,otaUpdatSend);
 }
-static void ConfigUpdata(void )
+static void ConfigUpdata(uint8_t* ptrDeal )
 {
-	uint8_t  err;
-	uint8_t* ptrRECV_Soft;
-	uint8_t* ptrDeal;
-	uint16_t  frameLen;
-	uint8_t  pidPackNum = 0;//PID ×Ü°üÊı
+	uint8_t  temp;
+	uint16_t frameLen;
 	uint16_t cmdId;
-	uint16_t frameIndex = 0;
-	uint16_t i = 0,offset = 0;
-   uint16_t currentNum = 0x4001; //·¢ËÍÏÂÒ»¸öÅäÖÃÇëÇó°ü
 	
-	memset(updateBuff,0,2048);
-	GetConfigInfo();
-	while(1)
+	uint16_t i = 0,offset = 0;
+    static uint16_t currentNum = 0; //·¢ËÍÏÂÒ»¸öÅäÖÃÇëÇó°ü
+	static uint16_t frameIndex = 0;
+	static uint8_t  pidPackNum = 0;//PID ×Ü°üÊı
+		
+	cmdId     = ptrDeal[3];
+	cmdId     = (cmdId << 8) + ptrDeal[4];
+	if(cmdId == 0x4000)
 	{
-		ptrRECV_Soft = OSQPend(ZIPRecv_Q,0,&err);//µÈ´ı12S   Ò»¸öÊ±ÖÓµÎ´ğÊÇ2ms
-		if(err != OS_ERR_NONE)
-		{
-			//todo:´ÓflashÇøÖĞÖØĞÂ¶ÁÈ¡PID²ÎÊı£¬¿ªÊ¼Êı¾İÁ÷
-			varOperation.isDataFlow     = 0;
-			return;//µÈ´ı³¬Ê±£¬ÔòÍË³öÅäÖÃÎÄ¼şÉı¼¶
+		offset = 5;
+		varOperation.busType   = ptrDeal[offset++];//×ÜÏßÀàĞÍ  CAN×ÜÏß»¹ÊÇKÏß
+		varOperation.canIdType = ptrDeal[offset++];//CAN IDÀàĞÍ£¬À©Õ¹Ö¡»¹ÊÇ±ê×¼Ö¡
+		
+		varOperation.canRxId = ptrDeal[offset++];  //¿¨Â·±¦CAN ½ÓÊÕID
+		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+		
+		varOperation.canTxId = ptrDeal[offset++];  //¿¨Â·±¦CAN ·¢ËÍID
+		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+		
+		varOperation.newPidNum = ptrDeal[offset++];//ĞÂµÄPIDÃüÁî¸öÊı
+		
+		pidPackNum = ptrDeal[offset++];            //Ò»¹²ÓĞÖ¡PID°üÅäÖÃÏî
+		
+		varOperation.canBaud = ptrDeal[offset++];  //CAN²¨ÌØÂÊ£¬Ğ­ÒéÖĞµÄ protocolType
+		
+		currentNum = 0x4001;
+		frameIndex = 0;
+		memset(updateBuff,0,2048);
+		SendConfigNum(currentNum);//·¢ËÍµÚÒ»°ü³ÌĞòÇëÇóÖ¡0x4001
+		
+	}else if(cmdId > 0x4000 && cmdId < 0x5000)
+	{
+		if(cmdId != currentNum)   //½ÓÊÕµ½µÄÖ¡ĞòºÅ£¬ÓëËùÉêÇëµÄÖ¡ĞòºÅ²»Í¬£¬Ôò·ÅÆúÊı¾İ²¢ÖØĞÂÉêÇë
+		{//	SendConfigNum(currentNum);//todo£ºÖØĞÂ·¢ËÍ£¿
+			return;
 		}
-		ptrDeal   = RecvDataAnalysis(ptrRECV_Soft);
-			
-		cmdId     = ptrDeal[3];
-		cmdId     = (cmdId << 8) + ptrDeal[4];
-		if(cmdId == 0x4000)
+		
+		offset = 2;
+		frameLen = ptrDeal[offset++] - 3;
+		cmdId    = ptrDeal[offset++];
+		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
+		frameIndex += frameLen;
+		
+		if((cmdId - pidPackNum) == 0x4000)
 		{
-			offset = 5;
-			varOperation.busType   = ptrDeal[offset++];//×ÜÏßÀàĞÍ  CAN×ÜÏß»¹ÊÇKÏß
-			varOperation.canIdType = ptrDeal[offset++];//CAN IDÀàĞÍ£¬À©Õ¹Ö¡»¹ÊÇ±ê×¼Ö¡
+			//todo:±£´æ²ÎÊı£¬°üÀ¨È«¾Ö±äÁ¿²ÎÊıºÍÅäÖÃ²ÎÊı,Æô¶¯Êı¾İÁ÷
+			sysUpdateVar.ecuVersion = varOperation.newECUVersion;
+			sysUpdateVar.pidNum     = varOperation.newPidNum;
 			
-			varOperation.canRxId = ptrDeal[offset++];  //¿¨Â·±¦CAN ½ÓÊÕID
-			varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
-			varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
-			varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+			sysUpdateVar.busType    = varOperation.busType;//todo:CANÏßºÍKÏßµÄÇĞ»»£¬ºóÆÚ´¦Àí
+			sysUpdateVar.canIdType  = varOperation.canIdType;
+			sysUpdateVar.canTxId    = varOperation.canTxId;
+			sysUpdateVar.canRxId    = varOperation.canRxId;
+			sysUpdateVar.canBaud    = varOperation.canBaud;
 			
-			varOperation.canTxId = ptrDeal[offset++];  //¿¨Â·±¦CAN ·¢ËÍID
-			varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
-			varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
-			varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
-			
-			varOperation.newPidNum = ptrDeal[offset++];//ĞÂµÄPIDÃüÁî¸öÊı
-			
-			pidPackNum = ptrDeal[offset++];            //Ò»¹²ÓĞ¶àÉÙ°üPID
-			
-			varOperation.canBaud = ptrDeal[offset++];  //CAN²¨ÌØÂÊ£¬Ğ­ÒéÖĞµÄ protocolType
-			currentNum = 0x4001;
-			SendConfigNum(currentNum);//·¢ËÍµÚÒ»°ü³ÌĞòÇëÇóÖ¡0x4001
-		}else if(cmdId > 0x4000)
-		{
-			if(cmdId != currentNum)   //½ÓÊÕµ½µÄÖ¡ĞòºÅ£¬ÓëËùÉêÇëµÄÖ¡ĞòºÅ²»Í¬£¬Ôò·ÅÆúÊı¾İ²¢ÖØĞÂÉêÇë
+			for(i = 0;i < frameIndex;i += 13)      //¸ü¸Ä Ö¸Áî·¢ËÍÖÜÆÚ µÄ×Ö½ÚĞò
 			{
-				SendConfigNum(currentNum);
-				Mem_free(ptrDeal);
-				continue;
+				temp             = updateBuff[i];
+				updateBuff[i]   = updateBuff[i+1];
+				updateBuff[i+1] = temp;
 			}
-			
-			offset = 2;
-			frameLen = ptrDeal[offset++] - 3;
-			cmdId    = ptrDeal[offset++];
-			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-			memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
-			frameIndex += frameLen;
-			
-			if((cmdId - pidPackNum) == 0x4000)
-			{
-				//todo:±£´æ²ÎÊı£¬°üÀ¨È«¾Ö±äÁ¿²ÎÊıºÍÅäÖÃ²ÎÊı,Æô¶¯Êı¾İÁ÷
-				sysUpdateVar.ecuVersion = varOperation.newECUVersion;
-				sysUpdateVar.pidNum     = varOperation.newPidNum;
-				
-				sysUpdateVar.busType    = varOperation.busType;//todo:CANÏßºÍKÏßµÄÇĞ»»£¬ºóÆÚ´¦Àí
-				sysUpdateVar.canIdType  = varOperation.canIdType;
-				sysUpdateVar.canTxId    = varOperation.canTxId;
-				sysUpdateVar.canRxId    = varOperation.canRxId;
-				sysUpdateVar.canBaud    = varOperation.canBaud;
-				
-				for(i = 0;i < frameIndex;i += 13)      //¸ü¸Ä Ö¸Áî·¢ËÍÖÜÆÚ µÄ×Ö½ÚĞò
-				{
-					err             = updateBuff[i];
-					updateBuff[i]   = updateBuff[i+1];
-					updateBuff[i+1] = err;
-				}
-				
-				SaveConfigToFlash(updateBuff,2048);
-				SbootParameterSaveToFlash(&sysUpdateVar);
-				
-				Mem_free(ptrDeal);
-				
-				__disable_fault_irq();          //ÖØÆô
-				NVIC_SystemReset();
-				break;
-			}
-			else
-			{
-				currentNum = cmdId + 1;
-				SendConfigNum(currentNum);//ÇëÇóÏÂÒ»°üÊı¾İ
-			}
+			SendConfigNum(0x5012);//ÇëÇóµÚ¶ş¸öÅäÖÃÎÄ¼ş
 		}
-		Mem_free(ptrDeal);
+		else
+		{
+			currentNum = cmdId + 1;
+			SendConfigNum(currentNum);//ÇëÇóÏÂÒ»°üÊı¾İ
+		}
+	}
+	else if(cmdId == 0x5012)
+	{
+		offset = 2;
+		frameLen = ptrDeal[offset++] - 3;
+		
+		sysUpdateVar.pidVarNum = frameLen / 13;   //µÃµ½ÉÏ±¨ ECU ±äÁ¿µÄ¸öÊı
+		
+		cmdId    = ptrDeal[offset++];
+		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
+		frameIndex += frameLen;
+		
+		SaveConfigToFlash(updateBuff,2048);       //½«Êı¾İĞ´ÈëÅäÖÃÎÄ¼şÇø£¬£¨flash:0x0802E000£©
+		SbootParameterSaveToFlash(&sysUpdateVar);//½«ÔËĞĞ²ÎÊıĞ´ÈëÉı¼¶±äÁ¿Çø  £¨flash£º0x08007800£©
+		
+		__disable_fault_irq();                    //ÖØÆô
+		NVIC_SystemReset();
 	}
 }
 

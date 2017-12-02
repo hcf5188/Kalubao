@@ -41,7 +41,6 @@ typedef struct
 {
 	uint32_t canId;        //ECU的CAN ID
 	uint32_t ide;          //CAN通讯，扩展帧或者标准帧
-	uint8_t  testIsOK;     //初始化程序测试CAN通讯是否成功标志   0 - CAN还没测   1 - CAN通  2 - 遍历CAN，仍不通，只支持K线
 	uint8_t  *pdat;        //指针指向要发送的数据块
 }CAN1DataToSend,*ptrCAN1DataToSend;
 
@@ -54,9 +53,11 @@ typedef struct
 }CANInformation;
 
 
-#define NUMOFCAN   4    //测试CAN信息的数量
+#define NUMOfCANBaud       3    //测试CAN波特率的数量
 
+#define NUMOfCANID_STD     5     //CANID标准帧的个数
 
+#define NUMOfCANID_EXT     5     //CANID扩展帧的个数
 
 
 void OBD_CAN_SendData(CAN1DataToSend sendData);//CAN1发送数据

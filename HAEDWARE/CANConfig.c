@@ -32,11 +32,16 @@ void CAN1Config(void)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 	GPIO_PinRemapConfig(GPIO_Remap1_CAN1 , ENABLE);
-	if((varOperation.canBaud == 8) ||(varOperation.canBaud == 9))
-		CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
-	else if((varOperation.canBaud == 6) ||(varOperation.canBaud == 7))
-		CAN1_BaudSet(CANBAUD_500K);           //设置CAN波特率为500K
-	CAN1_SetFilter(varOperation.canRxId,varOperation.canIdType);     //设置滤波器  //潍柴：0x18DAFB10   渣土车：0x18DAFA00
+	
+	
+	CAN1_BaudSet(CANBAUD_250K);        //先设置1M的 CAN 波特率
+	CAN1_ClearFilter();              //清除滤波器
+	
+//	if((varOperation.canBaud == 8) ||(varOperation.canBaud == 9))
+//		CAN1_BaudSet(CANBAUD_250K);           //设置CAN波特率为250K
+//	else if((varOperation.canBaud == 6) ||(varOperation.canBaud == 7))
+//		CAN1_BaudSet(CANBAUD_500K);           //设置CAN波特率为500K
+//	CAN1_SetFilter(varOperation.canRxId,varOperation.canIdType);     //设置滤波器  //潍柴：0x18DAFB10   渣土车：0x18DAFA00
 
 //	CAN1_BaudSet(CANBAUD_500K);           //设置CAN波特率为500K
 //	CAN1_SetFilter(0x7E8,CAN_ID_STD);     //设置滤波器
@@ -51,7 +56,6 @@ void CAN1Config(void)
 void CAN1_BaudSet(CANBAUD_Enum baud)
 {
 	CAN_InitTypeDef         CAN_InitStructure;
-	
 	
 	CAN_InitStructure.CAN_TTCM = DISABLE;
 	CAN_InitStructure.CAN_ABOM = DISABLE;

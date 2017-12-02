@@ -103,7 +103,7 @@ void TIM2_IRQHandler(void)
 				{
 					ptrGPSRece[0] = (receGPSLen>>8)&0xff;
 					ptrGPSRece[1] = receGPSLen&0xff;
-					Store_Getdates(receGPS_S,&ptrGPSRece[2],receGPSLen);
+					Store_Getdates(receGPS_S,ptrGPSRece+2,receGPSLen);
 					if(OSQPost(receGPSQ,ptrGPSRece)!=OS_ERR_NONE)
 						Mem_free(ptrGPSRece);
 				}

@@ -12,6 +12,8 @@
 #define CDMAPOWER_PRIO        7     //CDMA 电源独占管理
 #define CDMA_SEND_PRIO        8     //CDMA 发送互斥信号量优先级
 
+#define USB_TASK_PRIO        9      //USB升级任务
+
 #define START_TASK_PRIO      10     //起始任务优先级
 
 #define CDMA_TASK_PRIO       11     //网络通信GPRS任务优先级
@@ -25,11 +27,12 @@
 #define BEEP_TASK_PRIO       23     //蜂鸣器任务
 
 #define POWER_CONTROL_PRIO   27     //电源管理任务   
+#define CAN_BAUD_PRIO         30     //CAN波特率自诊断任务
 
 
 /************************   任务堆栈大小定义定义   ************************/
 
-
+#define USB_STK_SIZE         128    //USB升级任务堆栈大小
 #define START_STK_SIZE       128    //起始任务堆栈大小
 #define CDMA_STK_SIZE        128    //网络通信CDMA任务堆栈大小
 #define CDMARecv_STK_SIZE    128    //服务器下发数据
@@ -38,6 +41,7 @@
 
 #define LED_STK_SIZE         80     //LED任务堆栈大小
 #define BEEP_STK_SIZE        80
+#define CANBUAD_STK_SIZE     80
 /************************   任务声明            ************************/
 
 

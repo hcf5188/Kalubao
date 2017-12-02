@@ -156,7 +156,7 @@ void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength)
 		if(err != OS_ERR_NONE)        //Ω” ’≥¨ ±
 		{
 			CDMASendDatas(sendDat,sendLength);
-			ptrCDMACfg = OSQPend(CDMARecieveQ,1500,&err);
+			ptrCDMACfg = OSQPend(CDMARecieveQ,500,&err);
 		}
 		else
 		{

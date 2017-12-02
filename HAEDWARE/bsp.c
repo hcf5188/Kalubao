@@ -6,24 +6,44 @@ extern SYS_OperationVar  varOperation;
 //芯片初始化，包括系统时钟、芯片外设、时钟滴答等等
 void SystemBspInit(void )
 {
+	uint8_t bitValue;
 	BspClockInit();
+	SysTickInit();
 	
 	GlobalVarInit();//全局变量初始化
 	
 	GPIO_ALL_IN();  //IO口设置为输入
 	
 	GPIOLEDInit();
+	NVIC_AllConfig();
+	
 	CDMAUart2Init();
 	GPSConfigInit(9600);
-	if(varOperation.ecuVersion != 0x00000000)
-		CAN1Config();
+
 	TIM4ConfigInit();
 	TIM2ConfigInit();
 	RTCConfigureInit();
 	
-	NVIC_AllConfig();
 	
-	SysTickInit();
+	bitValue = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0);
+	if(bitValue == 1)
+	{
+		varOperation.USB_NormalMode = 1;
+		GPIO_SetBits(GPIOA,GPIO_Pin_15);//使能USB接口
+	}else
+	{
+		varOperation.USB_NormalMode = 0;				
+	}
+//	CDMAUart2Init();
+//	GPSConfigInit(9600);
+//	
+//	TIM4ConfigInit();
+//	TIM2ConfigInit();
+//	RTCConfigureInit();
+	
+	
+	
+	
 }
 //系统时钟滴答初始化
 void SysTickInit(void)
@@ -95,6 +115,17 @@ void GPIOLEDInit(void)
     
 	GPIO_ResetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);		     //复位，双灯亮
 	
+	//USB EN
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+  	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	GPIO_ResetBits(GPIOA,GPIO_Pin_15);
+	//USB STATUS
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
 }
 void ADC1Init(void)
 {
@@ -250,6 +281,22 @@ void TIM4ConfigInit(void )
 	TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE );       //使能指定的TIM4中断,允许更新中断	
 //	TIM_Cmd(TIM4, ENABLE);  //使能TIMx		
 }
+void TIM5ConfigInit(void )
+{
+	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE); //时钟使能
+	
+	//定时器TIM5初始化
+	TIM_TimeBaseStructure.TIM_Period = 10;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
+	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+	TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
+ 
+	TIM_ITConfig(TIM5,TIM_IT_Update,ENABLE );       //使能指定的TIM4中断,允许更新中断	
+//	TIM_Cmd(TIM5, ENABLE);  //使能TIMx		
+}
 void RTCConfigureInit(void)
 {
 	EXTI_InitTypeDef EXTI_InitStructure;  
@@ -371,6 +418,12 @@ void NVIC_AllConfig(void )
 	
 	//定时器2 辅助GPS接收 中断初始化
 	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn; //TIM2中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
+	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+	//定时器5 辅助USB接收 中断初始化
+	NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn; //TIM2中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能

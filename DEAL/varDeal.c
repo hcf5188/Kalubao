@@ -66,20 +66,17 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	ptr->data[ptr->datLength++] = 0x7E;
 }
 
+extern _SystemInformation sysUpdateVar;  //系统全局变量信息
 
-extern _SystemInformation sysUpdateVar;   //系统全局变量信息
+const uint8_t ipAddr[] ="116.62.195.99"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
+#define IP_Port          9527            //端口号
 
-const uint8_t ipAddr[] ="116.228.88.101"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
-#define IP_Port          29999            //端口号
-
-_OBD_PID_Cmd *ptrPIDAllDat;    //指向
+_OBD_PID_Cmd *ptrPIDAllDat;    //指向第一配置区
+VARConfig    *ptrPIDVars;      //指向第二配置区
 
 uint8_t configData[2048] = {0};//用来存储配置PID
-
-
-
 void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
-{           
+{    
 	//从Flash中载入数据进全局变量
 	Flash_ReadDat(SBOOT_UPGREAD_ADDR,(uint8_t *)&sysUpdateVar,sizeof(_SystemInformation));
 	//从Flash中读取PID参数
@@ -99,6 +96,9 @@ void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要
 	varOperation.canRxId    = sysUpdateVar.canRxId;
 	varOperation.canBaud    = sysUpdateVar.canBaud;
 	
+	varOperation.pidVarNum  = sysUpdateVar.pidVarNum;
+	
+	ptrPIDVars              = (VARConfig*)&configData[varOperation.pidNum * 13];//得到第二配置文件的地址
 	
 	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
 	memset(varOperation.ipAddr,0,18);
@@ -148,7 +148,7 @@ extern uint16_t freCDMALed;//黄
 extern uint16_t freGPSLed; //绿
 
 extern OS_EVENT *sendMsg;
-void RevolvingSpeedDeal(void)//发动机转速处理
+void RevolvingSpeedDeal(void)//todo:发动机转速处理
 {
 	static uint8_t openClose = 0;
 	static uint8_t loginFlag = 0;
@@ -167,9 +167,9 @@ void RevolvingSpeedDeal(void)//发动机转速处理
 		{
 			openClose = 1;
 			//todo:打开CDMA电源、GPS电源、数据流动标志、三个小灯
-			freOBDLed = 100;
+			freOBDLed  = 100;
 			freCDMALed = 100;
-			freGPSLed = 100;
+			freGPSLed  = 100;
 			OSTaskResume(CDMA_LED_PRIO);
 			OSTaskResume(GPS_LED_PRIO);
 			OSTaskResume(OBD_LED_PRIO);
@@ -178,9 +178,7 @@ void RevolvingSpeedDeal(void)//发动机转速处理
 			CDMAConfigInit();              //初始化CDMA
 			OSTaskResume(CDMA_TASK_PRIO);  //回复CDMA发送任务
 			
-			
 			GPS_POWER_ON;  //打开
-			
 		}
 	}
 	else if(varOperation.isEngineRun == ENGINE_STOP)//发动机已停止运行
@@ -217,7 +215,6 @@ void RevolvingSpeedDeal(void)//发动机转速处理
 			
 			//关闭LED灯光提示  发送蜂鸣器关机提示音  
 		}
-		
 	}
 }
 
