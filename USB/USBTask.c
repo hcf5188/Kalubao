@@ -7,23 +7,10 @@
 #include "usb_pwr.h"
 
 
-#define USBRECBUF_SIZE  10         //接收消息队列保存消息的最大量
-void *usbRecBuf[USBRECBUF_SIZE];  //用于存放指向邮箱的指针
-OS_EVENT *USBRecieveQ;             //指向CDMA接收消息队列的指针
-
-#define USBSENDBUF_SIZE  5         //发送消息队列保存消息的最大量
-void *usbSendBuf[USBSENDBUF_SIZE];//用于存放指向邮箱的指针
-OS_EVENT *USBSendQ;  
-
-extern SYS_OperationVar  varOperation;
-
-extern uint8_t updateBuff[2048];       //升级用
 pCIR_QUEUE sendUSB_Q;     //指向 USB 串口发送队列  的指针  
 pSTORE     receUSB_S;     //指向 USB 串口接收数据堆的指针
-
-
+extern uint8_t updateBuff[2048];       //升级用
 uint8_t upda[3][3]={{0x00,0xAA,0xBB},{0x01,0x00,0x00},{0x02,0x4F,0x4B}};
-extern _SystemInformation sysUpdateVar;
 
 //USB 升级任务
 void USBUpdataTask (void *pdata)
@@ -43,9 +30,6 @@ void USBUpdataTask (void *pdata)
 	
 	sendUSB_Q = Cir_Queue_Init(500);//USB 串口发送 循环队列 缓冲区
 	receUSB_S = Store_Init(500);    //USB 串口接收 数据堆   缓冲区
-
-	USBRecieveQ = OSQCreate(&usbRecBuf[0],USBRECBUF_SIZE);  //建立USB接收 消息队列
-	USBSendQ    = OSQCreate(&usbSendBuf[0],USBSENDBUF_SIZE);//建立USB发送 消息队列
 	
 	varOperation.isUSBSendDat = 0;
 	
@@ -131,7 +115,7 @@ void USBUpdataTask (void *pdata)
 		
 		ptrReceD = OSQPend(USBRecieveQ,500,&err);
 		Mem_free(ptrReceD);
-		while(1)
+		while(1)           //升级成功
 		{
 			OSTimeDlyHMSM(0,0,2,0);
 		}

@@ -1322,51 +1322,52 @@
 ;;;878    
 ;;;879    
 ;;;880        OS_MemClr((INT8U *)&OSQTbl[0], sizeof(OSQTbl));  /* Clear the queue table                          */
-000004  21f0              MOVS     r1,#0xf0
-000006  4810              LDR      r0,|L11.72|
-000008  f7fffffe          BL       OS_MemClr
+000004  f44f7190          MOV      r1,#0x120
+000008  4810              LDR      r0,|L11.76|
+00000a  f7fffffe          BL       OS_MemClr
 ;;;881        for (ix = 0u; ix < (OS_MAX_QS - 1u); ix++) {     /* Init. list of free QUEUE control blocks        */
-00000c  2400              MOVS     r4,#0
-00000e  e00d              B        |L11.44|
-                  |L11.16|
+00000e  2400              MOVS     r4,#0
+000010  e00d              B        |L11.46|
+                  |L11.18|
 ;;;882            ix_next = ix + 1u;
-000010  1c60              ADDS     r0,r4,#1
-000012  b286              UXTH     r6,r0
+000012  1c60              ADDS     r0,r4,#1
+000014  b286              UXTH     r6,r0
 ;;;883            pq1 = &OSQTbl[ix];
-000014  eb040044          ADD      r0,r4,r4,LSL #1
-000018  490b              LDR      r1,|L11.72|
-00001a  eb0105c0          ADD      r5,r1,r0,LSL #3
+000016  eb040044          ADD      r0,r4,r4,LSL #1
+00001a  490c              LDR      r1,|L11.76|
+00001c  eb0105c0          ADD      r5,r1,r0,LSL #3
 ;;;884            pq2 = &OSQTbl[ix_next];
-00001e  eb060046          ADD      r0,r6,r6,LSL #1
-000022  eb0107c0          ADD      r7,r1,r0,LSL #3
+000020  eb060046          ADD      r0,r6,r6,LSL #1
+000024  eb0107c0          ADD      r7,r1,r0,LSL #3
 ;;;885            pq1->OSQPtr = pq2;
-000026  602f              STR      r7,[r5,#0]
-000028  1c60              ADDS     r0,r4,#1              ;881
-00002a  b284              UXTH     r4,r0                 ;881
-                  |L11.44|
-00002c  2c09              CMP      r4,#9                 ;881
-00002e  d3ef              BCC      |L11.16|
+000028  602f              STR      r7,[r5,#0]
+00002a  1c60              ADDS     r0,r4,#1              ;881
+00002c  b284              UXTH     r4,r0                 ;881
+                  |L11.46|
+00002e  2c0b              CMP      r4,#0xb               ;881
+000030  d3ef              BCC      |L11.18|
 ;;;886        }
 ;;;887        pq1         = &OSQTbl[ix];
-000030  eb040044          ADD      r0,r4,r4,LSL #1
-000034  4904              LDR      r1,|L11.72|
-000036  eb0105c0          ADD      r5,r1,r0,LSL #3
+000032  eb040044          ADD      r0,r4,r4,LSL #1
+000036  4905              LDR      r1,|L11.76|
+000038  eb0105c0          ADD      r5,r1,r0,LSL #3
 ;;;888        pq1->OSQPtr = (OS_Q *)0;
-00003a  2000              MOVS     r0,#0
-00003c  6028              STR      r0,[r5,#0]
+00003c  2000              MOVS     r0,#0
+00003e  6028              STR      r0,[r5,#0]
 ;;;889        OSQFreeList = &OSQTbl[0];
-00003e  4608              MOV      r0,r1
-000040  4902              LDR      r1,|L11.76|
-000042  6008              STR      r0,[r1,#0]  ; OSQFreeList
+000040  4608              MOV      r0,r1
+000042  4903              LDR      r1,|L11.80|
+000044  6008              STR      r0,[r1,#0]  ; OSQFreeList
 ;;;890    #endif
 ;;;891    }
-000044  e8bd81f0          POP      {r4-r8,pc}
+000046  e8bd81f0          POP      {r4-r8,pc}
 ;;;892    #endif                                               /* OS_Q_EN                                        */
                           ENDP
 
-                  |L11.72|
-                          DCD      OSQTbl
+00004a  0000              DCW      0x0000
                   |L11.76|
+                          DCD      OSQTbl
+                  |L11.80|
                           DCD      OSQFreeList
 
 ;*** Start embedded assembler ***

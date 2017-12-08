@@ -1,16 +1,8 @@
 #include "apptask.h"
 #include "gps.h"
 
-OS_EVENT* receGPSQ;              //接收GPS信息的消息队列
-#define GPSRECBUF_SIZE  10       //接收GPS消息队列保存消息的最大量
-void *gpsRecBuf[GPSRECBUF_SIZE]; //用于存放指向邮箱的指针
-
-
-extern SYS_OperationVar  varOperation;    //程序正常运行的全局变量参数
-
-
 nmea_msg gpsMC; 	     //GPS信息
-extern OS_EVENT * CDMASendMutex;       //互斥型信号量，用来独占处理 发向服务器的消息
+
 extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
 extern uint16_t freGPSLed;
 /************************      GPS任务    ***********************/
@@ -28,7 +20,7 @@ void GPSTask(void *pdata)
 	uint32_t sendNum = 0;
 
 
-	receGPSQ = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);  //建立GPS接收 消息队列
+	
 	GPSStartInit();//初始化配置GPS
 	
 	while(1)
@@ -88,7 +80,7 @@ void GPSTask(void *pdata)
 		timeStamp = varOperation.currentTime > osTime? (varOperation.currentTime - osTime):(osTime - varOperation.currentTime);
 		if(timeStamp > 300)//时间相差5分钟后，校时（以GPS时间为准）
 			RTC_Time_Adjust(varOperation.currentTime);
-		freGPSLed = 300;          //LED  指示，GPS定位正常
+		freGPSLed = 500;          //LED  指示，GPS定位正常
 	}
 }
 
@@ -122,7 +114,7 @@ uint32_t TimeCompare(uint32_t TYY,uint32_t TMO,uint32_t TDD,
 void GPSStartInit(void )
 {
 	u8 key=0XFF;
-	OSTimeDlyHMSM(0,0,8,0);          
+//	OSTimeDlyHMSM(0,0,8,0);          
 	if(Ublox_Cfg_Rate(1000,1)!=0)          //1s采集一次 MC数据
 	{
 		while((Ublox_Cfg_Rate(1000,1)!=0)&&key)	//持续判断,直到可以检查到NEO-6M,且数据保存成功

@@ -14,7 +14,9 @@
 #define GPIO_Pin_KWP_RX		GPIO_Pin_11
 #define GPIO_Pin_KWP_TX		GPIO_Pin_10
 
-extern SYS_OperationVar  varOperation;//程序运行过程中的全局变量参数
+extern SYS_OperationVar   varOperation; //程序运行过程中的全局变量参数
+extern _SystemInformation sysUpdateVar; //用来保存升级用
+extern CARRunRecord       carRunRecord; //汽车运行过程中，几乎全部信息
 
 #define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB,GPIO_Pin_15)
 #define CDMA_POWER_LOW   GPIO_ResetBits(GPIOB,GPIO_Pin_15)
@@ -50,10 +52,6 @@ void CDMASendByte(uint8_t dat);
 uint8_t CDMASendDatas(const uint8_t* s,uint16_t length);//CDMA 发送字符串
 uint8_t GPSSendDatas(const uint8_t* s,uint8_t length);  //GPS  发送字符串
 
-
-
 #endif
-
-
 
 

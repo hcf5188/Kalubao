@@ -5,532 +5,512 @@
                           AREA ||i.CDMARecvTask||, CODE, READONLY, ALIGN=2
 
                   CDMARecvTask PROC
-;;;28     //本任务用来上发登录报文、处理OTA升级、配置文件升级、模式切换（强动力模式、节油模式等）
-;;;29     void CDMARecvTask(void *pdata)
+;;;15     //本任务用来上发登录报文、处理OTA升级、配置文件升级、模式切换（强动力模式、节油模式等）
+;;;16     void CDMARecvTask(void *pdata)
 000000  b508              PUSH     {r3,lr}
-;;;30     {
-;;;31     	uint8_t err;
-;;;32     	uint8_t* ptrRECV = NULL;
+;;;17     {
+;;;18     	uint8_t  err;
+;;;19     	uint16_t cmdId;
+;;;20     	uint8_t* ptrRECV = NULL;
 000002  2600              MOVS     r6,#0
-;;;33     	uint8_t* ptrDeal = NULL;
+;;;21     	uint8_t* ptrDeal = NULL;
 000004  2500              MOVS     r5,#0
-;;;34     
-;;;35     	uint16_t cmdId   = 0;
-000006  2400              MOVS     r4,#0
-;;;36     	
-;;;37     	ZIPRecv_Q    = OSQCreate(&ZIPRecBuf[0],ZIPRECVBUF_SIZE);//建立“ZIPRECV”处理消息队列
-000008  2105              MOVS     r1,#5
-00000a  4828              LDR      r0,|L1.172|
-00000c  f7fffffe          BL       OSQCreate
-000010  4927              LDR      r1,|L1.176|
-000012  6008              STR      r0,[r1,#0]  ; ZIPRecv_Q
-;;;38     	
-;;;39     	while(1)
-000014  e049              B        |L1.170|
-                  |L1.22|
-;;;40     	{
-;;;41     		ptrRECV = OSQPend(ZIPRecv_Q,40000,&err);  //等待12s后服务器无响应，则退出
-000016  466a              MOV      r2,sp
-000018  f6494140          MOV      r1,#0x9c40
-00001c  4824              LDR      r0,|L1.176|
-00001e  6800              LDR      r0,[r0,#0]  ; ZIPRecv_Q
-000020  f7fffffe          BL       OSQPend
-000024  4606              MOV      r6,r0
-;;;42     		if(err == OS_ERR_NONE)
-000026  f89d0000          LDRB     r0,[sp,#0]
-00002a  bba8              CBNZ     r0,|L1.152|
-;;;43     		{
-;;;44     			ptrDeal = RecvDataAnalysis(ptrRECV);  //将接收到的数据进行加工
-00002c  4630              MOV      r0,r6
-00002e  f7fffffe          BL       RecvDataAnalysis
-000032  4605              MOV      r5,r0
-;;;45     			if(ptrDeal == NULL)                   //接收到错误的数据
-000034  b905              CBNZ     r5,|L1.56|
-;;;46     				continue; 
-000036  e038              B        |L1.170|
-                  |L1.56|
-;;;47     			
-;;;48     			cmdId = ptrDeal[3];
-000038  78ec              LDRB     r4,[r5,#3]
-;;;49     			cmdId = (cmdId<<8) + ptrDeal[4];
-00003a  7928              LDRB     r0,[r5,#4]
-00003c  eb002004          ADD      r0,r0,r4,LSL #8
-000040  b284              UXTH     r4,r0
-;;;50     			
-;;;51     			if(cmdId == 0x5001)                          //接收到登录报文
-000042  f2450001          MOV      r0,#0x5001
-000046  4284              CMP      r4,r0
-000048  d103              BNE      |L1.82|
-;;;52     				RecvLoginDatDeal(ptrDeal);
-00004a  4628              MOV      r0,r5
-00004c  f7fffffe          BL       RecvLoginDatDeal
-000050  e01a              B        |L1.136|
-                  |L1.82|
-;;;53     			
-;;;54     			else if(cmdId == 0x5012)                     //第二部分的配置文件
-000052  f2450012          MOV      r0,#0x5012
-000056  4284              CMP      r4,r0
-000058  d103              BNE      |L1.98|
-;;;55     				ConfigUpdata(ptrDeal);
-00005a  4628              MOV      r0,r5
-00005c  f7fffffe          BL       ConfigUpdata
-000060  e012              B        |L1.136|
-                  |L1.98|
-;;;56     			else if((cmdId >= 0x4000)&&(cmdId < 0x5000)) //第一部分的配置文件
-000062  f5b44f80          CMP      r4,#0x4000
-000066  db06              BLT      |L1.118|
-000068  f5b44fa0          CMP      r4,#0x5000
-00006c  da03              BGE      |L1.118|
-;;;57     				ConfigUpdata(ptrDeal);
-00006e  4628              MOV      r0,r5
-000070  f7fffffe          BL       ConfigUpdata
-000074  e008              B        |L1.136|
-                  |L1.118|
-;;;58     			else if((cmdId >= 0x8000)&&(cmdId < 0x9000)) //程序升级报文    
-000076  f5b44f00          CMP      r4,#0x8000
-00007a  db05              BLT      |L1.136|
-00007c  f5b44f10          CMP      r4,#0x9000
-000080  da02              BGE      |L1.136|
-;;;59     			{
-;;;60     				OTA_Updata(ptrDeal);
-000082  4628              MOV      r0,r5
-000084  f7fffffe          BL       OTA_Updata
-                  |L1.136|
-;;;61     			}
-;;;62     			Mem_free(ptrDeal);             //释放内存块
-000088  4628              MOV      r0,r5
-00008a  f7fffffe          BL       Mem_free
-;;;63     			varOperation.isLoginDeal = 1;  //登录报文处理完毕
-00008e  2001              MOVS     r0,#1
-000090  4908              LDR      r1,|L1.180|
-000092  f8810030          STRB     r0,[r1,#0x30]
-000096  e007              B        |L1.168|
-                  |L1.152|
-000098  e7ff              B        |L1.154|
-                  |L1.154|
-;;;64     		}
-;;;65     		else   //等待超时
-;;;66     		{
-;;;67     			varOperation.isDataFlow  = 0;  //处理服务器下发的数据超时，开启数据流
-00009a  2000              MOVS     r0,#0
-00009c  4905              LDR      r1,|L1.180|
-00009e  f881002d          STRB     r0,[r1,#0x2d]
-;;;68     			varOperation.isLoginDeal = 1;  //没有登录报文需要处理
-0000a2  2001              MOVS     r0,#1
-0000a4  f8810030          STRB     r0,[r1,#0x30]
-                  |L1.168|
-0000a8  bf00              NOP                            ;46
-                  |L1.170|
-0000aa  e7b4              B        |L1.22|
-;;;69     		}
-;;;70     	}
-;;;71     }
-;;;72     //登录报文
+;;;22     	
+;;;23     	while(1)
+000006  e046              B        |L1.150|
+                  |L1.8|
+;;;24     	{
+;;;25     		ptrRECV = OSQPend(ZIPRecv_Q,30000,&err);  //等待60s后服务器无响应，则退出
+000008  466a              MOV      r2,sp
+00000a  f2475130          MOV      r1,#0x7530
+00000e  4822              LDR      r0,|L1.152|
+000010  6800              LDR      r0,[r0,#0]  ; ZIPRecv_Q
+000012  f7fffffe          BL       OSQPend
+000016  4606              MOV      r6,r0
+;;;26     		if(err == OS_ERR_NONE)
+000018  f89d0000          LDRB     r0,[sp,#0]
+00001c  bba8              CBNZ     r0,|L1.138|
+;;;27     		{
+;;;28     			ptrDeal = RecvDataAnalysis(ptrRECV);  //将接收到的数据进行加工
+00001e  4630              MOV      r0,r6
+000020  f7fffffe          BL       RecvDataAnalysis
+000024  4605              MOV      r5,r0
+;;;29     			if(ptrDeal == NULL)                   //接收到错误的数据
+000026  b905              CBNZ     r5,|L1.42|
+;;;30     				continue; 
+000028  e035              B        |L1.150|
+                  |L1.42|
+;;;31     			
+;;;32     			cmdId = ptrDeal[3];
+00002a  78ec              LDRB     r4,[r5,#3]
+;;;33     			cmdId = (cmdId<<8) + ptrDeal[4];
+00002c  7928              LDRB     r0,[r5,#4]
+00002e  eb002004          ADD      r0,r0,r4,LSL #8
+000032  b284              UXTH     r4,r0
+;;;34     			
+;;;35     			if(cmdId == 0x5001)                          //接收到登录报文
+000034  f2450001          MOV      r0,#0x5001
+000038  4284              CMP      r4,r0
+00003a  d103              BNE      |L1.68|
+;;;36     				RecvLoginDatDeal(ptrDeal);
+00003c  4628              MOV      r0,r5
+00003e  f7fffffe          BL       RecvLoginDatDeal
+000042  e01a              B        |L1.122|
+                  |L1.68|
+;;;37     			else if(cmdId == 0x5012)                     //第二部分的配置文件
+000044  f2450012          MOV      r0,#0x5012
+000048  4284              CMP      r4,r0
+00004a  d103              BNE      |L1.84|
+;;;38     				ConfigUpdata(ptrDeal);
+00004c  4628              MOV      r0,r5
+00004e  f7fffffe          BL       ConfigUpdata
+000052  e012              B        |L1.122|
+                  |L1.84|
+;;;39     			else if((cmdId >= 0x4000)&&(cmdId < 0x5000)) //第一部分的配置文件
+000054  f5b44f80          CMP      r4,#0x4000
+000058  db06              BLT      |L1.104|
+00005a  f5b44fa0          CMP      r4,#0x5000
+00005e  da03              BGE      |L1.104|
+;;;40     				ConfigUpdata(ptrDeal);
+000060  4628              MOV      r0,r5
+000062  f7fffffe          BL       ConfigUpdata
+000066  e008              B        |L1.122|
+                  |L1.104|
+;;;41     			else if((cmdId >= 0x8000)&&(cmdId < 0x9000)) //程序升级报文    
+000068  f5b44f00          CMP      r4,#0x8000
+00006c  db05              BLT      |L1.122|
+00006e  f5b44f10          CMP      r4,#0x9000
+000072  da02              BGE      |L1.122|
+;;;42     			{
+;;;43     				OTA_Updata(ptrDeal);
+000074  4628              MOV      r0,r5
+000076  f7fffffe          BL       OTA_Updata
+                  |L1.122|
+;;;44     			}
+;;;45     			Mem_free(ptrDeal);             //释放内存块
+00007a  4628              MOV      r0,r5
+00007c  f7fffffe          BL       Mem_free
+;;;46     			varOperation.isLoginDeal = 1;  //登录报文处理完毕
+000080  2001              MOVS     r0,#1
+000082  4906              LDR      r1,|L1.156|
+000084  f8810030          STRB     r0,[r1,#0x30]
+000088  e004              B        |L1.148|
+                  |L1.138|
+00008a  e7ff              B        |L1.140|
+                  |L1.140|
+;;;47     		}
+;;;48     		else   //等待超时
+;;;49     		{
+;;;50     			varOperation.isLoginDeal = 1; 
+00008c  2001              MOVS     r0,#1
+00008e  4903              LDR      r1,|L1.156|
+000090  f8810030          STRB     r0,[r1,#0x30]
+                  |L1.148|
+000094  bf00              NOP                            ;30
+                  |L1.150|
+000096  e7b7              B        |L1.8|
+;;;51     		}
+;;;52     	}
+;;;53     }
+;;;54     //登录报文
                           ENDP
 
-                  |L1.172|
-                          DCD      ZIPRecBuf
-                  |L1.176|
+                  |L1.152|
                           DCD      ZIPRecv_Q
-                  |L1.180|
+                  |L1.156|
                           DCD      varOperation
 
                           AREA ||i.ConfigUpdata||, CODE, READONLY, ALIGN=2
 
                   ConfigUpdata PROC
-;;;324    }
-;;;325    static void ConfigUpdata(uint8_t* ptrDeal )
+;;;314    }
+;;;315    static void ConfigUpdata(uint8_t* ptrDeal )
 000000  e92d47f0          PUSH     {r4-r10,lr}
-;;;326    {
+;;;316    {
 000004  4604              MOV      r4,r0
-;;;327    	uint8_t  temp;
-;;;328    	uint16_t frameLen;
-;;;329    	uint16_t cmdId;
-;;;330    	
-;;;331    	uint16_t i = 0,offset = 0;
+;;;317    	uint8_t  temp;
+;;;318    	uint16_t frameLen;
+;;;319    	uint16_t cmdId;
+;;;320    	
+;;;321    	uint16_t i = 0,offset = 0;
 000006  f04f0800          MOV      r8,#0
 00000a  2500              MOVS     r5,#0
-;;;332        static uint16_t currentNum = 0; //发送下一个配置请求包
-;;;333    	static uint16_t frameIndex = 0;
-;;;334    	static uint8_t  pidPackNum = 0;//PID 总包数
-;;;335    		
-;;;336    	cmdId     = ptrDeal[3];
+;;;322        static uint16_t currentNum = 0; //发送下一个配置请求包
+;;;323    	static uint16_t frameIndex = 0;
+;;;324    	static uint8_t  pidPackNum = 0;//PID 总包数
+;;;325    		
+;;;326    	cmdId     = ptrDeal[3];
 00000c  78e6              LDRB     r6,[r4,#3]
-;;;337    	cmdId     = (cmdId << 8) + ptrDeal[4];
+;;;327    	cmdId     = (cmdId << 8) + ptrDeal[4];
 00000e  7920              LDRB     r0,[r4,#4]
 000010  eb002006          ADD      r0,r0,r6,LSL #8
 000014  b286              UXTH     r6,r0
-;;;338    	if(cmdId == 0x4000)
+;;;328    	if(cmdId == 0x4000)
 000016  f5b64f80          CMP      r6,#0x4000
-00001a  d17d              BNE      |L2.280|
-;;;339    	{
-;;;340    		offset = 5;
+00001a  d177              BNE      |L2.268|
+;;;329    	{
+;;;330    		offset = 5;
 00001c  2505              MOVS     r5,#5
-;;;341    		varOperation.busType   = ptrDeal[offset++];//总线类型  CAN总线还是K线
+;;;331    		varOperation.busType   = ptrDeal[offset++];//总线类型  CAN总线还是K线
 00001e  4629              MOV      r1,r5
 000020  1c6d              ADDS     r5,r5,#1
 000022  5c60              LDRB     r0,[r4,r1]
-000024  498c              LDR      r1,|L2.600|
+000024  4989              LDR      r1,|L2.588|
 000026  f8810071          STRB     r0,[r1,#0x71]
-;;;342    		varOperation.canIdType = ptrDeal[offset++];//CAN ID类型，扩展帧还是标准帧
+;;;332    		varOperation.canIdType = ptrDeal[offset++];//CAN ID类型，扩展帧还是标准帧
 00002a  4629              MOV      r1,r5
 00002c  1c6d              ADDS     r5,r5,#1
 00002e  5c60              LDRB     r0,[r4,r1]
-000030  4989              LDR      r1,|L2.600|
+000030  4986              LDR      r1,|L2.588|
 000032  f8810072          STRB     r0,[r1,#0x72]
-;;;343    		
-;;;344    		varOperation.canRxId = ptrDeal[offset++];  //卡路宝CAN 接收ID
+;;;333    		
+;;;334    		varOperation.canRxId = ptrDeal[offset++];  //卡路宝CAN 接收ID
 000036  4629              MOV      r1,r5
 000038  1c6d              ADDS     r5,r5,#1
 00003a  5c60              LDRB     r0,[r4,r1]
-00003c  4986              LDR      r1,|L2.600|
+00003c  4983              LDR      r1,|L2.588|
 00003e  f8c10077          STR      r0,[r1,#0x77]  ; varOperation
-;;;345    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+;;;335    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
 000042  4629              MOV      r1,r5
 000044  1c6d              ADDS     r5,r5,#1
 000046  5c60              LDRB     r0,[r4,r1]
-000048  4983              LDR      r1,|L2.600|
+000048  4980              LDR      r1,|L2.588|
 00004a  f8d11077          LDR      r1,[r1,#0x77]  ; varOperation
 00004e  eb002001          ADD      r0,r0,r1,LSL #8
-000052  4981              LDR      r1,|L2.600|
+000052  497e              LDR      r1,|L2.588|
 000054  f8c10077          STR      r0,[r1,#0x77]  ; varOperation
-;;;346    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+;;;336    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
 000058  4629              MOV      r1,r5
 00005a  1c6d              ADDS     r5,r5,#1
 00005c  5c60              LDRB     r0,[r4,r1]
-00005e  497e              LDR      r1,|L2.600|
+00005e  497b              LDR      r1,|L2.588|
 000060  f8d11077          LDR      r1,[r1,#0x77]  ; varOperation
 000064  eb002001          ADD      r0,r0,r1,LSL #8
-000068  497b              LDR      r1,|L2.600|
+000068  4978              LDR      r1,|L2.588|
 00006a  f8c10077          STR      r0,[r1,#0x77]  ; varOperation
-;;;347    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+;;;337    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
 00006e  4629              MOV      r1,r5
 000070  1c6d              ADDS     r5,r5,#1
 000072  5c60              LDRB     r0,[r4,r1]
-000074  4978              LDR      r1,|L2.600|
+000074  4975              LDR      r1,|L2.588|
 000076  f8d11077          LDR      r1,[r1,#0x77]  ; varOperation
 00007a  eb002001          ADD      r0,r0,r1,LSL #8
-00007e  4976              LDR      r1,|L2.600|
+00007e  4973              LDR      r1,|L2.588|
 000080  f8c10077          STR      r0,[r1,#0x77]  ; varOperation
-;;;348    		
-;;;349    		varOperation.canTxId = ptrDeal[offset++];  //卡路宝CAN 发送ID
+;;;338    		
+;;;339    		varOperation.canTxId = ptrDeal[offset++];  //卡路宝CAN 发送ID
 000084  4629              MOV      r1,r5
 000086  1c6d              ADDS     r5,r5,#1
 000088  5c60              LDRB     r0,[r4,r1]
-00008a  4973              LDR      r1,|L2.600|
+00008a  4970              LDR      r1,|L2.588|
 00008c  f8c10073          STR      r0,[r1,#0x73]  ; varOperation
-;;;350    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+;;;340    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 000090  4629              MOV      r1,r5
 000092  1c6d              ADDS     r5,r5,#1
 000094  5c60              LDRB     r0,[r4,r1]
-000096  4970              LDR      r1,|L2.600|
+000096  496d              LDR      r1,|L2.588|
 000098  f8d11073          LDR      r1,[r1,#0x73]  ; varOperation
 00009c  eb002001          ADD      r0,r0,r1,LSL #8
-0000a0  496d              LDR      r1,|L2.600|
+0000a0  496a              LDR      r1,|L2.588|
 0000a2  f8c10073          STR      r0,[r1,#0x73]  ; varOperation
-;;;351    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+;;;341    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 0000a6  4629              MOV      r1,r5
 0000a8  1c6d              ADDS     r5,r5,#1
 0000aa  5c60              LDRB     r0,[r4,r1]
-0000ac  496a              LDR      r1,|L2.600|
+0000ac  4967              LDR      r1,|L2.588|
 0000ae  f8d11073          LDR      r1,[r1,#0x73]  ; varOperation
 0000b2  eb002001          ADD      r0,r0,r1,LSL #8
-0000b6  4968              LDR      r1,|L2.600|
+0000b6  4965              LDR      r1,|L2.588|
 0000b8  f8c10073          STR      r0,[r1,#0x73]  ; varOperation
-;;;352    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+;;;342    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 0000bc  4629              MOV      r1,r5
 0000be  1c6d              ADDS     r5,r5,#1
 0000c0  5c60              LDRB     r0,[r4,r1]
-0000c2  4965              LDR      r1,|L2.600|
+0000c2  4962              LDR      r1,|L2.588|
 0000c4  f8d11073          LDR      r1,[r1,#0x73]  ; varOperation
 0000c8  eb002001          ADD      r0,r0,r1,LSL #8
-0000cc  4962              LDR      r1,|L2.600|
+0000cc  495f              LDR      r1,|L2.588|
 0000ce  f8c10073          STR      r0,[r1,#0x73]  ; varOperation
-;;;353    		
-;;;354    		varOperation.newPidNum = ptrDeal[offset++];//新的PID命令个数
+;;;343    		
+;;;344    		varOperation.newPidNum = ptrDeal[offset++];//新的PID命令个数
 0000d2  4629              MOV      r1,r5
 0000d4  1c6d              ADDS     r5,r5,#1
 0000d6  5c60              LDRB     r0,[r4,r1]
-0000d8  495f              LDR      r1,|L2.600|
+0000d8  495c              LDR      r1,|L2.588|
 0000da  f881006e          STRB     r0,[r1,#0x6e]
-;;;355    		
-;;;356    		pidPackNum = ptrDeal[offset++];            //一共有帧PID包配置项
+;;;345    		
+;;;346    		pidPackNum = ptrDeal[offset++];            //一共有帧PID包配置项
 0000de  4629              MOV      r1,r5
 0000e0  1c6d              ADDS     r5,r5,#1
 0000e2  5c60              LDRB     r0,[r4,r1]
-0000e4  495d              LDR      r1,|L2.604|
+0000e4  495a              LDR      r1,|L2.592|
 0000e6  7008              STRB     r0,[r1,#0]
-;;;357    		
-;;;358    		varOperation.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
-0000e8  4629              MOV      r1,r5
-0000ea  1c6d              ADDS     r5,r5,#1
-0000ec  5c60              LDRB     r0,[r4,r1]
-0000ee  495a              LDR      r1,|L2.600|
-0000f0  f881007b          STRB     r0,[r1,#0x7b]
-;;;359    		
-;;;360    		currentNum = 0x4001;
-0000f4  f2440001          MOV      r0,#0x4001
-0000f8  4959              LDR      r1,|L2.608|
-0000fa  8008              STRH     r0,[r1,#0]
-;;;361    		frameIndex = 0;
-0000fc  2000              MOVS     r0,#0
-0000fe  4959              LDR      r1,|L2.612|
-000100  8008              STRH     r0,[r1,#0]
-;;;362    		memset(updateBuff,0,2048);
-000102  f44f6100          MOV      r1,#0x800
-000106  4858              LDR      r0,|L2.616|
-000108  f7fffffe          BL       __aeabi_memclr4
-;;;363    		SendConfigNum(currentNum);//发送第一包程序请求帧0x4001
-00010c  4854              LDR      r0,|L2.608|
-00010e  8800              LDRH     r0,[r0,#0]  ; currentNum
-000110  f7fffffe          BL       SendConfigNum
-000114  e09e              B        |L2.596|
-000116  e7ff              B        |L2.280|
-                  |L2.280|
-;;;364    		
-;;;365    	}else if(cmdId > 0x4000 && cmdId < 0x5000)
-000118  f5b64f80          CMP      r6,#0x4000
-00011c  dd70              BLE      |L2.512|
-00011e  f5b64fa0          CMP      r6,#0x5000
-000122  da6d              BGE      |L2.512|
-;;;366    	{
-;;;367    		if(cmdId != currentNum)   //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
-000124  484e              LDR      r0,|L2.608|
-000126  8800              LDRH     r0,[r0,#0]  ; currentNum
-000128  4286              CMP      r6,r0
-00012a  d001              BEQ      |L2.304|
-                  |L2.300|
-;;;368    		{//	SendConfigNum(currentNum);//todo：重新发送？
-;;;369    			return;
-;;;370    		}
-;;;371    		
-;;;372    		offset = 2;
-;;;373    		frameLen = ptrDeal[offset++] - 3;
-;;;374    		cmdId    = ptrDeal[offset++];
-;;;375    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-;;;376    		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
-;;;377    		frameIndex += frameLen;
-;;;378    		
-;;;379    		if((cmdId - pidPackNum) == 0x4000)
-;;;380    		{
-;;;381    			//todo:保存参数，包括全局变量参数和配置参数,启动数据流
-;;;382    			sysUpdateVar.ecuVersion = varOperation.newECUVersion;
-;;;383    			sysUpdateVar.pidNum     = varOperation.newPidNum;
-;;;384    			
-;;;385    			sysUpdateVar.busType    = varOperation.busType;//todo:CAN线和K线的切换，后期处理
-;;;386    			sysUpdateVar.canIdType  = varOperation.canIdType;
-;;;387    			sysUpdateVar.canTxId    = varOperation.canTxId;
-;;;388    			sysUpdateVar.canRxId    = varOperation.canRxId;
-;;;389    			sysUpdateVar.canBaud    = varOperation.canBaud;
-;;;390    			
-;;;391    			for(i = 0;i < frameIndex;i += 13)      //更改 指令发送周期 的字节序
-;;;392    			{
-;;;393    				temp             = updateBuff[i];
-;;;394    				updateBuff[i]   = updateBuff[i+1];
-;;;395    				updateBuff[i+1] = temp;
-;;;396    			}
-;;;397    			SendConfigNum(0x5012);//请求第二个配置文件
-;;;398    		}
-;;;399    		else
-;;;400    		{
-;;;401    			currentNum = cmdId + 1;
-;;;402    			SendConfigNum(currentNum);//请求下一包数据
-;;;403    		}
-;;;404    	}
-;;;405    	else if(cmdId == 0x5012)
-;;;406    	{
-;;;407    		offset = 2;
-;;;408    		frameLen = ptrDeal[offset++] - 3;
+;;;347    		
+;;;348    //		varOperation.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
+;;;349    		
+;;;350    		currentNum = 0x4001;
+0000e8  f2440001          MOV      r0,#0x4001
+0000ec  4959              LDR      r1,|L2.596|
+0000ee  8008              STRH     r0,[r1,#0]
+;;;351    		frameIndex = 0;
+0000f0  2000              MOVS     r0,#0
+0000f2  4959              LDR      r1,|L2.600|
+0000f4  8008              STRH     r0,[r1,#0]
+;;;352    		memset(updateBuff,0,2048);
+0000f6  f44f6100          MOV      r1,#0x800
+0000fa  4858              LDR      r0,|L2.604|
+0000fc  f7fffffe          BL       __aeabi_memclr
+;;;353    		SendConfigNum(currentNum);//发送第一包程序请求帧0x4001
+000100  4854              LDR      r0,|L2.596|
+000102  8800              LDRH     r0,[r0,#0]  ; currentNum
+000104  f7fffffe          BL       SendConfigNum
+000108  e09e              B        |L2.584|
+00010a  e7ff              B        |L2.268|
+                  |L2.268|
+;;;354    		
+;;;355    	}else if(cmdId > 0x4000 && cmdId < 0x5000)
+00010c  f5b64f80          CMP      r6,#0x4000
+000110  dd70              BLE      |L2.500|
+000112  f5b64fa0          CMP      r6,#0x5000
+000116  da6d              BGE      |L2.500|
+;;;356    	{
+;;;357    		if(cmdId != currentNum)   //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
+000118  484e              LDR      r0,|L2.596|
+00011a  8800              LDRH     r0,[r0,#0]  ; currentNum
+00011c  4286              CMP      r6,r0
+00011e  d001              BEQ      |L2.292|
+                  |L2.288|
+;;;358    		{//	SendConfigNum(currentNum);//todo：重新发送？
+;;;359    			return;
+;;;360    		}
+;;;361    		
+;;;362    		offset = 2;
+;;;363    		frameLen = ptrDeal[offset++] - 3;
+;;;364    		cmdId    = ptrDeal[offset++];
+;;;365    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+;;;366    		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
+;;;367    		frameIndex += frameLen;
+;;;368    		
+;;;369    		if((cmdId - pidPackNum) == 0x4000)
+;;;370    		{
+;;;371    			//todo:保存参数，包括全局变量参数和配置参数,启动数据流
+;;;372    			sysUpdateVar.ecuVersion = varOperation.newECUVersion;
+;;;373    			sysUpdateVar.pidNum     = varOperation.newPidNum;
+;;;374    			
+;;;375    			sysUpdateVar.busType    = varOperation.busType;//todo:CAN线和K线的切换，后期处理
+;;;376    			sysUpdateVar.canIdType  = varOperation.canIdType;
+;;;377    			sysUpdateVar.canTxId    = varOperation.canTxId;
+;;;378    			sysUpdateVar.canRxId    = varOperation.canRxId;
+;;;379    			sysUpdateVar.canBaud    = varOperation.canBaud;
+;;;380    			
+;;;381    			for(i = 0;i < frameIndex;i += 13)      //更改 指令发送周期 的字节序
+;;;382    			{
+;;;383    				temp             = updateBuff[i];
+;;;384    				updateBuff[i]   = updateBuff[i+1];
+;;;385    				updateBuff[i+1] = temp;
+;;;386    			}
+;;;387    			SendConfigNum(0x5012);//请求第二个配置文件
+;;;388    		}
+;;;389    		else
+;;;390    		{
+;;;391    			currentNum = cmdId + 1;   
+;;;392    			SendConfigNum(currentNum);//请求下一包数据
+;;;393    		}
+;;;394    	}
+;;;395    	else if(cmdId == 0x5012)
+;;;396    	{
+;;;397    		offset = 2;
+;;;398    		frameLen = ptrDeal[offset++] - 3;
+;;;399    		
+;;;400    		sysUpdateVar.pidVarNum = frameLen / 13;   //得到上报 ECU 变量的个数
+;;;401    		
+;;;402    		cmdId    = ptrDeal[offset++];
+;;;403    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+;;;404    		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
+;;;405    		frameIndex += frameLen;
+;;;406    		
+;;;407    		SaveConfigToFlash(updateBuff,2048);      //将数据写入配置文件区，（flash:0x0802E000）
+;;;408    		SbootParameterSaveToFlash(&sysUpdateVar);//将运行参数写入升级变量区  （flash：0x08007800）
 ;;;409    		
-;;;410    		sysUpdateVar.pidVarNum = frameLen / 13;   //得到上报 ECU 变量的个数
-;;;411    		
-;;;412    		cmdId    = ptrDeal[offset++];
-;;;413    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-;;;414    		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
-;;;415    		frameIndex += frameLen;
-;;;416    		
-;;;417    		SaveConfigToFlash(updateBuff,2048);       //将数据写入配置文件区，（flash:0x0802E000）
-;;;418    		SbootParameterSaveToFlash(&sysUpdateVar);//将运行参数写入升级变量区  （flash：0x08007800）
-;;;419    		
-;;;420    		__disable_fault_irq();                    //重启
-;;;421    		NVIC_SystemReset();
-;;;422    	}
-;;;423    }
-00012c  e8bd87f0          POP      {r4-r10,pc}
-                  |L2.304|
-000130  2502              MOVS     r5,#2                 ;372
-000132  4629              MOV      r1,r5                 ;373
-000134  1c6d              ADDS     r5,r5,#1              ;373
-000136  5c60              LDRB     r0,[r4,r1]            ;373
-000138  1ec0              SUBS     r0,r0,#3              ;373
-00013a  b287              UXTH     r7,r0                 ;373
-00013c  4629              MOV      r1,r5                 ;374
-00013e  1c6d              ADDS     r5,r5,#1              ;374
-000140  5c66              LDRB     r6,[r4,r1]            ;374
-000142  4629              MOV      r1,r5                 ;375
-000144  1c6d              ADDS     r5,r5,#1              ;375
-000146  5c60              LDRB     r0,[r4,r1]            ;375
-000148  eb002006          ADD      r0,r0,r6,LSL #8       ;375
-00014c  b286              UXTH     r6,r0                 ;375
-00014e  1961              ADDS     r1,r4,r5              ;376
-000150  4a45              LDR      r2,|L2.616|
-000152  4b44              LDR      r3,|L2.612|
-000154  881b              LDRH     r3,[r3,#0]            ;376  ; frameIndex
-000156  18d0              ADDS     r0,r2,r3              ;376
-000158  463a              MOV      r2,r7                 ;376
-00015a  f7fffffe          BL       __aeabi_memcpy
-00015e  4841              LDR      r0,|L2.612|
-000160  8800              LDRH     r0,[r0,#0]            ;377  ; frameIndex
-000162  4438              ADD      r0,r0,r7              ;377
-000164  493f              LDR      r1,|L2.612|
-000166  8008              STRH     r0,[r1,#0]            ;377
-000168  483c              LDR      r0,|L2.604|
-00016a  7800              LDRB     r0,[r0,#0]            ;379  ; pidPackNum
-00016c  1a30              SUBS     r0,r6,r0              ;379
-00016e  f5b04f80          CMP      r0,#0x4000            ;379
-000172  d13c              BNE      |L2.494|
-000174  4838              LDR      r0,|L2.600|
-000176  f8d0006a          LDR      r0,[r0,#0x6a]         ;382  ; varOperation
-00017a  493c              LDR      r1,|L2.620|
-00017c  f8c10009          STR      r0,[r1,#9]            ;382  ; sysUpdateVar
-000180  4835              LDR      r0,|L2.600|
-000182  f890006e          LDRB     r0,[r0,#0x6e]         ;383  ; varOperation
-000186  f8a1000d          STRH     r0,[r1,#0xd]          ;383
-00018a  4833              LDR      r0,|L2.600|
-00018c  f8900071          LDRB     r0,[r0,#0x71]         ;385  ; varOperation
-000190  7448              STRB     r0,[r1,#0x11]         ;385
-000192  4831              LDR      r0,|L2.600|
-000194  f8900072          LDRB     r0,[r0,#0x72]         ;386  ; varOperation
-000198  7488              STRB     r0,[r1,#0x12]         ;386
-00019a  482f              LDR      r0,|L2.600|
-00019c  f8d00073          LDR      r0,[r0,#0x73]         ;387  ; varOperation
-0001a0  f8c10013          STR      r0,[r1,#0x13]         ;387  ; sysUpdateVar
-0001a4  482c              LDR      r0,|L2.600|
-0001a6  f8d00077          LDR      r0,[r0,#0x77]         ;388  ; varOperation
-0001aa  f8c10017          STR      r0,[r1,#0x17]         ;388  ; sysUpdateVar
-0001ae  482a              LDR      r0,|L2.600|
-0001b0  f890007b          LDRB     r0,[r0,#0x7b]         ;389  ; varOperation
-0001b4  76c8              STRB     r0,[r1,#0x1b]         ;389
-0001b6  f04f0800          MOV      r8,#0                 ;391
-0001ba  e00f              B        |L2.476|
-                  |L2.444|
-0001bc  482a              LDR      r0,|L2.616|
-0001be  f8109008          LDRB     r9,[r0,r8]            ;393
-0001c2  4601              MOV      r1,r0                 ;394
-0001c4  f1080001          ADD      r0,r8,#1              ;394
-0001c8  5c08              LDRB     r0,[r1,r0]            ;394
-0001ca  f8010008          STRB     r0,[r1,r8]            ;394
-0001ce  f1080001          ADD      r0,r8,#1              ;395
-0001d2  f8019000          STRB     r9,[r1,r0]            ;395
-0001d6  300c              ADDS     r0,r0,#0xc            ;391
-0001d8  fa1ff880          UXTH     r8,r0                 ;391
-                  |L2.476|
-0001dc  4821              LDR      r0,|L2.612|
-0001de  8800              LDRH     r0,[r0,#0]            ;391  ; frameIndex
-0001e0  4580              CMP      r8,r0                 ;391
-0001e2  dbeb              BLT      |L2.444|
-0001e4  f2450012          MOV      r0,#0x5012            ;397
-0001e8  f7fffffe          BL       SendConfigNum
-0001ec  e032              B        |L2.596|
-                  |L2.494|
-0001ee  1c70              ADDS     r0,r6,#1              ;401
-0001f0  491b              LDR      r1,|L2.608|
-0001f2  8008              STRH     r0,[r1,#0]            ;401
-0001f4  4608              MOV      r0,r1                 ;402
-0001f6  8800              LDRH     r0,[r0,#0]            ;402  ; currentNum
-0001f8  f7fffffe          BL       SendConfigNum
-0001fc  e02a              B        |L2.596|
-0001fe  e7ff              B        |L2.512|
-                  |L2.512|
-000200  f2450012          MOV      r0,#0x5012            ;405
-000204  4286              CMP      r6,r0                 ;405
-000206  d125              BNE      |L2.596|
-000208  2502              MOVS     r5,#2                 ;407
-00020a  4629              MOV      r1,r5                 ;408
-00020c  1c6d              ADDS     r5,r5,#1              ;408
-00020e  5c60              LDRB     r0,[r4,r1]            ;408
-000210  1ec0              SUBS     r0,r0,#3              ;408
-000212  b287              UXTH     r7,r0                 ;408
-000214  200d              MOVS     r0,#0xd               ;410
-000216  fb97f0f0          SDIV     r0,r7,r0              ;410
-00021a  4914              LDR      r1,|L2.620|
-00021c  f8a1000f          STRH     r0,[r1,#0xf]          ;410
-000220  1c6d              ADDS     r5,r5,#1              ;412
-000222  1c6d              ADDS     r5,r5,#1              ;413
-000224  1961              ADDS     r1,r4,r5              ;414
-000226  4a10              LDR      r2,|L2.616|
-000228  4b0e              LDR      r3,|L2.612|
-00022a  881b              LDRH     r3,[r3,#0]            ;414  ; frameIndex
-00022c  18d0              ADDS     r0,r2,r3              ;414
-00022e  463a              MOV      r2,r7                 ;414
-000230  f7fffffe          BL       __aeabi_memcpy
-000234  480b              LDR      r0,|L2.612|
-000236  8800              LDRH     r0,[r0,#0]            ;415  ; frameIndex
-000238  4438              ADD      r0,r0,r7              ;415
-00023a  490a              LDR      r1,|L2.612|
-00023c  8008              STRH     r0,[r1,#0]            ;415
-00023e  f44f6100          MOV      r1,#0x800             ;417
-000242  4809              LDR      r0,|L2.616|
-000244  f7fffffe          BL       SaveConfigToFlash
-000248  4808              LDR      r0,|L2.620|
-00024a  f7fffffe          BL       SbootParameterSaveToFlash
-00024e  b671              CPSID    f                     ;420
-000250  f7fffffe          BL       NVIC_SystemReset
-                  |L2.596|
-000254  bf00              NOP      
-000256  e769              B        |L2.300|
-;;;424    
+;;;410    		__disable_fault_irq();                    //重启
+;;;411    		NVIC_SystemReset();
+;;;412    	}
+;;;413    }
+000120  e8bd87f0          POP      {r4-r10,pc}
+                  |L2.292|
+000124  2502              MOVS     r5,#2                 ;362
+000126  4629              MOV      r1,r5                 ;363
+000128  1c6d              ADDS     r5,r5,#1              ;363
+00012a  5c60              LDRB     r0,[r4,r1]            ;363
+00012c  1ec0              SUBS     r0,r0,#3              ;363
+00012e  b287              UXTH     r7,r0                 ;363
+000130  4629              MOV      r1,r5                 ;364
+000132  1c6d              ADDS     r5,r5,#1              ;364
+000134  5c66              LDRB     r6,[r4,r1]            ;364
+000136  4629              MOV      r1,r5                 ;365
+000138  1c6d              ADDS     r5,r5,#1              ;365
+00013a  5c60              LDRB     r0,[r4,r1]            ;365
+00013c  eb002006          ADD      r0,r0,r6,LSL #8       ;365
+000140  b286              UXTH     r6,r0                 ;365
+000142  1961              ADDS     r1,r4,r5              ;366
+000144  4a45              LDR      r2,|L2.604|
+000146  4b44              LDR      r3,|L2.600|
+000148  881b              LDRH     r3,[r3,#0]            ;366  ; frameIndex
+00014a  18d0              ADDS     r0,r2,r3              ;366
+00014c  463a              MOV      r2,r7                 ;366
+00014e  f7fffffe          BL       __aeabi_memcpy
+000152  4841              LDR      r0,|L2.600|
+000154  8800              LDRH     r0,[r0,#0]            ;367  ; frameIndex
+000156  4438              ADD      r0,r0,r7              ;367
+000158  493f              LDR      r1,|L2.600|
+00015a  8008              STRH     r0,[r1,#0]            ;367
+00015c  483c              LDR      r0,|L2.592|
+00015e  7800              LDRB     r0,[r0,#0]            ;369  ; pidPackNum
+000160  1a30              SUBS     r0,r6,r0              ;369
+000162  f5b04f80          CMP      r0,#0x4000            ;369
+000166  d13c              BNE      |L2.482|
+000168  4838              LDR      r0,|L2.588|
+00016a  f8d0006a          LDR      r0,[r0,#0x6a]         ;372  ; varOperation
+00016e  493c              LDR      r1,|L2.608|
+000170  f8c10009          STR      r0,[r1,#9]            ;372  ; sysUpdateVar
+000174  4835              LDR      r0,|L2.588|
+000176  f890006e          LDRB     r0,[r0,#0x6e]         ;373  ; varOperation
+00017a  f8a1000d          STRH     r0,[r1,#0xd]          ;373
+00017e  4833              LDR      r0,|L2.588|
+000180  f8900071          LDRB     r0,[r0,#0x71]         ;375  ; varOperation
+000184  7448              STRB     r0,[r1,#0x11]         ;375
+000186  4831              LDR      r0,|L2.588|
+000188  f8900072          LDRB     r0,[r0,#0x72]         ;376  ; varOperation
+00018c  7488              STRB     r0,[r1,#0x12]         ;376
+00018e  482f              LDR      r0,|L2.588|
+000190  f8d00073          LDR      r0,[r0,#0x73]         ;377  ; varOperation
+000194  f8c10013          STR      r0,[r1,#0x13]         ;377  ; sysUpdateVar
+000198  482c              LDR      r0,|L2.588|
+00019a  f8d00077          LDR      r0,[r0,#0x77]         ;378  ; varOperation
+00019e  f8c10017          STR      r0,[r1,#0x17]         ;378  ; sysUpdateVar
+0001a2  482a              LDR      r0,|L2.588|
+0001a4  f890007b          LDRB     r0,[r0,#0x7b]         ;379  ; varOperation
+0001a8  76c8              STRB     r0,[r1,#0x1b]         ;379
+0001aa  f04f0800          MOV      r8,#0                 ;381
+0001ae  e00f              B        |L2.464|
+                  |L2.432|
+0001b0  482a              LDR      r0,|L2.604|
+0001b2  f8109008          LDRB     r9,[r0,r8]            ;383
+0001b6  4601              MOV      r1,r0                 ;384
+0001b8  f1080001          ADD      r0,r8,#1              ;384
+0001bc  5c08              LDRB     r0,[r1,r0]            ;384
+0001be  f8010008          STRB     r0,[r1,r8]            ;384
+0001c2  f1080001          ADD      r0,r8,#1              ;385
+0001c6  f8019000          STRB     r9,[r1,r0]            ;385
+0001ca  300c              ADDS     r0,r0,#0xc            ;381
+0001cc  fa1ff880          UXTH     r8,r0                 ;381
+                  |L2.464|
+0001d0  4821              LDR      r0,|L2.600|
+0001d2  8800              LDRH     r0,[r0,#0]            ;381  ; frameIndex
+0001d4  4580              CMP      r8,r0                 ;381
+0001d6  dbeb              BLT      |L2.432|
+0001d8  f2450012          MOV      r0,#0x5012            ;387
+0001dc  f7fffffe          BL       SendConfigNum
+0001e0  e032              B        |L2.584|
+                  |L2.482|
+0001e2  1c70              ADDS     r0,r6,#1              ;391
+0001e4  491b              LDR      r1,|L2.596|
+0001e6  8008              STRH     r0,[r1,#0]            ;391
+0001e8  4608              MOV      r0,r1                 ;392
+0001ea  8800              LDRH     r0,[r0,#0]            ;392  ; currentNum
+0001ec  f7fffffe          BL       SendConfigNum
+0001f0  e02a              B        |L2.584|
+0001f2  e7ff              B        |L2.500|
+                  |L2.500|
+0001f4  f2450012          MOV      r0,#0x5012            ;395
+0001f8  4286              CMP      r6,r0                 ;395
+0001fa  d125              BNE      |L2.584|
+0001fc  2502              MOVS     r5,#2                 ;397
+0001fe  4629              MOV      r1,r5                 ;398
+000200  1c6d              ADDS     r5,r5,#1              ;398
+000202  5c60              LDRB     r0,[r4,r1]            ;398
+000204  1ec0              SUBS     r0,r0,#3              ;398
+000206  b287              UXTH     r7,r0                 ;398
+000208  200d              MOVS     r0,#0xd               ;400
+00020a  fb97f0f0          SDIV     r0,r7,r0              ;400
+00020e  4914              LDR      r1,|L2.608|
+000210  f8a1000f          STRH     r0,[r1,#0xf]          ;400
+000214  1c6d              ADDS     r5,r5,#1              ;402
+000216  1c6d              ADDS     r5,r5,#1              ;403
+000218  1961              ADDS     r1,r4,r5              ;404
+00021a  4a10              LDR      r2,|L2.604|
+00021c  4b0e              LDR      r3,|L2.600|
+00021e  881b              LDRH     r3,[r3,#0]            ;404  ; frameIndex
+000220  18d0              ADDS     r0,r2,r3              ;404
+000222  463a              MOV      r2,r7                 ;404
+000224  f7fffffe          BL       __aeabi_memcpy
+000228  480b              LDR      r0,|L2.600|
+00022a  8800              LDRH     r0,[r0,#0]            ;405  ; frameIndex
+00022c  4438              ADD      r0,r0,r7              ;405
+00022e  490a              LDR      r1,|L2.600|
+000230  8008              STRH     r0,[r1,#0]            ;405
+000232  f44f6100          MOV      r1,#0x800             ;407
+000236  4809              LDR      r0,|L2.604|
+000238  f7fffffe          BL       SaveConfigToFlash
+00023c  4808              LDR      r0,|L2.608|
+00023e  f7fffffe          BL       SbootParameterSaveToFlash
+000242  b671              CPSID    f                     ;410
+000244  f7fffffe          BL       NVIC_SystemReset
+                  |L2.584|
+000248  bf00              NOP      
+00024a  e769              B        |L2.288|
+;;;414    
                           ENDP
 
-                  |L2.600|
+                  |L2.588|
                           DCD      varOperation
-                  |L2.604|
+                  |L2.592|
                           DCD      pidPackNum
-                  |L2.608|
+                  |L2.596|
+                          DCD      |symbol_number.36|
+                  |L2.600|
                           DCD      |symbol_number.37|
-                  |L2.612|
-                          DCD      |symbol_number.38|
-                  |L2.616|
+                  |L2.604|
                           DCD      updateBuff
-                  |L2.620|
+                  |L2.608|
                           DCD      sysUpdateVar
 
                           AREA ||i.GetConfigInfo||, CODE, READONLY, ALIGN=2
 
                   GetConfigInfo PROC
-;;;101    }
-;;;102    static void GetConfigInfo(void)
+;;;83     }
+;;;84     static void GetConfigInfo(void)
 000000  b510              PUSH     {r4,lr}
-;;;103    {
-;;;104    	_CDMADataToSend* otaUpdatSend;
-;;;105    	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
+;;;85     {
+;;;86     	_CDMADataToSend* otaUpdatSend;
+;;;87     	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
 000002  203c              MOVS     r0,#0x3c
 000004  f7fffffe          BL       CDMNSendInfoInit
 000008  4604              MOV      r4,r0
-;;;106    
-;;;107    	otaUpdatSend->data[otaUpdatSend->datLength++] = 11;   //长度
+;;;88     
+;;;89     	otaUpdatSend->data[otaUpdatSend->datLength++] = 11;   //长度
 00000a  210b              MOVS     r1,#0xb
 00000c  8822              LDRH     r2,[r4,#0]
 00000e  1c50              ADDS     r0,r2,#1
 000010  8020              STRH     r0,[r4,#0]
 000012  6860              LDR      r0,[r4,#4]
 000014  5481              STRB     r1,[r0,r2]
-;;;108    	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;
+;;;90     	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;
 000016  2140              MOVS     r1,#0x40
 000018  8822              LDRH     r2,[r4,#0]
 00001a  1c50              ADDS     r0,r2,#1
 00001c  8020              STRH     r0,[r4,#0]
 00001e  6860              LDR      r0,[r4,#4]
 000020  5481              STRB     r1,[r0,r2]
-;;;109    	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x00;
+;;;91     	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x00;
 000022  2100              MOVS     r1,#0
 000024  8822              LDRH     r2,[r4,#0]
 000026  1c50              ADDS     r0,r2,#1
 000028  8020              STRH     r0,[r4,#0]
 00002a  6860              LDR      r0,[r4,#4]
 00002c  5481              STRB     r1,[r0,r2]
-;;;110    	//当前版本
-;;;111    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 24) & 0x00FF; 
+;;;92     	//当前版本
+;;;93     	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 24) & 0x00FF; 
 00002e  4829              LDR      r0,|L3.212|
 000030  f8d00066          LDR      r0,[r0,#0x66]  ; varOperation
 000034  0e00              LSRS     r0,r0,#24
@@ -539,7 +519,7 @@
 00003a  8021              STRH     r1,[r4,#0]
 00003c  6861              LDR      r1,[r4,#4]
 00003e  5488              STRB     r0,[r1,r2]
-;;;112    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 16) & 0x00FF; 
+;;;94     	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 16) & 0x00FF; 
 000040  4824              LDR      r0,|L3.212|
 000042  f8d00066          LDR      r0,[r0,#0x66]  ; varOperation
 000046  f3c04107          UBFX     r1,r0,#16,#8
@@ -548,7 +528,7 @@
 00004e  8020              STRH     r0,[r4,#0]
 000050  6860              LDR      r0,[r4,#4]
 000052  5481              STRB     r1,[r0,r2]
-;;;113    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 8) & 0x00FF;   
+;;;95     	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 8) & 0x00FF;   
 000054  481f              LDR      r0,|L3.212|
 000056  f8b00066          LDRH     r0,[r0,#0x66]  ; varOperation
 00005a  f3c02107          UBFX     r1,r0,#8,#8
@@ -557,7 +537,7 @@
 000062  8020              STRH     r0,[r4,#0]
 000064  6860              LDR      r0,[r4,#4]
 000066  5481              STRB     r1,[r0,r2]
-;;;114    	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.ecuVersion & 0x00FF;
+;;;96     	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.ecuVersion & 0x00FF;
 000068  481a              LDR      r0,|L3.212|
 00006a  f8901066          LDRB     r1,[r0,#0x66]  ; varOperation
 00006e  8822              LDRH     r2,[r4,#0]
@@ -565,9 +545,9 @@
 000072  8020              STRH     r0,[r4,#0]
 000074  6860              LDR      r0,[r4,#4]
 000076  5481              STRB     r1,[r0,r2]
-;;;115    	
-;;;116    	//请求升级的版本
-;;;117    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
+;;;97     	
+;;;98     	//请求升级的版本
+;;;99     	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
 000078  4816              LDR      r0,|L3.212|
 00007a  f8d0006a          LDR      r0,[r0,#0x6a]  ; varOperation
 00007e  0e00              LSRS     r0,r0,#24
@@ -576,7 +556,7 @@
 000084  8021              STRH     r1,[r4,#0]
 000086  6861              LDR      r1,[r4,#4]
 000088  5488              STRB     r0,[r1,r2]
-;;;118    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
+;;;100    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
 00008a  4812              LDR      r0,|L3.212|
 00008c  f8d0006a          LDR      r0,[r0,#0x6a]  ; varOperation
 000090  f3c04107          UBFX     r1,r0,#16,#8
@@ -585,7 +565,7 @@
 000098  8020              STRH     r0,[r4,#0]
 00009a  6860              LDR      r0,[r4,#4]
 00009c  5481              STRB     r1,[r0,r2]
-;;;119    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
+;;;101    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
 00009e  480d              LDR      r0,|L3.212|
 0000a0  f8b0006a          LDRH     r0,[r0,#0x6a]  ; varOperation
 0000a4  f3c02107          UBFX     r1,r0,#8,#8
@@ -594,7 +574,7 @@
 0000ac  8020              STRH     r0,[r4,#0]
 0000ae  6860              LDR      r0,[r4,#4]
 0000b0  5481              STRB     r1,[r0,r2]
-;;;120    	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
+;;;102    	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
 0000b2  4808              LDR      r0,|L3.212|
 0000b4  f890106a          LDRB     r1,[r0,#0x6a]  ; varOperation
 0000b8  8822              LDRH     r2,[r4,#0]
@@ -602,19 +582,19 @@
 0000bc  8020              STRH     r0,[r4,#0]
 0000be  6860              LDR      r0,[r4,#4]
 0000c0  5481              STRB     r1,[r0,r2]
-;;;121    	
-;;;122    	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
+;;;103    	
+;;;104    	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
 0000c2  4620              MOV      r0,r4
 0000c4  f7fffffe          BL       CDMASendDataPack
-;;;123    	
-;;;124    	OSQPost(CDMASendQ,otaUpdatSend);
+;;;105    	
+;;;106    	OSQPost(CDMASendQ,otaUpdatSend);
 0000c8  4621              MOV      r1,r4
 0000ca  4803              LDR      r0,|L3.216|
 0000cc  6800              LDR      r0,[r0,#0]  ; CDMASendQ
 0000ce  f7fffffe          BL       OSQPost
-;;;125    }
+;;;107    }
 0000d2  bd10              POP      {r4,pc}
-;;;126    
+;;;108    
                           ENDP
 
                   |L3.212|
@@ -625,105 +605,105 @@
                           AREA ||i.LoginDataSend||, CODE, READONLY, ALIGN=2
 
                   LoginDataSend PROC
-;;;72     //登录报文
-;;;73     void LoginDataSend(void)
+;;;54     //登录报文
+;;;55     void LoginDataSend(void)
 000000  b570              PUSH     {r4-r6,lr}
-;;;74     {
-;;;75     	uint8_t err;
-;;;76     	uint32_t buff;
-;;;77     	_CDMADataToSend* loginData = CDMNSendInfoInit(100);        //发送登录报文
+;;;56     {
+;;;57     	uint8_t err;
+;;;58     	uint32_t buff;
+;;;59     	_CDMADataToSend* loginData = CDMNSendInfoInit(100);        //发送登录报文
 000002  2064              MOVS     r0,#0x64
 000004  f7fffffe          BL       CDMNSendInfoInit
 000008  4604              MOV      r4,r0
-;;;78     	
-;;;79     	loginData->data[loginData->datLength++] = 31;
+;;;60     	
+;;;61     	loginData->data[loginData->datLength++] = 31;
 00000a  211f              MOVS     r1,#0x1f
 00000c  8822              LDRH     r2,[r4,#0]
 00000e  1c50              ADDS     r0,r2,#1
 000010  8020              STRH     r0,[r4,#0]
 000012  6860              LDR      r0,[r4,#4]
 000014  5481              STRB     r1,[r0,r2]
-;;;80     	loginData->data[loginData->datLength++] = 0x50;
+;;;62     	loginData->data[loginData->datLength++] = 0x50;
 000016  2150              MOVS     r1,#0x50
 000018  8822              LDRH     r2,[r4,#0]
 00001a  1c50              ADDS     r0,r2,#1
 00001c  8020              STRH     r0,[r4,#0]
 00001e  6860              LDR      r0,[r4,#4]
 000020  5481              STRB     r1,[r0,r2]
-;;;81     	loginData->data[loginData->datLength++] = 0x01;
+;;;63     	loginData->data[loginData->datLength++] = 0x01;
 000022  2101              MOVS     r1,#1
 000024  8822              LDRH     r2,[r4,#0]
 000026  1c50              ADDS     r0,r2,#1
 000028  8020              STRH     r0,[r4,#0]
 00002a  6860              LDR      r0,[r4,#4]
 00002c  5481              STRB     r1,[r0,r2]
-;;;82     	
-;;;83     	buff = t_htonl(SOFTVersion);                            //软件固件版本  
+;;;64     	
+;;;65     	buff = t_htonl(SOFTVersion);                            //软件固件版本  
 00002e  f24030e9          MOV      r0,#0x3e9
 000032  f7fffffe          BL       t_htonl
 000036  4605              MOV      r5,r0
-;;;84     	memcpy(&loginData->data[loginData->datLength],&buff,4);
+;;;66     	memcpy(&loginData->data[loginData->datLength],&buff,4);
 000038  6860              LDR      r0,[r4,#4]
 00003a  8821              LDRH     r1,[r4,#0]
 00003c  4408              ADD      r0,r0,r1
 00003e  6005              STR      r5,[r0,#0]
-;;;85     	loginData->datLength += 4;
+;;;67     	loginData->datLength += 4;
 000040  8820              LDRH     r0,[r4,#0]
 000042  1d00              ADDS     r0,r0,#4
 000044  8020              STRH     r0,[r4,#0]
-;;;86     	
-;;;87     	buff = t_htonl(sysUpdateVar.ecuVersion);
+;;;68     	
+;;;69     	buff = t_htonl(sysUpdateVar.ecuVersion);
 000046  4915              LDR      r1,|L4.156|
 000048  f8d10009          LDR      r0,[r1,#9]  ; sysUpdateVar
 00004c  f7fffffe          BL       t_htonl
 000050  4605              MOV      r5,r0
-;;;88     	memcpy(&loginData->data[loginData->datLength],&buff,4);
+;;;70     	memcpy(&loginData->data[loginData->datLength],&buff,4);
 000052  6860              LDR      r0,[r4,#4]
 000054  8821              LDRH     r1,[r4,#0]
 000056  4408              ADD      r0,r0,r1
 000058  6005              STR      r5,[r0,#0]
-;;;89     	loginData->datLength += 4;
+;;;71     	loginData->datLength += 4;
 00005a  8820              LDRH     r0,[r4,#0]
 00005c  1d00              ADDS     r0,r0,#4
 00005e  8020              STRH     r0,[r4,#0]
-;;;90     	
-;;;91     	memcpy(&loginData->data[loginData->datLength],varOperation.iccID,20);
+;;;72     	
+;;;73     	memcpy(&loginData->data[loginData->datLength],varOperation.iccID,20);
 000060  6861              LDR      r1,[r4,#4]
 000062  8822              LDRH     r2,[r4,#0]
 000064  1888              ADDS     r0,r1,r2
 000066  2214              MOVS     r2,#0x14
 000068  490d              LDR      r1,|L4.160|
 00006a  f7fffffe          BL       __aeabi_memcpy
-;;;92     	loginData->datLength += 20;
+;;;74     	loginData->datLength += 20;
 00006e  8820              LDRH     r0,[r4,#0]
 000070  3014              ADDS     r0,r0,#0x14
 000072  8020              STRH     r0,[r4,#0]
-;;;93     	
-;;;94     	CDMASendDataPack(loginData);//对登录报文进行打包（添加帧头、校验码、帧尾）
+;;;75     	
+;;;76     	CDMASendDataPack(loginData);//对登录报文进行打包（添加帧头、校验码、帧尾）
 000074  4620              MOV      r0,r4
 000076  f7fffffe          BL       CDMASendDataPack
-;;;95     	err = OSQPost(CDMASendQ,loginData);
+;;;77     	err = OSQPost(CDMASendQ,loginData);
 00007a  4621              MOV      r1,r4
 00007c  4809              LDR      r0,|L4.164|
 00007e  6800              LDR      r0,[r0,#0]  ; CDMASendQ
 000080  f7fffffe          BL       OSQPost
 000084  4606              MOV      r6,r0
-;;;96     	if(err != OS_ERR_NONE)
+;;;78     	if(err != OS_ERR_NONE)
 000086  b116              CBZ      r6,|L4.142|
-;;;97     	{
-;;;98     		Mem_free(loginData);
+;;;79     	{
+;;;80     		Mem_free(loginData);
 000088  4620              MOV      r0,r4
 00008a  f7fffffe          BL       Mem_free
                   |L4.142|
-;;;99     	}
-;;;100    	varOperation.isLoginDeal = 0;//正在处理登录报文
+;;;81     	}
+;;;82     	varOperation.isLoginDeal = 0;//正在处理登录报文
 00008e  2000              MOVS     r0,#0
 000090  4903              LDR      r1,|L4.160|
 000092  3919              SUBS     r1,r1,#0x19
 000094  f8810030          STRB     r0,[r1,#0x30]
-;;;101    }
+;;;83     }
 000098  bd70              POP      {r4-r6,pc}
-;;;102    static void GetConfigInfo(void)
+;;;84     static void GetConfigInfo(void)
                           ENDP
 
 00009a  0000              DCW      0x0000
@@ -773,619 +753,634 @@
                           AREA ||i.OTA_Updata||, CODE, READONLY, ALIGN=2
 
                   OTA_Updata PROC
-;;;207    uint8_t updateBuff[2048];       //升级用
-;;;208    static void OTA_Updata(uint8_t* ptrDeal)
+;;;196    uint8_t updateBuff[2048];       //升级用
+;;;197    static void OTA_Updata(uint8_t* ptrDeal)
 000000  e92d47f0          PUSH     {r4-r10,lr}
-;;;209    {
+;;;198    {
 000004  4604              MOV      r4,r0
-;;;210    	uint16_t cmdId;
-;;;211    	uint16_t datLength = 0;
+;;;199    	uint16_t cmdId;
+;;;200    	uint16_t datLength = 0;
 000006  2700              MOVS     r7,#0
-;;;212    	uint16_t i = 0;
-000008  46b8              MOV      r8,r7
-;;;213    	uint8_t  frameNum;            //此次一共接收到128字节的包数
-;;;214    	uint16_t offset;
-;;;215    	
-;;;216    	static uint16_t currentNum = 0;      //发送下一个请求包
-;;;217    	static uint16_t fileCRC    = 0;      //文件CRC校验
-;;;218    	static uint32_t flashAddr  = 0;      //地址信息，写2K便自增0x800,向Flash一次写2K字节
-;;;219    	static uint8_t  frameIndex = 0;      //要保存的帧索引
-;;;220    	static uint8_t  frameLen   = 0;      //每一帧的每一小包到底有多少个字节
-;;;221    	
-;;;222    	datLength = ptrDeal[0];
+;;;201    	uint16_t i = 0;
+000008  46b9              MOV      r9,r7
+;;;202    	uint8_t  frameNum;           //此次一共接收到128字节的包数
+;;;203    	uint8_t  frameLen;           //每一帧的每一小包到底有多少个字节
+;;;204    	uint16_t offset;
+;;;205    	
+;;;206    	static uint16_t currentNum = 0;      //发送下一个请求包
+;;;207    	static uint16_t fileCRC    = 0;      //文件CRC校验
+;;;208    	static uint32_t flashAddr  = 0;      //地址信息，写2K便自增0x800,向Flash一次写2K字节
+;;;209    	static uint8_t  frameIndex = 0;      //要保存的帧索引
+;;;210    	
+;;;211    	
+;;;212    	datLength = ptrDeal[0];
 00000a  7827              LDRB     r7,[r4,#0]
-;;;223    	datLength = (datLength << 8) + ptrDeal[1];
+;;;213    	datLength = (datLength << 8) + ptrDeal[1];
 00000c  7860              LDRB     r0,[r4,#1]
 00000e  eb002007          ADD      r0,r0,r7,LSL #8
 000012  b287              UXTH     r7,r0
-;;;224    	
-;;;225    	cmdId     = ptrDeal[3];
+;;;214    	
+;;;215    	cmdId     = ptrDeal[3];
 000014  78e6              LDRB     r6,[r4,#3]
-;;;226    	cmdId     = (cmdId << 8) + ptrDeal[4];
+;;;216    	cmdId     = (cmdId << 8) + ptrDeal[4];
 000016  7920              LDRB     r0,[r4,#4]
 000018  eb002006          ADD      r0,r0,r6,LSL #8
 00001c  b286              UXTH     r6,r0
-;;;227    	if(cmdId == 0x8000)
+;;;217    	if(cmdId == 0x8000)
 00001e  f5b64f00          CMP      r6,#0x8000
 000022  d132              BNE      |L6.138|
-;;;228    	{
-;;;229    		offset = 5;
+;;;218    	{
+;;;219    		offset = 5;
 000024  2505              MOVS     r5,#5
-;;;230    		varOperation.frameNum = ptrDeal[offset++] + 0x80;//得到新程序的128字节的包数
+;;;220    		varOperation.frameNum = ptrDeal[offset++] + 0x80;//得到新程序的128字节的包数
 000026  4629              MOV      r1,r5
 000028  1c6d              ADDS     r5,r5,#1
 00002a  5c60              LDRB     r0,[r4,r1]
 00002c  3080              ADDS     r0,r0,#0x80
-00002e  497e              LDR      r1,|L6.552|
+00002e  497c              LDR      r1,|L6.544|
 000030  80c8              STRH     r0,[r1,#6]
-;;;231    		varOperation.frameNum = (varOperation.frameNum << 8) + ptrDeal[offset++];
+;;;221    		varOperation.frameNum = (varOperation.frameNum << 8) + ptrDeal[offset++];
 000032  4629              MOV      r1,r5
 000034  1c6d              ADDS     r5,r5,#1
 000036  5c60              LDRB     r0,[r4,r1]
-000038  497b              LDR      r1,|L6.552|
+000038  4979              LDR      r1,|L6.544|
 00003a  7989              LDRB     r1,[r1,#6]  ; varOperation
 00003c  eb002001          ADD      r0,r0,r1,LSL #8
-000040  4979              LDR      r1,|L6.552|
+000040  4977              LDR      r1,|L6.544|
 000042  80c8              STRH     r0,[r1,#6]
-;;;232    		varOperation.newSoftCRC = ptrDeal[offset++];//得到文件校验码
+;;;222    		varOperation.newSoftCRC = ptrDeal[offset++];//得到文件校验码
 000044  4629              MOV      r1,r5
 000046  1c6d              ADDS     r5,r5,#1
 000048  5c60              LDRB     r0,[r4,r1]
-00004a  4977              LDR      r1,|L6.552|
+00004a  4975              LDR      r1,|L6.544|
 00004c  8088              STRH     r0,[r1,#4]
-;;;233    		varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrDeal[offset++];
+;;;223    		varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrDeal[offset++];
 00004e  4629              MOV      r1,r5
 000050  1c6d              ADDS     r5,r5,#1
 000052  5c60              LDRB     r0,[r4,r1]
-000054  4974              LDR      r1,|L6.552|
+000054  4972              LDR      r1,|L6.544|
 000056  7909              LDRB     r1,[r1,#4]  ; varOperation
 000058  eb002001          ADD      r0,r0,r1,LSL #8
-00005c  4972              LDR      r1,|L6.552|
+00005c  4970              LDR      r1,|L6.544|
 00005e  8088              STRH     r0,[r1,#4]
-;;;234    		
-;;;235    		currentNum = 0x8001;
+;;;224    		
+;;;225    		currentNum = 0x8001;
 000060  f2480001          MOV      r0,#0x8001
-000064  4971              LDR      r1,|L6.556|
+000064  496f              LDR      r1,|L6.548|
 000066  8008              STRH     r0,[r1,#0]
-;;;236    		fileCRC    = 0;
+;;;226    		fileCRC    = 0;
 000068  2000              MOVS     r0,#0
-00006a  4971              LDR      r1,|L6.560|
+00006a  496f              LDR      r1,|L6.552|
 00006c  8008              STRH     r0,[r1,#0]
-;;;237    		flashAddr  = 0;
-00006e  4971              LDR      r1,|L6.564|
+;;;227    		flashAddr  = 0;
+00006e  496f              LDR      r1,|L6.556|
 000070  6008              STR      r0,[r1,#0]  ; flashAddr
-;;;238    		frameIndex = 0;
-000072  4971              LDR      r1,|L6.568|
+;;;228    		frameIndex = 0;
+000072  496f              LDR      r1,|L6.560|
 000074  7008              STRB     r0,[r1,#0]
-;;;239    		SendFrameNum(currentNum);//发送第一包程序请求帧0x8001
-000076  486d              LDR      r0,|L6.556|
+;;;229    		SendFrameNum(currentNum);//发送第一包程序请求帧0x8001
+000076  486b              LDR      r0,|L6.548|
 000078  8800              LDRH     r0,[r0,#0]  ; currentNum
 00007a  f7fffffe          BL       SendFrameNum
-;;;240    		memset(configData,0,2048);
+;;;230    		memset(configData,0,2048);
 00007e  f44f6100          MOV      r1,#0x800
-000082  486e              LDR      r0,|L6.572|
+000082  486c              LDR      r0,|L6.564|
 000084  f7fffffe          BL       __aeabi_memclr
                   |L6.136|
-000088  e0cb              B        |L6.546|
+000088  e0c7              B        |L6.538|
                   |L6.138|
-;;;241    	}
-;;;242    	else if(cmdId>0x8000)        //程序代码
+;;;231    	}
+;;;232    	else if(cmdId>0x8000)        //程序代码
 00008a  f5b64f00          CMP      r6,#0x8000
 00008e  ddfb              BLE      |L6.136|
-;;;243    	{
-;;;244    		if(cmdId != currentNum)  //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
-000090  4866              LDR      r0,|L6.556|
+;;;233    	{
+;;;234    		if(cmdId != currentNum)  //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
+000090  4864              LDR      r0,|L6.548|
 000092  8800              LDRH     r0,[r0,#0]  ; currentNum
 000094  4286              CMP      r6,r0
 000096  d001              BEQ      |L6.156|
                   |L6.152|
+;;;235    		{
+;;;236    //			SendFrameNum(currentNum);//todo：重新接收数据？
+;;;237    			return;
+;;;238    		}
+;;;239    			
+;;;240    		
+;;;241    		frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//得到此帧数据一共有多少包128字节的程序代码
+;;;242    		
+;;;243    		offset = 2;
+;;;244    		for(i=0;i<frameNum;i++)//
 ;;;245    		{
-;;;246    //			SendFrameNum(currentNum);//todo：重新接收数据？
-;;;247    			return;
-;;;248    		}
-;;;249    			
-;;;250    		
-;;;251    		frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//得到此帧数据一共有多少包128字节的程序代码
-;;;252    		
-;;;253    		offset = 2;
-;;;254    		for(i=0;i<frameNum;i++)//
-;;;255    		{
-;;;256    			frameLen = ptrDeal[offset++] - 3;//实际的小包程序的字节数
-;;;257    			cmdId    = ptrDeal[offset++];
-;;;258    			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-;;;259    			memcpy(&updateBuff[frameIndex*128],&ptrDeal[offset],frameLen);
-;;;260    			offset += 128;
-;;;261    			frameIndex ++;
-;;;262    			if((frameIndex >= 16) && (cmdId != varOperation.frameNum))
+;;;246    			frameLen = ptrDeal[offset++] - 3;//实际的小包程序的字节数
+;;;247    			cmdId    = ptrDeal[offset++];
+;;;248    			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+;;;249    			memcpy(&updateBuff[frameIndex*128],&ptrDeal[offset],frameLen);
+;;;250    			offset += 128;
+;;;251    			frameIndex ++;
+;;;252    			if((frameIndex >= 16) && (cmdId != varOperation.frameNum))
+;;;253    			{
+;;;254    				frameIndex = 0;
+;;;255    				SoftErasePage(flashAddr);
+;;;256    				SoftProgramUpdate(flashAddr,updateBuff,2048);
+;;;257    				//计算CRC校验
+;;;258    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,2048);
+;;;259    				memset(updateBuff,0,2048);//清空数据区
+;;;260    				flashAddr += 0x800;
+;;;261    			}
+;;;262    			else if(cmdId == varOperation.frameNum)
 ;;;263    			{
-;;;264    				frameIndex = 0;
-;;;265    				SoftErasePage(flashAddr);
-;;;266    				SoftProgramUpdate(flashAddr,updateBuff,2048);
-;;;267    				//计算CRC校验
-;;;268    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,2048);
-;;;269    				memset(updateBuff,0,2048);//清空数据区
-;;;270    				flashAddr += 0x800;
-;;;271    			}
-;;;272    			else if(cmdId == varOperation.frameNum)
-;;;273    			{
-;;;274    				SoftErasePage(flashAddr);
-;;;275    				SoftProgramUpdate(flashAddr,updateBuff,((frameIndex - 1)*128 + frameLen));
-;;;276    				//计算CRC校验
-;;;277    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,((frameIndex - 1)*128 + frameLen));
-;;;278    				memset(updateBuff,0,2048);
-;;;279    				flashAddr += 0x800;
+;;;264    				SoftErasePage(flashAddr);
+;;;265    				SoftProgramUpdate(flashAddr,updateBuff,((frameIndex - 1)*128 + frameLen));
+;;;266    				//计算CRC校验
+;;;267    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,((frameIndex - 1)*128 + frameLen));
+;;;268    				memset(updateBuff,0,2048);
+;;;269    				flashAddr += 0x800;
+;;;270    			}
+;;;271    		}
+;;;272    		if(cmdId == varOperation.frameNum)
+;;;273    		{
+;;;274    			if(fileCRC != varOperation.newSoftCRC)//CRC校验错误，程序升级失败
+;;;275    			{
+;;;276    				Mem_free(ptrDeal);
+;;;277    				varOperation.isDataFlow     = 0;
+;;;278    //				SendFrameNum(0x8000);      //todo:重新升级？
+;;;279    				return;	
 ;;;280    			}
-;;;281    		}
-;;;282    		if(cmdId == varOperation.frameNum)
-;;;283    		{
-;;;284    			if(fileCRC != varOperation.newSoftCRC)//CRC校验错误，程序升级失败
-;;;285    			{
-;;;286    				Mem_free(ptrDeal);
-;;;287    				varOperation.isDataFlow     = 0;
-;;;288    //				SendFrameNum(0x8000);      //todo:重新升级？
-;;;289    				return;	
-;;;290    			}
-;;;291    			Mem_free(ptrDeal);
-;;;292    			sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
-;;;293    			sysUpdateVar.pageNum      = flashAddr/0x800;
-;;;294    			sysUpdateVar.softVersion  = varOperation.newSoftVersion;
-;;;295    			
-;;;296    			SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
-;;;297    			
-;;;298    			__disable_fault_irq();          //重启
-;;;299    			NVIC_SystemReset();
-;;;300    		}
-;;;301    		currentNum = cmdId + 1;
-;;;302    		SendFrameNum(currentNum);//请求下一帧数据；
-;;;303    	}
-;;;304    }
+;;;281    			Mem_free(ptrDeal);
+;;;282    			sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
+;;;283    			sysUpdateVar.pageNum      = flashAddr/0x800;
+;;;284    			sysUpdateVar.softVersion  = varOperation.newSoftVersion;
+;;;285    			
+;;;286    			SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
+;;;287    			
+;;;288    			__disable_fault_irq();          //重启
+;;;289    			NVIC_SystemReset();
+;;;290    		}
+;;;291    		currentNum = cmdId + 1;
+;;;292    		SendFrameNum(currentNum);//请求下一帧数据；
+;;;293    	}
+;;;294    }
 000098  e8bd87f0          POP      {r4-r10,pc}
                   |L6.156|
-00009c  2083              MOVS     r0,#0x83              ;251
-00009e  fb97f1f0          SDIV     r1,r7,r0              ;251
-0000a2  fb007011          MLS      r0,r0,r1,r7           ;251
+00009c  2083              MOVS     r0,#0x83              ;241
+00009e  fb97f1f0          SDIV     r1,r7,r0              ;241
+0000a2  fb007011          MLS      r0,r0,r1,r7           ;241
 0000a6  b918              CBNZ     r0,|L6.176|
-0000a8  2083              MOVS     r0,#0x83              ;251
-0000aa  fb97f0f0          SDIV     r0,r7,r0              ;251
+0000a8  2083              MOVS     r0,#0x83              ;241
+0000aa  fb97f0f0          SDIV     r0,r7,r0              ;241
 0000ae  e003              B        |L6.184|
                   |L6.176|
-0000b0  2083              MOVS     r0,#0x83              ;251
-0000b2  fb97f0f0          SDIV     r0,r7,r0              ;251
-0000b6  1c40              ADDS     r0,r0,#1              ;251
+0000b0  2083              MOVS     r0,#0x83              ;241
+0000b2  fb97f0f0          SDIV     r0,r7,r0              ;241
+0000b6  1c40              ADDS     r0,r0,#1              ;241
                   |L6.184|
-0000b8  f00009ff          AND      r9,r0,#0xff           ;251
-0000bc  2502              MOVS     r5,#2                 ;253
-0000be  f04f0800          MOV      r8,#0                 ;254
-0000c2  e07f              B        |L6.452|
+0000b8  f0000aff          AND      r10,r0,#0xff          ;241
+0000bc  2502              MOVS     r5,#2                 ;243
+0000be  f04f0900          MOV      r9,#0                 ;244
+0000c2  e07a              B        |L6.442|
                   |L6.196|
-0000c4  4628              MOV      r0,r5                 ;256
-0000c6  1c69              ADDS     r1,r5,#1              ;256
-0000c8  b28d              UXTH     r5,r1                 ;256
-0000ca  5c20              LDRB     r0,[r4,r0]            ;256
-0000cc  1ec0              SUBS     r0,r0,#3              ;256
-0000ce  495c              LDR      r1,|L6.576|
-0000d0  7008              STRB     r0,[r1,#0]            ;256
-0000d2  4628              MOV      r0,r5                 ;257
-0000d4  1c69              ADDS     r1,r5,#1              ;257
-0000d6  b28d              UXTH     r5,r1                 ;257
-0000d8  5c26              LDRB     r6,[r4,r0]            ;257
-0000da  4628              MOV      r0,r5                 ;258
-0000dc  1c69              ADDS     r1,r5,#1              ;258
-0000de  b28d              UXTH     r5,r1                 ;258
-0000e0  5c20              LDRB     r0,[r4,r0]            ;258
-0000e2  eb002006          ADD      r0,r0,r6,LSL #8       ;258
-0000e6  b286              UXTH     r6,r0                 ;258
-0000e8  1961              ADDS     r1,r4,r5              ;259
-0000ea  4a53              LDR      r2,|L6.568|
-0000ec  7812              LDRB     r2,[r2,#0]            ;259  ; frameIndex
-0000ee  4b55              LDR      r3,|L6.580|
-0000f0  eb0310c2          ADD      r0,r3,r2,LSL #7       ;259
-0000f4  4a52              LDR      r2,|L6.576|
-0000f6  7812              LDRB     r2,[r2,#0]            ;259  ; frameLen
-0000f8  f7fffffe          BL       __aeabi_memcpy
-0000fc  f1050080          ADD      r0,r5,#0x80           ;260
-000100  b285              UXTH     r5,r0                 ;260
-000102  484d              LDR      r0,|L6.568|
-000104  7800              LDRB     r0,[r0,#0]            ;261  ; frameIndex
-000106  1c40              ADDS     r0,r0,#1              ;261
-000108  494b              LDR      r1,|L6.568|
-00010a  7008              STRB     r0,[r1,#0]            ;261
-00010c  4608              MOV      r0,r1                 ;262
-00010e  7800              LDRB     r0,[r0,#0]            ;262  ; frameIndex
-000110  2810              CMP      r0,#0x10              ;262
-000112  db25              BLT      |L6.352|
-000114  4844              LDR      r0,|L6.552|
-000116  88c0              LDRH     r0,[r0,#6]            ;262  ; varOperation
-000118  42b0              CMP      r0,r6                 ;262
-00011a  d021              BEQ      |L6.352|
-00011c  2000              MOVS     r0,#0                 ;264
-00011e  7008              STRB     r0,[r1,#0]            ;264
-000120  4844              LDR      r0,|L6.564|
-000122  6800              LDR      r0,[r0,#0]            ;265  ; flashAddr
-000124  f7fffffe          BL       SoftErasePage
-000128  f44f6200          MOV      r2,#0x800             ;266
-00012c  4945              LDR      r1,|L6.580|
-00012e  4841              LDR      r0,|L6.564|
-000130  6800              LDR      r0,[r0,#0]            ;266  ; flashAddr
-000132  f7fffffe          BL       SoftProgramUpdate
-000136  f44f6200          MOV      r2,#0x800             ;268
-00013a  4942              LDR      r1,|L6.580|
-00013c  483c              LDR      r0,|L6.560|
-00013e  8800              LDRH     r0,[r0,#0]            ;268  ; fileCRC
-000140  f7fffffe          BL       CRC_ComputeFile
-000144  493a              LDR      r1,|L6.560|
-000146  8008              STRH     r0,[r1,#0]            ;268
-000148  f44f6100          MOV      r1,#0x800             ;269
-00014c  483d              LDR      r0,|L6.580|
-00014e  f7fffffe          BL       __aeabi_memclr4
-000152  4838              LDR      r0,|L6.564|
-000154  6800              LDR      r0,[r0,#0]            ;270  ; flashAddr
-000156  f5006000          ADD      r0,r0,#0x800          ;270
-00015a  4936              LDR      r1,|L6.564|
-00015c  6008              STR      r0,[r1,#0]            ;270  ; flashAddr
-00015e  e02d              B        |L6.444|
-                  |L6.352|
-000160  4831              LDR      r0,|L6.552|
-000162  88c0              LDRH     r0,[r0,#6]            ;272  ; varOperation
-000164  42b0              CMP      r0,r6                 ;272
-000166  d129              BNE      |L6.444|
-000168  4832              LDR      r0,|L6.564|
-00016a  6800              LDR      r0,[r0,#0]            ;274  ; flashAddr
-00016c  f7fffffe          BL       SoftErasePage
-000170  4831              LDR      r0,|L6.568|
-000172  7800              LDRB     r0,[r0,#0]            ;275  ; frameIndex
-000174  1e40              SUBS     r0,r0,#1              ;275
-000176  4932              LDR      r1,|L6.576|
-000178  7809              LDRB     r1,[r1,#0]            ;275  ; frameLen
-00017a  eb0110c0          ADD      r0,r1,r0,LSL #7       ;275
-00017e  b282              UXTH     r2,r0                 ;275
-000180  4930              LDR      r1,|L6.580|
-000182  482c              LDR      r0,|L6.564|
-000184  6800              LDR      r0,[r0,#0]            ;275  ; flashAddr
-000186  f7fffffe          BL       SoftProgramUpdate
-00018a  482b              LDR      r0,|L6.568|
-00018c  7800              LDRB     r0,[r0,#0]            ;277  ; frameIndex
-00018e  1e40              SUBS     r0,r0,#1              ;277
-000190  492b              LDR      r1,|L6.576|
-000192  7809              LDRB     r1,[r1,#0]            ;277  ; frameLen
-000194  eb0112c0          ADD      r2,r1,r0,LSL #7       ;277
-000198  492a              LDR      r1,|L6.580|
-00019a  4825              LDR      r0,|L6.560|
-00019c  8800              LDRH     r0,[r0,#0]            ;277  ; fileCRC
-00019e  f7fffffe          BL       CRC_ComputeFile
-0001a2  4923              LDR      r1,|L6.560|
-0001a4  8008              STRH     r0,[r1,#0]            ;277
-0001a6  f44f6100          MOV      r1,#0x800             ;278
-0001aa  4826              LDR      r0,|L6.580|
-0001ac  f7fffffe          BL       __aeabi_memclr4
-0001b0  4820              LDR      r0,|L6.564|
-0001b2  6800              LDR      r0,[r0,#0]            ;279  ; flashAddr
-0001b4  f5006000          ADD      r0,r0,#0x800          ;279
-0001b8  491e              LDR      r1,|L6.564|
-0001ba  6008              STR      r0,[r1,#0]            ;279  ; flashAddr
-                  |L6.444|
-0001bc  f1080001          ADD      r0,r8,#1              ;254
-0001c0  fa1ff880          UXTH     r8,r0                 ;254
-                  |L6.452|
-0001c4  45c8              CMP      r8,r9                 ;254
-0001c6  f6ffaf7d          BLT      |L6.196|
-0001ca  4817              LDR      r0,|L6.552|
-0001cc  88c0              LDRH     r0,[r0,#6]            ;282  ; varOperation
-0001ce  42b0              CMP      r0,r6                 ;282
-0001d0  d120              BNE      |L6.532|
-0001d2  4815              LDR      r0,|L6.552|
-0001d4  8880              LDRH     r0,[r0,#4]            ;284  ; varOperation
-0001d6  4916              LDR      r1,|L6.560|
-0001d8  8809              LDRH     r1,[r1,#0]            ;284  ; fileCRC
-0001da  4288              CMP      r0,r1                 ;284
-0001dc  d007              BEQ      |L6.494|
-0001de  4620              MOV      r0,r4                 ;286
-0001e0  f7fffffe          BL       Mem_free
-0001e4  2000              MOVS     r0,#0                 ;287
-0001e6  4910              LDR      r1,|L6.552|
-0001e8  f881002d          STRB     r0,[r1,#0x2d]         ;287
-0001ec  e754              B        |L6.152|
-                  |L6.494|
-0001ee  4620              MOV      r0,r4                 ;291
-0001f0  f7fffffe          BL       Mem_free
-0001f4  2001              MOVS     r0,#1                 ;292
-0001f6  4914              LDR      r1,|L6.584|
-0001f8  7208              STRB     r0,[r1,#8]            ;292
-0001fa  480e              LDR      r0,|L6.564|
-0001fc  6800              LDR      r0,[r0,#0]            ;293  ; flashAddr
-0001fe  0ac0              LSRS     r0,r0,#11             ;293
-000200  6048              STR      r0,[r1,#4]            ;293  ; sysUpdateVar
-000202  4809              LDR      r0,|L6.552|
-000204  6800              LDR      r0,[r0,#0]            ;294  ; varOperation
-000206  6008              STR      r0,[r1,#0]            ;294  ; sysUpdateVar
-000208  4608              MOV      r0,r1                 ;296
-00020a  f7fffffe          BL       SbootParameterSaveToFlash
-00020e  b671              CPSID    f                     ;298
-000210  f7fffffe          BL       NVIC_SystemReset
-                  |L6.532|
-000214  1c70              ADDS     r0,r6,#1              ;301
-000216  4905              LDR      r1,|L6.556|
-000218  8008              STRH     r0,[r1,#0]            ;301
-00021a  4608              MOV      r0,r1                 ;302
-00021c  8800              LDRH     r0,[r0,#0]            ;302  ; currentNum
-00021e  f7fffffe          BL       SendFrameNum
-                  |L6.546|
-000222  bf00              NOP      
-000224  e738              B        |L6.152|
-;;;305    
+0000c4  4628              MOV      r0,r5                 ;246
+0000c6  1c69              ADDS     r1,r5,#1              ;246
+0000c8  b28d              UXTH     r5,r1                 ;246
+0000ca  5c20              LDRB     r0,[r4,r0]            ;246
+0000cc  1ec0              SUBS     r0,r0,#3              ;246
+0000ce  f00008ff          AND      r8,r0,#0xff           ;246
+0000d2  4628              MOV      r0,r5                 ;247
+0000d4  1c69              ADDS     r1,r5,#1              ;247
+0000d6  b28d              UXTH     r5,r1                 ;247
+0000d8  5c26              LDRB     r6,[r4,r0]            ;247
+0000da  4628              MOV      r0,r5                 ;248
+0000dc  1c69              ADDS     r1,r5,#1              ;248
+0000de  b28d              UXTH     r5,r1                 ;248
+0000e0  5c20              LDRB     r0,[r4,r0]            ;248
+0000e2  eb002006          ADD      r0,r0,r6,LSL #8       ;248
+0000e6  b286              UXTH     r6,r0                 ;248
+0000e8  1961              ADDS     r1,r4,r5              ;249
+0000ea  4a51              LDR      r2,|L6.560|
+0000ec  7812              LDRB     r2,[r2,#0]            ;249  ; frameIndex
+0000ee  4b52              LDR      r3,|L6.568|
+0000f0  eb0310c2          ADD      r0,r3,r2,LSL #7       ;249
+0000f4  4642              MOV      r2,r8                 ;249
+0000f6  f7fffffe          BL       __aeabi_memcpy
+0000fa  f1050080          ADD      r0,r5,#0x80           ;250
+0000fe  b285              UXTH     r5,r0                 ;250
+000100  484b              LDR      r0,|L6.560|
+000102  7800              LDRB     r0,[r0,#0]            ;251  ; frameIndex
+000104  1c40              ADDS     r0,r0,#1              ;251
+000106  494a              LDR      r1,|L6.560|
+000108  7008              STRB     r0,[r1,#0]            ;251
+00010a  4608              MOV      r0,r1                 ;252
+00010c  7800              LDRB     r0,[r0,#0]            ;252  ; frameIndex
+00010e  2810              CMP      r0,#0x10              ;252
+000110  db25              BLT      |L6.350|
+000112  4843              LDR      r0,|L6.544|
+000114  88c0              LDRH     r0,[r0,#6]            ;252  ; varOperation
+000116  42b0              CMP      r0,r6                 ;252
+000118  d021              BEQ      |L6.350|
+00011a  2000              MOVS     r0,#0                 ;254
+00011c  7008              STRB     r0,[r1,#0]            ;254
+00011e  4843              LDR      r0,|L6.556|
+000120  6800              LDR      r0,[r0,#0]            ;255  ; flashAddr
+000122  f7fffffe          BL       SoftErasePage
+000126  f44f6200          MOV      r2,#0x800             ;256
+00012a  4943              LDR      r1,|L6.568|
+00012c  483f              LDR      r0,|L6.556|
+00012e  6800              LDR      r0,[r0,#0]            ;256  ; flashAddr
+000130  f7fffffe          BL       SoftProgramUpdate
+000134  f44f6200          MOV      r2,#0x800             ;258
+000138  493f              LDR      r1,|L6.568|
+00013a  483b              LDR      r0,|L6.552|
+00013c  8800              LDRH     r0,[r0,#0]            ;258  ; fileCRC
+00013e  f7fffffe          BL       CRC_ComputeFile
+000142  4939              LDR      r1,|L6.552|
+000144  8008              STRH     r0,[r1,#0]            ;258
+000146  f44f6100          MOV      r1,#0x800             ;259
+00014a  483b              LDR      r0,|L6.568|
+00014c  f7fffffe          BL       __aeabi_memclr
+000150  4836              LDR      r0,|L6.556|
+000152  6800              LDR      r0,[r0,#0]            ;260  ; flashAddr
+000154  f5006000          ADD      r0,r0,#0x800          ;260
+000158  4934              LDR      r1,|L6.556|
+00015a  6008              STR      r0,[r1,#0]            ;260  ; flashAddr
+00015c  e029              B        |L6.434|
+                  |L6.350|
+00015e  4830              LDR      r0,|L6.544|
+000160  88c0              LDRH     r0,[r0,#6]            ;262  ; varOperation
+000162  42b0              CMP      r0,r6                 ;262
+000164  d125              BNE      |L6.434|
+000166  4831              LDR      r0,|L6.556|
+000168  6800              LDR      r0,[r0,#0]            ;264  ; flashAddr
+00016a  f7fffffe          BL       SoftErasePage
+00016e  4830              LDR      r0,|L6.560|
+000170  7800              LDRB     r0,[r0,#0]            ;265  ; frameIndex
+000172  1e40              SUBS     r0,r0,#1              ;265
+000174  eb0810c0          ADD      r0,r8,r0,LSL #7       ;265
+000178  b282              UXTH     r2,r0                 ;265
+00017a  492f              LDR      r1,|L6.568|
+00017c  482b              LDR      r0,|L6.556|
+00017e  6800              LDR      r0,[r0,#0]            ;265  ; flashAddr
+000180  f7fffffe          BL       SoftProgramUpdate
+000184  482a              LDR      r0,|L6.560|
+000186  7800              LDRB     r0,[r0,#0]            ;267  ; frameIndex
+000188  1e40              SUBS     r0,r0,#1              ;267
+00018a  eb0812c0          ADD      r2,r8,r0,LSL #7       ;267
+00018e  492a              LDR      r1,|L6.568|
+000190  4825              LDR      r0,|L6.552|
+000192  8800              LDRH     r0,[r0,#0]            ;267  ; fileCRC
+000194  f7fffffe          BL       CRC_ComputeFile
+000198  4923              LDR      r1,|L6.552|
+00019a  8008              STRH     r0,[r1,#0]            ;267
+00019c  f44f6100          MOV      r1,#0x800             ;268
+0001a0  4825              LDR      r0,|L6.568|
+0001a2  f7fffffe          BL       __aeabi_memclr
+0001a6  4821              LDR      r0,|L6.556|
+0001a8  6800              LDR      r0,[r0,#0]            ;269  ; flashAddr
+0001aa  f5006000          ADD      r0,r0,#0x800          ;269
+0001ae  491f              LDR      r1,|L6.556|
+0001b0  6008              STR      r0,[r1,#0]            ;269  ; flashAddr
+                  |L6.434|
+0001b2  f1090001          ADD      r0,r9,#1              ;244
+0001b6  fa1ff980          UXTH     r9,r0                 ;244
+                  |L6.442|
+0001ba  45d1              CMP      r9,r10                ;244
+0001bc  db82              BLT      |L6.196|
+0001be  4818              LDR      r0,|L6.544|
+0001c0  88c0              LDRH     r0,[r0,#6]            ;272  ; varOperation
+0001c2  42b0              CMP      r0,r6                 ;272
+0001c4  d122              BNE      |L6.524|
+0001c6  4816              LDR      r0,|L6.544|
+0001c8  8880              LDRH     r0,[r0,#4]            ;274  ; varOperation
+0001ca  4917              LDR      r1,|L6.552|
+0001cc  8809              LDRH     r1,[r1,#0]            ;274  ; fileCRC
+0001ce  4288              CMP      r0,r1                 ;274
+0001d0  d007              BEQ      |L6.482|
+0001d2  4620              MOV      r0,r4                 ;276
+0001d4  f7fffffe          BL       Mem_free
+0001d8  2000              MOVS     r0,#0                 ;277
+0001da  4911              LDR      r1,|L6.544|
+0001dc  f881002d          STRB     r0,[r1,#0x2d]         ;277
+0001e0  e75a              B        |L6.152|
+                  |L6.482|
+0001e2  4620              MOV      r0,r4                 ;281
+0001e4  f7fffffe          BL       Mem_free
+0001e8  2001              MOVS     r0,#1                 ;282
+0001ea  4914              LDR      r1,|L6.572|
+0001ec  7008              STRB     r0,[r1,#0]            ;282
+0001ee  480f              LDR      r0,|L6.556|
+0001f0  6800              LDR      r0,[r0,#0]            ;283  ; flashAddr
+0001f2  0ac0              LSRS     r0,r0,#11             ;283
+0001f4  f8c10001          STR      r0,[r1,#1]            ;283  ; sysUpdateVar
+0001f8  4809              LDR      r0,|L6.544|
+0001fa  6800              LDR      r0,[r0,#0]            ;284  ; varOperation
+0001fc  f8c10005          STR      r0,[r1,#5]            ;284  ; sysUpdateVar
+000200  4608              MOV      r0,r1                 ;286
+000202  f7fffffe          BL       SbootParameterSaveToFlash
+000206  b671              CPSID    f                     ;288
+000208  f7fffffe          BL       NVIC_SystemReset
+                  |L6.524|
+00020c  1c70              ADDS     r0,r6,#1              ;291
+00020e  4905              LDR      r1,|L6.548|
+000210  8008              STRH     r0,[r1,#0]            ;291
+000212  4608              MOV      r0,r1                 ;292
+000214  8800              LDRH     r0,[r0,#0]            ;292  ; currentNum
+000216  f7fffffe          BL       SendFrameNum
+                  |L6.538|
+00021a  bf00              NOP      
+00021c  e73c              B        |L6.152|
+;;;295    
                           ENDP
 
-000226  0000              DCW      0x0000
-                  |L6.552|
+00021e  0000              DCW      0x0000
+                  |L6.544|
                           DCD      varOperation
-                  |L6.556|
+                  |L6.548|
                           DCD      currentNum
-                  |L6.560|
+                  |L6.552|
                           DCD      fileCRC
-                  |L6.564|
+                  |L6.556|
                           DCD      flashAddr
-                  |L6.568|
+                  |L6.560|
                           DCD      frameIndex
-                  |L6.572|
+                  |L6.564|
                           DCD      configData
-                  |L6.576|
-                          DCD      frameLen
-                  |L6.580|
+                  |L6.568|
                           DCD      updateBuff
-                  |L6.584|
+                  |L6.572|
                           DCD      sysUpdateVar
 
                           AREA ||i.RecvLoginDatDeal||, CODE, READONLY, ALIGN=2
 
                   RecvLoginDatDeal PROC
-;;;126    
-;;;127    static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
+;;;108    
+;;;109    static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 000000  e92d43f8          PUSH     {r3-r9,lr}
-;;;128    {
+;;;110    {
 000004  4604              MOV      r4,r0
-;;;129    	uint16_t cmdId = 0;
+;;;111    	uint16_t cmdId = 0;
 000006  f04f0900          MOV      r9,#0
-;;;130    	uint8_t  ipLen = 0;
+;;;112    	uint8_t  ipLen = 0;
 00000a  2000              MOVS     r0,#0
 00000c  9000              STR      r0,[sp,#0]
-;;;131    	uint32_t ecuId = 0;
+;;;113    	uint32_t ecuId = 0;
 00000e  2600              MOVS     r6,#0
-;;;132    	uint32_t serverTime  = 0;
+;;;114    	uint32_t serverTime  = 0;
 000010  4680              MOV      r8,r0
-;;;133    	uint32_t softVersion = 0;
+;;;115    	uint32_t softVersion = 0;
 000012  2700              MOVS     r7,#0
-;;;134    	uint16_t offset = 3;
+;;;116    	uint16_t offset = 3;
 000014  2503              MOVS     r5,#3
-;;;135    	
-;;;136    	cmdId = ptr[offset++];
+;;;117    	
+;;;118    	cmdId = ptr[offset++];
 000016  4629              MOV      r1,r5
 000018  1c6d              ADDS     r5,r5,#1
 00001a  f8149001          LDRB     r9,[r4,r1]
-;;;137    	cmdId = (cmdId<<8) + ptr[offset++];
+;;;119    	cmdId = (cmdId<<8) + ptr[offset++];
 00001e  4629              MOV      r1,r5
 000020  1c6d              ADDS     r5,r5,#1
 000022  5c60              LDRB     r0,[r4,r1]
 000024  eb002009          ADD      r0,r0,r9,LSL #8
 000028  fa1ff980          UXTH     r9,r0
-;;;138    
-;;;139    	serverTime = ptr[offset++];     //得到服务器时间
+;;;120    
+;;;121    	serverTime = ptr[offset++];     //得到服务器时间
 00002c  4629              MOV      r1,r5
 00002e  1c6d              ADDS     r5,r5,#1
 000030  f8148001          LDRB     r8,[r4,r1]
-;;;140    	serverTime = (serverTime << 8) + ptr[offset++];
+;;;122    	serverTime = (serverTime << 8) + ptr[offset++];
 000034  4629              MOV      r1,r5
 000036  1c6d              ADDS     r5,r5,#1
 000038  5c60              LDRB     r0,[r4,r1]
 00003a  eb002808          ADD      r8,r0,r8,LSL #8
-;;;141    	serverTime = (serverTime << 8) + ptr[offset++];
+;;;123    	serverTime = (serverTime << 8) + ptr[offset++];
 00003e  4629              MOV      r1,r5
 000040  1c6d              ADDS     r5,r5,#1
 000042  5c60              LDRB     r0,[r4,r1]
 000044  eb002808          ADD      r8,r0,r8,LSL #8
-;;;142    	serverTime = (serverTime << 8) + ptr[offset++];
+;;;124    	serverTime = (serverTime << 8) + ptr[offset++];
 000048  4629              MOV      r1,r5
 00004a  1c6d              ADDS     r5,r5,#1
 00004c  5c60              LDRB     r0,[r4,r1]
 00004e  eb002808          ADD      r8,r0,r8,LSL #8
-;;;143    	
-;;;144    	RTC_Time_Adjust(serverTime);//登录的时候，跟服务器时间进行校时。
+;;;125    	
+;;;126    	RTC_Time_Adjust(serverTime);//登录的时候，跟服务器时间进行校时。
 000052  4640              MOV      r0,r8
 000054  f7fffffe          BL       RTC_Time_Adjust
-;;;145    	
-;;;146    	softVersion = ptr[offset++];    //得到软件版本号
+;;;127    	
+;;;128    	softVersion = ptr[offset++];    //得到软件版本号
 000058  4629              MOV      r1,r5
 00005a  1c6d              ADDS     r5,r5,#1
 00005c  5c67              LDRB     r7,[r4,r1]
-;;;147    	softVersion = (softVersion << 8) + ptr[offset++];
+;;;129    	softVersion = (softVersion << 8) + ptr[offset++];
 00005e  4629              MOV      r1,r5
 000060  1c6d              ADDS     r5,r5,#1
 000062  5c60              LDRB     r0,[r4,r1]
 000064  eb002707          ADD      r7,r0,r7,LSL #8
-;;;148    	softVersion = (softVersion << 8) + ptr[offset++];
+;;;130    	softVersion = (softVersion << 8) + ptr[offset++];
 000068  4629              MOV      r1,r5
 00006a  1c6d              ADDS     r5,r5,#1
 00006c  5c60              LDRB     r0,[r4,r1]
 00006e  eb002707          ADD      r7,r0,r7,LSL #8
-;;;149    	softVersion = (softVersion << 8) + ptr[offset++];
+;;;131    	softVersion = (softVersion << 8) + ptr[offset++];
 000072  4629              MOV      r1,r5
 000074  1c6d              ADDS     r5,r5,#1
 000076  5c60              LDRB     r0,[r4,r1]
 000078  eb002707          ADD      r7,r0,r7,LSL #8
-;;;150    	
-;;;151    	ecuId = ptr[offset++];          //得到ECU ID
+;;;132    	
+;;;133    	ecuId = ptr[offset++];          //得到ECU ID
 00007c  4629              MOV      r1,r5
 00007e  1c6d              ADDS     r5,r5,#1
 000080  5c66              LDRB     r6,[r4,r1]
-;;;152    	ecuId = (ecuId << 8) + ptr[offset++];
+;;;134    	ecuId = (ecuId << 8) + ptr[offset++];
 000082  4629              MOV      r1,r5
 000084  1c6d              ADDS     r5,r5,#1
 000086  5c60              LDRB     r0,[r4,r1]
 000088  eb002606          ADD      r6,r0,r6,LSL #8
-;;;153    	ecuId = (ecuId << 8) + ptr[offset++];
+;;;135    	ecuId = (ecuId << 8) + ptr[offset++];
 00008c  4629              MOV      r1,r5
 00008e  1c6d              ADDS     r5,r5,#1
 000090  5c60              LDRB     r0,[r4,r1]
 000092  eb002606          ADD      r6,r0,r6,LSL #8
-;;;154    	ecuId = (ecuId << 8) + ptr[offset++];
+;;;136    	ecuId = (ecuId << 8) + ptr[offset++];
 000096  4629              MOV      r1,r5
 000098  1c6d              ADDS     r5,r5,#1
 00009a  5c60              LDRB     r0,[r4,r1]
 00009c  eb002606          ADD      r6,r0,r6,LSL #8
-;;;155    	
-;;;156    	ipLen = ptr[offset++];              //得到IP长度
+;;;137    	
+;;;138    	ipLen = ptr[offset++];              //得到IP长度
 0000a0  4628              MOV      r0,r5
 0000a2  1c69              ADDS     r1,r5,#1
 0000a4  b28d              UXTH     r5,r1
 0000a6  5c20              LDRB     r0,[r4,r0]
 0000a8  9000              STR      r0,[sp,#0]
-;;;157    	memset(varOperation.newIP_Addr,0,18);//清零
-0000aa  4828              LDR      r0,|L7.332|
+;;;139    	memset(varOperation.newIP_Addr,0,18);//清零
+0000aa  4830              LDR      r0,|L7.364|
 0000ac  f7fffffe          BL       __aeabi_memclr
-;;;158    	memcpy(varOperation.newIP_Addr,&ptr[offset],ipLen); //得到IP地址
+;;;140    	memcpy(varOperation.newIP_Addr,&ptr[offset],ipLen); //得到IP地址
 0000b0  1961              ADDS     r1,r4,r5
 0000b2  f89d2000          LDRB     r2,[sp,#0]
-0000b6  4825              LDR      r0,|L7.332|
+0000b6  482d              LDR      r0,|L7.364|
 0000b8  f7fffffe          BL       __aeabi_memcpy
-;;;159    	
-;;;160    	varOperation.newIP_Potr = ptr[offset + ipLen];      //得到端口号
+;;;141    	
+;;;142    	varOperation.newIP_Potr = ptr[offset + ipLen];      //得到端口号
 0000bc  f89d0000          LDRB     r0,[sp,#0]
 0000c0  4428              ADD      r0,r0,r5
 0000c2  5c20              LDRB     r0,[r4,r0]
-0000c4  4921              LDR      r1,|L7.332|
+0000c4  4929              LDR      r1,|L7.364|
 0000c6  3946              SUBS     r1,r1,#0x46
 0000c8  f8a10058          STRH     r0,[r1,#0x58]
-;;;161    	varOperation.newIP_Potr = (varOperation.newIP_Potr << 8) + ptr[offset + ipLen + 1];
+;;;143    	varOperation.newIP_Potr = (varOperation.newIP_Potr << 8) + ptr[offset + ipLen + 1];
 0000cc  f89d0000          LDRB     r0,[sp,#0]
 0000d0  4428              ADD      r0,r0,r5
 0000d2  1c40              ADDS     r0,r0,#1
 0000d4  5c20              LDRB     r0,[r4,r0]
 0000d6  f8911058          LDRB     r1,[r1,#0x58]  ; varOperation
 0000da  eb002001          ADD      r0,r0,r1,LSL #8
-0000de  491b              LDR      r1,|L7.332|
+0000de  4923              LDR      r1,|L7.364|
 0000e0  3946              SUBS     r1,r1,#0x46
 0000e2  f8a10058          STRH     r0,[r1,#0x58]
-;;;162    	
-;;;163    	if(softVersion != sysUpdateVar.softVersion) //先考虑OTA升级
-0000e6  481a              LDR      r0,|L7.336|
-0000e8  6800              LDR      r0,[r0,#0]  ; sysUpdateVar
-0000ea  42b8              CMP      r0,r7
-0000ec  d012              BEQ      |L7.276|
-;;;164    	{
-;;;165    		varOperation.newSoftVersion = softVersion;
-0000ee  4608              MOV      r0,r1
-0000f0  6007              STR      r7,[r0,#0]  ; varOperation
-;;;166    		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
-0000f2  466a              MOV      r2,sp
-0000f4  2164              MOVS     r1,#0x64
-0000f6  4817              LDR      r0,|L7.340|
-0000f8  6800              LDR      r0,[r0,#0]  ; sendMsg
-0000fa  f7fffffe          BL       OSSemPend
-;;;167    		varOperation.isDataFlow     = 1;  // OTA进行升级 停止数据流，一心只为OTA升级
-0000fe  2001              MOVS     r0,#1
-000100  4912              LDR      r1,|L7.332|
-000102  3946              SUBS     r1,r1,#0x46
-000104  f881002d          STRB     r0,[r1,#0x2d]
-;;;168    		sysUpdateVar.isSoftUpdate   = 1;  
-000108  4911              LDR      r1,|L7.336|
-00010a  7208              STRB     r0,[r1,#8]
-;;;169    		
-;;;170    		SendFrameNum(0x8000);             //发送0x8000以请求程序文件大小以及CRC校验
-00010c  03c0              LSLS     r0,r0,#15
-00010e  f7fffffe          BL       SendFrameNum
-000112  e018              B        |L7.326|
-                  |L7.276|
-;;;171    	}
-;;;172    	else if(ecuId != sysUpdateVar.ecuVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
-000114  480e              LDR      r0,|L7.336|
-000116  f8d00009          LDR      r0,[r0,#9]  ; sysUpdateVar
-00011a  42b0              CMP      r0,r6
-00011c  d013              BEQ      |L7.326|
-00011e  480c              LDR      r0,|L7.336|
-000120  7a00              LDRB     r0,[r0,#8]  ; sysUpdateVar
-000122  b980              CBNZ     r0,|L7.326|
-;;;173    	{
-;;;174    		varOperation.newECUVersion = ecuId;
-000124  4809              LDR      r0,|L7.332|
-000126  3846              SUBS     r0,r0,#0x46
-000128  f8c0606a          STR      r6,[r0,#0x6a]  ; varOperation
-;;;175    		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
-00012c  466a              MOV      r2,sp
-00012e  2164              MOVS     r1,#0x64
-000130  4808              LDR      r0,|L7.340|
-000132  6800              LDR      r0,[r0,#0]  ; sendMsg
-000134  f7fffffe          BL       OSSemPend
-;;;176    		varOperation.isDataFlow     = 1;  //配置文件升级，停止数据流，一心只为配置
-000138  2001              MOVS     r0,#1
-00013a  4904              LDR      r1,|L7.332|
-00013c  3946              SUBS     r1,r1,#0x46
-00013e  f881002d          STRB     r0,[r1,#0x2d]
-;;;177    		
-;;;178    		GetConfigInfo();                  //请求配置文件 - 发送0x4000及版本信息
-000142  f7fffffe          BL       GetConfigInfo
-                  |L7.326|
-;;;179    	}
-;;;180    	
-;;;181    	//todo:IP更改，后期会有需要
-;;;182    //	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
-;;;183    //	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
-;;;184    //	{
-;;;185    //		memset(varOperation.ipAddr,0,18);//将原始IP清零
-;;;186    //		memcpy(varOperation.ipAddr,varOperation.newIP_Addr,18);//新IP
-;;;187    //		varOperation.ipPotr = varOperation.newIP_Potr;         //新端口
-;;;188    //		varOperation.isDataFlow = 1; //停止数据流
-;;;189    //		OSSemPend(sendMsg,0,&ipLen);//等待CDMA发送空闲，不能在其发送数据的时候，重新TCP连接
-;;;190    //		
-;;;191    //		CDMASendCmd((const uint8_t*)"AT+ZIPCLOSE=0\r","ZIPCLOSE",sizeof("AT+ZIPCLOSE=0\r"));//关闭TCP连接
-;;;192    //	}
-;;;193    }
-000146  e8bd83f8          POP      {r3-r9,pc}
-;;;194    static void SendFrameNum(uint16_t frameNum)
+;;;144    	
+;;;145    	if(softVersion != sysUpdateVar.softVersion) //先考虑OTA升级
+0000e6  4822              LDR      r0,|L7.368|
+0000e8  f8d00005          LDR      r0,[r0,#5]  ; sysUpdateVar
+0000ec  42b8              CMP      r0,r7
+0000ee  d012              BEQ      |L7.278|
+;;;146    	{
+;;;147    		varOperation.newSoftVersion = softVersion;
+0000f0  4608              MOV      r0,r1
+0000f2  6007              STR      r7,[r0,#0]  ; varOperation
+;;;148    		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
+0000f4  466a              MOV      r2,sp
+0000f6  2164              MOVS     r1,#0x64
+0000f8  481e              LDR      r0,|L7.372|
+0000fa  6800              LDR      r0,[r0,#0]  ; sendMsg
+0000fc  f7fffffe          BL       OSSemPend
+;;;149    		varOperation.isDataFlow     = 1;  // OTA进行升级 停止数据流，一心只为OTA升级
+000100  2001              MOVS     r0,#1
+000102  491a              LDR      r1,|L7.364|
+000104  3946              SUBS     r1,r1,#0x46
+000106  f881002d          STRB     r0,[r1,#0x2d]
+;;;150    		sysUpdateVar.isSoftUpdate   = 1;  
+00010a  4919              LDR      r1,|L7.368|
+00010c  7008              STRB     r0,[r1,#0]
+;;;151    		
+;;;152    		SendFrameNum(0x8000);             //发送0x8000以请求程序文件大小以及CRC校验
+00010e  03c0              LSLS     r0,r0,#15
+000110  f7fffffe          BL       SendFrameNum
+000114  e027              B        |L7.358|
+                  |L7.278|
+;;;153    	}
+;;;154    	else if(ecuId != sysUpdateVar.ecuVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
+000116  4816              LDR      r0,|L7.368|
+000118  f8d00009          LDR      r0,[r0,#9]  ; sysUpdateVar
+00011c  42b0              CMP      r0,r6
+00011e  d014              BEQ      |L7.330|
+000120  4813              LDR      r0,|L7.368|
+000122  7800              LDRB     r0,[r0,#0]  ; sysUpdateVar
+000124  b988              CBNZ     r0,|L7.330|
+;;;155    	{
+;;;156    		varOperation.newECUVersion = ecuId;
+000126  4811              LDR      r0,|L7.364|
+000128  3846              SUBS     r0,r0,#0x46
+00012a  f8c0606a          STR      r6,[r0,#0x6a]  ; varOperation
+;;;157    		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
+00012e  466a              MOV      r2,sp
+000130  2164              MOVS     r1,#0x64
+000132  4810              LDR      r0,|L7.372|
+000134  6800              LDR      r0,[r0,#0]  ; sendMsg
+000136  f7fffffe          BL       OSSemPend
+;;;158    		varOperation.isDataFlow     = 1;  //配置文件升级，停止数据流，一心只为配置
+00013a  2001              MOVS     r0,#1
+00013c  490b              LDR      r1,|L7.364|
+00013e  3946              SUBS     r1,r1,#0x46
+000140  f881002d          STRB     r0,[r1,#0x2d]
+;;;159    		
+;;;160    		GetConfigInfo();                  //请求配置文件 - 发送0x4000及版本信息
+000144  f7fffffe          BL       GetConfigInfo
+000148  e00d              B        |L7.358|
+                  |L7.330|
+;;;161    	}
+;;;162    	else 
+;;;163    	{
+;;;164    		varOperation.isLoginDeal = 1;  //没有登录报文需要处理
+00014a  2001              MOVS     r0,#1
+00014c  4907              LDR      r1,|L7.364|
+00014e  3946              SUBS     r1,r1,#0x46
+000150  f8810030          STRB     r0,[r1,#0x30]
+;;;165    		if(OSSemAccept(LoginMes) == 0)
+000154  4808              LDR      r0,|L7.376|
+000156  6800              LDR      r0,[r0,#0]  ; LoginMes
+000158  f7fffffe          BL       OSSemAccept
+00015c  b918              CBNZ     r0,|L7.358|
+;;;166    			OSSemPost(LoginMes);
+00015e  4806              LDR      r0,|L7.376|
+000160  6800              LDR      r0,[r0,#0]  ; LoginMes
+000162  f7fffffe          BL       OSSemPost
+                  |L7.358|
+;;;167    	}
+;;;168    	
+;;;169    	
+;;;170    	//todo:IP更改，后期会有需要
+;;;171    //	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
+;;;172    //	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
+;;;173    //	{
+;;;174    //		memset(varOperation.ipAddr,0,18);//将原始IP清零
+;;;175    //		memcpy(varOperation.ipAddr,varOperation.newIP_Addr,18);//新IP
+;;;176    //		varOperation.ipPotr = varOperation.newIP_Potr;         //新端口
+;;;177    //		varOperation.isDataFlow = 1; //停止数据流
+;;;178    //		OSSemPend(sendMsg,0,&ipLen);//等待CDMA发送空闲，不能在其发送数据的时候，重新TCP连接
+;;;179    //		
+;;;180    //		CDMASendCmd((const uint8_t*)"AT+ZIPCLOSE=0\r","ZIPCLOSE",sizeof("AT+ZIPCLOSE=0\r"));//关闭TCP连接
+;;;181    //	}
+;;;182    }
+000166  e8bd83f8          POP      {r3-r9,pc}
+;;;183    static void SendFrameNum(uint16_t frameNum)
                           ENDP
 
-00014a  0000              DCW      0x0000
-                  |L7.332|
+00016a  0000              DCW      0x0000
+                  |L7.364|
                           DCD      varOperation+0x46
-                  |L7.336|
+                  |L7.368|
                           DCD      sysUpdateVar
-                  |L7.340|
+                  |L7.372|
                           DCD      sendMsg
+                  |L7.376|
+                          DCD      LoginMes
 
                           AREA ||i.SendConfigNum||, CODE, READONLY, ALIGN=2
 
                   SendConfigNum PROC
-;;;306    
-;;;307    static void SendConfigNum(uint16_t cmd)
+;;;296    
+;;;297    static void SendConfigNum(uint16_t cmd)
 000000  b570              PUSH     {r4-r6,lr}
-;;;308    {
+;;;298    {
 000002  4605              MOV      r5,r0
-;;;309    	_CDMADataToSend* otaUpdatSend;
-;;;310    	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
+;;;299    	_CDMADataToSend* otaUpdatSend;
+;;;300    	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
 000004  203c              MOVS     r0,#0x3c
 000006  f7fffffe          BL       CDMNSendInfoInit
 00000a  4604              MOV      r4,r0
-;;;311    
-;;;312    	otaUpdatSend->data[otaUpdatSend->datLength++] = 7;   //长度
+;;;301    
+;;;302    	otaUpdatSend->data[otaUpdatSend->datLength++] = 7;   //长度
 00000c  2107              MOVS     r1,#7
 00000e  8822              LDRH     r2,[r4,#0]
 000010  1c50              ADDS     r0,r2,#1
 000012  8020              STRH     r0,[r4,#0]
 000014  6860              LDR      r0,[r4,#4]
 000016  5481              STRB     r1,[r0,r2]
-;;;313    	otaUpdatSend->data[otaUpdatSend->datLength++] = (cmd>>8) &0x00FF;
+;;;303    	otaUpdatSend->data[otaUpdatSend->datLength++] = (cmd>>8) &0x00FF;
 000018  0a29              LSRS     r1,r5,#8
 00001a  8822              LDRH     r2,[r4,#0]
 00001c  1c50              ADDS     r0,r2,#1
 00001e  8020              STRH     r0,[r4,#0]
 000020  6860              LDR      r0,[r4,#4]
 000022  5481              STRB     r1,[r0,r2]
-;;;314    	otaUpdatSend->data[otaUpdatSend->datLength++] = cmd &0x00FF;
+;;;304    	otaUpdatSend->data[otaUpdatSend->datLength++] = cmd &0x00FF;
 000024  8822              LDRH     r2,[r4,#0]
 000026  1c50              ADDS     r0,r2,#1
 000028  8020              STRH     r0,[r4,#0]
 00002a  6860              LDR      r0,[r4,#4]
 00002c  5485              STRB     r5,[r0,r2]
-;;;315    	//请求升级的版本
-;;;316    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
+;;;305    	//请求升级的版本
+;;;306    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
 00002e  4817              LDR      r0,|L8.140|
 000030  f8d0006a          LDR      r0,[r0,#0x6a]  ; varOperation
 000034  0e00              LSRS     r0,r0,#24
@@ -1394,7 +1389,7 @@
 00003a  8021              STRH     r1,[r4,#0]
 00003c  6861              LDR      r1,[r4,#4]
 00003e  5488              STRB     r0,[r1,r2]
-;;;317    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
+;;;307    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
 000040  4812              LDR      r0,|L8.140|
 000042  f8d0006a          LDR      r0,[r0,#0x6a]  ; varOperation
 000046  f3c04107          UBFX     r1,r0,#16,#8
@@ -1403,7 +1398,7 @@
 00004e  8020              STRH     r0,[r4,#0]
 000050  6860              LDR      r0,[r4,#4]
 000052  5481              STRB     r1,[r0,r2]
-;;;318    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
+;;;308    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
 000054  480d              LDR      r0,|L8.140|
 000056  f8b0006a          LDRH     r0,[r0,#0x6a]  ; varOperation
 00005a  f3c02107          UBFX     r1,r0,#8,#8
@@ -1412,7 +1407,7 @@
 000062  8020              STRH     r0,[r4,#0]
 000064  6860              LDR      r0,[r4,#4]
 000066  5481              STRB     r1,[r0,r2]
-;;;319    	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
+;;;309    	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
 000068  4808              LDR      r0,|L8.140|
 00006a  f890106a          LDRB     r1,[r0,#0x6a]  ; varOperation
 00006e  8822              LDRH     r2,[r4,#0]
@@ -1420,19 +1415,19 @@
 000072  8020              STRH     r0,[r4,#0]
 000074  6860              LDR      r0,[r4,#4]
 000076  5481              STRB     r1,[r0,r2]
-;;;320    	
-;;;321    	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
+;;;310    	
+;;;311    	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
 000078  4620              MOV      r0,r4
 00007a  f7fffffe          BL       CDMASendDataPack
-;;;322    	
-;;;323    	OSQPost(CDMASendQ,otaUpdatSend);
+;;;312    	
+;;;313    	OSQPost(CDMASendQ,otaUpdatSend);
 00007e  4621              MOV      r1,r4
 000080  4803              LDR      r0,|L8.144|
 000082  6800              LDR      r0,[r0,#0]  ; CDMASendQ
 000084  f7fffffe          BL       OSQPost
-;;;324    }
+;;;314    }
 000088  bd70              POP      {r4-r6,pc}
-;;;325    static void ConfigUpdata(uint8_t* ptrDeal )
+;;;315    static void ConfigUpdata(uint8_t* ptrDeal )
                           ENDP
 
 00008a  0000              DCW      0x0000
@@ -1444,81 +1439,75 @@
                           AREA ||i.SendFrameNum||, CODE, READONLY, ALIGN=2
 
                   SendFrameNum PROC
-;;;193    }
-;;;194    static void SendFrameNum(uint16_t frameNum)
+;;;182    }
+;;;183    static void SendFrameNum(uint16_t frameNum)
 000000  b570              PUSH     {r4-r6,lr}
-;;;195    {
+;;;184    {
 000002  4605              MOV      r5,r0
-;;;196    	_CDMADataToSend* otaUpdatSend;
-;;;197    	otaUpdatSend = CDMNSendInfoInit(60);//
+;;;185    	_CDMADataToSend* otaUpdatSend;
+;;;186    	otaUpdatSend = CDMNSendInfoInit(60);//
 000004  203c              MOVS     r0,#0x3c
 000006  f7fffffe          BL       CDMNSendInfoInit
 00000a  4604              MOV      r4,r0
-;;;198    	otaUpdatSend->data[otaUpdatSend->datLength++] =  3;   //长度
+;;;187    	otaUpdatSend->data[otaUpdatSend->datLength++] =  3;   //长度
 00000c  2103              MOVS     r1,#3
 00000e  8822              LDRH     r2,[r4,#0]
 000010  1c50              ADDS     r0,r2,#1
 000012  8020              STRH     r0,[r4,#0]
 000014  6860              LDR      r0,[r4,#4]
 000016  5481              STRB     r1,[r0,r2]
-;;;199    	otaUpdatSend->data[otaUpdatSend->datLength++] = (frameNum >> 8) &0x00FF;
+;;;188    	otaUpdatSend->data[otaUpdatSend->datLength++] = (frameNum >> 8) &0x00FF;
 000018  0a29              LSRS     r1,r5,#8
 00001a  8822              LDRH     r2,[r4,#0]
 00001c  1c50              ADDS     r0,r2,#1
 00001e  8020              STRH     r0,[r4,#0]
 000020  6860              LDR      r0,[r4,#4]
 000022  5481              STRB     r1,[r0,r2]
-;;;200    	otaUpdatSend->data[otaUpdatSend->datLength++] = frameNum & 0x00FF;
+;;;189    	otaUpdatSend->data[otaUpdatSend->datLength++] = frameNum & 0x00FF;
 000024  8822              LDRH     r2,[r4,#0]
 000026  1c50              ADDS     r0,r2,#1
 000028  8020              STRH     r0,[r4,#0]
 00002a  6860              LDR      r0,[r4,#4]
 00002c  5485              STRB     r5,[r0,r2]
-;;;201    	
-;;;202    	CDMASendDataPack(otaUpdatSend);//将程序请求帧进行封包
+;;;190    	
+;;;191    	CDMASendDataPack(otaUpdatSend);//将程序请求帧进行封包
 00002e  4620              MOV      r0,r4
 000030  f7fffffe          BL       CDMASendDataPack
-;;;203    	
-;;;204    	OSQPost(CDMASendQ,otaUpdatSend);
+;;;192    	
+;;;193    	OSQPost(CDMASendQ,otaUpdatSend);
 000034  4621              MOV      r1,r4
 000036  4802              LDR      r0,|L9.64|
 000038  6800              LDR      r0,[r0,#0]  ; CDMASendQ
 00003a  f7fffffe          BL       OSQPost
-;;;205    }
+;;;194    }
 00003e  bd70              POP      {r4-r6,pc}
-;;;206    extern uint8_t configData[2048];//用来存储配置PID
+;;;195    extern uint8_t configData[2048];//用来存储配置PID
                           ENDP
 
                   |L9.64|
                           DCD      CDMASendQ
 
-                          AREA ||.bss||, DATA, NOINIT, ALIGN=2
+                          AREA ||.bss||, DATA, NOINIT, ALIGN=0
 
-                  ZIPRecBuf
-                          %        20
                   updateBuff
                           %        2048
 
                           AREA ||.data||, DATA, ALIGN=2
 
-                  ZIPRecv_Q
-                          DCD      0x00000000
                   currentNum
-000004  0000              DCW      0x0000
+000000  0000              DCW      0x0000
                   fileCRC
-000006  0000              DCW      0x0000
+000002  0000              DCW      0x0000
                   flashAddr
                           DCD      0x00000000
                   frameIndex
-00000c  00                DCB      0x00
-                  frameLen
-00000d  00                DCB      0x00
+000008  0000              DCB      0x00,0x00
+                  |symbol_number.36|
+00000a  0000              DCW      0x0000
                   |symbol_number.37|
-00000e  0000              DCW      0x0000
-                  |symbol_number.38|
-000010  0000              DCW      0x0000
+00000c  0000              DCW      0x0000
                   pidPackNum
-000012  00                DCB      0x00
+00000e  00                DCB      0x00
 
 ;*** Start embedded assembler ***
 

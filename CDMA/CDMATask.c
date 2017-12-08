@@ -30,20 +30,10 @@ const char at_TCPSend[]     = "AT+ZIPSEND=0,%d\r";  //ÏòÁ¬½ÓºÅÎª0µÄµØÖ··¢ËÍ%d¸öÊ
 // todo:ĞèÒª½«·¢ËÍµÄ³¤¶È¿ÉÅäÖÃ£¬%d
 												  
 const uint8_t at_GetIP[]    = "AT+ZIPGETIP\r";      //»ñÈ¡±¾µØIP										  
-/***********************    CDMA½ÓÊÕ·¢ËÍ¶ÓÁĞµÄÏà¹ØÉùÃ÷    ***********************/
-#define CDMARECBUF_SIZE  10         //½ÓÊÕÏûÏ¢¶ÓÁĞ±£´æÏûÏ¢µÄ×î´óÁ¿
-void *cdmaRecBuf[CDMARECBUF_SIZE];  //ÓÃÓÚ´æ·ÅÖ¸ÏòÓÊÏäµÄÖ¸Õë
-OS_EVENT *CDMARecieveQ;             //Ö¸ÏòCDMA½ÓÊÕÏûÏ¢¶ÓÁĞµÄÖ¸Õë
-
-#define CDMASENDBUF_SIZE  5         //·¢ËÍÏûÏ¢¶ÓÁĞ±£´æÏûÏ¢µÄ×î´óÁ¿
-void *cdmaSendBuf[CDMASENDBUF_SIZE];//ÓÃÓÚ´æ·ÅÖ¸ÏòÓÊÏäµÄÖ¸Õë
-OS_EVENT *CDMASendQ;  
-OS_EVENT *sendMsg; 
 
 
 extern uint16_t  freCDMALed;
-extern _SystemInformation* sysUpdateVar;//Éı¼¶ÓÃ
-extern SYS_OperationVar  varOperation;  //ÏµÍ³È«¾Ö±äÁ¿
+CARRunRecord  carRunRecord;
 static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2);
 
 void CDMATask(void *pdata)
@@ -53,10 +43,9 @@ void CDMATask(void *pdata)
 	uint8_t err;
 	char sendCmd[30];
 	uint16_t sendlen = 0;
-	sendMsg      = OSSemCreate(0);//´´½¨ÏûÏ¢ÊÇ·ñ·¢ËÍµÄĞÅºÅÁ¿
+
 	
-	CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);  //½¨Á¢CDMA½ÓÊÕ ÏûÏ¢¶ÓÁĞ
-	CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE);//½¨Á¢CDMA·¢ËÍ ÏûÏ¢¶ÓÁĞ
+
 	
 	CDMAConfigInit();                //³õÊ¼»¯ÅäÖÃMG2639
 	LoginDataSend();                 //·¢ËÍµÇÂ¼±¨ÎÄ
@@ -109,7 +98,6 @@ receCDMA:
 		Mem_free(pCDMASend);
 	}
 }
-extern OS_EVENT * CDMAPowerMutex;     //»¥³âĞÍĞÅºÅÁ¿£¬CDMAµçÔ´µÄ¶ÀÕ¼Ê½¹ÜÀí
 void CDMAPowerOpen_Close(uint8_t flag)//Õâ¶Î´úÂëÊÇÓÃÀ´Æô¶¯/¹Ø±ÕCDMA
 {
 	uint8_t err;
@@ -120,10 +108,10 @@ void CDMAPowerOpen_Close(uint8_t flag)//Õâ¶Î´úÂëÊÇÓÃÀ´Æô¶¯/¹Ø±ÕCDMA
 	{
 		varOperation.isCDMAStart++;
 		CDMA_POWER_LOW;
-		OSTimeDlyHMSM(0,0,3,500);
+		OSTimeDlyHMSM(0,0,4,500);
 		CDMA_POWER_HIGH;
 		if(varOperation.isCDMAStart%2 == 1)
-			OSTimeDlyHMSM(0,0,4,0);
+			OSTimeDlyHMSM(0,0,6,0);
 		else
 			OSTimeDlyHMSM(0,0,12,0);
 	}
@@ -217,7 +205,7 @@ void CDMAConfigInit(void )
 	sendlen = sprintf(sendCmd,(const char*)at_ZIPSETUP,varOperation.ipAddr,varOperation.ipPotr);//TCPÁ¬½Ó
 	CDMASendCmd((uint8_t *)sendCmd,"+ZIPSETUP:CONNECTED",sendlen);
 
-	freCDMALed = 300;           //ÍøÂçÁ¬½Ó³É¹¦
+	freCDMALed = 500;           //ÍøÂçÁ¬½Ó³É¹¦
 	
 }
 

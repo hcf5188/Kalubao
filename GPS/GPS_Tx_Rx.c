@@ -1,4 +1,5 @@
 #include "bsp.h"
+#include "apptask.h"
 
 extern pCIR_QUEUE sendGPS_Q ;     //指向 GPS 串口发送队列  的指针
 extern pSTORE     receGPS_S ;     //指向 GPS 串口接收数据堆的指针
@@ -77,8 +78,6 @@ void UART4_IRQHandler(void)
 	
 	OSIntExit();  //中断服务结束，系统进行任务调度
 }
-
-extern OS_EVENT* receGPSQ;
 
 static uint16_t receGPSLen = 0;
 uint8_t *ptrGPSRece = NULL;

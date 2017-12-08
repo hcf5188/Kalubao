@@ -2,7 +2,6 @@
 
 #include "bsp.h"
 
-extern SYS_OperationVar  varOperation;
 //芯片初始化，包括系统时钟、芯片外设、时钟滴答等等
 void SystemBspInit(void )
 {

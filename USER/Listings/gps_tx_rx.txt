@@ -5,69 +5,69 @@
                           AREA ||i.GPSSendDatas||, CODE, READONLY, ALIGN=2
 
                   GPSSendDatas PROC
-;;;5      
-;;;6      uint8_t GPSSendDatas(const uint8_t* s,uint8_t length)
+;;;6      
+;;;7      uint8_t GPSSendDatas(const uint8_t* s,uint8_t length)
 000000  b570              PUSH     {r4-r6,lr}
-;;;7      {
+;;;8      {
 000002  4605              MOV      r5,r0
 000004  460c              MOV      r4,r1
-;;;8      #if OS_CRITICAL_METHOD == 3u           /* Allocate storage for CPU status register           */
-;;;9      	OS_CPU_SR  cpu_sr = 0u;
+;;;9      #if OS_CRITICAL_METHOD == 3u           /* Allocate storage for CPU status register           */
+;;;10     	OS_CPU_SR  cpu_sr = 0u;
 000006  2600              MOVS     r6,#0
-;;;10     #endif
-;;;11     //	uint8_t data;
-;;;12     	if(length < 1 || length >250)
+;;;11     #endif
+;;;12     //	uint8_t data;
+;;;13     	if(length < 1 || length >250)
 000008  2c01              CMP      r4,#1
 00000a  db01              BLT      |L1.16|
 00000c  2cfa              CMP      r4,#0xfa
 00000e  dd01              BLE      |L1.20|
                   |L1.16|
-;;;13     		return 1;
+;;;14     		return 1;
 000010  2001              MOVS     r0,#1
                   |L1.18|
-;;;14     	OS_ENTER_CRITICAL();
-;;;15     	if(CirQ_Pushs(sendGPS_Q,s,length) != OK)
-;;;16     	{
-;;;17     		OS_EXIT_CRITICAL();
-;;;18     		return 2;
-;;;19     	}
-;;;20     	OS_EXIT_CRITICAL();
-;;;21     	
-;;;22     	if(CirQ_GetLength(sendGPS_Q) > 0)
-;;;23     		USART_ITConfig(UART4, USART_IT_TXE, ENABLE);
-;;;24     
-;;;25     	return  0;
-;;;26     }
+;;;15     	OS_ENTER_CRITICAL();
+;;;16     	if(CirQ_Pushs(sendGPS_Q,s,length) != OK)
+;;;17     	{
+;;;18     		OS_EXIT_CRITICAL();
+;;;19     		return 2;
+;;;20     	}
+;;;21     	OS_EXIT_CRITICAL();
+;;;22     	
+;;;23     	if(CirQ_GetLength(sendGPS_Q) > 0)
+;;;24     		USART_ITConfig(UART4, USART_IT_TXE, ENABLE);
+;;;25     
+;;;26     	return  0;
+;;;27     }
 000012  bd70              POP      {r4-r6,pc}
                   |L1.20|
 000014  f7fffffe          BL       OS_CPU_SR_Save
-000018  4606              MOV      r6,r0                 ;14
-00001a  4622              MOV      r2,r4                 ;15
-00001c  4629              MOV      r1,r5                 ;15
+000018  4606              MOV      r6,r0                 ;15
+00001a  4622              MOV      r2,r4                 ;16
+00001c  4629              MOV      r1,r5                 ;16
 00001e  480d              LDR      r0,|L1.84|
-000020  6800              LDR      r0,[r0,#0]            ;15  ; sendGPS_Q
+000020  6800              LDR      r0,[r0,#0]            ;16  ; sendGPS_Q
 000022  f7fffffe          BL       CirQ_Pushs
 000026  b120              CBZ      r0,|L1.50|
-000028  4630              MOV      r0,r6                 ;17
+000028  4630              MOV      r0,r6                 ;18
 00002a  f7fffffe          BL       OS_CPU_SR_Restore
-00002e  2002              MOVS     r0,#2                 ;18
+00002e  2002              MOVS     r0,#2                 ;19
 000030  e7ef              B        |L1.18|
                   |L1.50|
-000032  4630              MOV      r0,r6                 ;20
+000032  4630              MOV      r0,r6                 ;21
 000034  f7fffffe          BL       OS_CPU_SR_Restore
 000038  4806              LDR      r0,|L1.84|
-00003a  6800              LDR      r0,[r0,#0]            ;22  ; sendGPS_Q
+00003a  6800              LDR      r0,[r0,#0]            ;23  ; sendGPS_Q
 00003c  f7fffffe          BL       CirQ_GetLength
-000040  2800              CMP      r0,#0                 ;22
+000040  2800              CMP      r0,#0                 ;23
 000042  dd05              BLE      |L1.80|
-000044  2201              MOVS     r2,#1                 ;23
-000046  f2407127          MOV      r1,#0x727             ;23
+000044  2201              MOVS     r2,#1                 ;24
+000046  f2407127          MOV      r1,#0x727             ;24
 00004a  4803              LDR      r0,|L1.88|
 00004c  f7fffffe          BL       USART_ITConfig
                   |L1.80|
-000050  2000              MOVS     r0,#0                 ;25
+000050  2000              MOVS     r0,#0                 ;26
 000052  e7de              B        |L1.18|
-;;;27     
+;;;28     
                           ENDP
 
                   |L1.84|
@@ -78,77 +78,77 @@
                           AREA ||i.TIM2_IRQHandler||, CODE, READONLY, ALIGN=2
 
                   TIM2_IRQHandler PROC
-;;;85     
-;;;86     void TIM2_IRQHandler(void)
+;;;84     
+;;;85     void TIM2_IRQHandler(void)
 000000  b510              PUSH     {r4,lr}
-;;;87     {
-;;;88     	OSIntEnter();//系统进入中断服务程序
+;;;86     {
+;;;87     	OSIntEnter();//系统进入中断服务程序
 000002  f7fffffe          BL       OSIntEnter
-;;;89     	
-;;;90     	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)  //检查TIM2更新中断发生与否
+;;;88     	
+;;;89     	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)  //检查TIM2更新中断发生与否
 000006  2101              MOVS     r1,#1
 000008  0788              LSLS     r0,r1,#30
 00000a  f7fffffe          BL       TIM_GetITStatus
 00000e  2800              CMP      r0,#0
 000010  d04f              BEQ      |L2.178|
-;;;91     	{
-;;;92     		TIM_ClearITPendingBit(TIM2, TIM_IT_Update  );  //清除TIMx更新中断标志 
+;;;90     	{
+;;;91     		TIM_ClearITPendingBit(TIM2, TIM_IT_Update  );  //清除TIMx更新中断标志 
 000012  2101              MOVS     r1,#1
 000014  0788              LSLS     r0,r1,#30
 000016  f7fffffe          BL       TIM_ClearITPendingBit
-;;;93     		rxGPSTimeOut ++;
+;;;92     		rxGPSTimeOut ++;
 00001a  4827              LDR      r0,|L2.184|
 00001c  7800              LDRB     r0,[r0,#0]  ; rxGPSTimeOut
 00001e  1c40              ADDS     r0,r0,#1
 000020  4925              LDR      r1,|L2.184|
 000022  7008              STRB     r0,[r1,#0]
-;;;94     		if(rxGPSTimeOut > 10)//10ms 接收超时
+;;;93     		if(rxGPSTimeOut > 10)//10ms 接收超时
 000024  4608              MOV      r0,r1
 000026  7800              LDRB     r0,[r0,#0]  ; rxGPSTimeOut
 000028  280a              CMP      r0,#0xa
 00002a  dd42              BLE      |L2.178|
-;;;95     		{
-;;;96     			rxGPSTimeOut = 0;
+;;;94     		{
+;;;95     			rxGPSTimeOut = 0;
 00002c  2000              MOVS     r0,#0
 00002e  7008              STRB     r0,[r1,#0]
-;;;97     			receGPSLen = Store_Getlength(receGPS_S);
+;;;96     			receGPSLen = Store_Getlength(receGPS_S);
 000030  4822              LDR      r0,|L2.188|
 000032  6800              LDR      r0,[r0,#0]  ; receGPS_S
 000034  f7fffffe          BL       Store_Getlength
 000038  4921              LDR      r1,|L2.192|
 00003a  8008              STRH     r0,[r1,#0]
-;;;98     			
-;;;99     			if(receGPSLen>2 )
+;;;97     			
+;;;98     			if(receGPSLen>2 )
 00003c  4608              MOV      r0,r1
 00003e  8800              LDRH     r0,[r0,#0]  ; receGPSLen
 000040  2802              CMP      r0,#2
 000042  dd2d              BLE      |L2.160|
-;;;100    			{
-;;;101    				ptrGPSRece = Mem_malloc(receGPSLen+2);				
+;;;99     			{
+;;;100    				ptrGPSRece = Mem_malloc(receGPSLen+2);				
 000044  8809              LDRH     r1,[r1,#0]  ; receGPSLen
 000046  1c89              ADDS     r1,r1,#2
 000048  b288              UXTH     r0,r1
 00004a  f7fffffe          BL       Mem_malloc
 00004e  491d              LDR      r1,|L2.196|
 000050  6008              STR      r0,[r1,#0]  ; ptrGPSRece
-;;;102    				if(ptrGPSRece != NULL)
+;;;101    				if(ptrGPSRece != NULL)
 000052  4608              MOV      r0,r1
 000054  6800              LDR      r0,[r0,#0]  ; ptrGPSRece
 000056  b1f0              CBZ      r0,|L2.150|
-;;;103    				{
-;;;104    					ptrGPSRece[0] = (receGPSLen>>8)&0xff;
+;;;102    				{
+;;;103    					ptrGPSRece[0] = (receGPSLen>>8)&0xff;
 000058  4819              LDR      r0,|L2.192|
 00005a  8800              LDRH     r0,[r0,#0]  ; receGPSLen
 00005c  0a00              LSRS     r0,r0,#8
 00005e  6809              LDR      r1,[r1,#0]  ; ptrGPSRece
 000060  7008              STRB     r0,[r1,#0]
-;;;105    					ptrGPSRece[1] = receGPSLen&0xff;
+;;;104    					ptrGPSRece[1] = receGPSLen&0xff;
 000062  4817              LDR      r0,|L2.192|
 000064  7800              LDRB     r0,[r0,#0]  ; receGPSLen
 000066  4917              LDR      r1,|L2.196|
 000068  6809              LDR      r1,[r1,#0]  ; ptrGPSRece
 00006a  7048              STRB     r0,[r1,#1]
-;;;106    					Store_Getdates(receGPS_S,ptrGPSRece+2,receGPSLen);
+;;;105    					Store_Getdates(receGPS_S,ptrGPSRece+2,receGPSLen);
 00006c  4814              LDR      r0,|L2.192|
 00006e  8802              LDRH     r2,[r0,#0]  ; receGPSLen
 000070  4814              LDR      r0,|L2.196|
@@ -157,46 +157,46 @@
 000076  4811              LDR      r0,|L2.188|
 000078  6800              LDR      r0,[r0,#0]  ; receGPS_S
 00007a  f7fffffe          BL       Store_Getdates
-;;;107    					if(OSQPost(receGPSQ,ptrGPSRece)!=OS_ERR_NONE)
+;;;106    					if(OSQPost(receGPSQ,ptrGPSRece)!=OS_ERR_NONE)
 00007e  4811              LDR      r0,|L2.196|
 000080  6801              LDR      r1,[r0,#0]  ; ptrGPSRece
 000082  4811              LDR      r0,|L2.200|
 000084  6800              LDR      r0,[r0,#0]  ; receGPSQ
 000086  f7fffffe          BL       OSQPost
 00008a  b168              CBZ      r0,|L2.168|
-;;;108    						Mem_free(ptrGPSRece);
+;;;107    						Mem_free(ptrGPSRece);
 00008c  480d              LDR      r0,|L2.196|
 00008e  6800              LDR      r0,[r0,#0]  ; ptrGPSRece
 000090  f7fffffe          BL       Mem_free
 000094  e008              B        |L2.168|
                   |L2.150|
-;;;109    				}
-;;;110    				else
-;;;111    					Store_Clear(receGPS_S);
+;;;108    				}
+;;;109    				else
+;;;110    					Store_Clear(receGPS_S);
 000096  4809              LDR      r0,|L2.188|
 000098  6800              LDR      r0,[r0,#0]  ; receGPS_S
 00009a  f7fffffe          BL       Store_Clear
 00009e  e003              B        |L2.168|
                   |L2.160|
-;;;112    			}
-;;;113    			else
-;;;114    				Store_Clear(receGPS_S);
+;;;111    			}
+;;;112    			else
+;;;113    				Store_Clear(receGPS_S);
 0000a0  4806              LDR      r0,|L2.188|
 0000a2  6800              LDR      r0,[r0,#0]  ; receGPS_S
 0000a4  f7fffffe          BL       Store_Clear
                   |L2.168|
-;;;115    			TIM_Cmd(TIM2, DISABLE);
+;;;114    			TIM_Cmd(TIM2, DISABLE);
 0000a8  2100              MOVS     r1,#0
 0000aa  f04f4080          MOV      r0,#0x40000000
 0000ae  f7fffffe          BL       TIM_Cmd
                   |L2.178|
-;;;116    		}
-;;;117    	}
-;;;118    	OSIntExit();  //中断服务结束，系统进行任务调度
+;;;115    		}
+;;;116    	}
+;;;117    	OSIntExit();  //中断服务结束，系统进行任务调度
 0000b2  f7fffffe          BL       OSIntExit
-;;;119    }
+;;;118    }
 0000b6  bd10              POP      {r4,pc}
-;;;120    
+;;;119    
                           ENDP
 
                   |L2.184|
@@ -213,144 +213,144 @@
                           AREA ||i.UART4_IRQHandler||, CODE, READONLY, ALIGN=2
 
                   UART4_IRQHandler PROC
-;;;30     uint8_t rxGPSTimeOut = 0;
-;;;31     void UART4_IRQHandler(void)
+;;;31     uint8_t rxGPSTimeOut = 0;
+;;;32     void UART4_IRQHandler(void)
 000000  b510              PUSH     {r4,lr}
-;;;32     {
-;;;33     	NORMAL_STATE rxtxState;
-;;;34     	OSIntEnter();//系统进入中断服务程序
+;;;33     {
+;;;34     	NORMAL_STATE rxtxState;
+;;;35     	OSIntEnter();//系统进入中断服务程序
 000002  f7fffffe          BL       OSIntEnter
-;;;35     	if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)//接收到数据
+;;;36     	if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)//接收到数据
 000006  f2405125          MOV      r1,#0x525
 00000a  4833              LDR      r0,|L3.216|
 00000c  f7fffffe          BL       USART_GetITStatus
 000010  b1e8              CBZ      r0,|L3.78|
-;;;36       	{
-;;;37         	byteGPSRece = USART_ReceiveData(UART4);
+;;;37       	{
+;;;38         	byteGPSRece = USART_ReceiveData(UART4);
 000012  4831              LDR      r0,|L3.216|
 000014  f7fffffe          BL       USART_ReceiveData
 000018  4930              LDR      r1,|L3.220|
 00001a  7008              STRB     r0,[r1,#0]
-;;;38     	
-;;;39     		rxtxState = Store_Push(receGPS_S,byteGPSRece);   
+;;;39     	
+;;;40     		rxtxState = Store_Push(receGPS_S,byteGPSRece);   
 00001c  4608              MOV      r0,r1
 00001e  7801              LDRB     r1,[r0,#0]  ; byteGPSRece
 000020  482f              LDR      r0,|L3.224|
 000022  6800              LDR      r0,[r0,#0]  ; receGPS_S
 000024  f7fffffe          BL       Store_Push
 000028  4604              MOV      r4,r0
-;;;40     		if(rxtxState == OK)
+;;;41     		if(rxtxState == OK)
 00002a  b954              CBNZ     r4,|L3.66|
-;;;41     		{
-;;;42     			rxGPSTimeOut = 1;
+;;;42     		{
+;;;43     			rxGPSTimeOut = 1;
 00002c  2001              MOVS     r0,#1
 00002e  492d              LDR      r1,|L3.228|
 000030  7008              STRB     r0,[r1,#0]
-;;;43     			TIM_SetCounter(TIM2,0); //清空计数器
+;;;44     			TIM_SetCounter(TIM2,0); //清空计数器
 000032  2100              MOVS     r1,#0
 000034  0780              LSLS     r0,r0,#30
 000036  f7fffffe          BL       TIM_SetCounter
-;;;44     			TIM_Cmd(TIM2, ENABLE);  //使能TIMx
+;;;45     			TIM_Cmd(TIM2, ENABLE);  //使能TIMx
 00003a  2101              MOVS     r1,#1
 00003c  0788              LSLS     r0,r1,#30
 00003e  f7fffffe          BL       TIM_Cmd
                   |L3.66|
-;;;45     		}
-;;;46     		USART_ClearITPendingBit(UART4, USART_IT_RXNE) ;
+;;;46     		}
+;;;47     		USART_ClearITPendingBit(UART4, USART_IT_RXNE) ;
 000042  f2405125          MOV      r1,#0x525
 000046  4824              LDR      r0,|L3.216|
 000048  f7fffffe          BL       USART_ClearITPendingBit
 00004c  e040              B        |L3.208|
                   |L3.78|
-;;;47     	}
-;;;48     	else if(USART_GetITStatus(UART4, USART_IT_TC) != RESET)//发送完毕  移位寄存器空
+;;;48     	}
+;;;49     	else if(USART_GetITStatus(UART4, USART_IT_TC) != RESET)//发送完毕  移位寄存器空
 00004e  f2406126          MOV      r1,#0x626
 000052  4821              LDR      r0,|L3.216|
 000054  f7fffffe          BL       USART_GetITStatus
 000058  b1b8              CBZ      r0,|L3.138|
-;;;49     	{
-;;;50     		if(CirQ_GetLength(sendGPS_Q) > 0)
+;;;50     	{
+;;;51     		if(CirQ_GetLength(sendGPS_Q) > 0)
 00005a  4823              LDR      r0,|L3.232|
 00005c  6800              LDR      r0,[r0,#0]  ; sendGPS_Q
 00005e  f7fffffe          BL       CirQ_GetLength
 000062  2800              CMP      r0,#0
 000064  dd0b              BLE      |L3.126|
-;;;51     		{
-;;;52     			rxtxState = CirQ_Pop(sendGPS_Q,&byteGPSSend);
+;;;52     		{
+;;;53     			rxtxState = CirQ_Pop(sendGPS_Q,&byteGPSSend);
 000066  4921              LDR      r1,|L3.236|
 000068  481f              LDR      r0,|L3.232|
 00006a  6800              LDR      r0,[r0,#0]  ; sendGPS_Q
 00006c  f7fffffe          BL       CirQ_Pop
 000070  4604              MOV      r4,r0
-;;;53     			if(rxtxState == OK)
+;;;54     			if(rxtxState == OK)
 000072  b924              CBNZ     r4,|L3.126|
-;;;54     				USART_SendData(UART4, byteGPSSend);
+;;;55     				USART_SendData(UART4, byteGPSSend);
 000074  481d              LDR      r0,|L3.236|
 000076  7801              LDRB     r1,[r0,#0]  ; byteGPSSend
 000078  4817              LDR      r0,|L3.216|
 00007a  f7fffffe          BL       USART_SendData
                   |L3.126|
-;;;55     		}
-;;;56     		else
-;;;57     		{
-;;;58     			//todo:通知任务发送完成，可以发送下一包数据了
-;;;59     		}
-;;;60     		USART_ClearITPendingBit(UART4, USART_IT_TC) ;
+;;;56     		}
+;;;57     		else
+;;;58     		{
+;;;59     			//todo:通知任务发送完成，可以发送下一包数据了
+;;;60     		}
+;;;61     		USART_ClearITPendingBit(UART4, USART_IT_TC) ;
 00007e  f2406126          MOV      r1,#0x626
 000082  4815              LDR      r0,|L3.216|
 000084  f7fffffe          BL       USART_ClearITPendingBit
 000088  e022              B        |L3.208|
                   |L3.138|
-;;;61     	}
-;;;62     	else if(USART_GetITStatus(UART4, USART_IT_TXE) != RESET)//空  发送寄存器空
+;;;62     	}
+;;;63     	else if(USART_GetITStatus(UART4, USART_IT_TXE) != RESET)//空  发送寄存器空
 00008a  f2407127          MOV      r1,#0x727
 00008e  4812              LDR      r0,|L3.216|
 000090  f7fffffe          BL       USART_GetITStatus
 000094  b1e0              CBZ      r0,|L3.208|
-;;;63     	{
-;;;64     		if(CirQ_GetLength(sendGPS_Q) > 0)
+;;;64     	{
+;;;65     		if(CirQ_GetLength(sendGPS_Q) > 0)
 000096  4814              LDR      r0,|L3.232|
 000098  6800              LDR      r0,[r0,#0]  ; sendGPS_Q
 00009a  f7fffffe          BL       CirQ_GetLength
 00009e  2800              CMP      r0,#0
 0000a0  dd0b              BLE      |L3.186|
-;;;65     		{
-;;;66     			rxtxState = CirQ_Pop(sendGPS_Q,&byteGPSSend);
+;;;66     		{
+;;;67     			rxtxState = CirQ_Pop(sendGPS_Q,&byteGPSSend);
 0000a2  4912              LDR      r1,|L3.236|
 0000a4  4810              LDR      r0,|L3.232|
 0000a6  6800              LDR      r0,[r0,#0]  ; sendGPS_Q
 0000a8  f7fffffe          BL       CirQ_Pop
 0000ac  4604              MOV      r4,r0
-;;;67     			if(rxtxState == OK)
+;;;68     			if(rxtxState == OK)
 0000ae  b924              CBNZ     r4,|L3.186|
-;;;68     				USART_SendData(UART4, byteGPSSend);
+;;;69     				USART_SendData(UART4, byteGPSSend);
 0000b0  480e              LDR      r0,|L3.236|
 0000b2  7801              LDRB     r1,[r0,#0]  ; byteGPSSend
 0000b4  4808              LDR      r0,|L3.216|
 0000b6  f7fffffe          BL       USART_SendData
                   |L3.186|
-;;;69     		}
-;;;70     		else
-;;;71     		{
-;;;72     			//todo:通知任务发送完成，可以发送下一包数据了
-;;;73     		}
-;;;74     		USART_ITConfig(UART4, USART_IT_TXE, DISABLE);
+;;;70     		}
+;;;71     		else
+;;;72     		{
+;;;73     			//todo:通知任务发送完成，可以发送下一包数据了
+;;;74     		}
+;;;75     		USART_ITConfig(UART4, USART_IT_TXE, DISABLE);
 0000ba  2200              MOVS     r2,#0
 0000bc  f2407127          MOV      r1,#0x727
 0000c0  4805              LDR      r0,|L3.216|
 0000c2  f7fffffe          BL       USART_ITConfig
-;;;75     		USART_ClearITPendingBit(UART4, USART_IT_TXE) ;
+;;;76     		USART_ClearITPendingBit(UART4, USART_IT_TXE) ;
 0000c6  f2407127          MOV      r1,#0x727
 0000ca  4803              LDR      r0,|L3.216|
 0000cc  f7fffffe          BL       USART_ClearITPendingBit
                   |L3.208|
-;;;76     	}
-;;;77     	
-;;;78     	OSIntExit();  //中断服务结束，系统进行任务调度
+;;;77     	}
+;;;78     	
+;;;79     	OSIntExit();  //中断服务结束，系统进行任务调度
 0000d0  f7fffffe          BL       OSIntExit
-;;;79     }
+;;;80     }
 0000d4  bd10              POP      {r4,pc}
-;;;80     
+;;;81     
                           ENDP
 
 0000d6  0000              DCW      0x0000

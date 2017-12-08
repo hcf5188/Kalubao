@@ -12,33 +12,17 @@ static void GetConfigInfo(void);
 extern void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength);
 
 
-
-/*************************     本.c文件用到的变量         **********************/
-#define ZIPRECVBUF_SIZE  5       //RECV接收消息队列保存消息的最大量
-OS_EVENT *ZIPRecv_Q;             //指向RECV消息队列的指针
-void *ZIPRecBuf[ZIPRECVBUF_SIZE];
-
-extern _SystemInformation sysUpdateVar; //升级用变量
-extern SYS_OperationVar  varOperation;  //系统运行中的全局变量
-extern OS_EVENT *CDMASendQ;      //通过CDMA向服务器发送采集到的OBD、GPS、登录报文等数据
-
-extern OS_EVENT *sendMsg;        //如果系统正在通过CDMA发送数据，此时不可以断开TCP，要等待发送完毕后，再断开TCP，重新连接新的IP
-
-
 //本任务用来上发登录报文、处理OTA升级、配置文件升级、模式切换（强动力模式、节油模式等）
 void CDMARecvTask(void *pdata)
 {
-	uint8_t err;
+	uint8_t  err;
+	uint16_t cmdId;
 	uint8_t* ptrRECV = NULL;
 	uint8_t* ptrDeal = NULL;
-
-	uint16_t cmdId   = 0;
-	
-	ZIPRecv_Q    = OSQCreate(&ZIPRecBuf[0],ZIPRECVBUF_SIZE);//建立“ZIPRECV”处理消息队列
 	
 	while(1)
 	{
-		ptrRECV = OSQPend(ZIPRecv_Q,40000,&err);  //等待12s后服务器无响应，则退出
+		ptrRECV = OSQPend(ZIPRecv_Q,30000,&err);  //等待60s后服务器无响应，则退出
 		if(err == OS_ERR_NONE)
 		{
 			ptrDeal = RecvDataAnalysis(ptrRECV);  //将接收到的数据进行加工
@@ -50,7 +34,6 @@ void CDMARecvTask(void *pdata)
 			
 			if(cmdId == 0x5001)                          //接收到登录报文
 				RecvLoginDatDeal(ptrDeal);
-			
 			else if(cmdId == 0x5012)                     //第二部分的配置文件
 				ConfigUpdata(ptrDeal);
 			else if((cmdId >= 0x4000)&&(cmdId < 0x5000)) //第一部分的配置文件
@@ -64,8 +47,7 @@ void CDMARecvTask(void *pdata)
 		}
 		else   //等待超时
 		{
-			varOperation.isDataFlow  = 0;  //处理服务器下发的数据超时，开启数据流
-			varOperation.isLoginDeal = 1;  //没有登录报文需要处理
+			varOperation.isLoginDeal = 1; 
 		}
 	}
 }
@@ -177,6 +159,13 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 		
 		GetConfigInfo();                  //请求配置文件 - 发送0x4000及版本信息
 	}
+	else 
+	{
+		varOperation.isLoginDeal = 1;  //没有登录报文需要处理
+		if(OSSemAccept(LoginMes) == 0)
+			OSSemPost(LoginMes);
+	}
+	
 	
 	//todo:IP更改，后期会有需要
 //	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
@@ -210,14 +199,15 @@ static void OTA_Updata(uint8_t* ptrDeal)
 	uint16_t cmdId;
 	uint16_t datLength = 0;
 	uint16_t i = 0;
-	uint8_t  frameNum;            //此次一共接收到128字节的包数
+	uint8_t  frameNum;           //此次一共接收到128字节的包数
+	uint8_t  frameLen;           //每一帧的每一小包到底有多少个字节
 	uint16_t offset;
 	
 	static uint16_t currentNum = 0;      //发送下一个请求包
 	static uint16_t fileCRC    = 0;      //文件CRC校验
 	static uint32_t flashAddr  = 0;      //地址信息，写2K便自增0x800,向Flash一次写2K字节
 	static uint8_t  frameIndex = 0;      //要保存的帧索引
-	static uint8_t  frameLen   = 0;      //每一帧的每一小包到底有多少个字节
+	
 	
 	datLength = ptrDeal[0];
 	datLength = (datLength << 8) + ptrDeal[1];
@@ -355,7 +345,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		
 		pidPackNum = ptrDeal[offset++];            //一共有帧PID包配置项
 		
-		varOperation.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
+//		varOperation.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
 		
 		currentNum = 0x4001;
 		frameIndex = 0;
@@ -398,7 +388,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		}
 		else
 		{
-			currentNum = cmdId + 1;
+			currentNum = cmdId + 1;   
 			SendConfigNum(currentNum);//请求下一包数据
 		}
 	}
@@ -414,7 +404,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
 		frameIndex += frameLen;
 		
-		SaveConfigToFlash(updateBuff,2048);       //将数据写入配置文件区，（flash:0x0802E000）
+		SaveConfigToFlash(updateBuff,2048);      //将数据写入配置文件区，（flash:0x0802E000）
 		SbootParameterSaveToFlash(&sysUpdateVar);//将运行参数写入升级变量区  （flash：0x08007800）
 		
 		__disable_fault_irq();                    //重启

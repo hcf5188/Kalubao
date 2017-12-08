@@ -412,6 +412,16 @@
               <FilePath>.\main.c</FilePath>
             </File>
             <File>
+              <FileName>powerDeal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\powerDeal.c</FilePath>
+            </File>
+            <File>
+              <FileName>normalTask.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\normalTask.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f10x_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\stm32f10x_it.c</FilePath>
@@ -420,26 +430,6 @@
               <FileName>system_stm32f10x.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\system_stm32f10x.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>GPS</GroupName>
-          <Files>
-            <File>
-              <FileName>GPSTask.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GPS\GPSTask.c</FilePath>
-            </File>
-            <File>
-              <FileName>GPSConfig.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GPS\GPSConfig.c</FilePath>
-            </File>
-            <File>
-              <FileName>GPS_Tx_Rx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GPS\GPS_Tx_Rx.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -475,6 +465,11 @@
               <FileName>OBDTask.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\OBD\OBDTask.c</FilePath>
+            </File>
+            <File>
+              <FileName>CAN_J1939.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\OBD\CAN_J1939.c</FilePath>
             </File>
             <File>
               <FileName>OBDCAN_Tx_Rx.c</FileName>
@@ -525,21 +520,6 @@
               <FileName>varDeal.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\DEAL\varDeal.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>HARDWARE</GroupName>
-          <Files>
-            <File>
-              <FileName>bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HAEDWARE\bsp.c</FilePath>
-            </File>
-            <File>
-              <FileName>time_systick.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HAEDWARE\time_systick.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -610,6 +590,41 @@
               <FileName>usb_sil.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\USB\STM32_USB-FS-Device_Driver\src\usb_sil.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>GPS</GroupName>
+          <Files>
+            <File>
+              <FileName>GPSTask.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GPS\GPSTask.c</FilePath>
+            </File>
+            <File>
+              <FileName>GPSConfig.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GPS\GPSConfig.c</FilePath>
+            </File>
+            <File>
+              <FileName>GPS_Tx_Rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GPS\GPS_Tx_Rx.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>HARDWARE</GroupName>
+          <Files>
+            <File>
+              <FileName>bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HAEDWARE\bsp.c</FilePath>
+            </File>
+            <File>
+              <FileName>time_systick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HAEDWARE\time_systick.c</FilePath>
             </File>
           </Files>
         </Group>

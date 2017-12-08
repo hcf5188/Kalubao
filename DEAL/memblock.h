@@ -75,13 +75,13 @@ NORMAL_STATE Store_Push(pSTORE S,uint8_t dat);
 #define MEM_128B_ROW	20
 #define MEM_128B_COL	130
 
-#define MEM_256B_ROW	10
+#define MEM_256B_ROW	8
 #define MEM_256B_COL	258
 
-#define MEM_512B_ROW	10
+#define MEM_512B_ROW	3
 #define MEM_512B_COL	514
 
-#define MEM_1KB_ROW	    12
+#define MEM_1KB_ROW	    8
 #define MEM_1KB_COL	    1026
 
 void    *Mem_malloc(uint16_t size);

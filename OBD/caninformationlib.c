@@ -3,15 +3,17 @@
 
 
 
-CANBAUD_Enum canBaudEnum[NUMOfCANBaud]= {CANBAUD_250K,CANBAUD_500K,CANBAUD_1M,};//波特率选择
+CANBAUD_Enum canBaudEnum[NUMOfCANBaud]= {
+	CANBAUD_250K,
+	CANBAUD_500K,
+	CANBAUD_1M,};//波特率选择
 
 uint32_t canIdExt[NUMOfCANID_EXT] = 
 {
 	0x18DA00FA,//渣土车
-	0x18DA10FA,//
+	0x18FFF001,//
 	0x18DA00FB,//
 	0x18DA10FB,//桌面上测试用的潍柴
-	0x18DAF13D
 };
 uint32_t canIdStd[NUMOfCANID_STD][2] = 
 {                    //前面是卡路宝的发送ID，后面是卡路宝的接收ID
@@ -21,14 +23,6 @@ uint32_t canIdStd[NUMOfCANID_STD][2] =
 	{0x7E7,0x7EF},   //
 	{0x7E2,0x7EA}
 };
-
-
-
-
-
-
-
-
 
 //要采集的PID信息
 

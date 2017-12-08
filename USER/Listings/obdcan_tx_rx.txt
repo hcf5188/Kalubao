@@ -5,82 +5,138 @@
                           AREA ||i.CAN1_RX1_IRQHandler||, CODE, READONLY, ALIGN=2
 
                   CAN1_RX1_IRQHandler PROC
-;;;31     
-;;;32     void CAN1_RX1_IRQHandler(void )
+;;;32     
+;;;33     void CAN1_RX1_IRQHandler(void )
 000000  b570              PUSH     {r4-r6,lr}
-;;;33     {
-;;;34     	uint8_t err;
-;;;35     	CanRxMsg* CAN1_RxMsg = Mem_malloc(sizeof(CanRxMsg));
+;;;34     {
+;;;35     	uint8_t err;
+;;;36     	CanRxMsg* CAN1_RxMsg = Mem_malloc(sizeof(CanRxMsg));
 000002  2014              MOVS     r0,#0x14
 000004  f7fffffe          BL       Mem_malloc
 000008  4605              MOV      r5,r0
-;;;36     	
-;;;37     	OSIntEnter();				//系统进入中断服务程序
+;;;37     	
+;;;38     	OSIntEnter();				//系统进入中断服务程序
 00000a  f7fffffe          BL       OSIntEnter
-;;;38     	
-;;;39     	CAN_Receive(CAN1, CAN_FIFO1, CAN1_RxMsg);
+;;;39     	
+;;;40     	CAN_Receive(CAN1, CAN_FIFO1, CAN1_RxMsg);
 00000e  462a              MOV      r2,r5
 000010  2101              MOVS     r1,#1
-000012  4813              LDR      r0,|L1.96|
+000012  4826              LDR      r0,|L1.172|
 000014  f7fffffe          BL       CAN_Receive
-;;;40     	
-;;;41     	if(varOperation.canTest == 0) //收到CAN回复的数据 - 波特率测试成功
-000018  4812              LDR      r0,|L1.100|
+;;;41     	
+;;;42     	if(varOperation.canTest == 2) //收到CAN回复的数据 - 波特率测试成功
+000018  4825              LDR      r0,|L1.176|
 00001a  f8b0007c          LDRH     r0,[r0,#0x7c]  ; varOperation
-00001e  b970              CBNZ     r0,|L1.62|
-;;;42     	{
-;;;43     		varOperation.canTest = 1;
-000020  2001              MOVS     r0,#1
-000022  4910              LDR      r1,|L1.100|
-000024  f8a1007c          STRH     r0,[r1,#0x7c]
-;;;44     		err = OSQPost(canRecieveQ,CAN1_RxMsg);
-000028  4629              MOV      r1,r5
-00002a  480f              LDR      r0,|L1.104|
-00002c  6800              LDR      r0,[r0,#0]  ; canRecieveQ
-00002e  f7fffffe          BL       OSQPost
-000032  4604              MOV      r4,r0
-;;;45     		if(err != OS_ERR_NONE)
-000034  b18c              CBZ      r4,|L1.90|
-;;;46     		{
-;;;47     			Mem_free(CAN1_RxMsg);
-000036  4628              MOV      r0,r5
-000038  f7fffffe          BL       Mem_free
-00003c  e00d              B        |L1.90|
-                  |L1.62|
-;;;48     		}
-;;;49     	}else
-;;;50     	{
-;;;51     		varOperation.canTest = 2;
-00003e  2002              MOVS     r0,#2
-000040  4908              LDR      r1,|L1.100|
-000042  f8a1007c          STRH     r0,[r1,#0x7c]
+00001e  2802              CMP      r0,#2
+000020  d11a              BNE      |L1.88|
+;;;43     	{
+;;;44     		if(CAN1_RxMsg->ExtId != varOperation.canRxId)//扔给J1939任务处理
+000022  4923              LDR      r1,|L1.176|
+000024  6868              LDR      r0,[r5,#4]
+000026  f8d11077          LDR      r1,[r1,#0x77]  ; varOperation
+00002a  4288              CMP      r0,r1
+00002c  d009              BEQ      |L1.66|
+;;;45     		{
+;;;46     			err = OSQPost(canJ1939Q,CAN1_RxMsg);
+00002e  4629              MOV      r1,r5
+000030  4820              LDR      r0,|L1.180|
+000032  6800              LDR      r0,[r0,#0]  ; canJ1939Q
+000034  f7fffffe          BL       OSQPost
+000038  4604              MOV      r4,r0
+;;;47     			if(err != OS_ERR_NONE)
+00003a  b114              CBZ      r4,|L1.66|
+;;;48     			{
+;;;49     				Mem_free(CAN1_RxMsg);
+00003c  4628              MOV      r0,r5
+00003e  f7fffffe          BL       Mem_free
+                  |L1.66|
+;;;50     			}
+;;;51     		}
 ;;;52     		err = OSQPost(canRecieveQ,CAN1_RxMsg);
-000046  4629              MOV      r1,r5
-000048  4807              LDR      r0,|L1.104|
-00004a  6800              LDR      r0,[r0,#0]  ; canRecieveQ
-00004c  f7fffffe          BL       OSQPost
-000050  4604              MOV      r4,r0
+000042  4629              MOV      r1,r5
+000044  481c              LDR      r0,|L1.184|
+000046  6800              LDR      r0,[r0,#0]  ; canRecieveQ
+000048  f7fffffe          BL       OSQPost
+00004c  4604              MOV      r4,r0
 ;;;53     		if(err != OS_ERR_NONE)
-000052  b114              CBZ      r4,|L1.90|
+00004e  b34c              CBZ      r4,|L1.164|
 ;;;54     		{
 ;;;55     			Mem_free(CAN1_RxMsg);
-000054  4628              MOV      r0,r5
-000056  f7fffffe          BL       Mem_free
-                  |L1.90|
+000050  4628              MOV      r0,r5
+000052  f7fffffe          BL       Mem_free
+000056  e025              B        |L1.164|
+                  |L1.88|
 ;;;56     		}
-;;;57     	}
-;;;58     	OSIntExit();  //中断服务结束，系统进行任务调度
-00005a  f7fffffe          BL       OSIntExit
-;;;59     }
-00005e  bd70              POP      {r4-r6,pc}
-;;;60     
+;;;57     	}	
+;;;58     	else if(varOperation.canTest == 1)//自识别阶段
+000058  4815              LDR      r0,|L1.176|
+00005a  f8b0007c          LDRH     r0,[r0,#0x7c]  ; varOperation
+00005e  2801              CMP      r0,#1
+000060  d10e              BNE      |L1.128|
+;;;59     	{
+;;;60     		varOperation.canTest = 2;
+000062  2002              MOVS     r0,#2
+000064  4912              LDR      r1,|L1.176|
+000066  f8a1007c          STRH     r0,[r1,#0x7c]
+;;;61     		err = OSQPost(canRecieveQ,CAN1_RxMsg);
+00006a  4629              MOV      r1,r5
+00006c  4812              LDR      r0,|L1.184|
+00006e  6800              LDR      r0,[r0,#0]  ; canRecieveQ
+000070  f7fffffe          BL       OSQPost
+000074  4604              MOV      r4,r0
+;;;62     		if(err != OS_ERR_NONE)
+000076  b1ac              CBZ      r4,|L1.164|
+;;;63     		{
+;;;64     			Mem_free(CAN1_RxMsg);
+000078  4628              MOV      r0,r5
+00007a  f7fffffe          BL       Mem_free
+00007e  e011              B        |L1.164|
+                  |L1.128|
+;;;65     		}
+;;;66     	}
+;;;67     	else if(varOperation.canTest == 0)
+000080  480b              LDR      r0,|L1.176|
+000082  f8b0007c          LDRH     r0,[r0,#0x7c]  ; varOperation
+000086  b968              CBNZ     r0,|L1.164|
+;;;68     	{
+;;;69     		varOperation.canTest = 1; //测试阶段
+000088  2001              MOVS     r0,#1
+00008a  4909              LDR      r1,|L1.176|
+00008c  f8a1007c          STRH     r0,[r1,#0x7c]
+;;;70     		err = OSQPost(canRecieveQ,CAN1_RxMsg);
+000090  4629              MOV      r1,r5
+000092  4809              LDR      r0,|L1.184|
+000094  6800              LDR      r0,[r0,#0]  ; canRecieveQ
+000096  f7fffffe          BL       OSQPost
+00009a  4604              MOV      r4,r0
+;;;71     		if(err != OS_ERR_NONE)
+00009c  b114              CBZ      r4,|L1.164|
+;;;72     		{
+;;;73     			Mem_free(CAN1_RxMsg);
+00009e  4628              MOV      r0,r5
+0000a0  f7fffffe          BL       Mem_free
+                  |L1.164|
+;;;74     		}
+;;;75     	}
+;;;76     		
+;;;77     	
+;;;78     	
+;;;79     	
+;;;80     	OSIntExit();  //中断服务结束，系统进行任务调度
+0000a4  f7fffffe          BL       OSIntExit
+;;;81     }
+0000a8  bd70              POP      {r4-r6,pc}
+;;;82     
                           ENDP
 
-                  |L1.96|
+0000aa  0000              DCW      0x0000
+                  |L1.172|
                           DCD      0x40006400
-                  |L1.100|
+                  |L1.176|
                           DCD      varOperation
-                  |L1.104|
+                  |L1.180|
+                          DCD      canJ1939Q
+                  |L1.184|
                           DCD      canRecieveQ
 
                           AREA ||i.OBD_CAN_SendData||, CODE, READONLY, ALIGN=2

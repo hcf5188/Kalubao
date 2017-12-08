@@ -1,5 +1,6 @@
 #include "includes.h"
 #include "bsp.h"
+#include "apptask.h"
 
 
 extern pCIR_QUEUE sendCDMA_Q;//指向 CDMA 串口发送队列  的指针
@@ -96,9 +97,6 @@ void USART2_IRQHandler(void)
 	OSIntExit();  //中断服务结束，系统进行任务调度
 }
 
-
-extern OS_EVENT *ZIPRecv_Q;             //指向RECV消息队列的指针
-extern OS_EVENT *CDMARecieveQ;
 uint8_t *ptrRece;
 uint16_t receDatalen= 0;
 char* pCmp = NULL;

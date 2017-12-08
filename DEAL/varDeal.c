@@ -66,10 +66,8 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	ptr->data[ptr->datLength++] = 0x7E;
 }
 
-extern _SystemInformation sysUpdateVar;  //系统全局变量信息
-
-const uint8_t ipAddr[] ="116.62.195.99"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
-#define IP_Port          9527            //端口号
+const uint8_t ipAddr[] ="116.228.88.101"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
+#define IP_Port          29999            //端口号
 
 _OBD_PID_Cmd *ptrPIDAllDat;    //指向第一配置区
 VARConfig    *ptrPIDVars;      //指向第二配置区
@@ -83,11 +81,11 @@ void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要
 	Flash_ReadDat(PIDConfig_ADDR,configData,2048);
 	ptrPIDAllDat = (_OBD_PID_Cmd *)configData;
 		
-	varOperation.pidNum = sysUpdateVar.pidNum; //得到PID指令的个数
-	varOperation.isDataFlow   = 1;             //设备启动的时候，数据流未流动
-	varOperation.isCDMAStart  = CDMA_CLOSE;    //CDMA初始状态为关闭
-	varOperation.isEngineRun  = ENGINE_RUN;    //初始认为发动机是启动了的
-	varOperation.sendId       = 0x80000000;    //发送的帧流水号
+	varOperation.pidNum = sysUpdateVar.pidNum;//得到PID指令的个数
+	varOperation.isDataFlow  = 1;             //设备启动的时候，数据流未流动
+	varOperation.isCDMAStart = CDMA_CLOSE;    //CDMA初始状态为关闭
+	varOperation.isEngineRun = ENGINE_RUN;    //初始认为发动机是启动了的
+	varOperation.sendId      = 0x80000000;    //发送的帧流水号
 	
 	varOperation.ecuVersion = sysUpdateVar.ecuVersion;
 	varOperation.busType    = sysUpdateVar.busType;
@@ -147,7 +145,7 @@ extern uint16_t freOBDLed; //红
 extern uint16_t freCDMALed;//黄
 extern uint16_t freGPSLed; //绿
 
-extern OS_EVENT *sendMsg;
+
 void RevolvingSpeedDeal(void)//todo:发动机转速处理
 {
 	static uint8_t openClose = 0;
@@ -218,7 +216,49 @@ void RevolvingSpeedDeal(void)//todo:发动机转速处理
 	}
 }
 
+extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
+void LogReport(char* fmt,...)          //上传日志文件
+{
+	u8 datLen,err;
+	va_list ap;
+	uint8_t * ptrSaveLog;
 
+	if(cdmaDataToSend->datLength > 850)
+		return;
+	ptrSaveLog = Mem_malloc(125);
+	va_start(ap,fmt);
+	vsprintf((char*)(&ptrSaveLog[3]),fmt,ap);
+	va_end(ap);
+	
+	datLen=strlen((const char*)(&ptrSaveLog[3]));//此次发送数据的长度
+
+	ptrSaveLog[0] = datLen + 3;
+	ptrSaveLog[1] = 0x50;
+	ptrSaveLog[2] = 0x03;
+	
+	OSMutexPend(CDMASendMutex,0,&err);
+						
+	memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrSaveLog,ptrSaveLog[0]);
+	cdmaDataToSend->datLength += ptrSaveLog[0];
+	
+	OSMutexPost(CDMASendMutex);
+	Mem_free(ptrSaveLog);
+}
+
+extern MEM_Check allMemState;         //内存监控变量
+//上报内存使用日志文件  用于前期研发阶段的内存块使用情况监视
+
+void MemLog(_CDMADataToSend* ptr)
+{
+	LogReport("m1:%d %d;m2:%d %d;m3:%d %d;m4:%d %d;m5:%d %d;m6:%d %d;m7:%d %d;",\
+			allMemState.memUsedNum1,allMemState.memUsedNum1,\
+			allMemState.memUsedNum2,allMemState.memUsedMax2,\
+			allMemState.memUsedNum3,allMemState.memUsedMax3,\
+			allMemState.memUsedNum4,allMemState.memUsedMax4,\
+			allMemState.memUsedNum5,allMemState.memUsedMax5,\
+			allMemState.memUsedNum6,allMemState.memUsedMax6,\
+			allMemState.memUsedNum7,allMemState.memUsedMax7);
+}
 
 
 

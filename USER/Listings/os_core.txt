@@ -957,7 +957,7 @@
 ;;;1283   
 ;;;1284   
 ;;;1285       OS_MemClr((INT8U *)&OSEventTbl[0], sizeof(OSEventTbl)); /* Clear the event table                   */
-000002  f44f71fa          MOV      r1,#0x1f4
+000002  f44f7116          MOV      r1,#0x258
 000006  4811              LDR      r0,|L15.76|
 000008  f7fffffe          BL       OS_MemClr
 ;;;1286       for (ix = 0u; ix < (OS_MAX_EVENTS - 1u); ix++) {        /* Init. list of free EVENT control blocks */
@@ -982,7 +982,7 @@
 00002c  1c58              ADDS     r0,r3,#1              ;1286
 00002e  b283              UXTH     r3,r0                 ;1286
                   |L15.48|
-000030  2b18              CMP      r3,#0x18              ;1286
+000030  2b1d              CMP      r3,#0x1d              ;1286
 000032  d3ed              BCC      |L15.16|
 ;;;1292   #if OS_EVENT_NAME_EN > 0u
 ;;;1293           pevent1->OSEventName    = (INT8U *)(void *)"?";     /* Unknown name                            */
@@ -2124,7 +2124,7 @@
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
                   OSEventTbl
-                          %        500
+                          %        600
                   OSTaskStatStk
                           %        512
                   OSTaskIdleStk
@@ -2136,7 +2136,7 @@
                   OSMemTbl
                           %        240
                   OSQTbl
-                          %        240
+                          %        288
 
                           AREA ||.constdata||, DATA, READONLY, ALIGN=0
 

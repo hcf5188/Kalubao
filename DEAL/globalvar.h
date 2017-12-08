@@ -28,13 +28,20 @@ typedef enum
 	CAN_BAUD_250K1 = 8,
 	CAN_BAUD_250K2 = 9
 }CANB_BAUD_Type;
+typedef enum
+{
+	CANBAUD_100K = 0,
+	CANBAUD_250K,
+	CANBAUD_500K,
+	CANBAUD_1M
+}CANBAUD_Enum;//CAN 波特率标志
 
 #pragma pack(1)             //1字节对齐
-__packed typedef struct  //与升级相关的结构体
+__packed typedef struct     //与升级相关的结构体
 {
-	uint32_t softVersion;   //软件版本号       用于OTA升级
-	uint32_t pageNum;
 	uint8_t  isSoftUpdate;  //程序是否需要升级  1 - 需要升级    0 - 不需要升级
+	uint32_t pageNum;
+	uint32_t softVersion;   //软件版本号       用于OTA升级
 
 	uint32_t ecuVersion;    //ECU 版本ID
 	uint16_t pidNum;        //PID 指令的个数  -  配置文件
@@ -44,7 +51,7 @@ __packed typedef struct  //与升级相关的结构体
 	uint8_t  canIdType;     //标准帧还是扩展帧
 	uint32_t canTxId;       //保存CAN发送ID
 	uint32_t canRxId;       //保存CAN接收ID
-	uint8_t  canBaud;       //CAN通讯波特率
+	CANBAUD_Enum  canBaud;       //CAN通讯波特率
 }_SystemInformation;
 
 
@@ -86,7 +93,7 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint8_t  canIdType;     //标准帧还是扩展帧
 	uint32_t canTxId;       //保存CAN发送ID
 	uint32_t canRxId;       //保存CAN接收ID
-	uint8_t  canBaud;       //CAN通讯波特率
+	CANBAUD_Enum  canBaud;  //CAN通讯波特率
 	 
 	uint16_t canTest;       //CAN 测试波特率、ID
 	
@@ -121,6 +128,24 @@ __packed typedef struct     //内存监控变量
 	uint8_t memUsedNum7;
 	uint8_t memUsedMax7;
 }MEM_Check;
+
+__packed typedef struct 
+{
+	uint32_t startTime;       //发动机启动时间
+	uint32_t stopTime;        //发动机停止时间
+	uint32_t totalMileage;    //此次总行程
+	uint32_t totalFuel;       //总油耗
+	uint32_t startlongitude;  //汽车开始 经度
+	uint32_t startlatitude;   //汽车开始 纬度
+	uint32_t stoplongitude;   //汽车停止 经度
+	uint32_t stoplatitude;    //汽车停止 纬度
+	uint8_t  rapidlyPlusNum;  //急加速次数
+	uint8_t  rapidlySubNum;   //急减速次数
+	uint16_t engineSpeedMax;  //最高转速
+	uint16_t carSpeedMax;     //最高车速
+	uint32_t messageNum;      //消息条数
+	uint32_t netFlow;         //网络流量
+}CARRunRecord;
 
 __packed typedef struct
 {
@@ -164,6 +189,8 @@ void CDMASendDataPack(_CDMADataToSend* ptr);       //对将要发送的数据进行打包
 uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal); //对接收到的数据包进行解析，并返回有效数据
 void GlobalVarInit(void );                         //全局变量初始化
 void LoginDataSend(void);                          //登录报文
+void LogReport(char* fmt,...);                     //上传日志文件
+void MemLog(_CDMADataToSend* ptr);                 //内存使用的日志文件
 
 void SoftErasePage(uint32_t addr);//擦除单页 2K
 void SoftProgramUpdate(uint32_t wAddr,uint8_t* ptrBuff,uint16_t datLength);//写入单页

@@ -8,10 +8,9 @@
 000000  01020300          DCB      0x01,0x02,0x03,0x00
                   canIdExt
                           DCD      0x18da00fa
-                          DCD      0x18da10fa
+                          DCD      0x18fff001
                           DCD      0x18da00fb
                           DCD      0x18da10fb
-                          DCD      0x18daf13d
                   canIdStd
                           DCD      0x000006f0
                           DCD      0x00000611
