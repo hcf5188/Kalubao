@@ -4,6 +4,7 @@
 #include "includes.h"
 #include "memblock.h"
 #include "globalvar.h"
+#include "gps.h"
 
 
 #define GPIO_LED		GPIOB
@@ -16,7 +17,9 @@
 
 extern SYS_OperationVar   varOperation; //程序运行过程中的全局变量参数
 extern _SystemInformation sysUpdateVar; //用来保存升级用
-extern CARRunRecord       carRunRecord; //汽车运行过程中，几乎全部信息
+extern CARRunRecord       carAllRecord; //汽车运行过程中，几乎全部信息
+extern nmea_msg           gpsMC; 	    //保存GPS信息
+extern _CDMADataToSend* cdmaDataToSend; //发送给 CDMA 的信息载体
 
 #define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB,GPIO_Pin_15)
 #define CDMA_POWER_LOW   GPIO_ResetBits(GPIOB,GPIO_Pin_15)
@@ -31,11 +34,13 @@ void SystemBspInit(void );
 
 void SysTickInit(void);    //系统时钟初始化
 void BspClockInit(void);   //外设时钟初始化
-void GPIOLEDInit(void);    //LED  IO口初始化
+void GPIOLEDInit(void);    //LED IO 口初始化
 void ADC1Init(void);
 void GPIO_ALL_IN(void);
 void RTCConfigureInit(void);//RTC实时时钟初始化
 void RTC_Time_Adjust(uint32_t value);//RTC实时时钟校正
+
+void CARVarInit(void); //与车辆行驶相关结构体的初始化
 
 void NVIC_AllConfig(void );//中断方面的重定向
 

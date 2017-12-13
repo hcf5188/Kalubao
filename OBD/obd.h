@@ -1,12 +1,24 @@
 
 
-
-
-
 #ifndef __OBD_H__
 #define __OBD_H__
 
 #include "includes.h"
+
+//ECU安全算法掩码
+
+#define ECUMASK47    0x24807961   //Yuchai  V47
+#define ECUMASK72    0x24807961   //Yuchai  V72
+#define ECUMASK17    0x383B50D9   //Weichai P949V732
+#define ECUMASK201   0x383B50D9   //WeiChai P1499V301
+#define ECUMASK211   0x62575E4E   //Yuchai  P1072V742 
+#define ECUMASK212   0x26121983   //Yuchai  P1382V762 
+#define ECUMASK213   0x3E814311   //CNHTC   P1158V760
+#define ECUMASK214   0x14071355   //DFCV    P1186V770 
+#define ECUMASK315   0x01080003   //JND     P1664V200
+#define ECUMASK216   0xF4EF7493   //SFH     P1287V770
+//#define ECUMASKOT    0x29835B3D 
+//#define ECUMASKCAMC  0x19A59E07
 
 
 //typedef enum
@@ -53,25 +65,6 @@ typedef struct
 }CANInformation;
 
 
-typedef struct
-{
-	float   carSpeed;        //车速
-	uint8_t carSpeedTemp;
-	float   engineSpeed;     //发动机转速
-	uint8_t engineSpeedTemp;
-	float   allFuel;         //总喷油量
-	uint8_t allFuelTemp;
-	float   primaryFuel;     //主喷油量
-	uint8_t primaryFuelTemp; 
-	float   beforeFuel;      //预喷油量
-	uint8_t beforeFuelTemp;
-	float   afterFuel;       //后喷油量
-	uint8_t afterFuelTemp; 
-	float   nowFuel;         //当前喷油量
-	uint8_t nowFuelTemp;
-	float   runLen1;          //行驶距离
-	float   runLen2;          //车辆距离
-}CARStateVar;
 
 #define NUMOfCANBaud       3    //测试CAN波特率的数量
 #define NUMOfCANID_STD     5     //CANID标准帧的个数
@@ -82,10 +75,11 @@ void OBD_CAN_SendData(CAN1DataToSend sendData);//CAN1发送数据
 void CAN1_BaudSet(CANBAUD_Enum baud);
 void CAN1_ClearFilter(void);
 void CAN1_SetFilter(uint32_t canId,uint32_t canIde);
-void CARVarInit(void);
 
+void SafeALG(void);       //安全算法
+void ReadECUVersion(void);//读取ECU版本号
+void Get_Q_FromECU(void);
 
-extern CARStateVar carStateVar;     //汽车有价值的状态信息
 
 
 #endif

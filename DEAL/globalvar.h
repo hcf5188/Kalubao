@@ -4,7 +4,7 @@
 #include "includes.h"
 
 #define SOFTVersion                   1001    //软件固件版本号
-#define ECUVersion              0x00000001    //ECU版本号
+#define PIDVersion              0x00000001    //ECU版本号
 
 #define SBOOT_UPGREAD_ADDR   	0x08007800    //此地址存放SBOOT升级用的参数
 
@@ -43,7 +43,7 @@ __packed typedef struct     //与升级相关的结构体
 	uint32_t pageNum;
 	uint32_t softVersion;   //软件版本号       用于OTA升级
 
-	uint32_t ecuVersion;    //ECU 版本ID
+	uint32_t pidVersion;    //ECU 版本ID
 	uint16_t pidNum;        //PID 指令的个数  -  配置文件
 	uint16_t pidVarNum;     //需要计算的 ECU 变量的个数
 	
@@ -82,9 +82,10 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint32_t sendId;        //要发送的指令流水号
 	uint32_t currentTime;   //GPS 时间        日/时/分/秒
 	
+	char     ecuVersion[20];//ECU版本号
 	uint16_t pidNum;        //PID 参数的数量
-	uint32_t ecuVersion;    //当前程序运行的ECU版本号
-	uint32_t newECUVersion; //保存 登录报文下发的ECU版本
+	uint32_t pidVersion;    //当前程序运行的ECU版本号
+	uint32_t newPIDVersion; //保存 登录报文下发的ECU版本
 	uint8_t  newPidNum;     //PID 新的个数 
 	
 	uint16_t pidVarNum;     //需要运算的 ECU 变量的个数
@@ -145,6 +146,23 @@ __packed typedef struct
 	uint16_t carSpeedMax;     //最高车速
 	uint32_t messageNum;      //消息条数
 	uint32_t netFlow;         //网络流量
+	
+	float   carSpeed;        //车速
+	uint8_t carSpeedTemp;
+	float   engineSpeed;     //发动机转速
+	uint8_t engineSpeedTemp;
+	float   allFuel;         //总喷油量
+	uint8_t allFuelTemp;
+	float   primaryFuel;     //主喷油量
+	uint8_t primaryFuelTemp; 
+	float   beforeFuel;      //预喷油量
+	uint8_t beforeFuelTemp;
+	float   afterFuel;       //后喷油量
+	uint8_t afterFuelTemp; 
+	float   nowFuel;         //当前喷油量
+	uint8_t nowFuelTemp;
+	float   runLen1;          //行驶距离
+	float   runLen2;          //车辆距离
 }CARRunRecord;
 
 __packed typedef struct

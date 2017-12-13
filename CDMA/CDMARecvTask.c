@@ -66,7 +66,7 @@ void LoginDataSend(void)
 	memcpy(&loginData->data[loginData->datLength],&buff,4);
 	loginData->datLength += 4;
 	
-	buff = t_htonl(sysUpdateVar.ecuVersion);
+	buff = t_htonl(sysUpdateVar.pidVersion);
 	memcpy(&loginData->data[loginData->datLength],&buff,4);
 	loginData->datLength += 4;
 	
@@ -90,16 +90,16 @@ static void GetConfigInfo(void)
 	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;
 	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x00;
 	//当前版本
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 24) & 0x00FF; 
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 16) & 0x00FF; 
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.ecuVersion >> 8) & 0x00FF;   
-	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.ecuVersion & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.pidVersion >> 24) & 0x00FF; 
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.pidVersion >> 16) & 0x00FF; 
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.pidVersion >> 8) & 0x00FF;   
+	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.pidVersion & 0x00FF;
 	
 	//请求升级的版本
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 24) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 16) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 8) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newPIDVersion & 0x00FF;
 	
 	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
 	
@@ -151,9 +151,9 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 		
 		SendFrameNum(0x8000);             //发送0x8000以请求程序文件大小以及CRC校验
 	}
-	else if(ecuId != sysUpdateVar.ecuVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
+	else if(ecuId != sysUpdateVar.pidVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
 	{
-		varOperation.newECUVersion = ecuId;
+		varOperation.newPIDVersion = ecuId;
 		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
 		varOperation.isDataFlow     = 1;  //配置文件升级，停止数据流，一心只为配置
 		
@@ -303,10 +303,10 @@ static void SendConfigNum(uint16_t cmd)
 	otaUpdatSend->data[otaUpdatSend->datLength++] = (cmd>>8) &0x00FF;
 	otaUpdatSend->data[otaUpdatSend->datLength++] = cmd &0x00FF;
 	//请求升级的版本
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 24) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 16) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newECUVersion >> 8) & 0x00FF;
-	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newECUVersion & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 24) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 16) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 8) & 0x00FF;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newPIDVersion & 0x00FF;
 	
 	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
 	
@@ -369,7 +369,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		if((cmdId - pidPackNum) == 0x4000)
 		{
 			//todo:保存参数，包括全局变量参数和配置参数,启动数据流
-			sysUpdateVar.ecuVersion = varOperation.newECUVersion;
+			sysUpdateVar.pidVersion = varOperation.newPIDVersion;
 			sysUpdateVar.pidNum     = varOperation.newPidNum;
 			
 			sysUpdateVar.busType    = varOperation.busType;//todo:CAN线和K线的切换，后期处理

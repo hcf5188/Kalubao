@@ -1,7 +1,7 @@
 #include "apptask.h"
 #include "gps.h"
 
-nmea_msg gpsMC; 	     //GPS信息
+
 
 extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
 extern uint16_t freGPSLed;
@@ -18,8 +18,6 @@ void GPSTask(void *pdata)
 	uint32_t timeStamp;//时间戳
 	uint32_t osTime;
 	uint32_t sendNum = 0;
-
-
 	
 	GPSStartInit();//初始化配置GPS
 	
@@ -83,9 +81,6 @@ void GPSTask(void *pdata)
 		freGPSLed = 500;          //LED  指示，GPS定位正常
 	}
 }
-
-
-
 
 /*********************以下为GPS配置、数据处理函数************************/
 #define SecsPerDay      (3600*24)

@@ -3,59 +3,8 @@
 #include "apptask.h"
 #include "delay.h"
 
+/***********************  全局 信号量、互斥型信号量、消息队列    ***********************/
 
-OS_STK USB_TASK_STK[USB_STK_SIZE];    //USB升级任务堆栈
-OS_STK START_TASK_STK[START_STK_SIZE];//起始任务堆栈
-
-OS_STK CDMA_TASK_STK[CDMA_STK_SIZE];  //网络通讯CDMA任务堆栈
-OS_STK CDMARecv_TASK_STK[CDMARecv_STK_SIZE];//网络通讯CDMA接收服务器数据任务堆栈
-
-OS_STK GPS_TASK_STK[GPS_STK_SIZE];     //车辆定位GPS任务堆栈
-
-OS_STK OBD_TASK_STK[OBD_STK_SIZE];     //汽车诊断OBD任务堆栈
-OS_STK J1939_TASK_STK[J1939_STK_SIZE]; //SAE - J1939任务堆栈
-
-OS_STK POWER_TASK_STK[POWER_STK_SIZE]; //系统电源管理任务堆栈
-
-OS_STK CDMA_LED_STK[LED_STK_SIZE];  //网络通讯CDMA-LED任务堆栈
-OS_STK GPS_LED_STK[LED_STK_SIZE];   //车辆定位GPS-LED任务堆栈
-OS_STK OBD_LED_STK[LED_STK_SIZE];   //汽车诊断OBD-LED任务堆栈
-OS_STK BEEP_STK[BEEP_STK_SIZE];     //蜂鸣器任务堆栈
-
-//  各串口接收、发送缓冲区初始化
-pCIR_QUEUE sendCDMA_Q = NULL;     //指向 CDMA 串口发送队列  的指针
-pSTORE     receCDMA_S = NULL;     //指向 CDMA 串口接收数据堆的指针
-
-pCIR_QUEUE sendGPS_Q = NULL;      //指向 GPS 串口发送队列  的指针
-pSTORE     receGPS_S = NULL;      //指向 GPS 串口接收数据堆的指针
-
-/****************************************************************
-*			void	int main(void )
-* 描	述 : 入口函数	 		
-* 输入参数  : 无
-* 返 回 值 : int
-****************************************************************/
-int main(void )
-{
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-	
-	OSInit(); 
-	
-	MemBuf_Init();   //建立内存块
-	
-	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列 缓冲区
-	receCDMA_S = Store_Init(1020);    //CDMA 串口接收 数据堆   缓冲区
-	
-	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列 缓冲区
-	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
-	
-	SystemBspInit();                  //硬件初始化 
-	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
-	
-	OSStart();	 
-}
-
-/***********************   信号量、互斥型信号量、消息队列    ***********************/
 #define CDMARECBUF_SIZE   10        //CDMA接收消息队列保存消息的最大量
 #define CDMASENDBUF_SIZE  5         //CDMA发送消息队列保存消息的最大量
 #define ZIPRECVBUF_SIZE   5         //RECV接收消息队列保存消息的最大量
@@ -96,10 +45,77 @@ OS_EVENT * canJ1939Q;             //SAE-J1939接收消息队列的指针
 OS_EVENT * USBSendQ;              //USB  发送消息队列的指针
 OS_EVENT * USBRecieveQ;           //USB  接收消息队列的指针
 
-/***************************   CAN指令相关     ***********************************/
-#define SEND_MAX_TIME  3000              //3000ms计时时间到，则发送数据
+/*************************   任务堆栈   ******************************/
 
-_CDMADataToSend* cdmaDataToSend = NULL;  //CDMAl发送的数据中（OBD、GPS），是通过它来作为载体
+OS_STK USB_TASK_STK[USB_STK_SIZE];     //USB升级任务堆栈
+OS_STK START_TASK_STK[START_STK_SIZE]; //起始任务堆栈
+
+OS_STK CDMA_TASK_STK[CDMA_STK_SIZE];   //网络通讯CDMA任务堆栈
+OS_STK CDMARecv_TASK_STK[CDMARecv_STK_SIZE];//网络通讯CDMA接收服务器数据任务堆栈
+
+OS_STK GPS_TASK_STK[GPS_STK_SIZE];     //车辆定位GPS任务堆栈
+
+OS_STK OBD_TASK_STK[OBD_STK_SIZE];     //汽车诊断OBD任务堆栈
+OS_STK J1939_TASK_STK[J1939_STK_SIZE]; //SAE - J1939任务堆栈
+
+OS_STK POWER_TASK_STK[POWER_STK_SIZE]; //系统电源管理任务堆栈
+
+OS_STK CDMA_LED_STK[LED_STK_SIZE];     //网络通讯CDMA-LED任务堆栈
+OS_STK GPS_LED_STK[LED_STK_SIZE];      //车辆定位GPS-LED任务堆栈
+OS_STK OBD_LED_STK[LED_STK_SIZE];      //汽车诊断OBD-LED任务堆栈
+OS_STK BEEP_STK[BEEP_STK_SIZE];        //蜂鸣器任务堆栈
+
+/******** 各串口接收、发送缓冲区初始化   **************/
+
+pCIR_QUEUE sendCDMA_Q = NULL;     //指向 CDMA 串口发送队列  的指针
+pSTORE     receCDMA_S = NULL;     //指向 CDMA 串口接收数据堆的指针
+
+pCIR_QUEUE sendGPS_Q = NULL;      //指向 GPS 串口发送队列  的指针
+pSTORE     receGPS_S = NULL;      //指向 GPS 串口接收数据堆的指针
+
+/***********************  系统全局变量  *****************************/
+
+_SystemInformation sysUpdateVar;  //用来保存升级用
+SYS_OperationVar   varOperation;  //程序运行的全局变量参数
+CARRunRecord       carAllRecord;  //整车运行状态信息
+nmea_msg           gpsMC;         //GPS信息
+
+_CDMADataToSend*   cdmaDataToSend = NULL;  //CDMAl发送的数据中（OBD、GPS），是通过它来作为载体
+
+/****************************************************************
+*			void	int main(void )
+* 描	述 : 程序入口函数	 		
+* 输入参数  : 无
+* 返 回 值 : int
+****************************************************************/
+int main(void )
+{
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	
+	OSInit(); 
+	
+	MemBuf_Init();   //建立内存块
+	
+	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列 缓冲区
+	receCDMA_S = Store_Init(1020);    //CDMA 串口接收 数据堆   缓冲区
+	
+	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列 缓冲区
+	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
+	
+	SystemBspInit();                  //硬件初始化 
+	CARVarInit();                     //与车辆行驶相关结构体的初始化
+	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
+	
+	OSStart();	 
+}
+
+/****************************************************************
+*			void StartTask(void *pdata)
+* 描	述 : 起始初始化任务，负责创建任务、任务间通信、CAN PID扫描、向CDMA上报数据 		
+* 输入参数  : 无
+* 返 回 值 : int
+****************************************************************/
+#define SEND_MAX_TIME  3000              //3000ms计时时间到，则发送数据
 extern _OBD_PID_Cmd *ptrPIDAllDat;   
 
 void StartTask(void *pdata)
@@ -159,7 +175,6 @@ void StartTask(void *pdata)
 	}
 	while(1)
 	{
-		
 		OSTimeDlyHMSM(0,0,0,4);         //4ms扫描一次
 		if(varOperation.isDataFlow == 1)
 			continue;
@@ -173,15 +188,14 @@ void StartTask(void *pdata)
 			for(i=0;i<varOperation.pidNum;i++)//todo:PID指令的数目 后期需要配置
 			{
 				(ptrPIDAllDat + i)->timeCount += 4;
-				if((ptrPIDAllDat + i)->timeCount >=(ptrPIDAllDat + i)->period)
-				{
-					(ptrPIDAllDat + i)->timeCount = 0;
-					ptrOBDSend = Mem_malloc(9);
-					memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
-					err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
-					if(err != OS_ERR_NONE)
-						Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
-				}
+				if((ptrPIDAllDat + i)->timeCount < (ptrPIDAllDat + i)->period)
+					continue;
+				(ptrPIDAllDat + i)->timeCount = 0;
+				ptrOBDSend = Mem_malloc(9);
+				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
+				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+				if(err != OS_ERR_NONE)
+					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
 			}
 		}
 		if(cdmaDataToSend->datLength > 36)//要发送的数据不为空
@@ -209,6 +223,7 @@ void StartTask(void *pdata)
 		}
 	}
 }
+
 
 
 

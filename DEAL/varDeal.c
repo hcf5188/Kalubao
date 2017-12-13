@@ -1,8 +1,7 @@
 #include "bsp.h"
 #include "apptask.h"
 
-_SystemInformation sysUpdateVar; //用来保存升级用
-SYS_OperationVar  varOperation;   //程序正常运行的全局变量参数
+
 
 #define  FRAME_HEAD_LEN    27     //与指令数据无关的属于帧头的数据长度
 
@@ -20,10 +19,10 @@ _CDMADataToSend* CDMNSendDataInit(uint16_t length)//要发送的数据，进行初始化
 	ptr->data[ptr->datLength ++] = 0x60;
 	ptr->data[ptr->datLength ++] = 0x00;
 	
-	ptr->data[ptr->datLength ++] = (sysUpdateVar.ecuVersion >> 24) &0x000000FF;
-	ptr->data[ptr->datLength ++] = (sysUpdateVar.ecuVersion >> 16) &0x000000FF;
-	ptr->data[ptr->datLength ++] = (sysUpdateVar.ecuVersion >>  8) &0x000000FF;
-	ptr->data[ptr->datLength ++] =  sysUpdateVar.ecuVersion & 0x000000FF;
+	ptr->data[ptr->datLength ++] = (sysUpdateVar.pidVersion >> 24) &0x000000FF;
+	ptr->data[ptr->datLength ++] = (sysUpdateVar.pidVersion >> 16) &0x000000FF;
+	ptr->data[ptr->datLength ++] = (sysUpdateVar.pidVersion >>  8) &0x000000FF;
+	ptr->data[ptr->datLength ++] =  sysUpdateVar.pidVersion & 0x000000FF;
 
 	return ptr;
 }
@@ -57,7 +56,7 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	varOperation.sendId++;
 	
 	memcpy(ptr->data,pHead,sizeof(_PROTOCOL_HEAD));
-	Mem_free(pHead);                              //申请的内存块，用完一定要释放啊
+	Mem_free(pHead);                                  //申请的内存块，用完一定要释放啊
 	
 	crc = CRC_Compute16(&ptr->data[1],ptr->datLength-1);
 	
@@ -73,7 +72,7 @@ _OBD_PID_Cmd *ptrPIDAllDat;    //指向第一配置区
 VARConfig    *ptrPIDVars;      //指向第二配置区
 
 uint8_t configData[2048] = {0};//用来存储配置PID
-void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
+void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
 {    
 	//从Flash中载入数据进全局变量
 	Flash_ReadDat(SBOOT_UPGREAD_ADDR,(uint8_t *)&sysUpdateVar,sizeof(_SystemInformation));
@@ -87,12 +86,14 @@ void GlobalVarInit(void )//todo：全局变量初始化  不断补充，从Flash中读取需不需要
 	varOperation.isEngineRun = ENGINE_RUN;    //初始认为发动机是启动了的
 	varOperation.sendId      = 0x80000000;    //发送的帧流水号
 	
-	varOperation.ecuVersion = sysUpdateVar.ecuVersion;
+	varOperation.pidVersion = sysUpdateVar.pidVersion;
 	varOperation.busType    = sysUpdateVar.busType;
 	varOperation.canIdType  = sysUpdateVar.canIdType;
 	varOperation.canTxId    = sysUpdateVar.canTxId;
 	varOperation.canRxId    = sysUpdateVar.canRxId;
 	varOperation.canBaud    = sysUpdateVar.canBaud;
+	
+	memset(varOperation.ecuVersion,0,20);
 	
 	varOperation.pidVarNum  = sysUpdateVar.pidVarNum;
 	
@@ -250,7 +251,7 @@ extern MEM_Check allMemState;         //内存监控变量
 
 void MemLog(_CDMADataToSend* ptr)
 {
-	LogReport("m1:%d %d;m2:%d %d;m3:%d %d;m4:%d %d;m5:%d %d;m6:%d %d;m7:%d %d;",\
+	LogReport("m1:%d,%d;m2:%d,%d;m3:%d,%d;m4:%d,%d;m5:%d,%d;m6:%d,%d;m7:%d,%d;",\
 			allMemState.memUsedNum1,allMemState.memUsedNum1,\
 			allMemState.memUsedNum2,allMemState.memUsedMax2,\
 			allMemState.memUsedNum3,allMemState.memUsedMax3,\

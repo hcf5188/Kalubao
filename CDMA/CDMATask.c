@@ -33,7 +33,6 @@ const uint8_t at_GetIP[]    = "AT+ZIPGETIP\r";      //获取本地IP
 
 
 extern uint16_t  freCDMALed;
-CARRunRecord  carRunRecord;
 static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2);
 
 void CDMATask(void *pdata)
@@ -44,9 +43,6 @@ void CDMATask(void *pdata)
 	char sendCmd[30];
 	uint16_t sendlen = 0;
 
-	
-
-	
 	CDMAConfigInit();                //初始化配置MG2639
 	LoginDataSend();                 //发送登录报文
 	varOperation.isDataFlow = 0;     //开启数据流
@@ -89,13 +85,17 @@ receCDMA:
 				pCDMARece = OSQPend(CDMARecieveQ,150,&err);
 				Mem_free(pCDMARece);
 			}
-		}
-		CDMASendDatas((uint8_t *)pCDMASend->data,pCDMASend->datLength);//实际要发送的数据
-		pCDMARece = OSQPend(CDMARecieveQ,150,&err);       //发送成功
-		Mem_free(pCDMARece);
-	
+		}											 //实际要发送的数据
+		CDMASendDatas((uint8_t *)pCDMASend->data,pCDMASend->datLength);
+		pCDMARece = OSQPend(CDMARecieveQ,150,&err);  //发送成功
+		Mem_free(pCDMARece);                         //SEND OK
+		
+	    carAllRecord.netFlow += pCDMASend->datLength;//网络流量（字节）
+		
 		Mem_free(pCDMASend->data);
 		Mem_free(pCDMASend);
+		
+		carAllRecord.messageNum ++;                  //发送的消息条数
 	}
 }
 void CDMAPowerOpen_Close(uint8_t flag)//这段代码是用来启动/关闭CDMA
