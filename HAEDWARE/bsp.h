@@ -39,6 +39,7 @@ void ADC1Init(void);
 void GPIO_ALL_IN(void);
 void RTCConfigureInit(void);//RTC实时时钟初始化
 void RTC_Time_Adjust(uint32_t value);//RTC实时时钟校正
+void WatchDogInit(uint8_t prer,uint16_t rlr);//独立看门狗初始化
 
 void CARVarInit(void); //与车辆行驶相关结构体的初始化
 

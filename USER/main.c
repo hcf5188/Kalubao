@@ -2,6 +2,7 @@
 #include "includes.h"
 #include "apptask.h"
 #include "delay.h"
+#include "obd.h"
 
 /***********************  全局 信号量、互斥型信号量、消息队列    ***********************/
 
@@ -198,11 +199,12 @@ void StartTask(void *pdata)
 					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
 			}
 		}
-		if(cdmaDataToSend->datLength > 36)//要发送的数据不为空
+		if(cdmaDataToSend->datLength > 36)         //要发送的数据不为空
 			cdmaDataToSend->timeCount += 4;
 		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 850))//发送时间到或者要发送的数组长度超过850个字节
 		{
-			MemLog(cdmaDataToSend);//todo：调试时用，产品的时候要注释掉
+			MemLog(cdmaDataToSend);                //todo：调试时用，产品的时候要注释掉
+			J1939DataLog();                        
 			
 			OSMutexPend(CDMASendMutex,0,&err);
 			

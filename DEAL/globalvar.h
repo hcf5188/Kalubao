@@ -3,7 +3,6 @@
 
 #include "includes.h"
 
-#define SOFTVersion                   1001    //软件固件版本号
 #define PIDVersion              0x00000001    //ECU版本号
 
 #define SBOOT_UPGREAD_ADDR   	0x08007800    //此地址存放SBOOT升级用的参数
@@ -147,22 +146,22 @@ __packed typedef struct
 	uint32_t messageNum;      //消息条数
 	uint32_t netFlow;         //网络流量
 	
-	float   carSpeed;        //车速
-	uint8_t carSpeedTemp;
-	float   engineSpeed;     //发动机转速
-	uint8_t engineSpeedTemp;
-	float   allFuel;         //总喷油量
-	uint8_t allFuelTemp;
-	float   primaryFuel;     //主喷油量
-	uint8_t primaryFuelTemp; 
-	float   beforeFuel;      //预喷油量
-	uint8_t beforeFuelTemp;
-	float   afterFuel;       //后喷油量
-	uint8_t afterFuelTemp; 
-	float   nowFuel;         //当前喷油量
-	uint8_t nowFuelTemp;
-	float   runLen1;          //行驶距离
-	float   runLen2;          //车辆距离
+	uint16_t carSpeed;        //车速
+	uint8_t  carSpeedTemp;
+	uint16_t engineSpeed;     //发动机转速
+	uint8_t  engineSpeedTemp;
+	uint32_t allFuel;         //总喷油量
+	uint8_t  allFuelTemp;
+	uint16_t primaryFuel;     //主喷油量
+	uint8_t  primaryFuelTemp; 
+	uint16_t beforeFuel;      //预喷油量
+	uint8_t  beforeFuelTemp;
+	uint16_t afterFuel;       //后喷油量
+	uint8_t  afterFuelTemp; 
+	uint16_t nowFuel;         //当前喷油量
+	uint8_t  nowFuelTemp;
+	uint32_t runLen1;         //行驶距离
+	uint32_t runLen2;         //车辆距离
 }CARRunRecord;
 
 __packed typedef struct

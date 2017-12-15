@@ -22,7 +22,7 @@ void SystemBspInit(void )
 	TIM4ConfigInit();
 	TIM2ConfigInit();
 	RTCConfigureInit();
-	
+	WatchDogInit(7,2000);//看门狗初始化，系统卡死大概12s后重启 
 	
 	bitValue = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0);
 	if(bitValue == 1)
@@ -363,10 +363,22 @@ void RTC_Time_Adjust(uint32_t value)//RTC实时时钟校正
   /* Wait until last write operation on RTC registers has finished */
   RTC_WaitForLastTask();
 }
-
-void WatchDogInit(void )
+//初始化独立看门狗
+//prer:分频数:0~7(只有低3位有效!)
+//分频因子=4*2^prer.但最大值只能是256!
+//rlr:重装载寄存器值:低11位有效.
+//时间计算(大概):Tout=((4*2^prer)*rlr)/40 (ms).
+void WatchDogInit(uint8_t prer,uint16_t rlr )
 {
-
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);  //使能对寄存器IWDG_PR和IWDG_RLR的写操作
+	
+	IWDG_SetPrescaler(prer);  //设置IWDG预分频值:设置IWDG预分频值为64
+	
+	IWDG_SetReload(rlr);  //设置IWDG重装载值
+	
+	IWDG_ReloadCounter();  //按照IWDG重装载寄存器的值重装载IWDG计数器
+	
+	IWDG_Enable();  //使能IWDG
 }
 
 void NVIC_AllConfig(void )

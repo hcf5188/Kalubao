@@ -76,15 +76,14 @@ void CAN1_BaudSet(CANBAUD_Enum baud);
 void CAN1_ClearFilter(void);
 void CAN1_SetFilter(uint32_t canId,uint32_t canIde);
 
-void SafeALG(void);       //安全算法
+void SafeALG(uint8_t* ptrVer);       //安全算法
 void ReadECUVersion(void);//读取ECU版本号
 void Get_Q_FromECU(void);
+void J1939DataLog(void);  //上报J1939采集到的数据
 
 
 
 #endif
-
-
 
 
 

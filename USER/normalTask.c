@@ -76,11 +76,11 @@ static void BSP_BeeperTimerInit(uint16_t ck_value)
 	//Timer3CH2 Beeper
 	TIM_InternalClockConfig(TIM3);
 
-	TIM_BaseInitStructure.TIM_Prescaler=3;//4·ÖÆµ£¬18M
-	TIM_BaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up;
-	TIM_BaseInitStructure.TIM_Period=period_set;
-	TIM_BaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1;
-	TIM_BaseInitStructure.TIM_RepetitionCounter=0;
+	TIM_BaseInitStructure.TIM_Prescaler         = 3;//4·ÖÆµ£¬18M
+	TIM_BaseInitStructure.TIM_CounterMode       = TIM_CounterMode_Up;
+	TIM_BaseInitStructure.TIM_Period            = period_set;
+	TIM_BaseInitStructure.TIM_ClockDivision     = TIM_CKD_DIV1;
+	TIM_BaseInitStructure.TIM_RepetitionCounter = 0;
 	TIM_TimeBaseInit(TIM3,&TIM_BaseInitStructure);
 	TIM_ARRPreloadConfig(TIM3, DISABLE);
 

@@ -64,9 +64,13 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	ptr->data[ptr->datLength++] = crc&0xff;
 	ptr->data[ptr->datLength++] = 0x7E;
 }
-
+#if 1
 const uint8_t ipAddr[] ="116.228.88.101"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
 #define IP_Port          29999            //端口号
+#else
+const uint8_t ipAddr[] ="116.62.195.99"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
+#define IP_Port          9998            //端口号
+#endif
 
 _OBD_PID_Cmd *ptrPIDAllDat;    //指向第一配置区
 VARConfig    *ptrPIDVars;      //指向第二配置区

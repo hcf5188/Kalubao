@@ -48,14 +48,17 @@ void CAN1_RX1_IRQHandler(void )
 			{
 				Mem_free(CAN1_RxMsg);
 			}
-		}
-		err = OSQPost(canRecieveQ,CAN1_RxMsg);
-		if(err != OS_ERR_NONE)
+		}else 
 		{
-			Mem_free(CAN1_RxMsg);
+			err = OSQPost(canRecieveQ,CAN1_RxMsg);
+			if(err != OS_ERR_NONE)
+			{
+				Mem_free(CAN1_RxMsg);
+			}
 		}
+		
 	}	
-	else if(varOperation.canTest == 1)//自识别阶段
+	else if(varOperation.canTest == 1)//自识别 CAN ID 阶段
 	{
 		varOperation.canTest = 2;
 		err = OSQPost(canRecieveQ,CAN1_RxMsg);
@@ -66,17 +69,14 @@ void CAN1_RX1_IRQHandler(void )
 	}
 	else if(varOperation.canTest == 0)
 	{
-		varOperation.canTest = 1; //测试阶段
+		varOperation.canTest = 1; //自识别波特率阶段
 		err = OSQPost(canRecieveQ,CAN1_RxMsg);
 		if(err != OS_ERR_NONE)
 		{
 			Mem_free(CAN1_RxMsg);
 		}
 	}
-		
-	
-	
-	
+
 	OSIntExit();  //中断服务结束，系统进行任务调度
 }
 

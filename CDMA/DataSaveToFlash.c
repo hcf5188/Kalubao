@@ -110,7 +110,7 @@ void SaveConfigToFlash(uint8_t* ptrBuff,uint16_t datLength)
 			FLASHStatus = FLASH_ProgramWord(w_addr, w_data);
 			w_addr = w_addr + 4;
 			p_w_data++;
-			w_data=(uint32_t)(*p_w_data)  ;	
+			w_data = (uint32_t)(*p_w_data)  ;	
 		}
 	}
 	OS_EXIT_CRITICAL(); //´ò¿ªÖÐ¶Ï
@@ -120,7 +120,7 @@ void SaveConfigToFlash(uint8_t* ptrBuff,uint16_t datLength)
 int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength) 
 {
 	int i = 0;
-	while(i < readLength ) 
+	while(i < readLength) 
 	{
 		*(buf + i) = *(__IO uint8_t*) iAddress++;
 		i++;

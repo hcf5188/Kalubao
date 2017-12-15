@@ -38,10 +38,10 @@ void GPSTask(void *pdata)
 		timeStamp = TimeCompare(gpsMC.utc.year,gpsMC.utc.month,gpsMC.utc.date,gpsMC.utc.hour,gpsMC.utc.min,gpsMC.utc.sec);
 		varOperation.currentTime = timeStamp;
 		
-		ptrGPSPack = Mem_malloc(40);
+		ptrGPSPack = Mem_malloc(50);
 		if(ptrGPSPack != NULL)
 		{
-			ptrGPSPack[0] = 21;
+			ptrGPSPack[0] = 27;
 			ptrGPSPack[1] = 0x50;
 			ptrGPSPack[2] = 0x02;
 			timeStamp = t_htonl(timeStamp);	
@@ -53,12 +53,23 @@ void GPSTask(void *pdata)
 			timeStamp = t_htonl(gpsMC.latitude);
 			memcpy(&ptrGPSPack[11],&timeStamp,sizeof(timeStamp));//维度
 			
-			speed = t_htons(gpsMC.direction);
-			memcpy(&ptrGPSPack[15],&speed,2);   //todo:解析GPS方向，解析有效定位
-			
 			speed = t_htons(gpsMC.speed);
-			memcpy(&ptrGPSPack[17],&speed,2);
-			memset(&ptrGPSPack[19],0,2);       //todo:当前车速
+			memcpy(&ptrGPSPack[15],&speed,2);   //GPS 车速 
+			
+			speed = t_htons(gpsMC.direction);
+			memcpy(&ptrGPSPack[17],&speed,2);   //todo:解析GPS方向，解析有效定位
+			
+			speed = t_htons(carAllRecord.carSpeed);	 
+			memcpy(&ptrGPSPack[19],&speed,2);        //当前车速
+			
+			speed = t_htons(carAllRecord.engineSpeed);	 
+			memcpy(&ptrGPSPack[21],&speed,2);        //当前转速
+			
+			speed = t_htons(carAllRecord.nowFuel);	 
+			memcpy(&ptrGPSPack[23],&speed,2);        //瞬时油耗
+			
+			speed = t_htons(carAllRecord.carSpeed);	 
+			memcpy(&ptrGPSPack[25],&speed,2);        //瞬时距离
 			
 			if((varOperation.isDataFlow == 0)&&(sendNum != osTime))     //数据流已经流动起来了  确保1秒发送一次
 			{	

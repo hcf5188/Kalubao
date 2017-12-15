@@ -48,6 +48,13 @@ void CDMARecvTask(void *pdata)
 		else   //等待超时
 		{
 			varOperation.isLoginDeal = 1; 
+			if(sysUpdateVar.isSoftUpdate == 1)//OTA升级超时
+			{
+				sysUpdateVar.isSoftUpdate = 0;
+				varOperation.isDataFlow   = 0;//重启数据流
+				if(OSSemAccept(LoginMes) == 0)//启动CAN
+					OSSemPost(LoginMes);
+			} 
 		}
 	}
 }
@@ -62,7 +69,7 @@ void LoginDataSend(void)
 	loginData->data[loginData->datLength++] = 0x50;
 	loginData->data[loginData->datLength++] = 0x01;
 	
-	buff = t_htonl(SOFTVersion);                            //软件固件版本  
+	buff = t_htonl(sysUpdateVar.softVersion);                            //软件固件版本  
 	memcpy(&loginData->data[loginData->datLength],&buff,4);
 	loginData->datLength += 4;
 	
@@ -166,7 +173,6 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 			OSSemPost(LoginMes);
 	}
 	
-	
 	//todo:IP更改，后期会有需要
 //	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
 //	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
@@ -192,7 +198,6 @@ static void SendFrameNum(uint16_t frameNum)
 	
 	OSQPost(CDMASendQ,otaUpdatSend);
 }
-extern uint8_t configData[2048];//用来存储配置PID
 uint8_t updateBuff[2048];       //升级用
 static void OTA_Updata(uint8_t* ptrDeal)
 {
@@ -227,7 +232,7 @@ static void OTA_Updata(uint8_t* ptrDeal)
 		flashAddr  = 0;
 		frameIndex = 0;
 		SendFrameNum(currentNum);//发送第一包程序请求帧0x8001
-		memset(configData,0,2048);
+		memset(updateBuff,0,2048);
 	}
 	else if(cmdId>0x8000)        //程序代码
 	{
@@ -237,7 +242,6 @@ static void OTA_Updata(uint8_t* ptrDeal)
 			return;
 		}
 			
-		
 		frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//得到此帧数据一共有多少包128字节的程序代码
 		
 		offset = 2;

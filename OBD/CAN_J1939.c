@@ -22,7 +22,7 @@ void DealJ1939Date(void *pdata)
 			case  0x0CF00400://发动机转速
 				carAllRecord.engineSpeedTemp = 1;
 				carAllRecord.engineSpeed = CAN1_RxMsg->Data[4];
-				carAllRecord.engineSpeed = (carAllRecord.engineSpeed * 256) + CAN1_RxMsg->Data[5];
+				carAllRecord.engineSpeed = (carAllRecord.engineSpeed * 256) + CAN1_RxMsg->Data[3];
 				if(carAllRecord.engineSpeed > carAllRecord.engineSpeedMax)//获得发动机最高转速
 					carAllRecord.engineSpeedMax = carAllRecord.engineSpeed;
 				break;
@@ -38,15 +38,15 @@ void DealJ1939Date(void *pdata)
 				break;
 			case  0x18FEF121://车速
 				carAllRecord.carSpeedTemp = 1;
-				carAllRecord.carSpeed     = CAN1_RxMsg->Data[3];
-				carAllRecord.carSpeed     = (carAllRecord.carSpeed * 256) + CAN1_RxMsg->Data[2];
+				carAllRecord.carSpeed     = CAN1_RxMsg->Data[2];
+				carAllRecord.carSpeed     = (carAllRecord.carSpeed * 256) + CAN1_RxMsg->Data[1];
 				if(carAllRecord.carSpeed > carAllRecord.carSpeedMax)//获得最高车速
 					carAllRecord.carSpeedMax = carAllRecord.carSpeed;
 				break;
 			case  0x18FEF100://车速
 				if(carAllRecord.carSpeedTemp == 1)break;
-				carAllRecord.carSpeed     = CAN1_RxMsg->Data[3];
-				carAllRecord.carSpeed     = (carAllRecord.carSpeed * 256) + CAN1_RxMsg->Data[2];
+				carAllRecord.carSpeed     = CAN1_RxMsg->Data[2];
+				carAllRecord.carSpeed     = (carAllRecord.carSpeed * 256) + CAN1_RxMsg->Data[1];
 				
 				if(carAllRecord.carSpeed > carAllRecord.carSpeedMax)//获得最高车速
 					carAllRecord.carSpeedMax = carAllRecord.carSpeed;
@@ -63,7 +63,14 @@ void DealJ1939Date(void *pdata)
 		Mem_free(CAN1_RxMsg);
 	}
 }
-
+void J1939DataLog(void)
+{
+	LogReport("EngineSpeed: 0x0CF00400 - %d;",carAllRecord.engineSpeed);
+	LogReport("RunDistance: 0x18FEE000 - 1:%d,2:%d;",carAllRecord.runLen1,carAllRecord.runLen2);
+	LogReport("EngineSpeed: 0x18FEF100 - %d;",carAllRecord.carSpeed);
+	LogReport("EngineSpeed: 0x18FEE900 - %f;",carAllRecord.allFuel);
+}
+//车辆运行的数据 初始化
 void CARVarInit(void)
 {
 	carAllRecord.startTime      = 0;//发动机启动时间
@@ -135,32 +142,21 @@ void SeedToKey(uint8_t* seed, uint8_t* key)
 
 uint8_t safe1[8] = {0x02,0x27,0x09,0x00,0x00,0x00,0x00,0x00};
 uint8_t safe2[8] = {0x06,0x27,0x0A,0x00,0x00,0x00,0x00,0xAA};
+uint8_t safe3[8] = {0x03,0x10,0x86,0xA7,0x00,0x00,0x00,0x00};
+uint8_t safe4[8] = {0x03,0x80,0x90,0x01,0x00,0x00,0x00,0x00};
+uint8_t safe5[8] = {0x10,0x2F,0x3D,0x05,0x61,0x24,0x2A,0x00};
+
 
 //安全算法测试
 extern CAN1DataToSend  dataToSend; 
-void SafeALG(void)
+void SafeALG(uint8_t* ptrVer)
 {
-	uint8_t err;
+	uint8_t err,i;
 	CanRxMsg* CAN1_RxMsg;
-	CAN_InitTypeDef   CAN_InitStructure;
+
 	uint8_t seed[4] = {0x00,0x00,0x00,0x00};
 	uint8_t key[4]  = {0x00,0x00,0x00,0x00};
 	
-	CAN_DeInit(CAN1);  
-	CAN_StructInit(&CAN_InitStructure);
-	//先用flash中的CAN配置进行测试
-	CAN1_BaudSet(CANBAUD_250K);
-	CAN1_SetFilter(0x18DAFA00,CAN_ID_EXT);
-	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//重置CAN滤波器
-
-	
-	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);Mem_free(CAN1_RxMsg);
-	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);Mem_free(CAN1_RxMsg);
-	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);Mem_free(CAN1_RxMsg);
-	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);Mem_free(CAN1_RxMsg);
-	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);Mem_free(CAN1_RxMsg);
-	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);Mem_free(CAN1_RxMsg);
-
 	dataToSend.pdat   = safe1;
 	OBD_CAN_SendData(dataToSend);
 	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
@@ -183,6 +179,29 @@ void SafeALG(void)
 			LogReport("NTRU Fail.");
 		Mem_free(CAN1_RxMsg);
 	}
+	dataToSend.pdat   = safe3;
+	OBD_CAN_SendData(dataToSend);
+	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
+	Mem_free(CAN1_RxMsg);
+	dataToSend.pdat   = safe4;
+	OBD_CAN_SendData(dataToSend);
+	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
+	Mem_free(CAN1_RxMsg);
+	
+	dataToSend.pdat   = ptrVer;
+	OBD_CAN_SendData(dataToSend);
+	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
+	Mem_free(CAN1_RxMsg);
+	for(i=1;i<7;i++)
+	{
+		OSTimeDlyHMSM(0,0,0,2);
+		dataToSend.pdat = &ptrVer[i*8];
+		OBD_CAN_SendData(dataToSend);
+		
+	}
+	Mem_free(ptrVer);
+	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
+	Mem_free(CAN1_RxMsg);
 }
 
 uint8_t ver[8]   = {0x02,0x1A,0x94,0x00,0x00,0x00,0x00,0x00};
@@ -193,19 +212,7 @@ void ReadECUVersion(void)//读取ECU版本号
 	uint8_t* ptrVer;
 	CanRxMsg* CAN1_RxMsg;	
 	
-	CAN_InitTypeDef   CAN_InitStructure;
-	
 	ptrVer = Mem_malloc(60);
-	
-	CAN_DeInit(CAN1);  
-	CAN_StructInit(&CAN_InitStructure);
-	//先用flash中的CAN配置进行测试
-	CAN1_BaudSet(CANBAUD_250K);
-	CAN1_SetFilter(0x18DAFA00,CAN_ID_EXT);
-	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//重置CAN滤波器
-		
-	dataToSend.canId = 0x18DA00FA;
-	dataToSend.ide   =0x04;
 	
 	dataToSend.pdat   = ver;
 	OBD_CAN_SendData(dataToSend); 

@@ -81,8 +81,8 @@ receCDMA:
 			Mem_free(pCDMARece);
 			if(err != 0)
 			{
-				CDMASendDatas((uint8_t *)sendCmd,sendlen); //通知CDMA要通过哪个通道发送多少个字节的数据
-				pCDMARece = OSQPend(CDMARecieveQ,150,&err);
+				CDMASendDatas((uint8_t *)sendCmd,sendlen);  //通知CDMA要通过哪个通道发送多少个字节的数据
+				pCDMARece = OSQPend(CDMARecieveQ,150,&err); 
 				Mem_free(pCDMARece);
 			}
 		}											 //实际要发送的数据
