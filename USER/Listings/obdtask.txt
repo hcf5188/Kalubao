@@ -829,11 +829,11 @@
 00001c  f7fffffe          BL       TestServer
 ;;;27     	
 ;;;28     	while(1)
-000020  e133              B        |L3.650|
+000020  e130              B        |L3.644|
                   |L3.34|
 ;;;29     	{	
 ;;;30     		if(varOperation.canTest == 0)//配置文件不成功，则停止CAN
-000022  489a              LDR      r0,|L3.652|
+000022  4899              LDR      r0,|L3.648|
 000024  f8b00090          LDRH     r0,[r0,#0x90]  ; varOperation
 000028  b930              CBNZ     r0,|L3.56|
 ;;;31     		{
@@ -844,13 +844,13 @@
 000030  4618              MOV      r0,r3
 000032  f7fffffe          BL       OSTimeDlyHMSM
 ;;;33     			continue;
-000036  e128              B        |L3.650|
+000036  e125              B        |L3.644|
                   |L3.56|
 ;;;34     		}	  
 ;;;35     		can1_Txbuff = OSQPend(canSendQ,1000,&err);//收到PID指令，进行发送
 000038  466a              MOV      r2,sp
 00003a  f44f717a          MOV      r1,#0x3e8
-00003e  4894              LDR      r0,|L3.656|
+00003e  4893              LDR      r0,|L3.652|
 000040  6800              LDR      r0,[r0,#0]  ; canSendQ
 000042  f7fffffe          BL       OSQPend
 000046  4607              MOV      r7,r0
@@ -858,7 +858,7 @@
 000048  f89d0000          LDRB     r0,[sp,#0]
 00004c  b100              CBZ      r0,|L3.80|
 ;;;37     			continue;
-00004e  e11c              B        |L3.650|
+00004e  e119              B        |L3.644|
                   |L3.80|
 ;;;38     		cmdNum = can1_Txbuff[0];               //记录PID指令序号
 000050  f8979000          LDRB     r9,[r7,#0]
@@ -867,7 +867,7 @@
 ;;;40     		
 ;;;41     		dataToSend.pdat = &can1_Txbuff[1];     
 000056  1c78              ADDS     r0,r7,#1
-000058  498e              LDR      r1,|L3.660|
+000058  498d              LDR      r1,|L3.656|
 00005a  6088              STR      r0,[r1,#8]  ; dataToSend
 ;;;42     		OBD_CAN_SendData(dataToSend);          //发送PID指令
 00005c  4608              MOV      r0,r1
@@ -877,7 +877,7 @@
 ;;;44     		CAN1_RxMsg = OSQPend(canRecieveQ,500,&err); //接收到OBD回复
 000064  466a              MOV      r2,sp
 000066  f44f71fa          MOV      r1,#0x1f4
-00006a  488b              LDR      r0,|L3.664|
+00006a  488a              LDR      r0,|L3.660|
 00006c  6800              LDR      r0,[r0,#0]  ; canRecieveQ
 00006e  f7fffffe          BL       OSQPend
 000072  4604              MOV      r4,r0
@@ -888,7 +888,7 @@
 ;;;46     		{
 ;;;47     			freOBDLed = 500;                    //OBD 初始化成功
 00007c  f44f70fa          MOV      r0,#0x1f4
-000080  4986              LDR      r1,|L3.668|
+000080  4985              LDR      r1,|L3.664|
 000082  8008              STRH     r0,[r1,#0]
 ;;;48     			if(CAN1_RxMsg->Data[0] == 0x10)     //多包处理
 000084  7ae0              LDRB     r0,[r4,#0xb]
@@ -904,340 +904,337 @@
 000096  2d00              CMP      r5,#0
 000098  d070              BEQ      |L3.380|
 ;;;52     				{
-;;;53     					ptrSaveBuff[0] = CAN1_RxMsg -> Data[1] - cmdLen + 3;
+;;;53     					ptrSaveBuff[0] = CAN1_RxMsg -> Data[1] + 3;
 00009a  7b20              LDRB     r0,[r4,#0xc]
-00009c  1b80              SUBS     r0,r0,r6
-00009e  1cc0              ADDS     r0,r0,#3
-0000a0  7028              STRB     r0,[r5,#0]
+00009c  1cc0              ADDS     r0,r0,#3
+00009e  7028              STRB     r0,[r5,#0]
 ;;;54     					ptrSaveBuff[1] = 0x60;
-0000a2  2060              MOVS     r0,#0x60
-0000a4  7068              STRB     r0,[r5,#1]
+0000a0  2060              MOVS     r0,#0x60
+0000a2  7068              STRB     r0,[r5,#1]
 ;;;55     					ptrSaveBuff[2] = cmdNum;
-0000a6  f8859002          STRB     r9,[r5,#2]
-;;;56     					memcpy(&ptrSaveBuff[3],&CAN1_RxMsg->Data[cmdLen + 2],(6 - cmdLen));
-0000aa  f1c60206          RSB      r2,r6,#6
-0000ae  f104000b          ADD      r0,r4,#0xb
-0000b2  1cb3              ADDS     r3,r6,#2
-0000b4  18c1              ADDS     r1,r0,r3
-0000b6  1ce8              ADDS     r0,r5,#3
-0000b8  f7fffffe          BL       __aeabi_memcpy
+0000a4  f8859002          STRB     r9,[r5,#2]
+;;;56     					memcpy(&ptrSaveBuff[3],&CAN1_RxMsg->Data[2],6);
+0000a8  f8d4100d          LDR      r1,[r4,#0xd]
+0000ac  f8c51003          STR      r1,[r5,#3]
+0000b0  f8b40011          LDRH     r0,[r4,#0x11]
+0000b4  f8a50007          STRH     r0,[r5,#7]
 ;;;57     					cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6)%7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
-0000bc  7b20              LDRB     r0,[r4,#0xc]
-0000be  1f80              SUBS     r0,r0,#6
-0000c0  2107              MOVS     r1,#7
-0000c2  fb90f2f1          SDIV     r2,r0,r1
-0000c6  fb010012          MLS      r0,r1,r2,r0
-0000ca  b920              CBNZ     r0,|L3.214|
-0000cc  7b20              LDRB     r0,[r4,#0xc]
-0000ce  1f80              SUBS     r0,r0,#6
-0000d0  fb90f0f1          SDIV     r0,r0,r1
-0000d4  e005              B        |L3.226|
-                  |L3.214|
-0000d6  7b20              LDRB     r0,[r4,#0xc]
-0000d8  1f80              SUBS     r0,r0,#6
-0000da  2107              MOVS     r1,#7
-0000dc  fb90f0f1          SDIV     r0,r0,r1
-0000e0  1c40              ADDS     r0,r0,#1
-                  |L3.226|
-0000e2  f0000aff          AND      r10,r0,#0xff
+0000b8  7b20              LDRB     r0,[r4,#0xc]
+0000ba  1f80              SUBS     r0,r0,#6
+0000bc  2107              MOVS     r1,#7
+0000be  fb90f2f1          SDIV     r2,r0,r1
+0000c2  fb010012          MLS      r0,r1,r2,r0
+0000c6  b920              CBNZ     r0,|L3.210|
+0000c8  7b20              LDRB     r0,[r4,#0xc]
+0000ca  1f80              SUBS     r0,r0,#6
+0000cc  fb90f0f1          SDIV     r0,r0,r1
+0000d0  e005              B        |L3.222|
+                  |L3.210|
+0000d2  7b20              LDRB     r0,[r4,#0xc]
+0000d4  1f80              SUBS     r0,r0,#6
+0000d6  2107              MOVS     r1,#7
+0000d8  fb90f0f1          SDIV     r0,r0,r1
+0000dc  1c40              ADDS     r0,r0,#1
+                  |L3.222|
+0000de  f0000aff          AND      r10,r0,#0xff
 ;;;58     					Mem_free(CAN1_RxMsg);
-0000e6  4620              MOV      r0,r4
-0000e8  f7fffffe          BL       Mem_free
+0000e2  4620              MOV      r0,r4
+0000e4  f7fffffe          BL       Mem_free
 ;;;59     					
 ;;;60     					dataToSend.pdat = pidManyBag;//发送0x30 请求接下来的多包
-0000ec  486c              LDR      r0,|L3.672|
-0000ee  4969              LDR      r1,|L3.660|
-0000f0  6088              STR      r0,[r1,#8]  ; dataToSend
+0000e8  486c              LDR      r0,|L3.668|
+0000ea  4969              LDR      r1,|L3.656|
+0000ec  6088              STR      r0,[r1,#8]  ; dataToSend
 ;;;61     					OBD_CAN_SendData(dataToSend);
-0000f2  4608              MOV      r0,r1
-0000f4  c807              LDM      r0,{r0-r2}
-0000f6  f7fffffe          BL       OBD_CAN_SendData
+0000ee  4608              MOV      r0,r1
+0000f0  c807              LDM      r0,{r0-r2}
+0000f2  f7fffffe          BL       OBD_CAN_SendData
 ;;;62     					
 ;;;63     					for(i=0;i<cmdManyPackNum;i++)
-0000fa  f04f0800          MOV      r8,#0
-0000fe  e01d              B        |L3.316|
-                  |L3.256|
+0000f6  f04f0800          MOV      r8,#0
+0000fa  e01c              B        |L3.310|
+                  |L3.252|
 ;;;64     					{
 ;;;65     						CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);//接收多包
-000100  466a              MOV      r2,sp
-000102  2119              MOVS     r1,#0x19
-000104  4864              LDR      r0,|L3.664|
-000106  6800              LDR      r0,[r0,#0]  ; canRecieveQ
-000108  f7fffffe          BL       OSQPend
-00010c  4604              MOV      r4,r0
+0000fc  466a              MOV      r2,sp
+0000fe  2119              MOVS     r1,#0x19
+000100  4864              LDR      r0,|L3.660|
+000102  6800              LDR      r0,[r0,#0]  ; canRecieveQ
+000104  f7fffffe          BL       OSQPend
+000108  4604              MOV      r4,r0
 ;;;66     						if(err == OS_ERR_NONE)
-00010e  f89d0000          LDRB     r0,[sp,#0]
-000112  b970              CBNZ     r0,|L3.306|
+00010a  f89d0000          LDRB     r0,[sp,#0]
+00010e  b968              CBNZ     r0,|L3.300|
 ;;;67     						{
-;;;68     							memcpy(&ptrSaveBuff[7*i + 9 - cmdLen],&CAN1_RxMsg->Data[1],7);
-000114  ebc800c8          RSB      r0,r8,r8,LSL #3
-000118  3009              ADDS     r0,r0,#9
-00011a  1b80              SUBS     r0,r0,r6
-00011c  1941              ADDS     r1,r0,r5
-00011e  68e2              LDR      r2,[r4,#0xc]
-000120  600a              STR      r2,[r1,#0]
-000122  8a22              LDRH     r2,[r4,#0x10]
-000124  808a              STRH     r2,[r1,#4]
-000126  7ca0              LDRB     r0,[r4,#0x12]
-000128  7188              STRB     r0,[r1,#6]
+;;;68     							memcpy(&ptrSaveBuff[7*i + 9],&CAN1_RxMsg->Data[1],7);
+000110  ebc800c8          RSB      r0,r8,r8,LSL #3
+000114  3009              ADDS     r0,r0,#9
+000116  1941              ADDS     r1,r0,r5
+000118  68e2              LDR      r2,[r4,#0xc]
+00011a  600a              STR      r2,[r1,#0]
+00011c  8a22              LDRH     r2,[r4,#0x10]
+00011e  808a              STRH     r2,[r1,#4]
+000120  7ca0              LDRB     r0,[r4,#0x12]
+000122  7188              STRB     r0,[r1,#6]
 ;;;69     							Mem_free(CAN1_RxMsg);
-00012a  4620              MOV      r0,r4
-00012c  f7fffffe          BL       Mem_free
-000130  e000              B        |L3.308|
-                  |L3.306|
+000124  4620              MOV      r0,r4
+000126  f7fffffe          BL       Mem_free
+00012a  e000              B        |L3.302|
+                  |L3.300|
 ;;;70     						}
 ;;;71     						else break;
-000132  e005              B        |L3.320|
-                  |L3.308|
-000134  f1080001          ADD      r0,r8,#1              ;63
-000138  f00008ff          AND      r8,r0,#0xff           ;63
-                  |L3.316|
-00013c  45d0              CMP      r8,r10                ;63
-00013e  dbdf              BLT      |L3.256|
-                  |L3.320|
-000140  bf00              NOP      
+00012c  e005              B        |L3.314|
+                  |L3.302|
+00012e  f1080001          ADD      r0,r8,#1              ;63
+000132  f00008ff          AND      r8,r0,#0xff           ;63
+                  |L3.310|
+000136  45d0              CMP      r8,r10                ;63
+000138  dbe0              BLT      |L3.252|
+                  |L3.314|
+00013a  bf00              NOP      
 ;;;72     					} 
 ;;;73     					if(i == cmdManyPackNum)
-000142  45d0              CMP      r8,r10
-000144  d120              BNE      |L3.392|
+00013c  45d0              CMP      r8,r10
+00013e  d120              BNE      |L3.386|
 ;;;74     					{
 ;;;75     						OSMutexPend(CDMASendMutex,0,&err);
-000146  466a              MOV      r2,sp
-000148  2100              MOVS     r1,#0
-00014a  4856              LDR      r0,|L3.676|
-00014c  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-00014e  f7fffffe          BL       OSMutexPend
+000140  466a              MOV      r2,sp
+000142  2100              MOVS     r1,#0
+000144  4856              LDR      r0,|L3.672|
+000146  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+000148  f7fffffe          BL       OSMutexPend
 ;;;76     						
 ;;;77     						memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrSaveBuff,ptrSaveBuff[0]);
-000152  4955              LDR      r1,|L3.680|
-000154  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000156  6849              LDR      r1,[r1,#4]
-000158  4b53              LDR      r3,|L3.680|
-00015a  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-00015c  881b              LDRH     r3,[r3,#0]
-00015e  18c8              ADDS     r0,r1,r3
-000160  782a              LDRB     r2,[r5,#0]
-000162  4629              MOV      r1,r5
-000164  f7fffffe          BL       __aeabi_memcpy
+00014c  4955              LDR      r1,|L3.676|
+00014e  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000150  6849              LDR      r1,[r1,#4]
+000152  4b54              LDR      r3,|L3.676|
+000154  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000156  881b              LDRH     r3,[r3,#0]
+000158  18c8              ADDS     r0,r1,r3
+00015a  782a              LDRB     r2,[r5,#0]
+00015c  4629              MOV      r1,r5
+00015e  f7fffffe          BL       __aeabi_memcpy
 ;;;78     						cdmaDataToSend->datLength += ptrSaveBuff[0];
-000168  484f              LDR      r0,|L3.680|
-00016a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00016c  8800              LDRH     r0,[r0,#0]
-00016e  7829              LDRB     r1,[r5,#0]
-000170  4408              ADD      r0,r0,r1
-000172  494d              LDR      r1,|L3.680|
-000174  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000176  e002              B        |L3.382|
-                  |L3.376|
-000178  e07f              B        |L3.634|
-                  |L3.378|
-00017a  e00d              B        |L3.408|
-                  |L3.380|
-00017c  e081              B        |L3.642|
-                  |L3.382|
-00017e  8008              STRH     r0,[r1,#0]
+000162  4850              LDR      r0,|L3.676|
+000164  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000166  8800              LDRH     r0,[r0,#0]
+000168  7829              LDRB     r1,[r5,#0]
+00016a  4408              ADD      r0,r0,r1
+00016c  494d              LDR      r1,|L3.676|
+00016e  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000170  8008              STRH     r0,[r1,#0]
 ;;;79     						
 ;;;80     						OSMutexPost(CDMASendMutex);
-000180  4848              LDR      r0,|L3.676|
-000182  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-000184  f7fffffe          BL       OSMutexPost
-                  |L3.392|
+000172  484b              LDR      r0,|L3.672|
+000174  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+000176  e002              B        |L3.382|
+                  |L3.376|
+000178  e07c              B        |L3.628|
+                  |L3.378|
+00017a  e00a              B        |L3.402|
+                  |L3.380|
+00017c  e07e              B        |L3.636|
+                  |L3.382|
+00017e  f7fffffe          BL       OSMutexPost
+                  |L3.386|
 ;;;81     					}
 ;;;82     					PIDVarGet(cmdNum,&ptrSaveBuff[3]);
-000188  1ce9              ADDS     r1,r5,#3
-00018a  4648              MOV      r0,r9
-00018c  f7fffffe          BL       PIDVarGet
+000182  1ce9              ADDS     r1,r5,#3
+000184  4648              MOV      r0,r9
+000186  f7fffffe          BL       PIDVarGet
 ;;;83     					Mem_free(ptrSaveBuff);
-000190  4628              MOV      r0,r5
-000192  f7fffffe          BL       Mem_free
-000196  e074              B        |L3.642|
-                  |L3.408|
+00018a  4628              MOV      r0,r5
+00018c  f7fffffe          BL       Mem_free
+000190  e074              B        |L3.636|
+                  |L3.402|
 ;;;84     				}
 ;;;85     			}
 ;;;86     			else  //单包处理
 ;;;87     			{
 ;;;88     				if(CAN1_RxMsg->Data[0]>cmdLen)
-000198  7ae0              LDRB     r0,[r4,#0xb]
-00019a  42b0              CMP      r0,r6
-00019c  dd5f              BLE      |L3.606|
+000192  7ae0              LDRB     r0,[r4,#0xb]
+000194  42b0              CMP      r0,r6
+000196  dd5f              BLE      |L3.600|
 ;;;89     				{
 ;;;90     					OSMutexPend(CDMASendMutex,0,&err);
-00019e  466a              MOV      r2,sp
-0001a0  2100              MOVS     r1,#0
-0001a2  4840              LDR      r0,|L3.676|
-0001a4  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-0001a6  f7fffffe          BL       OSMutexPend
+000198  466a              MOV      r2,sp
+00019a  2100              MOVS     r1,#0
+00019c  4840              LDR      r0,|L3.672|
+00019e  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+0001a0  f7fffffe          BL       OSMutexPend
 ;;;91     					
 ;;;92     					cdmaDataToSend->data[cdmaDataToSend->datLength++] = CAN1_RxMsg->Data[0] - cmdLen + 3;
-0001aa  7ae0              LDRB     r0,[r4,#0xb]
-0001ac  1b80              SUBS     r0,r0,r6
-0001ae  1cc0              ADDS     r0,r0,#3
-0001b0  b2c2              UXTB     r2,r0
-0001b2  483d              LDR      r0,|L3.680|
+0001a4  7ae0              LDRB     r0,[r4,#0xb]
+0001a6  1b80              SUBS     r0,r0,r6
+0001a8  1cc0              ADDS     r0,r0,#3
+0001aa  b2c1              UXTB     r1,r0
+0001ac  483d              LDR      r0,|L3.676|
+0001ae  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001b0  8802              LDRH     r2,[r0,#0]
+0001b2  483c              LDR      r0,|L3.676|
 0001b4  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001b6  8801              LDRH     r1,[r0,#0]
-0001b8  483b              LDR      r0,|L3.680|
-0001ba  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001bc  8800              LDRH     r0,[r0,#0]
-0001be  1c40              ADDS     r0,r0,#1
-0001c0  4b39              LDR      r3,|L3.680|
-0001c2  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-0001c4  8018              STRH     r0,[r3,#0]
-0001c6  4838              LDR      r0,|L3.680|
-0001c8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001ca  6840              LDR      r0,[r0,#4]
-0001cc  5442              STRB     r2,[r0,r1]
+0001b6  8800              LDRH     r0,[r0,#0]
+0001b8  1c40              ADDS     r0,r0,#1
+0001ba  4b3a              LDR      r3,|L3.676|
+0001bc  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0001be  8018              STRH     r0,[r3,#0]
+0001c0  4838              LDR      r0,|L3.676|
+0001c2  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001c4  6840              LDR      r0,[r0,#4]
+0001c6  5481              STRB     r1,[r0,r2]
 ;;;93     					cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x60;
-0001ce  2160              MOVS     r1,#0x60
-0001d0  4835              LDR      r0,|L3.680|
+0001c8  2160              MOVS     r1,#0x60
+0001ca  4836              LDR      r0,|L3.676|
+0001cc  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001ce  8802              LDRH     r2,[r0,#0]
+0001d0  4834              LDR      r0,|L3.676|
 0001d2  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001d4  8802              LDRH     r2,[r0,#0]
-0001d6  4834              LDR      r0,|L3.680|
-0001d8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001da  8800              LDRH     r0,[r0,#0]
-0001dc  1c40              ADDS     r0,r0,#1
-0001de  4b32              LDR      r3,|L3.680|
-0001e0  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-0001e2  8018              STRH     r0,[r3,#0]
-0001e4  4830              LDR      r0,|L3.680|
-0001e6  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001e8  6840              LDR      r0,[r0,#4]
-0001ea  5481              STRB     r1,[r0,r2]
+0001d4  8800              LDRH     r0,[r0,#0]
+0001d6  1c40              ADDS     r0,r0,#1
+0001d8  4b32              LDR      r3,|L3.676|
+0001da  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0001dc  8018              STRH     r0,[r3,#0]
+0001de  4831              LDR      r0,|L3.676|
+0001e0  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001e2  6840              LDR      r0,[r0,#4]
+0001e4  5481              STRB     r1,[r0,r2]
 ;;;94     					cdmaDataToSend->data[cdmaDataToSend->datLength++] = cmdNum;
-0001ec  482e              LDR      r0,|L3.680|
+0001e6  482f              LDR      r0,|L3.676|
+0001e8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001ea  8801              LDRH     r1,[r0,#0]
+0001ec  482d              LDR      r0,|L3.676|
 0001ee  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001f0  8801              LDRH     r1,[r0,#0]
-0001f2  482d              LDR      r0,|L3.680|
-0001f4  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0001f6  8800              LDRH     r0,[r0,#0]
-0001f8  1c40              ADDS     r0,r0,#1
-0001fa  4a2b              LDR      r2,|L3.680|
-0001fc  6812              LDR      r2,[r2,#0]  ; cdmaDataToSend
-0001fe  8010              STRH     r0,[r2,#0]
-000200  4829              LDR      r0,|L3.680|
-000202  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000204  6840              LDR      r0,[r0,#4]
-000206  f8009001          STRB     r9,[r0,r1]
+0001f0  8800              LDRH     r0,[r0,#0]
+0001f2  1c40              ADDS     r0,r0,#1
+0001f4  4a2b              LDR      r2,|L3.676|
+0001f6  6812              LDR      r2,[r2,#0]  ; cdmaDataToSend
+0001f8  8010              STRH     r0,[r2,#0]
+0001fa  482a              LDR      r0,|L3.676|
+0001fc  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0001fe  6840              LDR      r0,[r0,#4]
+000200  f8009001          STRB     r9,[r0,r1]
 ;;;95     					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],&CAN1_RxMsg->Data[cmdLen+1],(CAN1_RxMsg->Data[0] - cmdLen));
-00020a  4b27              LDR      r3,|L3.680|
-00020c  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-00020e  685b              LDR      r3,[r3,#4]
-000210  f8dfc094          LDR      r12,|L3.680|
-000214  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
-000218  f8bcc000          LDRH     r12,[r12,#0]
-00021c  eb03000c          ADD      r0,r3,r12
-000220  7ae3              LDRB     r3,[r4,#0xb]
-000222  1b9a              SUBS     r2,r3,r6
-000224  f104030b          ADD      r3,r4,#0xb
-000228  f1060c01          ADD      r12,r6,#1
-00022c  eb03010c          ADD      r1,r3,r12
-000230  f7fffffe          BL       __aeabi_memcpy
+000204  4b27              LDR      r3,|L3.676|
+000206  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000208  685b              LDR      r3,[r3,#4]
+00020a  f8dfc098          LDR      r12,|L3.676|
+00020e  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
+000212  f8bcc000          LDRH     r12,[r12,#0]
+000216  eb03000c          ADD      r0,r3,r12
+00021a  7ae3              LDRB     r3,[r4,#0xb]
+00021c  1b9a              SUBS     r2,r3,r6
+00021e  f104030b          ADD      r3,r4,#0xb
+000222  f1060c01          ADD      r12,r6,#1
+000226  eb03010c          ADD      r1,r3,r12
+00022a  f7fffffe          BL       __aeabi_memcpy
 ;;;96     					cdmaDataToSend -> datLength += CAN1_RxMsg->Data[0] - cmdLen;
-000234  481c              LDR      r0,|L3.680|
-000236  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000238  8800              LDRH     r0,[r0,#0]
-00023a  7ae1              LDRB     r1,[r4,#0xb]
-00023c  1b89              SUBS     r1,r1,r6
-00023e  4408              ADD      r0,r0,r1
-000240  4919              LDR      r1,|L3.680|
-000242  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000244  8008              STRH     r0,[r1,#0]
+00022e  481d              LDR      r0,|L3.676|
+000230  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000232  8800              LDRH     r0,[r0,#0]
+000234  7ae1              LDRB     r1,[r4,#0xb]
+000236  1b89              SUBS     r1,r1,r6
+000238  4408              ADD      r0,r0,r1
+00023a  491a              LDR      r1,|L3.676|
+00023c  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+00023e  8008              STRH     r0,[r1,#0]
 ;;;97     
 ;;;98     					OSMutexPost(CDMASendMutex);
-000246  4817              LDR      r0,|L3.676|
-000248  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-00024a  f7fffffe          BL       OSMutexPost
+000240  4817              LDR      r0,|L3.672|
+000242  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+000244  f7fffffe          BL       OSMutexPost
 ;;;99     					PIDVarGet(cmdNum,&CAN1_RxMsg->Data[cmdLen + 1]);
-00024e  f104000b          ADD      r0,r4,#0xb
-000252  1c72              ADDS     r2,r6,#1
-000254  1881              ADDS     r1,r0,r2
-000256  4648              MOV      r0,r9
-000258  f7fffffe          BL       PIDVarGet
-00025c  e009              B        |L3.626|
-                  |L3.606|
+000248  f104000b          ADD      r0,r4,#0xb
+00024c  1c72              ADDS     r2,r6,#1
+00024e  1881              ADDS     r1,r0,r2
+000250  4648              MOV      r0,r9
+000252  f7fffffe          BL       PIDVarGet
+000256  e009              B        |L3.620|
+                  |L3.600|
 ;;;100    				}
 ;;;101    				else if((CAN1_RxMsg->Data[0]==0x03)&&(CAN1_RxMsg->Data[1]==0x7F))
-00025e  7ae0              LDRB     r0,[r4,#0xb]
-000260  2803              CMP      r0,#3
-000262  d106              BNE      |L3.626|
-000264  7b20              LDRB     r0,[r4,#0xc]
-000266  287f              CMP      r0,#0x7f
-000268  d103              BNE      |L3.626|
+000258  7ae0              LDRB     r0,[r4,#0xb]
+00025a  2803              CMP      r0,#3
+00025c  d106              BNE      |L3.620|
+00025e  7b20              LDRB     r0,[r4,#0xc]
+000260  287f              CMP      r0,#0x7f
+000262  d103              BNE      |L3.620|
 ;;;102    				{
 ;;;103    					LogReport("03 7F - ECU refuse to reply! PID-%d;",cmdNum);
-00026a  4649              MOV      r1,r9
-00026c  a00f              ADR      r0,|L3.684|
-00026e  f7fffffe          BL       LogReport
-                  |L3.626|
+000264  4649              MOV      r1,r9
+000266  a010              ADR      r0,|L3.680|
+000268  f7fffffe          BL       LogReport
+                  |L3.620|
 ;;;104    				}
 ;;;105    				
 ;;;106    				Mem_free(CAN1_RxMsg);
-000272  4620              MOV      r0,r4
-000274  f7fffffe          BL       Mem_free
-000278  e003              B        |L3.642|
-                  |L3.634|
+00026c  4620              MOV      r0,r4
+00026e  f7fffffe          BL       Mem_free
+000272  e003              B        |L3.636|
+                  |L3.628|
 ;;;107    			}
 ;;;108    		}
 ;;;109    		else
 ;;;110    		{
 ;;;111    			LogReport("PID cmd %d read error!!!",cmdNum);
-00027a  4649              MOV      r1,r9
-00027c  a015              ADR      r0,|L3.724|
-00027e  f7fffffe          BL       LogReport
-                  |L3.642|
+000274  4649              MOV      r1,r9
+000276  a016              ADR      r0,|L3.720|
+000278  f7fffffe          BL       LogReport
+                  |L3.636|
 ;;;112    		}
 ;;;113    		Mem_free(can1_Txbuff);                 //释放内存块
-000282  4638              MOV      r0,r7
-000284  f7fffffe          BL       Mem_free
-000288  bf00              NOP                            ;33
-                  |L3.650|
-00028a  e6ca              B        |L3.34|
+00027c  4638              MOV      r0,r7
+00027e  f7fffffe          BL       Mem_free
+000282  bf00              NOP                            ;33
+                  |L3.644|
+000284  e6cd              B        |L3.34|
 ;;;114    	}
 ;;;115    }
 ;;;116    
                           ENDP
 
-                  |L3.652|
+000286  0000              DCW      0x0000
+                  |L3.648|
                           DCD      varOperation
-                  |L3.656|
+                  |L3.652|
                           DCD      canSendQ
-                  |L3.660|
+                  |L3.656|
                           DCD      dataToSend
-                  |L3.664|
+                  |L3.660|
                           DCD      canRecieveQ
-                  |L3.668|
+                  |L3.664|
                           DCD      freOBDLed
-                  |L3.672|
+                  |L3.668|
                           DCD      pidManyBag
-                  |L3.676|
+                  |L3.672|
                           DCD      CDMASendMutex
-                  |L3.680|
+                  |L3.676|
                           DCD      cdmaDataToSend
-                  |L3.684|
-0002ac  30332037          DCB      "03 7F - ECU refuse to reply! PID-%d;",0
-0002b0  46202d20
-0002b4  45435520
-0002b8  72656675
-0002bc  73652074
-0002c0  6f207265
-0002c4  706c7921
-0002c8  20504944
-0002cc  2d25643b
-0002d0  00      
-0002d1  00                DCB      0
-0002d2  00                DCB      0
-0002d3  00                DCB      0
-                  |L3.724|
-0002d4  50494420          DCB      "PID cmd %d read error!!!",0
-0002d8  636d6420
-0002dc  25642072
-0002e0  65616420
-0002e4  6572726f
-0002e8  72212121
-0002ec  00      
-0002ed  00                DCB      0
-0002ee  00                DCB      0
-0002ef  00                DCB      0
+                  |L3.680|
+0002a8  30332037          DCB      "03 7F - ECU refuse to reply! PID-%d;",0
+0002ac  46202d20
+0002b0  45435520
+0002b4  72656675
+0002b8  73652074
+0002bc  6f207265
+0002c0  706c7921
+0002c4  20504944
+0002c8  2d25643b
+0002cc  00      
+0002cd  00                DCB      0
+0002ce  00                DCB      0
+0002cf  00                DCB      0
+                  |L3.720|
+0002d0  50494420          DCB      "PID cmd %d read error!!!",0
+0002d4  636d6420
+0002d8  25642072
+0002dc  65616420
+0002e0  6572726f
+0002e4  72212121
+0002e8  00      
+0002e9  00                DCB      0
+0002ea  00                DCB      0
+0002eb  00                DCB      0
 
                           AREA ||i.PIDVarGet||, CODE, READONLY, ALIGN=2
 

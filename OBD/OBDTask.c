@@ -50,10 +50,10 @@ void OBDTask(void *pdata)
 				ptrSaveBuff = Mem_malloc(CAN1_RxMsg->Data[1] + 10);//申请的内存块足够长
 				if(ptrSaveBuff != NULL)
 				{
-					ptrSaveBuff[0] = CAN1_RxMsg -> Data[1] - cmdLen + 3;
+					ptrSaveBuff[0] = CAN1_RxMsg -> Data[1] + 3;
 					ptrSaveBuff[1] = 0x60;
 					ptrSaveBuff[2] = cmdNum;
-					memcpy(&ptrSaveBuff[3],&CAN1_RxMsg->Data[cmdLen + 2],(6 - cmdLen));
+					memcpy(&ptrSaveBuff[3],&CAN1_RxMsg->Data[2],6);
 					cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6)%7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
 					Mem_free(CAN1_RxMsg);
 					
@@ -65,7 +65,7 @@ void OBDTask(void *pdata)
 						CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);//接收多包
 						if(err == OS_ERR_NONE)
 						{
-							memcpy(&ptrSaveBuff[7*i + 9 - cmdLen],&CAN1_RxMsg->Data[1],7);
+							memcpy(&ptrSaveBuff[7*i + 9],&CAN1_RxMsg->Data[1],7);
 							Mem_free(CAN1_RxMsg);
 						}
 						else break;
