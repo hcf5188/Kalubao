@@ -48,3 +48,7 @@
 
 	   3、LogReport（）函数不能写在  OSMutexPend(CDMASendMutex,0,&err);里面，
 不然，上报服务器的数据会一直等待自己占用的互斥型信号量  CDMASendMutex
+
+	   4、在配置CAN的时候，如果CAN1_SetFilter(varOperation.canRxId ,CAN_ID_EXT);后，可以varOperation.canTest = 0;
+	   如果CAN1_ClearFilter();，则不可以varOperation.canTest = 0;因为J1939会往 canRecieveQ 推消息，造成解析卡死。
+	   

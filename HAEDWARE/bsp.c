@@ -10,6 +10,7 @@ void SystemBspInit(void )
 	SysTickInit();
 	
 	GlobalVarInit();//全局变量初始化
+	CARVarInit();   //与车辆行驶相关结构体的初始化
 	
 	GPIO_ALL_IN();  //IO口设置为输入
 	
@@ -22,7 +23,7 @@ void SystemBspInit(void )
 	TIM4ConfigInit();
 	TIM2ConfigInit();
 	RTCConfigureInit();
-	WatchDogInit(7,2000);//看门狗初始化，系统卡死大概12s后重启 
+	
 	
 	bitValue = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0);
 	if(bitValue == 1)
@@ -31,7 +32,8 @@ void SystemBspInit(void )
 		GPIO_SetBits(GPIOA,GPIO_Pin_15);//使能USB接口
 	}else
 	{
-		varOperation.USB_NormalMode = 0;				
+		varOperation.USB_NormalMode = 0;
+		WatchDogInit(7,2000);//看门狗初始化，系统卡死大概12s后重启 		
 	}
 //	CDMAUart2Init();
 //	GPSConfigInit(9600);

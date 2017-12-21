@@ -1656,200 +1656,200 @@
                           AREA ||i.OS_TCBInit||, CODE, READONLY, ALIGN=2
 
                   OS_TCBInit PROC
-;;;1916   
-;;;1917   INT8U  OS_TCBInit (INT8U    prio,
+;;;1914   
+;;;1915   INT8U  OS_TCBInit (INT8U    prio,
 000000  e92d4ff8          PUSH     {r3-r11,lr}
-;;;1918                      OS_STK  *ptos,
-;;;1919                      OS_STK  *pbos,
-;;;1920                      INT16U   id,
-;;;1921                      INT32U   stk_size,
-;;;1922                      void    *pext,
-;;;1923                      INT16U   opt)
-;;;1924   {
+;;;1916                      OS_STK  *ptos,
+;;;1917                      OS_STK  *pbos,
+;;;1918                      INT16U   id,
+;;;1919                      INT32U   stk_size,
+;;;1920                      void    *pext,
+;;;1921                      INT16U   opt)
+;;;1922   {
 000004  4605              MOV      r5,r0
 000006  460f              MOV      r7,r1
 000008  4690              MOV      r8,r2
 00000a  4699              MOV      r9,r3
 00000c  e9ddab0a          LDRD     r10,r11,[sp,#0x28]
-;;;1925       OS_TCB    *ptcb;
-;;;1926   #if OS_CRITICAL_METHOD == 3u                               /* Allocate storage for CPU status register */
-;;;1927       OS_CPU_SR  cpu_sr = 0u;
+;;;1923       OS_TCB    *ptcb;
+;;;1924   #if OS_CRITICAL_METHOD == 3u                               /* Allocate storage for CPU status register */
+;;;1925       OS_CPU_SR  cpu_sr = 0u;
 000010  2000              MOVS     r0,#0
 000012  9000              STR      r0,[sp,#0]
-;;;1928   #endif
-;;;1929   #if OS_TASK_REG_TBL_SIZE > 0u
-;;;1930       INT8U      i;
-;;;1931   #endif
-;;;1932   
-;;;1933   
-;;;1934       OS_ENTER_CRITICAL();
+;;;1926   #endif
+;;;1927   #if OS_TASK_REG_TBL_SIZE > 0u
+;;;1928       INT8U      i;
+;;;1929   #endif
+;;;1930   
+;;;1931   
+;;;1932       OS_ENTER_CRITICAL();
 000014  f7fffffe          BL       OS_CPU_SR_Save
 000018  9000              STR      r0,[sp,#0]
-;;;1935       ptcb = OSTCBFreeList;                                  /* Get a free TCB from the free TCB list    */
+;;;1933       ptcb = OSTCBFreeList;                                  /* Get a free TCB from the free TCB list    */
 00001a  483d              LDR      r0,|L26.272|
 00001c  6804              LDR      r4,[r0,#0]  ; OSTCBFreeList
-;;;1936       if (ptcb != (OS_TCB *)0) {
+;;;1934       if (ptcb != (OS_TCB *)0) {
 00001e  2c00              CMP      r4,#0
 000020  d071              BEQ      |L26.262|
-;;;1937           OSTCBFreeList            = ptcb->OSTCBNext;        /* Update pointer to free TCB list          */
+;;;1935           OSTCBFreeList            = ptcb->OSTCBNext;        /* Update pointer to free TCB list          */
 000022  3410              ADDS     r4,r4,#0x10
 000024  493a              LDR      r1,|L26.272|
 000026  6860              LDR      r0,[r4,#4]
 000028  6008              STR      r0,[r1,#0]  ; OSTCBFreeList
-;;;1938           OS_EXIT_CRITICAL();
+;;;1936           OS_EXIT_CRITICAL();
 00002a  9800              LDR      r0,[sp,#0]
 00002c  f7fffffe          BL       OS_CPU_SR_Restore
-;;;1939           ptcb->OSTCBStkPtr        = ptos;                   /* Load Stack pointer in TCB                */
+;;;1937           ptcb->OSTCBStkPtr        = ptos;                   /* Load Stack pointer in TCB                */
 000030  f8447c10          STR      r7,[r4,#-0x10]
-;;;1940           ptcb->OSTCBPrio          = prio;                   /* Load task priority into TCB              */
+;;;1938           ptcb->OSTCBPrio          = prio;                   /* Load task priority into TCB              */
 000034  76a5              STRB     r5,[r4,#0x1a]
-;;;1941           ptcb->OSTCBStat          = OS_STAT_RDY;            /* Task is ready to run                     */
+;;;1939           ptcb->OSTCBStat          = OS_STAT_RDY;            /* Task is ready to run                     */
 000036  2000              MOVS     r0,#0
 000038  7620              STRB     r0,[r4,#0x18]
-;;;1942           ptcb->OSTCBStatPend      = OS_STAT_PEND_OK;        /* Clear pend status                        */
+;;;1940           ptcb->OSTCBStatPend      = OS_STAT_PEND_OK;        /* Clear pend status                        */
 00003a  7660              STRB     r0,[r4,#0x19]
-;;;1943           ptcb->OSTCBDly           = 0u;                     /* Task is not delayed                      */
+;;;1941           ptcb->OSTCBDly           = 0u;                     /* Task is not delayed                      */
 00003c  6160              STR      r0,[r4,#0x14]
-;;;1944   
-;;;1945   #if OS_TASK_CREATE_EXT_EN > 0u
-;;;1946           ptcb->OSTCBExtPtr        = pext;                   /* Store pointer to TCB extension           */
+;;;1942   
+;;;1943   #if OS_TASK_CREATE_EXT_EN > 0u
+;;;1944           ptcb->OSTCBExtPtr        = pext;                   /* Store pointer to TCB extension           */
 00003e  f844bc0c          STR      r11,[r4,#-0xc]
-;;;1947           ptcb->OSTCBStkSize       = stk_size;               /* Store stack size                         */
+;;;1945           ptcb->OSTCBStkSize       = stk_size;               /* Store stack size                         */
 000042  f844ac04          STR      r10,[r4,#-4]
-;;;1948           ptcb->OSTCBStkBottom     = pbos;                   /* Store pointer to bottom of stack         */
+;;;1946           ptcb->OSTCBStkBottom     = pbos;                   /* Store pointer to bottom of stack         */
 000046  f8448c08          STR      r8,[r4,#-8]
-;;;1949           ptcb->OSTCBOpt           = opt;                    /* Store task options                       */
+;;;1947           ptcb->OSTCBOpt           = opt;                    /* Store task options                       */
 00004a  980c              LDR      r0,[sp,#0x30]
 00004c  8020              STRH     r0,[r4,#0]
-;;;1950           ptcb->OSTCBId            = id;                     /* Store task ID                            */
+;;;1948           ptcb->OSTCBId            = id;                     /* Store task ID                            */
 00004e  f8a49002          STRH     r9,[r4,#2]
-;;;1951   #else
-;;;1952           pext                     = pext;                   /* Prevent compiler warning if not used     */
-;;;1953           stk_size                 = stk_size;
-;;;1954           pbos                     = pbos;
-;;;1955           opt                      = opt;
-;;;1956           id                       = id;
-;;;1957   #endif
-;;;1958   
-;;;1959   #if OS_TASK_DEL_EN > 0u
-;;;1960           ptcb->OSTCBDelReq        = OS_ERR_NONE;
+;;;1949   #else
+;;;1950           pext                     = pext;                   /* Prevent compiler warning if not used     */
+;;;1951           stk_size                 = stk_size;
+;;;1952           pbos                     = pbos;
+;;;1953           opt                      = opt;
+;;;1954           id                       = id;
+;;;1955   #endif
+;;;1956   
+;;;1957   #if OS_TASK_DEL_EN > 0u
+;;;1958           ptcb->OSTCBDelReq        = OS_ERR_NONE;
 000052  2000              MOVS     r0,#0
 000054  77e0              STRB     r0,[r4,#0x1f]
-;;;1961   #endif
-;;;1962   
-;;;1963   #if OS_LOWEST_PRIO <= 63u                                         /* Pre-compute X, Y                  */
-;;;1964           ptcb->OSTCBY             = (INT8U)(prio >> 3u);
+;;;1959   #endif
+;;;1960   
+;;;1961   #if OS_LOWEST_PRIO <= 63u                                         /* Pre-compute X, Y                  */
+;;;1962           ptcb->OSTCBY             = (INT8U)(prio >> 3u);
 000056  10e8              ASRS     r0,r5,#3
 000058  7720              STRB     r0,[r4,#0x1c]
-;;;1965           ptcb->OSTCBX             = (INT8U)(prio & 0x07u);
+;;;1963           ptcb->OSTCBX             = (INT8U)(prio & 0x07u);
 00005a  f0050007          AND      r0,r5,#7
 00005e  76e0              STRB     r0,[r4,#0x1b]
-;;;1966   #else                                                             /* Pre-compute X, Y                  */
-;;;1967           ptcb->OSTCBY             = (INT8U)((INT8U)(prio >> 4u) & 0xFFu);
-;;;1968           ptcb->OSTCBX             = (INT8U) (prio & 0x0Fu);
-;;;1969   #endif
-;;;1970                                                                     /* Pre-compute BitX and BitY         */
-;;;1971           ptcb->OSTCBBitY          = (OS_PRIO)(1uL << ptcb->OSTCBY);
+;;;1964   #else                                                             /* Pre-compute X, Y                  */
+;;;1965           ptcb->OSTCBY             = (INT8U)((INT8U)(prio >> 4u) & 0xFFu);
+;;;1966           ptcb->OSTCBX             = (INT8U) (prio & 0x0Fu);
+;;;1967   #endif
+;;;1968                                                                     /* Pre-compute BitX and BitY         */
+;;;1969           ptcb->OSTCBBitY          = (OS_PRIO)(1uL << ptcb->OSTCBY);
 000060  7f21              LDRB     r1,[r4,#0x1c]
 000062  2001              MOVS     r0,#1
 000064  4088              LSLS     r0,r0,r1
 000066  77a0              STRB     r0,[r4,#0x1e]
-;;;1972           ptcb->OSTCBBitX          = (OS_PRIO)(1uL << ptcb->OSTCBX);
+;;;1970           ptcb->OSTCBBitX          = (OS_PRIO)(1uL << ptcb->OSTCBX);
 000068  7ee1              LDRB     r1,[r4,#0x1b]
 00006a  2001              MOVS     r0,#1
 00006c  4088              LSLS     r0,r0,r1
 00006e  7760              STRB     r0,[r4,#0x1d]
-;;;1973   
-;;;1974   #if (OS_EVENT_EN)
-;;;1975           ptcb->OSTCBEventPtr      = (OS_EVENT  *)0;         /* Task is not pending on an  event         */
+;;;1971   
+;;;1972   #if (OS_EVENT_EN)
+;;;1973           ptcb->OSTCBEventPtr      = (OS_EVENT  *)0;         /* Task is not pending on an  event         */
 000070  2000              MOVS     r0,#0
 000072  60e0              STR      r0,[r4,#0xc]
-;;;1976   #if (OS_EVENT_MULTI_EN > 0u)
-;;;1977           ptcb->OSTCBEventMultiPtr = (OS_EVENT **)0;         /* Task is not pending on any events        */
-;;;1978   #endif
-;;;1979   #endif
-;;;1980   
-;;;1981   #if (OS_FLAG_EN > 0u) && (OS_MAX_FLAGS > 0u) && (OS_TASK_DEL_EN > 0u)
-;;;1982           ptcb->OSTCBFlagNode  = (OS_FLAG_NODE *)0;          /* Task is not pending on an event flag     */
-;;;1983   #endif
-;;;1984   
-;;;1985   #if (OS_MBOX_EN > 0u) || ((OS_Q_EN > 0u) && (OS_MAX_QS > 0u))
-;;;1986           ptcb->OSTCBMsg       = (void *)0;                  /* No message received                      */
+;;;1974   #if (OS_EVENT_MULTI_EN > 0u)
+;;;1975           ptcb->OSTCBEventMultiPtr = (OS_EVENT **)0;         /* Task is not pending on any events        */
+;;;1976   #endif
+;;;1977   #endif
+;;;1978   
+;;;1979   #if (OS_FLAG_EN > 0u) && (OS_MAX_FLAGS > 0u) && (OS_TASK_DEL_EN > 0u)
+;;;1980           ptcb->OSTCBFlagNode  = (OS_FLAG_NODE *)0;          /* Task is not pending on an event flag     */
+;;;1981   #endif
+;;;1982   
+;;;1983   #if (OS_MBOX_EN > 0u) || ((OS_Q_EN > 0u) && (OS_MAX_QS > 0u))
+;;;1984           ptcb->OSTCBMsg       = (void *)0;                  /* No message received                      */
 000074  6120              STR      r0,[r4,#0x10]
-;;;1987   #endif
-;;;1988   
-;;;1989   #if OS_TASK_PROFILE_EN > 0u
-;;;1990           ptcb->OSTCBCtxSwCtr    = 0uL;                      /* Initialize profiling variables           */
+;;;1985   #endif
+;;;1986   
+;;;1987   #if OS_TASK_PROFILE_EN > 0u
+;;;1988           ptcb->OSTCBCtxSwCtr    = 0uL;                      /* Initialize profiling variables           */
 000076  6220              STR      r0,[r4,#0x20]
-;;;1991           ptcb->OSTCBCyclesStart = 0uL;
+;;;1989           ptcb->OSTCBCyclesStart = 0uL;
 000078  62a0              STR      r0,[r4,#0x28]
-;;;1992           ptcb->OSTCBCyclesTot   = 0uL;
+;;;1990           ptcb->OSTCBCyclesTot   = 0uL;
 00007a  6260              STR      r0,[r4,#0x24]
-;;;1993           ptcb->OSTCBStkBase     = (OS_STK *)0;
+;;;1991           ptcb->OSTCBStkBase     = (OS_STK *)0;
 00007c  62e0              STR      r0,[r4,#0x2c]
-;;;1994           ptcb->OSTCBStkUsed     = 0uL;
+;;;1992           ptcb->OSTCBStkUsed     = 0uL;
 00007e  6320              STR      r0,[r4,#0x30]
-;;;1995   #endif
-;;;1996   
-;;;1997   #if OS_TASK_NAME_EN > 0u
-;;;1998           ptcb->OSTCBTaskName    = (INT8U *)(void *)"?";
+;;;1993   #endif
+;;;1994   
+;;;1995   #if OS_TASK_NAME_EN > 0u
+;;;1996           ptcb->OSTCBTaskName    = (INT8U *)(void *)"?";
 000080  a024              ADR      r0,|L26.276|
 000082  6360              STR      r0,[r4,#0x34]
 000084  3c10              SUBS     r4,r4,#0x10
-;;;1999   #endif
-;;;2000   
-;;;2001   #if OS_TASK_REG_TBL_SIZE > 0u                              /* Initialize the task variables            */
-;;;2002           for (i = 0u; i < OS_TASK_REG_TBL_SIZE; i++) {
+;;;1997   #endif
+;;;1998   
+;;;1999   #if OS_TASK_REG_TBL_SIZE > 0u                              /* Initialize the task variables            */
+;;;2000           for (i = 0u; i < OS_TASK_REG_TBL_SIZE; i++) {
 000086  2600              MOVS     r6,#0
 000088  e006              B        |L26.152|
                   |L26.138|
-;;;2003               ptcb->OSTCBRegTbl[i] = 0u;
+;;;2001               ptcb->OSTCBRegTbl[i] = 0u;
 00008a  2100              MOVS     r1,#0
 00008c  f1040048          ADD      r0,r4,#0x48
 000090  f8401026          STR      r1,[r0,r6,LSL #2]
-000094  1c70              ADDS     r0,r6,#1              ;2002
-000096  b2c6              UXTB     r6,r0                 ;2002
+000094  1c70              ADDS     r0,r6,#1              ;2000
+000096  b2c6              UXTB     r6,r0                 ;2000
                   |L26.152|
-000098  2e00              CMP      r6,#0                 ;2002
+000098  2e00              CMP      r6,#0                 ;2000
 00009a  d0f6              BEQ      |L26.138|
-;;;2004           }
-;;;2005   #endif
-;;;2006   
-;;;2007           OSTCBInitHook(ptcb);
+;;;2002           }
+;;;2003   #endif
+;;;2004   
+;;;2005           OSTCBInitHook(ptcb);
 00009c  4620              MOV      r0,r4
 00009e  f7fffffe          BL       OSTCBInitHook
-;;;2008   
-;;;2009           OSTaskCreateHook(ptcb);                            /* Call user defined hook                   */
+;;;2006   
+;;;2007           OSTaskCreateHook(ptcb);                            /* Call user defined hook                   */
 0000a2  4620              MOV      r0,r4
 0000a4  f7fffffe          BL       OSTaskCreateHook
-;;;2010   
-;;;2011           OS_ENTER_CRITICAL();
+;;;2008   
+;;;2009           OS_ENTER_CRITICAL();
 0000a8  f7fffffe          BL       OS_CPU_SR_Save
 0000ac  9000              STR      r0,[sp,#0]
-;;;2012           OSTCBPrioTbl[prio] = ptcb;
+;;;2010           OSTCBPrioTbl[prio] = ptcb;
 0000ae  481a              LDR      r0,|L26.280|
 0000b0  f8404025          STR      r4,[r0,r5,LSL #2]
-;;;2013           ptcb->OSTCBNext    = OSTCBList;                    /* Link into TCB chain                      */
+;;;2011           ptcb->OSTCBNext    = OSTCBList;                    /* Link into TCB chain                      */
 0000b4  4819              LDR      r0,|L26.284|
 0000b6  6800              LDR      r0,[r0,#0]  ; OSTCBList
 0000b8  6160              STR      r0,[r4,#0x14]
-;;;2014           ptcb->OSTCBPrev    = (OS_TCB *)0;
+;;;2012           ptcb->OSTCBPrev    = (OS_TCB *)0;
 0000ba  2000              MOVS     r0,#0
 0000bc  61a0              STR      r0,[r4,#0x18]
-;;;2015           if (OSTCBList != (OS_TCB *)0) {
+;;;2013           if (OSTCBList != (OS_TCB *)0) {
 0000be  4817              LDR      r0,|L26.284|
 0000c0  6800              LDR      r0,[r0,#0]  ; OSTCBList
 0000c2  b110              CBZ      r0,|L26.202|
-;;;2016               OSTCBList->OSTCBPrev = ptcb;
+;;;2014               OSTCBList->OSTCBPrev = ptcb;
 0000c4  4815              LDR      r0,|L26.284|
 0000c6  6800              LDR      r0,[r0,#0]  ; OSTCBList
 0000c8  6184              STR      r4,[r0,#0x18]
                   |L26.202|
-;;;2017           }
-;;;2018           OSTCBList               = ptcb;
+;;;2015           }
+;;;2016           OSTCBList               = ptcb;
 0000ca  4814              LDR      r0,|L26.284|
 0000cc  6004              STR      r4,[r0,#0]  ; OSTCBList
-;;;2019           OSRdyGrp               |= ptcb->OSTCBBitY;         /* Make task ready to run                   */
+;;;2017           OSRdyGrp               |= ptcb->OSTCBBitY;         /* Make task ready to run                   */
 0000ce  342c              ADDS     r4,r4,#0x2c
 0000d0  78a0              LDRB     r0,[r4,#2]
 0000d2  4913              LDR      r1,|L26.288|
@@ -1857,7 +1857,7 @@
 0000d6  4308              ORRS     r0,r0,r1
 0000d8  4911              LDR      r1,|L26.288|
 0000da  7008              STRB     r0,[r1,#0]
-;;;2020           OSRdyTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;
+;;;2018           OSRdyTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;
 0000dc  7820              LDRB     r0,[r4,#0]
 0000de  4911              LDR      r1,|L26.292|
 0000e0  5c08              LDRB     r0,[r1,r0]
@@ -1866,30 +1866,30 @@
 0000e6  f814192c          LDRB     r1,[r4],#-0x2c
 0000ea  4a0e              LDR      r2,|L26.292|
 0000ec  5450              STRB     r0,[r2,r1]
-;;;2021           OSTaskCtr++;                                       /* Increment the #tasks counter             */
+;;;2019           OSTaskCtr++;                                       /* Increment the #tasks counter             */
 0000ee  480e              LDR      r0,|L26.296|
 0000f0  7800              LDRB     r0,[r0,#0]  ; OSTaskCtr
 0000f2  1c40              ADDS     r0,r0,#1
 0000f4  490c              LDR      r1,|L26.296|
 0000f6  7008              STRB     r0,[r1,#0]
-;;;2022           OS_EXIT_CRITICAL();
+;;;2020           OS_EXIT_CRITICAL();
 0000f8  9800              LDR      r0,[sp,#0]
 0000fa  f7fffffe          BL       OS_CPU_SR_Restore
-;;;2023           return (OS_ERR_NONE);
+;;;2021           return (OS_ERR_NONE);
 0000fe  2000              MOVS     r0,#0
                   |L26.256|
-;;;2024       }
-;;;2025       OS_EXIT_CRITICAL();
-;;;2026       return (OS_ERR_TASK_NO_MORE_TCB);
-;;;2027   }
+;;;2022       }
+;;;2023       OS_EXIT_CRITICAL();
+;;;2024       return (OS_ERR_TASK_NO_MORE_TCB);
+;;;2025   }
 000100  e8bd8ff8          POP      {r3-r11,pc}
 000104  e7ff              B        |L26.262|
                   |L26.262|
-000106  9800              LDR      r0,[sp,#0]            ;2025
+000106  9800              LDR      r0,[sp,#0]            ;2023
 000108  f7fffffe          BL       OS_CPU_SR_Restore
-00010c  2042              MOVS     r0,#0x42              ;2026
+00010c  2042              MOVS     r0,#0x42              ;2024
 00010e  e7f7              B        |L26.256|
-;;;2028   	 	   	  		 			 	    		   		 		 	 	 			 	    		   	 			 	  	 		 				 		  			 		 					 	  	  		      		  	   		      		  	 		 	      		   		 		  	 		 	      		  		  		  
+;;;2026   	 	   	  		 			 	    		   		 		 	 	 			 	    		   	 			 	  	 		 				 		  			 		 					 	  	  		      		  	   		      		  	 		 	      		   		 		  	 		 	      		  		  		  
                           ENDP
 
                   |L26.272|
@@ -1920,31 +1920,29 @@
 ;;;1755       OS_CPU_SR  cpu_sr = 0u;
 ;;;1756   #endif
 ;;;1757   
-;;;1758   
-;;;1759   
-;;;1760       p_arg = p_arg;                               /* Prevent compiler warning for not using 'p_arg'     */
+;;;1758       p_arg = p_arg;                               /* Prevent compiler warning for not using 'p_arg'     */
 000002  bf00              NOP      
-;;;1761       for (;;) {
+;;;1759       for (;;) {
 000004  bf00              NOP      
                   |L27.6|
-;;;1762           OS_ENTER_CRITICAL();
+;;;1760           OS_ENTER_CRITICAL();
 000006  f7fffffe          BL       OS_CPU_SR_Save
 00000a  4604              MOV      r4,r0
-;;;1763           OSIdleCtr++;
+;;;1761           OSIdleCtr++;
 00000c  4805              LDR      r0,|L27.36|
 00000e  6800              LDR      r0,[r0,#0]  ; OSIdleCtr
 000010  1c40              ADDS     r0,r0,#1
 000012  4904              LDR      r1,|L27.36|
 000014  6008              STR      r0,[r1,#0]  ; OSIdleCtr
-;;;1764           OS_EXIT_CRITICAL();
+;;;1762           OS_EXIT_CRITICAL();
 000016  4620              MOV      r0,r4
 000018  f7fffffe          BL       OS_CPU_SR_Restore
-;;;1765           OSTaskIdleHook();                        /* Call user definable HOOK                           */
+;;;1763           OSTaskIdleHook();                        /* Call user definable HOOK                           */
 00001c  f7fffffe          BL       OSTaskIdleHook
 000020  e7f1              B        |L27.6|
-;;;1766       }
-;;;1767   }
-;;;1768   /*$PAGE*/
+;;;1764       }
+;;;1765   }
+;;;1766   /*$PAGE*/
                           ENDP
 
 000022  0000              DCW      0x0000
@@ -1954,75 +1952,75 @@
                           AREA ||i.OS_TaskStat||, CODE, READONLY, ALIGN=2
 
                   OS_TaskStat PROC
-;;;1793   #if OS_TASK_STAT_EN > 0u
-;;;1794   void  OS_TaskStat (void *p_arg)
+;;;1791   #if OS_TASK_STAT_EN > 0u
+;;;1792   void  OS_TaskStat (void *p_arg)
 000000  2400              MOVS     r4,#0
-;;;1795   {
-;;;1796   #if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
-;;;1797       OS_CPU_SR  cpu_sr = 0u;
-;;;1798   #endif
+;;;1793   {
+;;;1794   #if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
+;;;1795       OS_CPU_SR  cpu_sr = 0u;
+;;;1796   #endif
+;;;1797   
+;;;1798   
 ;;;1799   
-;;;1800   
-;;;1801   
-;;;1802       p_arg = p_arg;                               /* Prevent compiler warning for not using 'p_arg'     */
+;;;1800       p_arg = p_arg;                               /* Prevent compiler warning for not using 'p_arg'     */
 000002  bf00              NOP      
-;;;1803       while (OSStatRdy == OS_FALSE) {
+;;;1801       while (OSStatRdy == OS_FALSE) {
 000004  e002              B        |L28.12|
                   |L28.6|
-;;;1804           OSTimeDly(2u * OS_TICKS_PER_SEC / 10u);  /* Wait until statistic task is ready                 */
+;;;1802           OSTimeDly(2u * OS_TICKS_PER_SEC / 10u);  /* Wait until statistic task is ready                 */
 000006  2064              MOVS     r0,#0x64
 000008  f7fffffe          BL       OSTimeDly
                   |L28.12|
 00000c  4819              LDR      r0,|L28.116|
-00000e  7800              LDRB     r0,[r0,#0]            ;1803  ; OSStatRdy
-000010  2800              CMP      r0,#0                 ;1803
+00000e  7800              LDRB     r0,[r0,#0]            ;1801  ; OSStatRdy
+000010  2800              CMP      r0,#0                 ;1801
 000012  d0f8              BEQ      |L28.6|
-;;;1805       }
-;;;1806       OSIdleCtrMax /= 100uL;
+;;;1803       }
+;;;1804       OSIdleCtrMax /= 100uL;
 000014  4818              LDR      r0,|L28.120|
 000016  6800              LDR      r0,[r0,#0]  ; OSIdleCtrMax
 000018  2164              MOVS     r1,#0x64
 00001a  fbb0f0f1          UDIV     r0,r0,r1
 00001e  4916              LDR      r1,|L28.120|
 000020  6008              STR      r0,[r1,#0]  ; OSIdleCtrMax
-;;;1807       if (OSIdleCtrMax == 0uL) {
+;;;1805       if (OSIdleCtrMax == 0uL) {
 000022  4608              MOV      r0,r1
 000024  6800              LDR      r0,[r0,#0]  ; OSIdleCtrMax
 000026  b928              CBNZ     r0,|L28.52|
-;;;1808           OSCPUUsage = 0u;
+;;;1806           OSCPUUsage = 0u;
 000028  2000              MOVS     r0,#0
 00002a  4914              LDR      r1,|L28.124|
 00002c  7008              STRB     r0,[r1,#0]
-;;;1809   #if OS_TASK_SUSPEND_EN > 0u
-;;;1810           (void)OSTaskSuspend(OS_PRIO_SELF);
+;;;1807   #if OS_TASK_SUSPEND_EN > 0u
+;;;1808           (void)OSTaskSuspend(OS_PRIO_SELF);
 00002e  20ff              MOVS     r0,#0xff
 000030  f7fffffe          BL       OSTaskSuspend
                   |L28.52|
-;;;1811   #else
-;;;1812           for (;;) {
-;;;1813               OSTimeDly(OS_TICKS_PER_SEC);
-;;;1814           }
-;;;1815   #endif
-;;;1816       }
-;;;1817       for (;;) {
+;;;1809   #else
+;;;1810           for (;;) {
+;;;1811               OSTimeDly(OS_TICKS_PER_SEC);
+;;;1812           }
+;;;1813   #endif
+;;;1814       }
+;;;1815       for (;;) {
 000034  bf00              NOP      
                   |L28.54|
-;;;1818           OS_ENTER_CRITICAL();
+;;;1816           OS_ENTER_CRITICAL();
 000036  f7fffffe          BL       OS_CPU_SR_Save
 00003a  4604              MOV      r4,r0
-;;;1819           OSIdleCtrRun = OSIdleCtr;                /* Obtain the of the idle counter for the past second */
+;;;1817           OSIdleCtrRun = OSIdleCtr;                /* Obtain the of the idle counter for the past second */
 00003c  4810              LDR      r0,|L28.128|
 00003e  6800              LDR      r0,[r0,#0]  ; OSIdleCtr
 000040  4910              LDR      r1,|L28.132|
 000042  6008              STR      r0,[r1,#0]  ; OSIdleCtrRun
-;;;1820           OSIdleCtr    = 0uL;                      /* Reset the idle counter for the next second         */
+;;;1818           OSIdleCtr    = 0uL;                      /* Reset the idle counter for the next second         */
 000044  2000              MOVS     r0,#0
 000046  490e              LDR      r1,|L28.128|
 000048  6008              STR      r0,[r1,#0]  ; OSIdleCtr
-;;;1821           OS_EXIT_CRITICAL();
+;;;1819           OS_EXIT_CRITICAL();
 00004a  4620              MOV      r0,r4
 00004c  f7fffffe          BL       OS_CPU_SR_Restore
-;;;1822           OSCPUUsage   = (INT8U)(100uL - OSIdleCtrRun / OSIdleCtrMax);
+;;;1820           OSCPUUsage   = (INT8U)(100uL - OSIdleCtrRun / OSIdleCtrMax);
 000050  480c              LDR      r0,|L28.132|
 000052  6800              LDR      r0,[r0,#0]  ; OSIdleCtrRun
 000054  4908              LDR      r1,|L28.120|
@@ -2031,19 +2029,19 @@
 00005c  f1c00064          RSB      r0,r0,#0x64
 000060  4906              LDR      r1,|L28.124|
 000062  7008              STRB     r0,[r1,#0]
-;;;1823           OSTaskStatHook();                        /* Invoke user definable hook                         */
+;;;1821           OSTaskStatHook();                        /* Invoke user definable hook                         */
 000064  f7fffffe          BL       OSTaskStatHook
-;;;1824   #if (OS_TASK_STAT_STK_CHK_EN > 0u) && (OS_TASK_CREATE_EXT_EN > 0u)
-;;;1825           OS_TaskStatStkChk();                     /* Check the stacks for each task                     */
+;;;1822   #if (OS_TASK_STAT_STK_CHK_EN > 0u) && (OS_TASK_CREATE_EXT_EN > 0u)
+;;;1823           OS_TaskStatStkChk();                     /* Check the stacks for each task                     */
 000068  f7fffffe          BL       OS_TaskStatStkChk
-;;;1826   #endif
-;;;1827           OSTimeDly(OS_TICKS_PER_SEC / 10u);       /* Accumulate OSIdleCtr for the next 1/10 second      */
+;;;1824   #endif
+;;;1825           OSTimeDly(OS_TICKS_PER_SEC / 10u);       /* Accumulate OSIdleCtr for the next 1/10 second      */
 00006c  2032              MOVS     r0,#0x32
 00006e  f7fffffe          BL       OSTimeDly
 000072  e7e0              B        |L28.54|
-;;;1828       }
-;;;1829   }
-;;;1830   #endif
+;;;1826       }
+;;;1827   }
+;;;1828   #endif
                           ENDP
 
                   |L28.116|
@@ -2060,61 +2058,61 @@
                           AREA ||i.OS_TaskStatStkChk||, CODE, READONLY, ALIGN=2
 
                   OS_TaskStatStkChk PROC
-;;;1844   #if (OS_TASK_STAT_STK_CHK_EN > 0u) && (OS_TASK_CREATE_EXT_EN > 0u)
-;;;1845   void  OS_TaskStatStkChk (void)
+;;;1842   #if (OS_TASK_STAT_STK_CHK_EN > 0u) && (OS_TASK_CREATE_EXT_EN > 0u)
+;;;1843   void  OS_TaskStatStkChk (void)
 000000  b57c              PUSH     {r2-r6,lr}
-;;;1846   {
-;;;1847       OS_TCB      *ptcb;
-;;;1848       OS_STK_DATA  stk_data;
-;;;1849       INT8U        err;
-;;;1850       INT8U        prio;
-;;;1851   
-;;;1852   
-;;;1853       for (prio = 0u; prio <= OS_TASK_IDLE_PRIO; prio++) {
+;;;1844   {
+;;;1845       OS_TCB      *ptcb;
+;;;1846       OS_STK_DATA  stk_data;
+;;;1847       INT8U        err;
+;;;1848       INT8U        prio;
+;;;1849   
+;;;1850   
+;;;1851       for (prio = 0u; prio <= OS_TASK_IDLE_PRIO; prio++) {
 000002  2500              MOVS     r5,#0
 000004  e014              B        |L29.48|
                   |L29.6|
-;;;1854           err = OSTaskStkChk(prio, &stk_data);
+;;;1852           err = OSTaskStkChk(prio, &stk_data);
 000006  4669              MOV      r1,sp
 000008  4628              MOV      r0,r5
 00000a  f7fffffe          BL       OSTaskStkChk
 00000e  4606              MOV      r6,r0
-;;;1855           if (err == OS_ERR_NONE) {
+;;;1853           if (err == OS_ERR_NONE) {
 000010  b966              CBNZ     r6,|L29.44|
-;;;1856               ptcb = OSTCBPrioTbl[prio];
+;;;1854               ptcb = OSTCBPrioTbl[prio];
 000012  4809              LDR      r0,|L29.56|
 000014  f8504025          LDR      r4,[r0,r5,LSL #2]
-;;;1857               if (ptcb != (OS_TCB *)0) {                               /* Make sure task 'ptcb' is ...   */
+;;;1855               if (ptcb != (OS_TCB *)0) {                               /* Make sure task 'ptcb' is ...   */
 000018  b144              CBZ      r4,|L29.44|
-;;;1858                   if (ptcb != OS_TCB_RESERVED) {                       /* ... still valid.               */
+;;;1856                   if (ptcb != OS_TCB_RESERVED) {                       /* ... still valid.               */
 00001a  2c01              CMP      r4,#1
 00001c  d006              BEQ      |L29.44|
-;;;1859   #if OS_TASK_PROFILE_EN > 0u
-;;;1860                       #if OS_STK_GROWTH == 1u
-;;;1861                       ptcb->OSTCBStkBase = ptcb->OSTCBStkBottom + ptcb->OSTCBStkSize;
+;;;1857   #if OS_TASK_PROFILE_EN > 0u
+;;;1858                       #if OS_STK_GROWTH == 1u
+;;;1859                       ptcb->OSTCBStkBase = ptcb->OSTCBStkBottom + ptcb->OSTCBStkSize;
 00001e  e9d40102          LDRD     r0,r1,[r4,#8]
 000022  eb000081          ADD      r0,r0,r1,LSL #2
 000026  63e0              STR      r0,[r4,#0x3c]
-;;;1862                       #else
-;;;1863                       ptcb->OSTCBStkBase = ptcb->OSTCBStkBottom - ptcb->OSTCBStkSize;
-;;;1864                       #endif
-;;;1865                       ptcb->OSTCBStkUsed = stk_data.OSUsed;            /* Store the number of bytes used */
+;;;1860                       #else
+;;;1861                       ptcb->OSTCBStkBase = ptcb->OSTCBStkBottom - ptcb->OSTCBStkSize;
+;;;1862                       #endif
+;;;1863                       ptcb->OSTCBStkUsed = stk_data.OSUsed;            /* Store the number of bytes used */
 000028  9801              LDR      r0,[sp,#4]
 00002a  6420              STR      r0,[r4,#0x40]
                   |L29.44|
-00002c  1c68              ADDS     r0,r5,#1              ;1853
-00002e  b2c5              UXTB     r5,r0                 ;1853
+00002c  1c68              ADDS     r0,r5,#1              ;1851
+00002e  b2c5              UXTB     r5,r0                 ;1851
                   |L29.48|
-000030  2d3f              CMP      r5,#0x3f              ;1853
+000030  2d3f              CMP      r5,#0x3f              ;1851
 000032  d9e8              BLS      |L29.6|
-;;;1866   #endif
-;;;1867                   }
-;;;1868               }
-;;;1869           }
-;;;1870       }
-;;;1871   }
+;;;1864   #endif
+;;;1865                   }
+;;;1866               }
+;;;1867           }
+;;;1868       }
+;;;1869   }
 000034  bd7c              POP      {r2-r6,pc}
-;;;1872   #endif
+;;;1870   #endif
                           ENDP
 
 000036  0000              DCW      0x0000

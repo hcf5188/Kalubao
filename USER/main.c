@@ -6,26 +6,6 @@
 
 /***********************  全局 信号量、互斥型信号量、消息队列    ***********************/
 
-#define CDMARECBUF_SIZE   10        //CDMA接收消息队列保存消息的最大量
-#define CDMASENDBUF_SIZE  5         //CDMA发送消息队列保存消息的最大量
-#define ZIPRECVBUF_SIZE   5         //RECV接收消息队列保存消息的最大量
-#define GPSRECBUF_SIZE    10        //接收GPS消息队列保存消息的最大量
-#define CANRECBUF_SIZE    20        //CAN接收消息队列保存消息的最大量
-#define CANSENDBUF_SIZE   80        //CAN发送消息队列保存消息的最大量
-#define CANJ1939BUF_SIZE  20        //CAN接收J1939消息队列保存消息的最大量
-#define USBRECBUF_SIZE    10        //接收消息队列保存消息的最大量
-#define USBSENDBUF_SIZE   5         //发送消息队列保存消息的最大量
-
-void *cdmaRecBuf[CDMARECBUF_SIZE];  //指向 CDMA 接收消息的指针数组
-void *cdmaSendBuf[CDMASENDBUF_SIZE];//指向 CDMA 发送消息的指针数组
-void *ZIPRecBuf[ZIPRECVBUF_SIZE];   //指向 CDMA 接收到服务器数据的消息指针数组
-void *gpsRecBuf[GPSRECBUF_SIZE];    //指向 GPS  接收消息的指针数组
-void *canRecBuf[CANRECBUF_SIZE];    //指向 CAN  接收消息的指针数组
-void *canSendBuf[CANSENDBUF_SIZE];  //指向 CAN  发送消息的指针数组
-void *canJ1939Buf[CANJ1939BUF_SIZE];//指向 CAN SAE-J1939接收消息的指针数组
-void *usbRecBuf[USBRECBUF_SIZE];    //用于存放指向邮箱的指针
-void *usbSendBuf[USBSENDBUF_SIZE];  //用于存放指向邮箱的指针
-
 OS_EVENT * sendMsg;               //CDMA是否正在发送消息的信号量
 OS_EVENT * beepSem;               //建立蜂鸣器响信号量
 OS_EVENT * LoginMes;              //登录报文信号量
@@ -45,6 +25,26 @@ OS_EVENT * canJ1939Q;             //SAE-J1939接收消息队列的指针
 
 OS_EVENT * USBSendQ;              //USB  发送消息队列的指针
 OS_EVENT * USBRecieveQ;           //USB  接收消息队列的指针
+
+#define CDMARECBUF_SIZE   10        //CDMA接收消息队列保存消息的最大量
+#define CDMASENDBUF_SIZE  5         //CDMA发送消息队列保存消息的最大量
+#define ZIPRECVBUF_SIZE   5         //RECV接收消息队列保存消息的最大量
+#define GPSRECBUF_SIZE    10        //接收GPS消息队列保存消息的最大量
+#define CANRECBUF_SIZE    20        //CAN接收消息队列保存消息的最大量
+#define CANSENDBUF_SIZE   80        //CAN发送消息队列保存消息的最大量
+#define CANJ1939BUF_SIZE  20        //CAN接收J1939消息队列保存消息的最大量
+#define USBRECBUF_SIZE    10        //接收消息队列保存消息的最大量
+#define USBSENDBUF_SIZE   5         //发送消息队列保存消息的最大量
+
+void *cdmaRecBuf[CDMARECBUF_SIZE];  //指向 CDMA 接收消息的指针数组
+void *cdmaSendBuf[CDMASENDBUF_SIZE];//指向 CDMA 发送消息的指针数组
+void *ZIPRecBuf[ZIPRECVBUF_SIZE];   //指向 CDMA 接收到服务器数据的消息指针数组
+void *gpsRecBuf[GPSRECBUF_SIZE];    //指向 GPS  接收消息的指针数组
+void *canRecBuf[CANRECBUF_SIZE];    //指向 CAN  接收消息的指针数组
+void *canSendBuf[CANSENDBUF_SIZE];  //指向 CAN  发送消息的指针数组
+void *canJ1939Buf[CANJ1939BUF_SIZE];//指向 CAN SAE-J1939接收消息的指针数组
+void *usbRecBuf[USBRECBUF_SIZE];    //用于存放指向邮箱的指针
+void *usbSendBuf[USBSENDBUF_SIZE];  //用于存放指向邮箱的指针
 
 /*************************   任务堆栈   ******************************/
 
@@ -77,7 +77,10 @@ pSTORE     receGPS_S = NULL;      //指向 GPS 串口接收数据堆的指针
 /***********************  系统全局变量  *****************************/
 
 _SystemInformation sysUpdateVar;  //用来保存升级用
+
 SYS_OperationVar   varOperation;  //程序运行的全局变量参数
+_CANDataConfig     canDataConfig; //保存CAN通讯参数
+
 CARRunRecord       carAllRecord;  //整车运行状态信息
 nmea_msg           gpsMC;         //GPS信息
 
@@ -104,7 +107,7 @@ int main(void )
 	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
 	
 	SystemBspInit();                  //硬件初始化 
-	CARVarInit();                     //与车辆行驶相关结构体的初始化
+	
 	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
 	
 	OSStart();	 
@@ -139,7 +142,9 @@ void StartTask(void *pdata)
 	}else
 	{
 		OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
+		
 /***********************************  创建任务间通信的消息     ***************************************************/				
+
 		beepSem   = OSSemCreate(1);       //蜂鸣器信号量（目前没啥用，留着以后扩展蜂鸣器响的方式）
 		LoginMes  = OSSemCreate(0);       //登录报文信号量
 		sendMsg   = OSSemCreate(0);       //创建CDMA是否正在发送消息的信号量
@@ -155,15 +160,17 @@ void StartTask(void *pdata)
 		canSendQ    = OSQCreate(&canSendBuf[0],CANSENDBUF_SIZE);   //卡路宝向ECU发送指令的消息队列
 		canRecieveQ = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);     //卡路宝从ECU接收指令的循环队列
 		canJ1939Q   = OSQCreate(&canJ1939Buf[0],CANJ1939BUF_SIZE); //ECU向卡路宝发送J1939消息队列
+
 /*************************************      创建各任务           ********************************************************/		
+
 		OSTaskCreate(PowerDeal,(void *)0,(OS_STK*)&POWER_TASK_STK[POWER_STK_SIZE-1],POWER_TASK_PRIO);
 		
 		OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);
 		
 		OSTaskCreate(CDMARecvTask,(void *)0,(OS_STK*)&CDMARecv_TASK_STK[CDMARecv_STK_SIZE-1],CDMARevc_TASK_PRIO);	
-		
+
 		OSTaskCreate(GPSTask, (void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);	
-		
+
 		OSTaskCreate(OBDTask, (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);
 		OSTaskCreate(DealJ1939Date, (void *)0,(OS_STK*)&J1939_TASK_STK[J1939_STK_SIZE-1],J1939_TASK_PRIO);//创建J1939处理任务		
 		
@@ -186,7 +193,7 @@ void StartTask(void *pdata)
 		}
 		if(varOperation.canTest == 2)   //CAN的波特率和ID均已确定
 		{
-			for(i=0;i<varOperation.pidNum;i++)//todo:PID指令的数目 后期需要配置
+			for(i=0;i<varOperation.pidNum;i++)//todo:PID指令的数目 后期需要配置 varOperation.pidNum
 			{
 				(ptrPIDAllDat + i)->timeCount += 4;
 				if((ptrPIDAllDat + i)->timeCount < (ptrPIDAllDat + i)->period)
@@ -211,7 +218,7 @@ void StartTask(void *pdata)
 			CDMASendDataPack(cdmaDataToSend);
 			
 			err = OSQPost(CDMASendQ,cdmaDataToSend);
-			if(err != OS_ERR_NONE)
+			if(err != OS_ERR_NONE)//发送失败
 			{
 				cdmaDataToSend->datLength = 27;
 				cdmaDataToSend->timeCount = 0;

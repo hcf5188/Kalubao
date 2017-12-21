@@ -1755,8 +1755,6 @@ void  OS_TaskIdle (void *p_arg)
     OS_CPU_SR  cpu_sr = 0u;
 #endif
 
-
-
     p_arg = p_arg;                               /* Prevent compiler warning for not using 'p_arg'     */
     for (;;) {
         OS_ENTER_CRITICAL();

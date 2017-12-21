@@ -53,7 +53,7 @@ void CDMARecvTask(void *pdata)
 				sysUpdateVar.isSoftUpdate = 0;
 				varOperation.isDataFlow   = 0;//重启数据流
 				if(OSSemAccept(LoginMes) == 0)//启动CAN
-					OSSemPost(LoginMes);
+					OSSemPost(LoginMes);	
 			} 
 		}
 	}
@@ -69,11 +69,12 @@ void LoginDataSend(void)
 	loginData->data[loginData->datLength++] = 0x50;
 	loginData->data[loginData->datLength++] = 0x01;
 	
-	buff = t_htonl(sysUpdateVar.softVersion);                            //软件固件版本  
+	buff = sysUpdateVar.curSoftVer; 
+	buff =t_htonl(buff);			//软件固件版本  
 	memcpy(&loginData->data[loginData->datLength],&buff,4);
 	loginData->datLength += 4;
 	
-	buff = t_htonl(sysUpdateVar.pidVersion);
+	buff = t_htonl(canDataConfig.pidVersion);
 	memcpy(&loginData->data[loginData->datLength],&buff,4);
 	loginData->datLength += 4;
 	
@@ -149,7 +150,7 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 	varOperation.newIP_Potr = ptr[offset + ipLen];      //得到端口号
 	varOperation.newIP_Potr = (varOperation.newIP_Potr << 8) + ptr[offset + ipLen + 1];
 	
-	if(softVersion != sysUpdateVar.softVersion) //先考虑OTA升级
+	if(softVersion != sysUpdateVar.curSoftVer) //先考虑OTA升级
 	{
 		varOperation.newSoftVersion = softVersion;
 		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
@@ -158,7 +159,7 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 		
 		SendFrameNum(0x8000);             //发送0x8000以请求程序文件大小以及CRC校验
 	}
-	else if(ecuId != sysUpdateVar.pidVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
+	else if(ecuId != canDataConfig.pidVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
 	{
 		varOperation.newPIDVersion = ecuId;
 		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
@@ -270,7 +271,7 @@ static void OTA_Updata(uint8_t* ptrDeal)
 				//计算CRC校验
 				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,((frameIndex - 1)*128 + frameLen));
 				memset(updateBuff,0,2048);
-				flashAddr += 0x800;
+				flashAddr += ((frameIndex - 1)*128 + frameLen);
 			}
 		}
 		if(cmdId == varOperation.frameNum)
@@ -284,8 +285,10 @@ static void OTA_Updata(uint8_t* ptrDeal)
 			}
 			Mem_free(ptrDeal);
 			sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
-			sysUpdateVar.pageNum      = flashAddr/0x800;
-			sysUpdateVar.softVersion  = varOperation.newSoftVersion;
+			sysUpdateVar.pageNum      = flashAddr/0x800 + 1;
+			sysUpdateVar.softByteSize = flashAddr;
+			sysUpdateVar.newSoftCRC   = fileCRC;
+			sysUpdateVar.newSoftVer   = varOperation.newSoftVersion;
 			
 			SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
 			
@@ -349,17 +352,18 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		
 		pidPackNum = ptrDeal[offset++];            //一共有帧PID包配置项
 		
-//		varOperation.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
+		varOperation.canBaud = ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
 		
 		currentNum = 0x4001;
-		frameIndex = 0;
+		frameIndex = 50;
 		memset(updateBuff,0,2048);
 		SendConfigNum(currentNum);//发送第一包程序请求帧0x4001
 		
 	}else if(cmdId > 0x4000 && cmdId < 0x5000)
 	{
-		if(cmdId != currentNum)   //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
-		{//	SendConfigNum(currentNum);//todo：重新发送？
+		if(cmdId != currentNum)       //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
+		{
+			//SendConfigNum(currentNum);//todo：重新发送？
 			return;
 		}
 		
@@ -373,20 +377,23 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		if((cmdId - pidPackNum) == 0x4000)
 		{
 			//todo:保存参数，包括全局变量参数和配置参数,启动数据流
-			sysUpdateVar.pidVersion = varOperation.newPIDVersion;
-			sysUpdateVar.pidNum     = varOperation.newPidNum;
+			canDataConfig.pidVersion = varOperation.newPIDVersion;
+			canDataConfig.pidNum     = varOperation.newPidNum;
 			
-			sysUpdateVar.busType    = varOperation.busType;//todo:CAN线和K线的切换，后期处理
-			sysUpdateVar.canIdType  = varOperation.canIdType;
-			sysUpdateVar.canTxId    = varOperation.canTxId;
-			sysUpdateVar.canRxId    = varOperation.canRxId;
-			sysUpdateVar.canBaud    = varOperation.canBaud;
+			canDataConfig.busType    = varOperation.busType;//todo:CAN线和K线的切换，后期处理
+			canDataConfig.canIdType  = varOperation.canIdType;
+			canDataConfig.canTxId    = varOperation.canTxId;
+			canDataConfig.canRxId    = varOperation.canRxId;
+			canDataConfig.canBaud    = varOperation.canBaud;
 			
-			for(i = 0;i < frameIndex;i += 13)      //更改 指令发送周期 的字节序
+			for(i = 50;i < frameIndex;i += 17)      //更改 指令发送周期 的字节序
 			{
-				temp             = updateBuff[i];
-				updateBuff[i]   = updateBuff[i+1];
-				updateBuff[i+1] = temp;
+				temp            = updateBuff[i];
+				updateBuff[i]   = updateBuff[i+3];
+				updateBuff[i+3] = temp;
+				temp            = updateBuff[i+1];
+				updateBuff[i+1]   = updateBuff[i+2];
+				updateBuff[i+2] = temp;
 			}
 			SendConfigNum(0x5012);//请求第二个配置文件
 		}
@@ -401,15 +408,33 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		offset = 2;
 		frameLen = ptrDeal[offset++] - 3;
 		
-		sysUpdateVar.pidVarNum = frameLen / 13;   //得到上报 ECU 变量的个数
+		canDataConfig.pidVarNum = frameLen / 13;   //得到上报 ECU 变量的个数
 		
 		cmdId    = ptrDeal[offset++];
 		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
 		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
 		frameIndex += frameLen;
 		
-		SaveConfigToFlash(updateBuff,2048);      //将数据写入配置文件区，（flash:0x0802E000）
-		SbootParameterSaveToFlash(&sysUpdateVar);//将运行参数写入升级变量区  （flash：0x08007800）
+		PIDConfigReadWrite(updateBuff,(uint8_t *)&canDataConfig,sizeof(_CANDataConfig),0);
+		
+		for(i = (17*canDataConfig.pidNum)+50;i < frameIndex;i += 14)      //更改系数、偏移量的字节序
+			{
+				temp            = updateBuff[i+6];
+				updateBuff[i+6]   = updateBuff[i+9];
+				updateBuff[i+9] = temp;
+				temp            = updateBuff[i+7];
+				updateBuff[i+7]   = updateBuff[i+8];
+				updateBuff[i+8] = temp;
+				
+				temp            = updateBuff[i+10];
+				updateBuff[i+10]   = updateBuff[i+13];
+				updateBuff[i+13] = temp;
+				temp            = updateBuff[i+11];
+				updateBuff[i+11]   = updateBuff[i+12];
+				updateBuff[i+12] = temp;
+			}
+		
+		Save2KDataToFlash(updateBuff,PIDConfig_ADDR,2048);      //将数据写入配置文件区，（flash:0x0802E000）
 		
 		__disable_fault_irq();                    //重启
 		NVIC_SystemReset();

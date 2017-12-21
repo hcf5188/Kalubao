@@ -40,6 +40,7 @@ void CDMATask(void *pdata)
 	uint8_t *pCDMARece = NULL;
 	_CDMADataToSend *pCDMASend = NULL;
 	uint8_t err;
+	uint8_t err2;
 	char sendCmd[30];
 	uint16_t sendlen = 0;
 
@@ -63,7 +64,9 @@ receCDMA:
 		if(err == OS_ERR_NONE)
 		{
 			err = CDMAReceDeal(pCDMARece,"DISCONNECTED");
-			if(err == 0)                        //TCP断开连接，需要重新连接
+			err2 = CDMAReceDeal(pCDMARece,"ERROR");
+			
+			if((err == 0)||(err2 == 0))                        //TCP断开连接，需要重新连接
 			{
 				Mem_free(pCDMARece);            //释放占用的内存块
 				Mem_free(pCDMASend->data);
@@ -75,6 +78,7 @@ receCDMA:
 				
 				CDMAConfigInit();               //重新启动CDMA
 				varOperation.isDataFlow = 0;    //开启数据流
+				carAllRecord.cdmaReStart++;     //记录CDMA重启次数
 				goto receCDMA;
 			}
 			err = CDMAReceDeal(pCDMARece,">");
@@ -85,7 +89,23 @@ receCDMA:
 				pCDMARece = OSQPend(CDMARecieveQ,150,&err); 
 				Mem_free(pCDMARece);
 			}
-		}											 //实际要发送的数据
+		}
+		else
+		{
+			Mem_free(pCDMARece);            //释放占用的内存块
+			Mem_free(pCDMASend->data);
+			Mem_free(pCDMASend);
+		
+			varOperation.isDataFlow = 1;    //数据流未流动
+			freCDMALed = 100;               //CDMA小灯快闪
+			CDMAPowerOpen_Close(CDMA_CLOSE);//关闭CDMA电源
+			
+			CDMAConfigInit();               //重新启动CDMA
+			varOperation.isDataFlow = 0;    //开启数据流
+			carAllRecord.cdmaReStart++;     //记录CDMA重启次数
+			goto receCDMA;
+		}
+		//实际要发送的数据
 		CDMASendDatas((uint8_t *)pCDMASend->data,pCDMASend->datLength);
 		pCDMARece = OSQPend(CDMARecieveQ,150,&err);  //发送成功
 		Mem_free(pCDMARece);                         //SEND OK
@@ -96,6 +116,7 @@ receCDMA:
 		Mem_free(pCDMASend);
 		
 		carAllRecord.messageNum ++;                  //发送的消息条数
+		carAllRecord.cdmaReStart = 0;                //连上服务器，设备不重启
 	}
 }
 void CDMAPowerOpen_Close(uint8_t flag)//这段代码是用来启动/关闭CDMA
@@ -182,6 +203,9 @@ static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t 
 	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
 	Mem_free(ptrCDMACfg);
 }
+
+
+
 void CDMAConfigInit(void )
 {
 	char sendCmd[45];

@@ -16,7 +16,10 @@
 #define GPIO_Pin_KWP_TX		GPIO_Pin_10
 
 extern SYS_OperationVar   varOperation; //程序运行过程中的全局变量参数
+
 extern _SystemInformation sysUpdateVar; //用来保存升级用
+extern _CANDataConfig     canDataConfig;//保存CAN通讯参数
+
 extern CARRunRecord       carAllRecord; //汽车运行过程中，几乎全部信息
 extern nmea_msg           gpsMC; 	    //保存GPS信息
 extern _CDMADataToSend* cdmaDataToSend; //发送给 CDMA 的信息载体

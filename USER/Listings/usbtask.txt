@@ -12,10 +12,10 @@
 ;;;18     	uint8_t err;
 ;;;19     	uint16_t i;
 ;;;20     	uint16_t cmdId = 0;
-000002  f04f0a00          MOV      r10,#0
+000002  f04f0b00          MOV      r11,#0
 ;;;21     	
 ;;;22     	uint16_t softCRC = 0;
-000006  46d3              MOV      r11,r10
+000006  46da              MOV      r10,r11
 ;;;23     	uint16_t receFrameCRC = 0;
 000008  2700              MOVS     r7,#0
 ;;;24     	uint16_t comFrameCRC = 0;
@@ -33,17 +33,17 @@
 ;;;31     	sendUSB_Q = Cir_Queue_Init(500);//USB 串口发送 循环队列 缓冲区
 000014  f44f70fa          MOV      r0,#0x1f4
 000018  f7fffffe          BL       Cir_Queue_Init
-00001c  49a2              LDR      r1,|L1.680|
+00001c  49a4              LDR      r1,|L1.688|
 00001e  6008              STR      r0,[r1,#0]  ; sendUSB_Q
 ;;;32     	receUSB_S = Store_Init(500);    //USB 串口接收 数据堆   缓冲区
 000020  f44f70fa          MOV      r0,#0x1f4
 000024  f7fffffe          BL       Store_Init
-000028  49a0              LDR      r1,|L1.684|
+000028  49a2              LDR      r1,|L1.692|
 00002a  6008              STR      r0,[r1,#0]  ; receUSB_S
 ;;;33     	
 ;;;34     	varOperation.isUSBSendDat = 0;
 00002c  2000              MOVS     r0,#0
-00002e  49a0              LDR      r1,|L1.688|
+00002e  49a2              LDR      r1,|L1.696|
 000030  f8810092          STRB     r0,[r1,#0x92]
 ;;;35     	
 ;;;36     	OSTimeDlyHMSM(0,0,1,800);
@@ -74,19 +74,19 @@
 000068  f7fffffe          BL       USB_Init
 ;;;44     
 ;;;45     	while(1)
-00006c  e11b              B        |L1.678|
+00006c  e11e              B        |L1.684|
                   |L1.110|
 ;;;46     	{
-;;;47     	as: USB_USART_SendDatas(upda[0],3);//发送握手帧
+;;;47     ReSend: USB_USART_SendDatas(upda[0],3);//发送握手帧
 00006e  bf00              NOP      
                   |L1.112|
 000070  2103              MOVS     r1,#3
-000072  4890              LDR      r0,|L1.692|
+000072  4892              LDR      r0,|L1.700|
 000074  f7fffffe          BL       USB_USART_SendDatas
-;;;48     		ptrReceD = OSQPend(USBRecieveQ,500,&err);
+;;;48     		ptrReceD = OSQPend(USBRecieveQ,500,&err); //等待1s
 000078  aa01              ADD      r2,sp,#4
 00007a  f44f71fa          MOV      r1,#0x1f4
-00007e  488e              LDR      r0,|L1.696|
+00007e  4890              LDR      r0,|L1.704|
 000080  6800              LDR      r0,[r0,#0]  ; USBRecieveQ
 000082  f7fffffe          BL       OSQPend
 000086  4604              MOV      r4,r0
@@ -101,66 +101,66 @@
 000092  4629              MOV      r1,r5
 000094  1c6d              ADDS     r5,r5,#1
 000096  5c60              LDRB     r0,[r4,r1]
-000098  4985              LDR      r1,|L1.688|
+000098  4987              LDR      r1,|L1.696|
 00009a  80c8              STRH     r0,[r1,#6]
 ;;;53     			varOperation.frameNum = (varOperation.frameNum << 8) + ptrReceD[offset++];
 00009c  4629              MOV      r1,r5
 00009e  1c6d              ADDS     r5,r5,#1
 0000a0  5c60              LDRB     r0,[r4,r1]
-0000a2  4983              LDR      r1,|L1.688|
+0000a2  4985              LDR      r1,|L1.696|
 0000a4  7989              LDRB     r1,[r1,#6]  ; varOperation
 0000a6  eb002001          ADD      r0,r0,r1,LSL #8
-0000aa  4981              LDR      r1,|L1.688|
+0000aa  4983              LDR      r1,|L1.696|
 0000ac  80c8              STRH     r0,[r1,#6]
 ;;;54     			varOperation.newSoftCRC = ptrReceD[offset++];
 0000ae  4629              MOV      r1,r5
 0000b0  1c6d              ADDS     r5,r5,#1
 0000b2  5c60              LDRB     r0,[r4,r1]
-0000b4  497e              LDR      r1,|L1.688|
+0000b4  4980              LDR      r1,|L1.696|
 0000b6  8088              STRH     r0,[r1,#4]
 ;;;55     			varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrReceD[offset++];
 0000b8  4629              MOV      r1,r5
 0000ba  1c6d              ADDS     r5,r5,#1
 0000bc  5c60              LDRB     r0,[r4,r1]
-0000be  497c              LDR      r1,|L1.688|
+0000be  497e              LDR      r1,|L1.696|
 0000c0  7909              LDRB     r1,[r1,#4]  ; varOperation
 0000c2  eb002001          ADD      r0,r0,r1,LSL #8
-0000c6  497a              LDR      r1,|L1.688|
+0000c6  497c              LDR      r1,|L1.696|
 0000c8  8088              STRH     r0,[r1,#4]
 ;;;56     			
 ;;;57     			varOperation.newSoftVersion = ptrReceD[offset++];
 0000ca  4629              MOV      r1,r5
 0000cc  1c6d              ADDS     r5,r5,#1
 0000ce  5c60              LDRB     r0,[r4,r1]
-0000d0  4977              LDR      r1,|L1.688|
+0000d0  4979              LDR      r1,|L1.696|
 0000d2  6008              STR      r0,[r1,#0]  ; varOperation
 ;;;58     			varOperation.newSoftVersion = (varOperation.newSoftVersion<<8)+ptrReceD[offset++];
 0000d4  4629              MOV      r1,r5
 0000d6  1c6d              ADDS     r5,r5,#1
 0000d8  5c60              LDRB     r0,[r4,r1]
-0000da  4975              LDR      r1,|L1.688|
+0000da  4977              LDR      r1,|L1.696|
 0000dc  6809              LDR      r1,[r1,#0]  ; varOperation
 0000de  eb002001          ADD      r0,r0,r1,LSL #8
-0000e2  4973              LDR      r1,|L1.688|
+0000e2  4975              LDR      r1,|L1.696|
 0000e4  6008              STR      r0,[r1,#0]  ; varOperation
 ;;;59     			varOperation.newSoftVersion = (varOperation.newSoftVersion<<8)+ptrReceD[offset++];
 0000e6  4629              MOV      r1,r5
 0000e8  1c6d              ADDS     r5,r5,#1
 0000ea  5c60              LDRB     r0,[r4,r1]
-0000ec  4970              LDR      r1,|L1.688|
+0000ec  4972              LDR      r1,|L1.696|
 0000ee  6809              LDR      r1,[r1,#0]  ; varOperation
 0000f0  eb002001          ADD      r0,r0,r1,LSL #8
-0000f4  496e              LDR      r1,|L1.688|
+0000f4  4970              LDR      r1,|L1.696|
 0000f6  6008              STR      r0,[r1,#0]  ; varOperation
 ;;;60     			varOperation.newSoftVersion = (varOperation.newSoftVersion<<8)+ptrReceD[offset++];
 0000f8  4628              MOV      r0,r5
 0000fa  1c69              ADDS     r1,r5,#1
 0000fc  b2cd              UXTB     r5,r1
 0000fe  5c20              LDRB     r0,[r4,r0]
-000100  496b              LDR      r1,|L1.688|
+000100  496d              LDR      r1,|L1.696|
 000102  6809              LDR      r1,[r1,#0]  ; varOperation
 000104  eb002001          ADD      r0,r0,r1,LSL #8
-000108  4969              LDR      r1,|L1.688|
+000108  496b              LDR      r1,|L1.696|
 00010a  6008              STR      r0,[r1,#0]  ; varOperation
 ;;;61     			receFrameCRC = ptrReceD[offset++];
 00010c  4628              MOV      r0,r5
@@ -184,11 +184,11 @@
 ;;;65     			Mem_free(ptrReceD);
 00012e  4620              MOV      r0,r4
 000130  f7fffffe          BL       Mem_free
-;;;66     			if(comFrameCRC != receFrameCRC)
+;;;66     			if(comFrameCRC != receFrameCRC)//判断帧CRC是否相等
 000134  9800              LDR      r0,[sp,#0]
 000136  42b8              CMP      r0,r7
 000138  d000              BEQ      |L1.316|
-;;;67     				goto as;
+;;;67     				goto ReSend;
 00013a  e799              B        |L1.112|
                   |L1.316|
 ;;;68     			
@@ -201,7 +201,7 @@
 00014a  e000              B        |L1.334|
                   |L1.332|
 ;;;70     		}
-;;;71     		else goto as;
+;;;71     		else goto ReSend;//接收握手帧等待超时
 00014c  e790              B        |L1.112|
                   |L1.334|
 ;;;72     		frameIndex = 0;
@@ -218,7 +218,7 @@
 00015a  17f1              ASRS     r1,r6,#31
 00015c  eb066111          ADD      r1,r6,r1,LSR #24
 000160  0a0a              LSRS     r2,r1,#8
-000162  4954              LDR      r1,|L1.692|
+000162  4956              LDR      r1,|L1.700|
 000164  710a              STRB     r2,[r1,#4]
 ;;;77     			upda[1][2] = i%256;
 000166  17f1              ASRS     r1,r6,#31
@@ -226,17 +226,17 @@
 00016c  1209              ASRS     r1,r1,#8
 00016e  eba62101          SUB      r1,r6,r1,LSL #8
 000172  b2ca              UXTB     r2,r1
-000174  494f              LDR      r1,|L1.692|
+000174  4951              LDR      r1,|L1.700|
 000176  714a              STRB     r2,[r1,#5]
 ;;;78     			USB_USART_SendDatas(upda[1],3);
 000178  2103              MOVS     r1,#3
-00017a  484e              LDR      r0,|L1.692|
+00017a  4850              LDR      r0,|L1.700|
 00017c  1cc0              ADDS     r0,r0,#3
 00017e  f7fffffe          BL       USB_USART_SendDatas
 ;;;79     			ptrReceD = OSQPend(USBRecieveQ,1500,&err);
 000182  aa01              ADD      r2,sp,#4
 000184  f24051dc          MOV      r1,#0x5dc
-000188  484b              LDR      r0,|L1.696|
+000188  484d              LDR      r0,|L1.704|
 00018a  6800              LDR      r0,[r0,#0]  ; USBRecieveQ
 00018c  f7fffffe          BL       OSQPend
 000190  4604              MOV      r4,r0
@@ -249,14 +249,14 @@
 00019a  4628              MOV      r0,r5
 00019c  1c69              ADDS     r1,r5,#1
 00019e  b2cd              UXTB     r5,r1
-0001a0  f814a000          LDRB     r10,[r4,r0]
+0001a0  f814b000          LDRB     r11,[r4,r0]
 ;;;83     				cmdId = (cmdId << 8) + ptrReceD[offset++];
 0001a4  4628              MOV      r0,r5
 0001a6  1c69              ADDS     r1,r5,#1
 0001a8  b2cd              UXTB     r5,r1
 0001aa  5c20              LDRB     r0,[r4,r0]
-0001ac  eb00200a          ADD      r0,r0,r10,LSL #8
-0001b0  fa1ffa80          UXTH     r10,r0
+0001ac  eb00200b          ADD      r0,r0,r11,LSL #8
+0001b0  fa1ffb80          UXTH     r11,r0
 ;;;84     				receFrameCRC = ptrReceD[ptrReceD[0] - 2];
 0001b4  7820              LDRB     r0,[r4,#0]
 0001b6  1e80              SUBS     r0,r0,#2
@@ -274,7 +274,7 @@
 0001cc  f7fffffe          BL       CRC_Compute16
 0001d0  9000              STR      r0,[sp,#0]
 ;;;87     				if((i != cmdId)||(comFrameCRC != receFrameCRC))
-0001d2  4556              CMP      r6,r10
+0001d2  455e              CMP      r6,r11
 0001d4  d102              BNE      |L1.476|
 0001d6  9800              LDR      r0,[sp,#0]
 0001d8  42b8              CMP      r0,r7
@@ -292,13 +292,13 @@
 0001e4  7820              LDRB     r0,[r4,#0]
 0001e6  1f42              SUBS     r2,r0,#5
 0001e8  1ce1              ADDS     r1,r4,#3
-0001ea  4658              MOV      r0,r11
+0001ea  4650              MOV      r0,r10
 0001ec  f7fffffe          BL       CRC_ComputeFile
-0001f0  4683              MOV      r11,r0
+0001f0  4682              MOV      r10,r0
 ;;;93     				memcpy(&updateBuff[frameIndex*128],&ptrReceD[3],ptrReceD[0] - 5);
 0001f2  7821              LDRB     r1,[r4,#0]
 0001f4  1f4a              SUBS     r2,r1,#5
-0001f6  4931              LDR      r1,|L1.700|
+0001f6  4933              LDR      r1,|L1.708|
 0001f8  eb0110c8          ADD      r0,r1,r8,LSL #7
 0001fc  1ce1              ADDS     r1,r4,#3
 0001fe  f7fffffe          BL       __aeabi_memcpy
@@ -311,7 +311,7 @@
 ;;;96     				if(frameIndex >= 16||(i>varOperation.frameNum))
 00020e  f1b80f10          CMP      r8,#0x10
 000212  da03              BGE      |L1.540|
-000214  4826              LDR      r0,|L1.688|
+000214  4828              LDR      r0,|L1.696|
 000216  88c0              LDRH     r0,[r0,#6]  ; varOperation
 000218  42b0              CMP      r0,r6
 00021a  da11              BGE      |L1.576|
@@ -324,12 +324,12 @@
 000222  f7fffffe          BL       SoftErasePage
 ;;;100    					SoftProgramUpdate(flashAddr,updateBuff,2048);
 000226  f44f6200          MOV      r2,#0x800
-00022a  4924              LDR      r1,|L1.700|
+00022a  4926              LDR      r1,|L1.708|
 00022c  4648              MOV      r0,r9
 00022e  f7fffffe          BL       SoftProgramUpdate
 ;;;101    					memset(updateBuff,0,2048);
 000232  f44f6100          MOV      r1,#0x800
-000236  4821              LDR      r0,|L1.700|
+000236  4823              LDR      r0,|L1.708|
 000238  f7fffffe          BL       __aeabi_memclr
 ;;;102    					flashAddr += 0x800;
 00023c  f5096900          ADD      r9,r9,#0x800
@@ -341,84 +341,91 @@
                   |L1.582|
 000246  bf00              NOP                            ;90
                   |L1.584|
-000248  4819              LDR      r0,|L1.688|
+000248  481b              LDR      r0,|L1.696|
 00024a  88c0              LDRH     r0,[r0,#6]            ;73  ; varOperation
 00024c  42b0              CMP      r0,r6                 ;73
 00024e  da82              BGE      |L1.342|
 ;;;105    			}
 ;;;106    		}
 ;;;107    		if(softCRC != varOperation.newSoftCRC)
-000250  4817              LDR      r0,|L1.688|
+000250  4819              LDR      r0,|L1.696|
 000252  8880              LDRH     r0,[r0,#4]  ; varOperation
-000254  4558              CMP      r0,r11
+000254  4550              CMP      r0,r10
 000256  d000              BEQ      |L1.602|
-;;;108    			goto as;
+;;;108    			goto ReSend;//计算的文件CRC与接收的文件CRC不相等
 000258  e70a              B        |L1.112|
                   |L1.602|
-;;;109    		sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
+;;;109    		
+;;;110    		sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
 00025a  2001              MOVS     r0,#1
-00025c  4918              LDR      r1,|L1.704|
+00025c  491a              LDR      r1,|L1.712|
 00025e  7008              STRB     r0,[r1,#0]
-;;;110    		sysUpdateVar.pageNum      = flashAddr/0x800;
-000260  ea4f20d9          LSR      r0,r9,#11
-000264  f8c10001          STR      r0,[r1,#1]  ; sysUpdateVar
-;;;111    		sysUpdateVar.softVersion  = varOperation.newSoftVersion;
-000268  4811              LDR      r0,|L1.688|
-00026a  6800              LDR      r0,[r0,#0]  ; varOperation
-00026c  f8c10005          STR      r0,[r1,#5]  ; sysUpdateVar
-;;;112    			
-;;;113    		SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
-000270  4608              MOV      r0,r1
-000272  f7fffffe          BL       SbootParameterSaveToFlash
-;;;114    		USB_USART_SendDatas(upda[2],3);
-000276  2103              MOVS     r1,#3
-000278  480e              LDR      r0,|L1.692|
-00027a  1d80              ADDS     r0,r0,#6
-00027c  f7fffffe          BL       USB_USART_SendDatas
-;;;115    		
-;;;116    		ptrReceD = OSQPend(USBRecieveQ,500,&err);
-000280  aa01              ADD      r2,sp,#4
-000282  f44f71fa          MOV      r1,#0x1f4
-000286  480c              LDR      r0,|L1.696|
-000288  6800              LDR      r0,[r0,#0]  ; USBRecieveQ
-00028a  f7fffffe          BL       OSQPend
-00028e  4604              MOV      r4,r0
-;;;117    		Mem_free(ptrReceD);
-000290  4620              MOV      r0,r4
-000292  f7fffffe          BL       Mem_free
-;;;118    		while(1)           //升级成功
-000296  e005              B        |L1.676|
-                  |L1.664|
-;;;119    		{
-;;;120    			OSTimeDlyHMSM(0,0,2,0);
-000298  2300              MOVS     r3,#0
-00029a  2202              MOVS     r2,#2
-00029c  4619              MOV      r1,r3
-00029e  4618              MOV      r0,r3
-0002a0  f7fffffe          BL       OSTimeDlyHMSM
-                  |L1.676|
-0002a4  e7f8              B        |L1.664|
-                  |L1.678|
-0002a6  e6e2              B        |L1.110|
-;;;121    		}
-;;;122    	}
-;;;123    }
-;;;124    
+;;;111    		sysUpdateVar.pageNum      = flashAddr/0x800;
+000260  f3c920cf          UBFX     r0,r9,#11,#16
+000264  80c8              STRH     r0,[r1,#6]
+;;;112    		sysUpdateVar.softByteSize = flashAddr;
+000266  4608              MOV      r0,r1
+000268  f8c0900c          STR      r9,[r0,#0xc]  ; sysUpdateVar
+;;;113    		sysUpdateVar.newSoftCRC   = softCRC;
+00026c  f8a0a008          STRH     r10,[r0,#8]
+;;;114    		sysUpdateVar.newSoftVer   = varOperation.newSoftVersion;
+000270  4811              LDR      r0,|L1.696|
+000272  8800              LDRH     r0,[r0,#0]  ; varOperation
+000274  8088              STRH     r0,[r1,#4]
+;;;115    			
+;;;116    		SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
+000276  4608              MOV      r0,r1
+000278  f7fffffe          BL       SbootParameterSaveToFlash
+;;;117    		USB_USART_SendDatas(upda[2],3);
+00027c  2103              MOVS     r1,#3
+00027e  480f              LDR      r0,|L1.700|
+000280  1d80              ADDS     r0,r0,#6
+000282  f7fffffe          BL       USB_USART_SendDatas
+;;;118    		
+;;;119    		ptrReceD = OSQPend(USBRecieveQ,500,&err);
+000286  aa01              ADD      r2,sp,#4
+000288  f44f71fa          MOV      r1,#0x1f4
+00028c  480c              LDR      r0,|L1.704|
+00028e  6800              LDR      r0,[r0,#0]  ; USBRecieveQ
+000290  f7fffffe          BL       OSQPend
+000294  4604              MOV      r4,r0
+;;;120    		Mem_free(ptrReceD);
+000296  4620              MOV      r0,r4
+000298  f7fffffe          BL       Mem_free
+;;;121    		while(1)           //升级成功
+00029c  e005              B        |L1.682|
+                  |L1.670|
+;;;122    		{
+;;;123    			OSTimeDlyHMSM(0,0,2,0);
+00029e  2300              MOVS     r3,#0
+0002a0  2202              MOVS     r2,#2
+0002a2  4619              MOV      r1,r3
+0002a4  4618              MOV      r0,r3
+0002a6  f7fffffe          BL       OSTimeDlyHMSM
+                  |L1.682|
+0002aa  e7f8              B        |L1.670|
+                  |L1.684|
+0002ac  e6df              B        |L1.110|
+;;;124    		}
+;;;125    	}
+;;;126    }
+;;;127    
                           ENDP
 
-                  |L1.680|
-                          DCD      sendUSB_Q
-                  |L1.684|
-                          DCD      receUSB_S
+0002ae  0000              DCW      0x0000
                   |L1.688|
-                          DCD      varOperation
+                          DCD      sendUSB_Q
                   |L1.692|
-                          DCD      upda
+                          DCD      receUSB_S
                   |L1.696|
-                          DCD      USBRecieveQ
+                          DCD      varOperation
                   |L1.700|
-                          DCD      updateBuff
+                          DCD      upda
                   |L1.704|
+                          DCD      USBRecieveQ
+                  |L1.708|
+                          DCD      updateBuff
+                  |L1.712|
                           DCD      sysUpdateVar
 
                           AREA ||.data||, DATA, ALIGN=2

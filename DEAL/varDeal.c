@@ -19,10 +19,10 @@ _CDMADataToSend* CDMNSendDataInit(uint16_t length)//要发送的数据，进行初始化
 	ptr->data[ptr->datLength ++] = 0x60;
 	ptr->data[ptr->datLength ++] = 0x00;
 	
-	ptr->data[ptr->datLength ++] = (sysUpdateVar.pidVersion >> 24) &0x000000FF;
-	ptr->data[ptr->datLength ++] = (sysUpdateVar.pidVersion >> 16) &0x000000FF;
-	ptr->data[ptr->datLength ++] = (sysUpdateVar.pidVersion >>  8) &0x000000FF;
-	ptr->data[ptr->datLength ++] =  sysUpdateVar.pidVersion & 0x000000FF;
+	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >> 24) &0x000000FF;
+	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >> 16) &0x000000FF;
+	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >>  8) &0x000000FF;
+	ptr->data[ptr->datLength ++] =  canDataConfig.pidVersion & 0x000000FF;
 
 	return ptr;
 }
@@ -64,7 +64,7 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	ptr->data[ptr->datLength++] = crc&0xff;
 	ptr->data[ptr->datLength++] = 0x7E;
 }
-#if 1
+#if 0
 const uint8_t ipAddr[] ="116.228.88.101"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
 #define IP_Port          29999            //端口号
 #else
@@ -76,32 +76,39 @@ _OBD_PID_Cmd *ptrPIDAllDat;    //指向第一配置区
 VARConfig    *ptrPIDVars;      //指向第二配置区
 
 uint8_t configData[2048] = {0};//用来存储配置PID
+uint8_t strengPower[100] = {0};//用来存储强动力模式下的数据
 void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
 {    
 	//从Flash中载入数据进全局变量
 	Flash_ReadDat(SBOOT_UPGREAD_ADDR,(uint8_t *)&sysUpdateVar,sizeof(_SystemInformation));
 	//从Flash中读取PID参数
 	Flash_ReadDat(PIDConfig_ADDR,configData,2048);
-	ptrPIDAllDat = (_OBD_PID_Cmd *)configData;
+	Flash_ReadDat(STRENGE_Q,strengPower,100);//读出喷油量的原始值
+	if(strengPower[0] != 0x1A)//从未记录过该车的喷油量
+		memset(strengPower,0,100);
+	
+	PIDConfigReadWrite(configData,(uint8_t *)&canDataConfig,sizeof(_CANDataConfig),1);
+	
+	ptrPIDAllDat = (_OBD_PID_Cmd *)&configData[50];
 		
-	varOperation.pidNum = sysUpdateVar.pidNum;//得到PID指令的个数
+	varOperation.pidNum = canDataConfig.pidNum;//得到PID指令的个数
 	varOperation.isDataFlow  = 1;             //设备启动的时候，数据流未流动
 	varOperation.isCDMAStart = CDMA_CLOSE;    //CDMA初始状态为关闭
 	varOperation.isEngineRun = ENGINE_RUN;    //初始认为发动机是启动了的
 	varOperation.sendId      = 0x80000000;    //发送的帧流水号
 	
-	varOperation.pidVersion = sysUpdateVar.pidVersion;
-	varOperation.busType    = sysUpdateVar.busType;
-	varOperation.canIdType  = sysUpdateVar.canIdType;
-	varOperation.canTxId    = sysUpdateVar.canTxId;
-	varOperation.canRxId    = sysUpdateVar.canRxId;
-	varOperation.canBaud    = sysUpdateVar.canBaud;
+	varOperation.pidVersion = canDataConfig.pidVersion;
+	varOperation.busType    = canDataConfig.busType;
+	varOperation.canIdType  = canDataConfig.canIdType;
+	varOperation.canTxId    = canDataConfig.canTxId;
+	varOperation.canRxId    = canDataConfig.canRxId;
+	varOperation.canBaud    = canDataConfig.canBaud;
 	
 	memset(varOperation.ecuVersion,0,20);
 	
-	varOperation.pidVarNum  = sysUpdateVar.pidVarNum;
+	varOperation.pidVarNum  = canDataConfig.pidVarNum;
 	
-	ptrPIDVars              = (VARConfig*)&configData[varOperation.pidNum * 13];//得到第二配置文件的地址
+	ptrPIDVars              = (VARConfig*)&configData[varOperation.pidNum * 17 + 50];//得到第二配置文件的地址
 	
 	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
 	memset(varOperation.ipAddr,0,18);
@@ -230,7 +237,7 @@ void LogReport(char* fmt,...)          //上传日志文件
 
 	if(cdmaDataToSend->datLength > 850)
 		return;
-	ptrSaveLog = Mem_malloc(125);
+	ptrSaveLog = Mem_malloc(500);
 	va_start(ap,fmt);
 	vsprintf((char*)(&ptrSaveLog[3]),fmt,ap);
 	va_end(ap);
@@ -256,7 +263,7 @@ extern MEM_Check allMemState;         //内存监控变量
 void MemLog(_CDMADataToSend* ptr)
 {
 	LogReport("m1:%d,%d;m2:%d,%d;m3:%d,%d;m4:%d,%d;m5:%d,%d;m6:%d,%d;m7:%d,%d;",\
-			allMemState.memUsedNum1,allMemState.memUsedNum1,\
+			allMemState.memUsedNum1,allMemState.memUsedMax1,\
 			allMemState.memUsedNum2,allMemState.memUsedMax2,\
 			allMemState.memUsedNum3,allMemState.memUsedMax3,\
 			allMemState.memUsedNum4,allMemState.memUsedMax4,\

@@ -2,8 +2,6 @@
 #include "gps.h"
 
 
-
-extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
 extern uint16_t freGPSLed;
 /************************      GPS任务    ***********************/
 
@@ -54,17 +52,17 @@ void GPSTask(void *pdata)
 			memcpy(&ptrGPSPack[11],&timeStamp,sizeof(timeStamp));//维度
 			
 			speed = t_htons(gpsMC.speed);
-			memcpy(&ptrGPSPack[15],&speed,2);   //GPS 车速 
+			memcpy(&ptrGPSPack[15],&speed,2);        //GPS 车速 
 			
 			speed = t_htons(gpsMC.direction);
-			memcpy(&ptrGPSPack[17],&speed,2);   //todo:解析GPS方向，解析有效定位
+			memcpy(&ptrGPSPack[17],&speed,2);        //todo:解析GPS方向，解析有效定位
 			
 			speed = t_htons(carAllRecord.carSpeed);	 
 			memcpy(&ptrGPSPack[19],&speed,2);        //当前车速
 			
 			speed = t_htons(carAllRecord.engineSpeed);	 
 			memcpy(&ptrGPSPack[21],&speed,2);        //当前转速
-			
+
 			speed = t_htons(carAllRecord.nowFuel);	 
 			memcpy(&ptrGPSPack[23],&speed,2);        //瞬时油耗
 			
@@ -77,8 +75,8 @@ void GPSTask(void *pdata)
 				
 				OSMutexPend(CDMASendMutex,0,&err);
 			
-				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrGPSPack,21);
-				cdmaDataToSend->datLength += 21;
+				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrGPSPack,ptrGPSPack[0]);
+				cdmaDataToSend->datLength += ptrGPSPack[0];
 				
 				OSMutexPost(CDMASendMutex);
 			}
@@ -254,7 +252,7 @@ void NMEA_GPGGA_Analysis(nmea_msg *gpsx,u8 *buf)
 //buf:接收到的GPS数据缓冲区首地址
 void NMEA_GPGSA_Analysis(nmea_msg *gpsx,u8 *buf)
 {
-	u8 *p1,dx;			 
+	u8 *p1,dx;	//dx小数点位数		 
 	u8 posx; 
 	u8 i;   
 	p1=(u8*)strstr((const char *)buf,"$GPGSA");
@@ -278,11 +276,12 @@ void NMEA_GPGSA_Analysis(nmea_msg *gpsx,u8 *buf)
 //buf:接收到的GPS数据缓冲区首地址
 void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
 {
-	u8 *p1,dx;			 
+	u8 *p1,dx;	//dx小数点位数	p1指向 GPRMC 的开始位置		 
 	u8 posx;     
 	u32 temp;	   
 	float rs;  
 	p1=(u8*)strstr((const char *)buf,"GPRMC");//"$GPRMC",经常有&和GPRMC分开的情况,故只判断GPRMC.
+	
 	posx=NMEA_Comma_Pos(p1,1);								//得到UTC时间
 	if(posx!=0XFF)
 	{
@@ -311,11 +310,21 @@ void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
 	}
 	posx=NMEA_Comma_Pos(p1,6);								//东经还是西经
 	if(posx!=0XFF)gpsx->ewhemi=*(p1+posx);		 
+	
+	posx=NMEA_Comma_Pos(p1,7);	                            //地面速率  节 
+	if(posx!=0XFF)                                          //1节 = 1.852 公里   1节 = 1.150英里
+	{
+		temp=NMEA_Str2num(p1+posx,&dx);		                //得到整型值，此值比原始值大10的dx次方 	 
+		temp=(temp*1852)/36;
+		temp/=NMEA_Pow(10,dx+2);	
+		gpsx->speed = (uint16_t) temp;
+	}
+	
 	posx=NMEA_Comma_Pos(p1,8);                              //行驶方向
 	if(posx!=0XFF)
 	{
 		temp=NMEA_Str2num(p1+posx,&dx);
-		gpsx->direction = temp;
+		gpsx->direction =(u16)temp/NMEA_Pow(10,dx);
 	}
 	posx=NMEA_Comma_Pos(p1,9);								//得到UTC日期
 	if(posx!=0XFF)
@@ -331,15 +340,15 @@ void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
 //buf:接收到的GPS数据缓冲区首地址
 void NMEA_GPVTG_Analysis(nmea_msg *gpsx,u8 *buf)
 {
-	u8 *p1,dx;			 
-	u8 posx;    
-	p1=(u8*)strstr((const char *)buf,"$GPVTG");							 
-	posx=NMEA_Comma_Pos(p1,7);								//得到地面速率
-	if(posx!=0XFF)
-	{
-		gpsx->speed=NMEA_Str2num(p1+posx,&dx);
-		if(dx<3)gpsx->speed *= 10;//NMEA_Pow(10,3-dx);	 	 		//确保扩大1000倍
-	}
+//	u8 *p1;//,dx;			 
+//	u8 posx;    
+//	p1=(u8*)strstr((const char *)buf,"$GPVTG");							 
+//	posx=NMEA_Comma_Pos(p1,7);								//得到地面速率
+//	if(posx!=0XFF)
+//	{
+//		gpsx->speed=NMEA_Str2num(p1+posx,&dx);
+//		if(dx<3)gpsx->speed *= 10;//NMEA_Pow(10,3-dx);	 	 		//确保扩大1000倍
+//	}
 }  
 //提取NMEA-0183信息
 //gpsx:nmea信息结构体
@@ -363,8 +372,8 @@ void Ublox_CheckSum(u8 *buf,u16 len,u8* cka,u8*ckb)
 	*cka=0;*ckb=0;
 	for(i=0;i<len;i++)
 	{
-		*cka=*cka+buf[i];
-		*ckb=*ckb+*cka;
+		*cka = *cka+buf[i];
+		*ckb = *ckb+*cka;
 	}
 }
 /////////////////////////////////////////UBLOX 配置代码/////////////////////////////////////

@@ -89,19 +89,19 @@ void SbootParameterSaveToFlash(_SystemInformation* parameter)
 }
 
 //新程序的数据更新
-void SaveConfigToFlash(uint8_t* ptrBuff,uint16_t datLength)
+void Save2KDataToFlash(uint8_t* ptrBuff,uint32_t flashAddr,uint16_t datLength)
 {
 	OS_CPU_SR  cpu_sr = 0u;
 	uint16_t i = 0;
 	
 	FLASH_Unlock();
 	FLASH_ClearFlag(FLASH_FLAG_BSY | FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);
-	FLASH_ErasePage(PIDConfig_ADDR);
+	FLASH_ErasePage(flashAddr);
 	
 	OS_ENTER_CRITICAL();//禁止中断
 	{
 		volatile FLASH_Status FLASHStatus = FLASH_COMPLETE;
-		volatile uint32_t     w_addr      = PIDConfig_ADDR;
+		volatile uint32_t     w_addr      = flashAddr;
 		volatile uint32_t*    p_w_data    = (uint32_t*)ptrBuff;	//4字节指针
 		volatile uint32_t     w_data      = (uint32_t)(*p_w_data);//取得相应数据
 
@@ -126,6 +126,21 @@ int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength)
 		i++;
 	}
 	return i;
+}
+
+void PIDConfigReadWrite(uint8_t* purl,uint8_t* conf,uint8_t length,uint8_t cmd)
+{
+	uint8_t i = 0;
+	if(cmd == 0)
+	{
+		for(i=0;i<length;i++)
+			*(purl + i) = *(conf + i);
+	}
+	else
+	{
+		for(i=0;i<length;i++)
+			*(conf + i) = *(purl + i);
+	}
 }
 
 

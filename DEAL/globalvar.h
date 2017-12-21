@@ -7,7 +7,10 @@
 
 #define SBOOT_UPGREAD_ADDR   	0x08007800    //此地址存放SBOOT升级用的参数
 
-#define PIDConfig_ADDR          0x0802E000    //此地址存放服务器下发PID参数
+#define PIDConfig_ADDR          0x0802E800    //此地址存放服务器下发PID参数
+
+#define STRENGE_Q               0x08060000    //此地址保存强动力模式记录ECU的原始值
+#define ValueVarAddr            0x08060800    //此地址保存程序运行的关键数据
 
 #define NEW_SOFT_ADDR           0x08030000    //此地址存放新程序代码
 #define CDMA_OPEN               0             //打开CDMA
@@ -35,13 +38,26 @@ typedef enum
 	CANBAUD_1M
 }CANBAUD_Enum;//CAN 波特率标志
 
-#pragma pack(1)             //1字节对齐
-__packed typedef struct     //与升级相关的结构体
+
+
+
+typedef struct     //与升级相关的结构体
 {
 	uint8_t  isSoftUpdate;  //程序是否需要升级  1 - 需要升级    0 - 不需要升级
-	uint32_t pageNum;
-	uint32_t softVersion;   //软件版本号       用于OTA升级
+	uint8_t  isSoftSucc;    //（兼容SBOOT）上次启动是否成功
+	uint16_t curSoftVer;    //当前软件版本号
+	uint16_t newSoftVer;    //更新软件版本号
+    uint16_t pageNum;       //固件所占用的页数
+	uint16_t newSoftCRC;    //新固件CRC
+	uint32_t softByteSize;  //新固件占用的字节数
+}_SystemInformation;
 
+
+
+#pragma pack(1)             //1字节对齐
+
+__packed typedef struct 
+{
 	uint32_t pidVersion;    //ECU 版本ID
 	uint16_t pidNum;        //PID 指令的个数  -  配置文件
 	uint16_t pidVarNum;     //需要计算的 ECU 变量的个数
@@ -50,8 +66,8 @@ __packed typedef struct     //与升级相关的结构体
 	uint8_t  canIdType;     //标准帧还是扩展帧
 	uint32_t canTxId;       //保存CAN发送ID
 	uint32_t canRxId;       //保存CAN接收ID
-	CANBAUD_Enum  canBaud;       //CAN通讯波特率
-}_SystemInformation;
+	CANBAUD_Enum  canBaud;  //CAN通讯波特率
+}_CANDataConfig;
 
 
 __packed typedef struct//程序正常运行时候的各个参数
@@ -102,13 +118,14 @@ __packed typedef struct//程序正常运行时候的各个参数
 
 __packed typedef struct//第二个配置文件的结构体
 {
+	uint8_t  dataHL;        //数据的大小端  1 - 大端    2 - 小端
 	uint8_t  pidId;         //对应的PID序号
 	uint8_t  varId;         //变量类型 1-车速 2-转速 3-总喷油量 4-主喷油量 5-预喷油量 6-后喷油量 7-当前喷油量
 	uint8_t  startByte;     //开始字节
 	uint8_t  startBit;      //开始位
 	uint8_t  bitLen;        //总位长度
 	float    ceo;           //系数
-	int      offset;        //偏移量
+	float    offset;        //偏移量
 
 }VARConfig;
 __packed typedef struct     //内存监控变量
@@ -144,6 +161,7 @@ __packed typedef struct
 	uint16_t engineSpeedMax;  //最高转速
 	uint16_t carSpeedMax;     //最高车速
 	uint32_t messageNum;      //消息条数
+	uint8_t  cdmaReStart;     //CDMA重启次数
 	uint32_t netFlow;         //网络流量
 	
 	uint16_t carSpeed;        //车速
@@ -155,8 +173,14 @@ __packed typedef struct
 	uint16_t primaryFuel;     //主喷油量
 	uint8_t  primaryFuelTemp; 
 	uint16_t beforeFuel;      //预喷油量
+	uint16_t beforeFuel1;
+	uint16_t beforeFuel2;
+	uint16_t beforeFuel3;
 	uint8_t  beforeFuelTemp;
 	uint16_t afterFuel;       //后喷油量
+	uint16_t afterFuel1;
+	uint16_t afterFuel2;
+	uint16_t afterFuel3;
 	uint8_t  afterFuelTemp; 
 	uint16_t nowFuel;         //当前喷油量
 	uint8_t  nowFuelTemp;
@@ -173,8 +197,8 @@ __packed typedef struct
 
 __packed typedef struct
 {
-	uint16_t period;     //要发送的PID的指令周期
-	uint16_t timeCount;  //数据包已经存在的时间（ms）
+	uint32_t period;     //要发送的PID的指令周期
+	uint32_t timeCount;  //数据包已经存在的时间（ms）
 	uint8_t  data[9];    //要发送的数据
 }_OBD_PID_Cmd;
 
@@ -211,9 +235,11 @@ void MemLog(_CDMADataToSend* ptr);                 //内存使用的日志文件
 
 void SoftErasePage(uint32_t addr);//擦除单页 2K
 void SoftProgramUpdate(uint32_t wAddr,uint8_t* ptrBuff,uint16_t datLength);//写入单页
-void SaveConfigToFlash(uint8_t* ptrBuff,uint16_t datLength);
+void Save2KDataToFlash(uint8_t* ptrBuff,uint32_t flashAddr,uint16_t datLength);
 void SbootParameterSaveToFlash(_SystemInformation* parameter);//保存Sboot参数
 int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength);
+void PIDConfigReadWrite(uint8_t* purl,uint8_t* conf,uint8_t length,uint8_t cmd);
+
 // 短整型大小端互换
 #define BigLittleSwap16(A)  ((((uint16_t)(A) & 0xff00) >> 8) | (((uint16_t)(A) & 0x00ff) << 8))
 // 长整型大小端互换

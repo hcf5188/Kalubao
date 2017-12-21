@@ -44,8 +44,8 @@ void USBUpdataTask (void *pdata)
 
 	while(1)
 	{
-	as: USB_USART_SendDatas(upda[0],3);//发送握手帧
-		ptrReceD = OSQPend(USBRecieveQ,500,&err);
+ReSend: USB_USART_SendDatas(upda[0],3);//发送握手帧
+		ptrReceD = OSQPend(USBRecieveQ,500,&err); //等待1s
 		if(err == OS_ERR_NONE)
 		{
 			offset = 1;
@@ -63,12 +63,12 @@ void USBUpdataTask (void *pdata)
 			
 			comFrameCRC = CRC_Compute16(ptrReceD,ptrReceD[0] - 2);
 			Mem_free(ptrReceD);
-			if(comFrameCRC != receFrameCRC)
-				goto as;
+			if(comFrameCRC != receFrameCRC)//判断帧CRC是否相等
+				goto ReSend;
 			
 			OSTimeDlyHMSM(0,0,0,500);
 		}
-		else goto as;
+		else goto ReSend;//接收握手帧等待超时
 		frameIndex = 0;
 		for(i=1;i<=varOperation.frameNum;)
 		{
@@ -105,10 +105,13 @@ void USBUpdataTask (void *pdata)
 			}
 		}
 		if(softCRC != varOperation.newSoftCRC)
-			goto as;
+			goto ReSend;//计算的文件CRC与接收的文件CRC不相等
+		
 		sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
 		sysUpdateVar.pageNum      = flashAddr/0x800;
-		sysUpdateVar.softVersion  = varOperation.newSoftVersion;
+		sysUpdateVar.softByteSize = flashAddr;
+		sysUpdateVar.newSoftCRC   = softCRC;
+		sysUpdateVar.newSoftVer   = varOperation.newSoftVersion;
 			
 		SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
 		USB_USART_SendDatas(upda[2],3);

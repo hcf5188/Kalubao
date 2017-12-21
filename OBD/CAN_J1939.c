@@ -25,6 +25,7 @@ void DealJ1939Date(void *pdata)
 				carAllRecord.engineSpeed = (carAllRecord.engineSpeed * 256) + CAN1_RxMsg->Data[3];
 				if(carAllRecord.engineSpeed > carAllRecord.engineSpeedMax)//获得发动机最高转速
 					carAllRecord.engineSpeedMax = carAllRecord.engineSpeed;
+				carAllRecord.engineSpeed = carAllRecord.engineSpeed / 8;  //得到实际转速
 				break;
 			case  0x18FEE000://行驶距离，车辆距离
 				carAllRecord.runLen1 =  CAN1_RxMsg->Data[3];
@@ -67,8 +68,8 @@ void J1939DataLog(void)
 {
 	LogReport("EngineSpeed: 0x0CF00400 - %d;",carAllRecord.engineSpeed);
 	LogReport("RunDistance: 0x18FEE000 - 1:%d,2:%d;",carAllRecord.runLen1,carAllRecord.runLen2);
-	LogReport("EngineSpeed: 0x18FEF100 - %d;",carAllRecord.carSpeed);
-	LogReport("EngineSpeed: 0x18FEE900 - %f;",carAllRecord.allFuel);
+	LogReport("CarSpeed: 0x18FEF100 - %d;",carAllRecord.carSpeed);
+	LogReport("RunOil: 0x18FEE900 - %f;",carAllRecord.allFuel);
 }
 //车辆运行的数据 初始化
 void CARVarInit(void)
@@ -86,13 +87,20 @@ void CARVarInit(void)
 	carAllRecord.engineSpeedMax = 0;//最高转速
 	carAllRecord.carSpeedMax    = 0;//最高车速
 	carAllRecord.messageNum     = 0;//消息条数
+	carAllRecord.cdmaReStart    = 0;//CDMA重启次数
 	carAllRecord.netFlow        = 0;//网络流量
 	
 	carAllRecord.afterFuel       = 0;//后喷油量
+	carAllRecord.afterFuel1      = 0;
+	carAllRecord.afterFuel2      = 0;
+	carAllRecord.afterFuel3      = 0;
 	carAllRecord.afterFuelTemp   = 0;
 	carAllRecord.allFuel         = 0;//总喷油量
 	carAllRecord.allFuelTemp     = 0;
 	carAllRecord.beforeFuel      = 0;//预喷油量
+	carAllRecord.beforeFuel1     = 0;
+	carAllRecord.beforeFuel2     = 0;
+	carAllRecord.beforeFuel3     = 0;
 	carAllRecord.beforeFuelTemp  = 0;
 	carAllRecord.carSpeed        = 0;//车速
 	carAllRecord.carSpeedTemp    = 0;
@@ -105,7 +113,6 @@ void CARVarInit(void)
 	carAllRecord.runLen1         = 0;//行驶距离为 0
 	carAllRecord.runLen2         = 0;//车辆距离为 0
 }
-
 
 //安全算法
 long ecuMask = 0;//需要知道 ECU 掩码
@@ -153,6 +160,7 @@ void SafeALG(uint8_t* ptrVer)
 {
 	uint8_t err,i;
 	CanRxMsg* CAN1_RxMsg;
+	uint8_t pNum;
 
 	uint8_t seed[4] = {0x00,0x00,0x00,0x00};
 	uint8_t key[4]  = {0x00,0x00,0x00,0x00};
@@ -192,7 +200,8 @@ void SafeALG(uint8_t* ptrVer)
 	OBD_CAN_SendData(dataToSend);
 	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
 	Mem_free(CAN1_RxMsg);
-	for(i=1;i<7;i++)
+	pNum = ptrVer[1]%7==0?(ptrVer[1]/7):(ptrVer[1]/7 + 1);
+	for(i=1;i<pNum;i++)
 	{
 		OSTimeDlyHMSM(0,0,0,2);
 		dataToSend.pdat = &ptrVer[i*8];
@@ -201,12 +210,16 @@ void SafeALG(uint8_t* ptrVer)
 	}
 	Mem_free(ptrVer);
 	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
+	if(CAN1_RxMsg->Data[1] == 0x7F)
+		LogReport("Strength Oil Fail!");
+	else
+		LogReport("Strength Oil Success.");
 	Mem_free(CAN1_RxMsg);
 }
 
 uint8_t ver[8]   = {0x02,0x1A,0x94,0x00,0x00,0x00,0x00,0x00};
 uint8_t ver1[8]  = {0x30,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-void ReadECUVersion(void)//读取ECU版本号
+uint8_t  ReadECUVersion(void)//读取ECU版本号
 {
 	uint8_t err,i=0;
 	uint8_t* ptrVer;
@@ -234,7 +247,11 @@ void ReadECUVersion(void)//读取ECU版本号
 		i++;
 	}while(err == OS_ERR_NONE);
 	if(i<2)
-		return;
+	{
+		LogReport("Config ECU version read error!!!");
+		return 1;
+	}
+		
 	memcpy(varOperation.ecuVersion,ptrVer,19);
 	Mem_free(ptrVer);
 	for(i=0;i<20;i++)
@@ -245,37 +262,55 @@ void ReadECUVersion(void)//读取ECU版本号
 	LogReport("ECU version is %s.",varOperation.ecuVersion);//上报版本号
 	
 //根据ECU版本号 确定ECU安全算法的掩码
-	if(strcmp(varOperation.ecuVersion,"V47") == 0)
-	{
-		ecuMask = ECUMASK47;
-	}else if(strcmp(varOperation.ecuVersion,"V72") == 0)
-	{
-		ecuMask = ECUMASK72;
-	}else if(strcmp(varOperation.ecuVersion,"P949V732") == 0)
+//	if(strcmp(varOperation.ecuVersion,"V47") == 0)
+//	{
+//		ecuMask = ECUMASK47;
+//		return 0;
+//	}else if(strcmp(varOperation.ecuVersion,"V72") == 0)
+//	{
+//		ecuMask = ECUMASK72;
+//		return 0;
+//	}else 
+	if(strcmp(varOperation.ecuVersion,"P949V732") == 0)
 	{
 		ecuMask = ECUMASK17;
-	}else if(strcmp(varOperation.ecuVersion,"P1499V301") == 0)
-	{
-		ecuMask = ECUMASK201;
-	}else if(strcmp(varOperation.ecuVersion,"P1072V742") == 0)
-	{
-		ecuMask = ECUMASK211;
-	}else if(strcmp(varOperation.ecuVersion,"P1382V762") == 0)
-	{
-		ecuMask = ECUMASK212;
-	}else if(strcmp(varOperation.ecuVersion,"P1158V760") == 0)
-	{
-		ecuMask = ECUMASK213;
-	}else if(strcmp(varOperation.ecuVersion,"P1186V770") == 0)
-	{
-		ecuMask = ECUMASK214;
-	}else if(strcmp(varOperation.ecuVersion,"P1664V200") == 0)
-	{
-		ecuMask = ECUMASK315;
-	}else if(strcmp(varOperation.ecuVersion,"P1287V770") == 0)
-	{
-		ecuMask = ECUMASK216;
+		return 0;
 	}
+//	else if(strcmp(varOperation.ecuVersion,"P1499V301") == 0)
+//	{
+//		ecuMask = ECUMASK201;
+//		return 0;
+//	}else if(strcmp(varOperation.ecuVersion,"P1072V742") == 0)
+//	{
+//		ecuMask = ECUMASK211;
+//		return 0;
+//	}else if(strcmp(varOperation.ecuVersion,"P1382V762") == 0)
+//	{
+//		ecuMask = ECUMASK212;
+//		return 0;
+//	}else if(strcmp(varOperation.ecuVersion,"P1158V760") == 0)
+//	{
+//		ecuMask = ECUMASK213;
+//		return 0;
+//	}else if(strcmp(varOperation.ecuVersion,"P1186V770") == 0)
+//	{
+//		ecuMask = ECUMASK214;
+//		return 0;
+//	}else if(strcmp(varOperation.ecuVersion,"P1664V200") == 0)
+//	{
+//		ecuMask = ECUMASK315;
+//		return 0;
+//	}else if(strcmp(varOperation.ecuVersion,"P1287V770") == 0)
+//	{
+//		ecuMask = ECUMASK216;
+//		return 0;
+//	}
+	else
+	{
+		LogReport("ECU Version %s can't be distinguished!!",varOperation.ecuVersion);
+		return 2;
+	}
+		
 }
 
 
