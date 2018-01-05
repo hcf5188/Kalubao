@@ -1,10 +1,7 @@
 #include "bsp.h"
 #include "apptask.h"
 
-
-
 #define  FRAME_HEAD_LEN    27     //与指令数据无关的属于帧头的数据长度
-
 
 _CDMADataToSend* CDMNSendDataInit(uint16_t length)//要发送的数据，进行初始化
 {
@@ -64,19 +61,19 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	ptr->data[ptr->datLength++] = crc&0xff;
 	ptr->data[ptr->datLength++] = 0x7E;
 }
-#if 0
-const uint8_t ipAddr[] ="116.228.88.101"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
+#if 1
+const uint8_t ipAddr[] = "116.228.88.101"; //本地：116.228.88.101  29999 
 #define IP_Port          29999            //端口号
 #else
-const uint8_t ipAddr[] ="116.62.195.99"; //todo: 后期是域名解析 内网：116.228.88.101  29999  外网：116.62.195.99
-#define IP_Port          9998            //端口号
+const uint8_t ipAddr[] = "116.62.195.99";  //todo: 后期是域名解析 外网：116.62.195.99   9998
+#define IP_Port          9998             //端口号
 #endif
 
 _OBD_PID_Cmd *ptrPIDAllDat;    //指向第一配置区
 VARConfig    *ptrPIDVars;      //指向第二配置区
 
 uint8_t configData[2048] = {0};//用来存储配置PID
-uint8_t strengPower[100] = {0};//用来存储强动力模式下的数据
+uint8_t strengPower[200] = {0};//用来存储强动力模式下的数据
 void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
 {    
 	//从Flash中载入数据进全局变量
@@ -92,10 +89,10 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	ptrPIDAllDat = (_OBD_PID_Cmd *)&configData[50];
 		
 	varOperation.pidNum = canDataConfig.pidNum;//得到PID指令的个数
-	varOperation.isDataFlow  = 1;             //设备启动的时候，数据流未流动
-	varOperation.isCDMAStart = CDMA_CLOSE;    //CDMA初始状态为关闭
-	varOperation.isEngineRun = ENGINE_RUN;    //初始认为发动机是启动了的
-	varOperation.sendId      = 0x80000000;    //发送的帧流水号
+	varOperation.isDataFlow  = 1;              //设备启动的时候，数据流未流动
+	varOperation.isCDMAStart = CDMA_CLOSE;     //CDMA初始状态为关闭
+	varOperation.isEngineRun = ENGINE_RUN;     //初始认为发动机是启动了的
+	varOperation.sendId      = 0x80000000;     //发送的帧流水号
 	
 	varOperation.pidVersion = canDataConfig.pidVersion;
 	varOperation.busType    = canDataConfig.busType;
@@ -103,6 +100,7 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	varOperation.canTxId    = canDataConfig.canTxId;
 	varOperation.canRxId    = canDataConfig.canRxId;
 	varOperation.canBaud    = canDataConfig.canBaud;
+	varOperation.oilMode    = 0;//默认正常模式
 	
 	memset(varOperation.ecuVersion,0,20);
 	
@@ -117,7 +115,7 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 
  uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
 {
-	uint16_t  i = 0;
+	uint16_t i = 0;
 	uint16_t datLen   = 0;
 	uint16_t crcDat   = 0;
 	uint16_t crcCheck = 0;
@@ -271,7 +269,49 @@ void MemLog(_CDMADataToSend* ptr)
 			allMemState.memUsedNum6,allMemState.memUsedMax6,\
 			allMemState.memUsedNum7,allMemState.memUsedMax7);
 }
-
+//车辆运行的数据 初始化
+void CARVarInit(void)
+{
+	carAllRecord.startTime       = 0;//发动机启动时间
+	carAllRecord.stopTime        = 0;//发动机停止时间
+	carAllRecord.totalMileage    = 0;//此次总行程
+	carAllRecord.totalFuel       = 0;//总油耗
+	carAllRecord.startlongitude  = 0;//汽车开始 经度
+	carAllRecord.startlatitude   = 0;//汽车开始 纬度
+	carAllRecord.stoplongitude   = 0;//汽车停止 经度
+	carAllRecord.stoplatitude    = 0;//汽车停止 纬度
+	carAllRecord.rapidlyPlusNum  = 0;//急加速次数
+	carAllRecord.rapidlySubNum   = 0;//急减速次数
+	carAllRecord.engineSpeedMax  = 0;//最高转速
+	carAllRecord.carSpeedMax     = 0;//最高车速
+	carAllRecord.messageNum      = 0;//消息条数
+	carAllRecord.cdmaReStart     = 0;//CDMA重启次数
+	carAllRecord.netFlow         = 0;//网络流量
+	
+	carAllRecord.afterFuel       = 0; //后喷油量
+	carAllRecord.afterFuel1      = 0;
+	carAllRecord.afterFuel2      = 0;
+	carAllRecord.afterFuel3      = 0;
+	carAllRecord.afterFuelTemp   = 0;
+	carAllRecord.allFuel         = 0; //总喷油量
+	carAllRecord.allFuelTemp     = 0;
+	carAllRecord.beforeFuel      = 0; //预喷油量
+	carAllRecord.beforeFuel1     = 0;
+	carAllRecord.beforeFuel2     = 0;
+	carAllRecord.beforeFuel3     = 0;
+	carAllRecord.beforeFuelTemp  = 0;
+	carAllRecord.carSpeed        = 0; //车速
+	carAllRecord.carSpeedTemp    = 0;
+	carAllRecord.curFuel         = 0; //当前喷油量
+	carAllRecord.curFuelTemp     = 0;
+	carAllRecord.primaryFuel     = 0; //主喷油量
+	carAllRecord.primaryFuelTemp = 0;
+	carAllRecord.engineSpeed     = 0; //发动机转速
+	carAllRecord.engineSpeedTemp = 0; 
+	carAllRecord.runLen1         = 0; //行驶距离为 0
+	carAllRecord.runLen2         = 0; //车辆距离为 0
+	carAllRecord.instantFuel     = 0; //瞬时油耗
+}
 
 
 

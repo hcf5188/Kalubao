@@ -9,10 +9,11 @@
 /************************   任务以及互斥型信号量的优先级定义   *************/
 
 
-#define CDMAPOWER_PRIO        7     //CDMA 电源独占管理
-#define CDMA_SEND_PRIO        8     //CDMA 发送互斥信号量优先级
+#define CDMAPOWER_PRIO        6     //CDMA 电源独占管理
+#define CDMA_SEND_PRIO        7     //CDMA 发送互斥信号量优先级
+#define CAN_SEND_MUTEX        8     //CAN  发送数据互斥型信号量
 
-#define USB_TASK_PRIO        9      //USB升级任务
+#define USB_TASK_PRIO         9     //USB  升级任务
 
 #define START_TASK_PRIO      10     //起始任务优先级
 
@@ -21,8 +22,9 @@
 #define GPS_TASK_PRIO        14     //车辆定位GPS任务优先级
 #define OBD_TASK_PRIO        15     //故障诊断OBD任务优先级
 #define J1939_TASK_PRIO      16     //SAE J1939 任务处理
+#define SAVE_FUEL_PEIO       17     //节油任务  优先级
 
-#define POWER_TASK_PRIO      17     //电源管理任务
+#define POWER_TASK_PRIO      18     //电源管理任务
 
 #define CDMA_LED_PRIO        20     //网络通信GPRS-LED任务优先级
 #define GPS_LED_PRIO         21     //车辆定位GPS-LED任务优先级
@@ -42,6 +44,7 @@
 #define GPS_STK_SIZE         128    //车辆定位GPS任务堆栈大小
 #define OBD_STK_SIZE         128    //整车故障诊断OBD任务堆栈大小
 #define J1939_STK_SIZE       128    //整车故障诊断OBD任务堆栈大小
+#define SAVEFUEL_STK_SIZE    128    //节油任务堆栈大小
 
 #define POWER_STK_SIZE       128    //整车故障诊断OBD任务堆栈大小
 
@@ -51,21 +54,23 @@
 /************************   任务声明            ************************/
 
 
-void CDMATask(void *pdata);
-void CDMARecvTask(void *pdata);
+void CDMATask(void *pdata);      //CDMA发送任务
+void CDMARecvTask(void *pdata);  //CDMA处理服务器下发数据的任务
 
-void GPSTask(void *pdata);
+void GPSTask(void *pdata);       //GPS定位任务
 
-void OBDTask(void *pdata);
-void DealJ1939Date(void *pdata);
+void OBDTask(void *pdata);       //CAN通讯任务
+void DealJ1939Date(void *pdata); //处理J1939主动吐出数据的任务
+void SaveFuleTask(void *pdata);  //节油任务
 
 void PowerDeal(void *pdata);
 
-void StartTask  (void *pdata);          
-void CDMALEDTask(void *pdata); 
-void GPSLEDTask (void *pdata); 
-void OBDLEDTask (void *pdata); 
-void BeepTask   (void *pdata); 
+void StartTask  (void *pdata);  //起始任务        
+void CDMALEDTask(void *pdata);  //CDMA 状态黄灯闪烁任务
+void GPSLEDTask (void *pdata);  //GPS  状态灯闪烁任务
+void OBDLEDTask (void *pdata);  //OBD  状态灯闪烁任务
+void BeepTask   (void *pdata);  //蜂鸣器 开机提示任务
+
 
 void USBUpdataTask (void *pdata);//USB 升级任务声明
 

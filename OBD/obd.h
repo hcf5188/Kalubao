@@ -7,11 +7,23 @@
 
 //ECU安全算法掩码
 
-#define ECUMASK47    0x24807961   //Yuchai  V47
-#define ECUMASK72    0x24807961   //Yuchai  V72
-#define ECUMASK17    0x383B50D9   //Weichai P949V732
+//有地址的 逐步放开   
+#define ECUMASKV732  0x383B50D9   //Weichai P949V732  - 已经实现
+#define ECUMASKV791  0x383B50D9   //        P949V791
+#define ECUMASKV792  0x383B50D9   //        P949V792
+
+
+#define ECUMASKV47   0x24807961   //Yuchai  V47  P579V47     
+#define ECUMASKV72   0x24807961   //Yuchai  V72  P813V72  
+
+#define ECUMASKV46   0x29835B3D   //        P532V46
+
 #define ECUMASK201   0x383B50D9   //WeiChai P1499V301
 #define ECUMASK211   0x62575E4E   //Yuchai  P1072V742 
+#define ECUMASKV760  0x3E814311   //重汽    P1158V760
+#define ECUMASKV762  0x7C1B2C30   //锡柴    P903V762
+
+//没地址 还不敢放开
 #define ECUMASK212   0x26121983   //Yuchai  P1382V762 
 #define ECUMASK213   0x3E814311   //CNHTC   P1158V760
 #define ECUMASK214   0x14071355   //DFCV    P1186V770 
@@ -64,21 +76,24 @@ typedef struct
 	CANBAUD_Enum canBaud;
 }CANInformation;
 
+typedef struct 
+{
+	uint32_t   canID;
+	uint8_t    pidVerCmd[8];
+}CmdVersion;
 
 
-#define NUMOfCANBaud       3    //测试CAN波特率的数量
-#define NUMOfCANID_STD     5     //CANID标准帧的个数
-#define NUMOfCANID_EXT     4     //CANID扩展帧的个数
+#define NUMOfCANBaud       3     //测试CAN波特率的数量
+#define NUMOfCANID_EXT     11    //CANID扩展帧的个数
 
-
-void OBD_CAN_SendData(CAN1DataToSend sendData);//CAN1发送数据
+void OBD_CAN_SendData(u32 canId,u32 ide,u8* pdat);//CAN1发送数据
 void CAN1_BaudSet(CANBAUD_Enum baud);
 void CAN1_ClearFilter(void);
 void CAN1_SetFilter(uint32_t canId,uint32_t canIde);
 
 void SafeALG(uint8_t* ptrVer);       //安全算法
-uint8_t ReadECUVersion(void);//读取ECU版本号
-void Get_Q_FromECU(void);
+uint8_t ReadECUVersion(uint8_t cmd[]);//读取ECU版本号
+void Get_Q_FromECU(uint8_t ver);//增强动力
 void J1939DataLog(void);  //上报J1939采集到的数据
 
 void PIDVarGet(uint8_t cmdId,uint8_t *ptrData);//第二配置文件数据解析

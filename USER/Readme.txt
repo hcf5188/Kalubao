@@ -52,3 +52,4 @@
 	   4、在配置CAN的时候，如果CAN1_SetFilter(varOperation.canRxId ,CAN_ID_EXT);后，可以varOperation.canTest = 0;
 	   如果CAN1_ClearFilter();，则不可以varOperation.canTest = 0;因为J1939会往 canRecieveQ 推消息，造成解析卡死。
 	   
+	   5、程序升级的时候，要确定升级的文件，连接的是外网服务器。

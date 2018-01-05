@@ -101,7 +101,7 @@
 ;;;102    	{
 ;;;103    		if (varOperation.isUSBSendDat == 1)//todo:
 00000a  4807              LDR      r0,|L3.40|
-00000c  f8900092          LDRB     r0,[r0,#0x92]  ; varOperation
+00000c  f8900094          LDRB     r0,[r0,#0x94]  ; varOperation
 000010  2801              CMP      r0,#1
 000012  d105              BNE      |L3.32|
 ;;;104    		{
@@ -112,7 +112,7 @@
 ;;;108    			varOperation.isUSBSendDat = 0;
 000018  2000              MOVS     r0,#0
 00001a  4903              LDR      r1,|L3.40|
-00001c  f8810092          STRB     r0,[r1,#0x92]
+00001c  f8810094          STRB     r0,[r1,#0x94]
                   |L3.32|
 ;;;109    		}
 ;;;110    	}  

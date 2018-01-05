@@ -446,6 +446,16 @@
               <FilePath>..\OBD\CAN_J1939.c</FilePath>
             </File>
             <File>
+              <FileName>saveFuel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\OBD\saveFuel.c</FilePath>
+            </File>
+            <File>
+              <FileName>strengthenPower.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\OBD\strengthenPower.c</FilePath>
+            </File>
+            <File>
               <FileName>OBDCAN_Tx_Rx.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\OBD\OBDCAN_Tx_Rx.c</FilePath>

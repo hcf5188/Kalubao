@@ -23,13 +23,7 @@ typedef enum
 	LinkOK = 0,
 	LinkFault
 }LinkStatus;
-typedef enum 
-{
-	CAN_BAUD_500K1 = 6,
-	CAN_BAUD_500K2 = 7,
-	CAN_BAUD_250K1 = 8,
-	CAN_BAUD_250K2 = 9
-}CANB_BAUD_Type;
+
 typedef enum
 {
 	CANBAUD_100K = 0,
@@ -67,6 +61,7 @@ __packed typedef struct
 	uint32_t canTxId;       //保存CAN发送ID
 	uint32_t canRxId;       //保存CAN接收ID
 	CANBAUD_Enum  canBaud;  //CAN通讯波特率
+    uint8_t  pidVerCmd[8];     //自识别的结果保存
 }_CANDataConfig;
 
 
@@ -110,10 +105,13 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint32_t canTxId;       //保存CAN发送ID
 	uint32_t canRxId;       //保存CAN接收ID
 	CANBAUD_Enum  canBaud;  //CAN通讯波特率
-	 
-	uint16_t canTest;       //CAN 测试波特率、ID
 	
+	uint16_t canTest;       //CAN 测试波特率、ID
+	uint8_t  pidTset;       //测试服务器下发的PID指令
+	
+	uint8_t  oilMode;       //0 - 正常模式    1 - 强动力模式   2 - 节油模式
 	uint8_t  isUSBSendDat;  //USB是否要发送数据  0 - 不要   1 - 正在发送
+	uint8_t   pidVerCmd[8];
 }SYS_OperationVar;
 
 __packed typedef struct//第二个配置文件的结构体
@@ -182,8 +180,9 @@ __packed typedef struct
 	uint16_t afterFuel2;
 	uint16_t afterFuel3;
 	uint8_t  afterFuelTemp; 
-	uint16_t nowFuel;         //当前喷油量
-	uint8_t  nowFuelTemp;
+	uint16_t curFuel;         //当前喷油量
+	uint8_t  curFuelTemp;
+	uint8_t  instantFuel;     //瞬时油耗
 	uint32_t runLen1;         //行驶距离
 	uint32_t runLen2;         //车辆距离
 }CARRunRecord;

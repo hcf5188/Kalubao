@@ -1,7 +1,5 @@
 #include "apptask.h"
 
-
-
 /*************************   CDMA服务函数声明部分   *****************************/
 void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength);
 /*************************   MG2639常用的 “AT”指令     ***********************/
@@ -27,10 +25,8 @@ const uint8_t at_ZIPSETUP[] = "AT+ZIPSETUP=0,%s,%d\r";//建立TCP连接  todo:需要做
 const uint8_t at_Check[]    = "AT+ZIPPSTATUS=0\r";  //查询当前TCP连接状态
 const uint8_t at_TCPClose[] = "AT+ZIPCLOSE=0\r";    //关闭通道号为0的TCP连接
 const char at_TCPSend[]     = "AT+ZIPSEND=0,%d\r";  //向连接号为0的地址发送%d个数据   返回>  输入数据，成功后返回 +ZIPSEND：OK OK
-// todo:需要将发送的长度可配置，%d
-												  
+											  
 const uint8_t at_GetIP[]    = "AT+ZIPGETIP\r";      //获取本地IP										  
-
 
 extern uint16_t  freCDMALed;
 static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2);
@@ -66,7 +62,7 @@ receCDMA:
 			err = CDMAReceDeal(pCDMARece,"DISCONNECTED");
 			err2 = CDMAReceDeal(pCDMARece,"ERROR");
 			
-			if((err == 0)||(err2 == 0))                        //TCP断开连接，需要重新连接
+			if((err == 0)||(err2 == 0))         //TCP断开连接，需要重新连接
 			{
 				Mem_free(pCDMARece);            //释放占用的内存块
 				Mem_free(pCDMASend->data);
@@ -138,7 +134,8 @@ void CDMAPowerOpen_Close(uint8_t flag)//这段代码是用来启动/关闭CDMA
 	}
 	OSMutexPost(CDMAPowerMutex);
 }
-//配置以及发送数据的过程中，对CDMA返回的状态信息进行处理 0 接收正常
+
+//配置以及发送数据的过程中，对CDMA返回的状态信息（字符串）进行处理 0 接收正常
 static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2)
 {
 	char* p1 = NULL;
@@ -204,8 +201,6 @@ static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t 
 	Mem_free(ptrCDMACfg);
 }
 
-
-
 void CDMAConfigInit(void )
 {
 	char sendCmd[45];
@@ -230,17 +225,6 @@ void CDMAConfigInit(void )
 	CDMASendCmd((uint8_t *)sendCmd,"+ZIPSETUP:CONNECTED",sendlen);
 
 	freCDMALed = 500;           //网络连接成功
-	
 }
-
-
-
-
-
-
-
-
-
-
 
 

@@ -9,6 +9,7 @@ void GPSTask(void *pdata)
 {
 	
 	uint8_t err;
+	static uint8_t locatemp = 0;
 //	uint8_t i = 0;
 	uint8_t* ptrGPSRece;
 	uint8_t* ptrGPSPack = NULL;
@@ -35,11 +36,20 @@ void GPSTask(void *pdata)
 		
 		timeStamp = TimeCompare(gpsMC.utc.year,gpsMC.utc.month,gpsMC.utc.date,gpsMC.utc.hour,gpsMC.utc.min,gpsMC.utc.sec);
 		varOperation.currentTime = timeStamp;
-		
+		locatemp ++;
+		if(locatemp == 3)
+		{
+			carAllRecord.startlongitude = gpsMC.longitude;
+			carAllRecord.startlatitude  = gpsMC.latitude;
+			locatemp = 20;
+		}else if(locatemp >= 20)
+		{
+			locatemp = 20;
+		}
 		ptrGPSPack = Mem_malloc(50);
 		if(ptrGPSPack != NULL)
 		{
-			ptrGPSPack[0] = 27;
+			ptrGPSPack[0] = 19;
 			ptrGPSPack[1] = 0x50;
 			ptrGPSPack[2] = 0x02;
 			timeStamp = t_htonl(timeStamp);	
@@ -51,23 +61,11 @@ void GPSTask(void *pdata)
 			timeStamp = t_htonl(gpsMC.latitude);
 			memcpy(&ptrGPSPack[11],&timeStamp,sizeof(timeStamp));//维度
 			
-			speed = t_htons(gpsMC.speed);
-			memcpy(&ptrGPSPack[15],&speed,2);        //GPS 车速 
-			
 			speed = t_htons(gpsMC.direction);
-			memcpy(&ptrGPSPack[17],&speed,2);        //todo:解析GPS方向，解析有效定位
+			memcpy(&ptrGPSPack[15],&speed,2);        //GPS方向
 			
-			speed = t_htons(carAllRecord.carSpeed);	 
-			memcpy(&ptrGPSPack[19],&speed,2);        //当前车速
-			
-			speed = t_htons(carAllRecord.engineSpeed);	 
-			memcpy(&ptrGPSPack[21],&speed,2);        //当前转速
-
-			speed = t_htons(carAllRecord.nowFuel);	 
-			memcpy(&ptrGPSPack[23],&speed,2);        //瞬时油耗
-			
-			speed = t_htons(carAllRecord.carSpeed);	 
-			memcpy(&ptrGPSPack[25],&speed,2);        //瞬时距离
+			speed = t_htons(gpsMC.speed);
+			memcpy(&ptrGPSPack[17],&speed,2);        //GPS 车速 
 			
 			if((varOperation.isDataFlow == 0)&&(sendNum != osTime))     //数据流已经流动起来了  确保1秒发送一次
 			{	
@@ -316,7 +314,7 @@ void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
 	{
 		temp=NMEA_Str2num(p1+posx,&dx);		                //得到整型值，此值比原始值大10的dx次方 	 
 		temp=(temp*1852)/36;
-		temp/=NMEA_Pow(10,dx+2);	
+		temp/=NMEA_Pow(10,dx+1);	
 		gpsx->speed = (uint16_t) temp;
 	}
 	
@@ -355,11 +353,12 @@ void NMEA_GPVTG_Analysis(nmea_msg *gpsx,u8 *buf)
 //buf:接收到的GPS数据缓冲区首地址
 void GPS_Analysis(nmea_msg *gpsx,u8 *buf)
 {
-	NMEA_GPGSV_Analysis(gpsx,buf);	//GPGSV解析
-	NMEA_GPGGA_Analysis(gpsx,buf);	//GPGGA解析 	
-	NMEA_GPGSA_Analysis(gpsx,buf);	//GPGSA解析
-	NMEA_GPRMC_Analysis(gpsx,buf);	//GPRMC解析
-	NMEA_GPVTG_Analysis(gpsx,buf);	//GPVTG解析
+	NMEA_GPRMC_Analysis(gpsx,buf);	//GPRMC解析  只解析这一个就行了，下面的不需要啦
+	
+//	NMEA_GPGSV_Analysis(gpsx,buf);	//GPGSV解析
+//	NMEA_GPGGA_Analysis(gpsx,buf);	//GPGGA解析 	
+//	NMEA_GPGSA_Analysis(gpsx,buf);	//GPGSA解析
+//	NMEA_GPVTG_Analysis(gpsx,buf);	//GPVTG解析
 }
 
 //GPS校验和计算

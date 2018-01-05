@@ -5,576 +5,598 @@
                           AREA ||i.StartTask||, CODE, READONLY, ALIGN=2
 
                   StartTask PROC
-;;;124    
-;;;125    void StartTask(void *pdata)
+;;;126    
+;;;127    void StartTask(void *pdata)
 000000  b508              PUSH     {r3,lr}
-;;;126    {
-;;;127    	uint8_t err;
-;;;128    	uint8_t i = 0;
+;;;128    {
+;;;129    	uint8_t   err;
+;;;130    	uint8_t   i = 0;
 000002  2400              MOVS     r4,#0
-;;;129    	uint8_t *ptrOBDSend;
-;;;130    	uint32_t timeToSendLogin  = 0;
+;;;131    	uint8_t   *ptrOBDSend;
+;;;132    	uint32_t  timeToSendLogin  = 0;
 000004  2600              MOVS     r6,#0
-;;;131    	OS_CPU_SR cpu_sr=0;
+;;;133    	OS_CPU_SR cpu_sr=0;
 000006  2700              MOVS     r7,#0
-;;;132    	pdata = pdata; 
+;;;134    	pdata = pdata; 
 000008  bf00              NOP      
-;;;133    	
-;;;134    	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
+;;;135    	
+;;;136    	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
 00000a  f44f707a          MOV      r0,#0x3e8
 00000e  f7fffffe          BL       CDMNSendDataInit
-000012  49a8              LDR      r1,|L1.692|
+000012  49b0              LDR      r1,|L1.724|
 000014  6008              STR      r0,[r1,#0]  ; cdmaDataToSend
-;;;135    	if(varOperation.USB_NormalMode == 1)//USB 升级模式
-000016  48a8              LDR      r0,|L1.696|
+;;;137    	if(varOperation.USB_NormalMode == 1)//USB 升级模式
+000016  48b0              LDR      r0,|L1.728|
 000018  7a00              LDRB     r0,[r0,#8]  ; varOperation
 00001a  2801              CMP      r0,#1
 00001c  d115              BNE      |L1.74|
-;;;136    	{
-;;;137    		USBRecieveQ = OSQCreate(&usbRecBuf[0],USBRECBUF_SIZE);  //建立USB接收 消息队列
+;;;138    	{
+;;;139    		USBRecieveQ = OSQCreate(&usbRecBuf[0],USBRECBUF_SIZE);  //建立USB接收 消息队列
 00001e  210a              MOVS     r1,#0xa
-000020  48a6              LDR      r0,|L1.700|
+000020  48ae              LDR      r0,|L1.732|
 000022  f7fffffe          BL       OSQCreate
-000026  49a6              LDR      r1,|L1.704|
+000026  49ae              LDR      r1,|L1.736|
 000028  6008              STR      r0,[r1,#0]  ; USBRecieveQ
-;;;138    		USBSendQ    = OSQCreate(&usbSendBuf[0],USBSENDBUF_SIZE);//建立USB发送 消息队列
+;;;140    		USBSendQ    = OSQCreate(&usbSendBuf[0],USBSENDBUF_SIZE);//建立USB发送 消息队列
 00002a  2105              MOVS     r1,#5
-00002c  48a5              LDR      r0,|L1.708|
+00002c  48ad              LDR      r0,|L1.740|
 00002e  f7fffffe          BL       OSQCreate
-000032  49a5              LDR      r1,|L1.712|
+000032  49ad              LDR      r1,|L1.744|
 000034  6008              STR      r0,[r1,#0]  ; USBSendQ
-;;;139    		
-;;;140    		OSTaskCreate(USBUpdataTask,(void *)0,(OS_STK*)&USB_TASK_STK[USB_STK_SIZE-1],USB_TASK_PRIO);
+;;;141    		
+;;;142    		OSTaskCreate(USBUpdataTask,(void *)0,(OS_STK*)&USB_TASK_STK[USB_STK_SIZE-1],USB_TASK_PRIO);
 000036  2309              MOVS     r3,#9
-000038  4aa4              LDR      r2,|L1.716|
+000038  4aac              LDR      r2,|L1.748|
 00003a  2100              MOVS     r1,#0
-00003c  48a4              LDR      r0,|L1.720|
+00003c  48ac              LDR      r0,|L1.752|
 00003e  f7fffffe          BL       OSTaskCreate
-;;;141    		OSTaskSuspend(OS_PRIO_SELF);//挂起起始任务
+;;;143    		OSTaskSuspend(OS_PRIO_SELF);//挂起起始任务
 000042  20ff              MOVS     r0,#0xff
 000044  f7fffffe          BL       OSTaskSuspend
-000048  e086              B        |L1.344|
+000048  e092              B        |L1.368|
                   |L1.74|
-;;;142    	}else
-;;;143    	{
-;;;144    		OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
+;;;144    	}else
+;;;145    	{
+;;;146    		OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
 00004a  f7fffffe          BL       OS_CPU_SR_Save
 00004e  4607              MOV      r7,r0
-;;;145    		
-;;;146    /***********************************  创建任务间通信的消息     ***************************************************/				
-;;;147    
-;;;148    		beepSem   = OSSemCreate(1);       //蜂鸣器信号量（目前没啥用，留着以后扩展蜂鸣器响的方式）
+;;;147    		
+;;;148    /***********************************  创建任务间通信的消息     ***************************************************/				
+;;;149    
+;;;150    		beepSem   = OSSemCreate(1);       //蜂鸣器信号量（目前只是开机响一下，以后可以加点花样）
 000050  2001              MOVS     r0,#1
 000052  f7fffffe          BL       OSSemCreate
-000056  499f              LDR      r1,|L1.724|
+000056  49a7              LDR      r1,|L1.756|
 000058  6008              STR      r0,[r1,#0]  ; beepSem
-;;;149    		LoginMes  = OSSemCreate(0);       //登录报文信号量
+;;;151    		LoginMes  = OSSemCreate(0);       //登录报文信号量
 00005a  2000              MOVS     r0,#0
 00005c  f7fffffe          BL       OSSemCreate
-000060  499d              LDR      r1,|L1.728|
+000060  49a5              LDR      r1,|L1.760|
 000062  6008              STR      r0,[r1,#0]  ; LoginMes
-;;;150    		sendMsg   = OSSemCreate(0);       //创建CDMA是否正在发送消息的信号量
+;;;152    		sendMsg   = OSSemCreate(0);       //创建CDMA是否正在发送消息的信号量
 000064  2000              MOVS     r0,#0
 000066  f7fffffe          BL       OSSemCreate
-00006a  499c              LDR      r1,|L1.732|
+00006a  49a4              LDR      r1,|L1.764|
 00006c  6008              STR      r0,[r1,#0]  ; sendMsg
-;;;151    		
-;;;152    		CDMASendMutex  = OSMutexCreate(CDMA_SEND_PRIO,&err);       //向CDMA发送缓冲区发送数据 独占 互斥型信号量
+;;;153    		
+;;;154    		CDMASendMutex  = OSMutexCreate(CDMA_SEND_PRIO,&err);       //向CDMA发送缓冲区发送数据 独占 互斥型信号量
 00006e  4669              MOV      r1,sp
-000070  2008              MOVS     r0,#8
+000070  2007              MOVS     r0,#7
 000072  f7fffffe          BL       OSMutexCreate
-000076  499a              LDR      r1,|L1.736|
+000076  49a2              LDR      r1,|L1.768|
 000078  6008              STR      r0,[r1,#0]  ; CDMASendMutex
-;;;153    		CDMAPowerMutex = OSMutexCreate(CDMAPOWER_PRIO,&err);       //CDMA电源互斥信号量管理
+;;;155    		CDMAPowerMutex = OSMutexCreate(CDMAPOWER_PRIO,&err);       //CDMA电源互斥信号量管理
 00007a  4669              MOV      r1,sp
-00007c  2007              MOVS     r0,#7
+00007c  2006              MOVS     r0,#6
 00007e  f7fffffe          BL       OSMutexCreate
-000082  4998              LDR      r1,|L1.740|
+000082  49a0              LDR      r1,|L1.772|
 000084  6008              STR      r0,[r1,#0]  ; CDMAPowerMutex
-;;;154    		
-;;;155    		CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);  //建立CDMA接收 消息队列
-000086  210a              MOVS     r1,#0xa
-000088  4897              LDR      r0,|L1.744|
-00008a  f7fffffe          BL       OSQCreate
-00008e  4997              LDR      r1,|L1.748|
-000090  6008              STR      r0,[r1,#0]  ; CDMARecieveQ
-;;;156    		CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE);//建立CDMA发送 消息队列
-000092  2105              MOVS     r1,#5
-000094  4896              LDR      r0,|L1.752|
+;;;156    		CANSendMutex   = OSMutexCreate(CAN_SEND_MUTEX,&err);       //CAN 发送数据信号量
+000086  4669              MOV      r1,sp
+000088  2008              MOVS     r0,#8
+00008a  f7fffffe          BL       OSMutexCreate
+00008e  499e              LDR      r1,|L1.776|
+000090  6008              STR      r0,[r1,#0]  ; CANSendMutex
+;;;157    		
+;;;158    		CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);  //建立CDMA接收 消息队列
+000092  210a              MOVS     r1,#0xa
+000094  489d              LDR      r0,|L1.780|
 000096  f7fffffe          BL       OSQCreate
-00009a  4996              LDR      r1,|L1.756|
-00009c  6008              STR      r0,[r1,#0]  ; CDMASendQ
-;;;157    		ZIPRecv_Q    = OSQCreate(&ZIPRecBuf[0],ZIPRECVBUF_SIZE);   //建立“ZIPRECV”处理消息队列
+00009a  499d              LDR      r1,|L1.784|
+00009c  6008              STR      r0,[r1,#0]  ; CDMARecieveQ
+;;;159    		CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE);//建立CDMA发送 消息队列
 00009e  2105              MOVS     r1,#5
-0000a0  4895              LDR      r0,|L1.760|
+0000a0  489c              LDR      r0,|L1.788|
 0000a2  f7fffffe          BL       OSQCreate
-0000a6  4995              LDR      r1,|L1.764|
-0000a8  6008              STR      r0,[r1,#0]  ; ZIPRecv_Q
-;;;158    		
-;;;159    		receGPSQ     = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);    //建立GPS接收 消息队列
-0000aa  210a              MOVS     r1,#0xa
-0000ac  4894              LDR      r0,|L1.768|
+0000a6  499c              LDR      r1,|L1.792|
+0000a8  6008              STR      r0,[r1,#0]  ; CDMASendQ
+;;;160    		ZIPRecv_Q    = OSQCreate(&ZIPRecBuf[0],ZIPRECVBUF_SIZE);   //建立“ZIPRECV”处理消息队列
+0000aa  2105              MOVS     r1,#5
+0000ac  489b              LDR      r0,|L1.796|
 0000ae  f7fffffe          BL       OSQCreate
-0000b2  4994              LDR      r1,|L1.772|
-0000b4  6008              STR      r0,[r1,#0]  ; receGPSQ
-;;;160    		canSendQ    = OSQCreate(&canSendBuf[0],CANSENDBUF_SIZE);   //卡路宝向ECU发送指令的消息队列
-0000b6  2150              MOVS     r1,#0x50
-0000b8  4893              LDR      r0,|L1.776|
+0000b2  499b              LDR      r1,|L1.800|
+0000b4  6008              STR      r0,[r1,#0]  ; ZIPRecv_Q
+;;;161    		
+;;;162    		receGPSQ    = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);     //建立GPS接收 消息队列
+0000b6  210a              MOVS     r1,#0xa
+0000b8  489a              LDR      r0,|L1.804|
 0000ba  f7fffffe          BL       OSQCreate
-0000be  4993              LDR      r1,|L1.780|
-0000c0  6008              STR      r0,[r1,#0]  ; canSendQ
-;;;161    		canRecieveQ = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);     //卡路宝从ECU接收指令的循环队列
-0000c2  2114              MOVS     r1,#0x14
-0000c4  4892              LDR      r0,|L1.784|
+0000be  499a              LDR      r1,|L1.808|
+0000c0  6008              STR      r0,[r1,#0]  ; receGPSQ
+;;;163    		canSendQ    = OSQCreate(&canSendBuf[0],CANSENDBUF_SIZE);   //卡路宝向ECU发送指令的消息队列
+0000c2  2150              MOVS     r1,#0x50
+0000c4  4899              LDR      r0,|L1.812|
 0000c6  f7fffffe          BL       OSQCreate
-0000ca  4992              LDR      r1,|L1.788|
-0000cc  6008              STR      r0,[r1,#0]  ; canRecieveQ
-;;;162    		canJ1939Q   = OSQCreate(&canJ1939Buf[0],CANJ1939BUF_SIZE); //ECU向卡路宝发送J1939消息队列
+0000ca  4999              LDR      r1,|L1.816|
+0000cc  6008              STR      r0,[r1,#0]  ; canSendQ
+;;;164    		canRecieveQ = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);     //卡路宝从ECU接收指令的消息队列
 0000ce  2114              MOVS     r1,#0x14
-0000d0  4891              LDR      r0,|L1.792|
+0000d0  4898              LDR      r0,|L1.820|
 0000d2  f7fffffe          BL       OSQCreate
-0000d6  4991              LDR      r1,|L1.796|
-0000d8  6008              STR      r0,[r1,#0]  ; canJ1939Q
-;;;163    
-;;;164    /*************************************      创建各任务           ********************************************************/		
-;;;165    
-;;;166    		OSTaskCreate(PowerDeal,(void *)0,(OS_STK*)&POWER_TASK_STK[POWER_STK_SIZE-1],POWER_TASK_PRIO);
-0000da  2311              MOVS     r3,#0x11
-0000dc  4a90              LDR      r2,|L1.800|
-0000de  2100              MOVS     r1,#0
-0000e0  4890              LDR      r0,|L1.804|
-0000e2  f7fffffe          BL       OSTaskCreate
-;;;167    		
-;;;168    		OSTaskCreate(CDMATask,(void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);
-0000e6  230b              MOVS     r3,#0xb
-0000e8  4a8f              LDR      r2,|L1.808|
+0000d6  4998              LDR      r1,|L1.824|
+0000d8  6008              STR      r0,[r1,#0]  ; canRecieveQ
+;;;165    		canJ1939Q   = OSQCreate(&canJ1939Buf[0],CANJ1939BUF_SIZE); // ECU向卡路宝发送 J1939 消息队列
+0000da  2114              MOVS     r1,#0x14
+0000dc  4897              LDR      r0,|L1.828|
+0000de  f7fffffe          BL       OSQCreate
+0000e2  4997              LDR      r1,|L1.832|
+0000e4  6008              STR      r0,[r1,#0]  ; canJ1939Q
+;;;166    
+;;;167    /*************************************      创建各任务           ********************************************************/		
+;;;168    
+;;;169    		OSTaskCreate(PowerDeal,    (void *)0,(OS_STK*)&POWER_TASK_STK[POWER_STK_SIZE-1],POWER_TASK_PRIO);
+0000e6  2312              MOVS     r3,#0x12
+0000e8  4a96              LDR      r2,|L1.836|
 0000ea  2100              MOVS     r1,#0
-0000ec  488f              LDR      r0,|L1.812|
+0000ec  4896              LDR      r0,|L1.840|
 0000ee  f7fffffe          BL       OSTaskCreate
-;;;169    		
-;;;170    		OSTaskCreate(CDMARecvTask,(void *)0,(OS_STK*)&CDMARecv_TASK_STK[CDMARecv_STK_SIZE-1],CDMARevc_TASK_PRIO);	
-0000f2  230c              MOVS     r3,#0xc
-0000f4  4a8e              LDR      r2,|L1.816|
+;;;170    		
+;;;171    		OSTaskCreate(CDMATask,     (void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE-1],CDMA_TASK_PRIO);
+0000f2  230b              MOVS     r3,#0xb
+0000f4  4a95              LDR      r2,|L1.844|
 0000f6  2100              MOVS     r1,#0
-0000f8  488e              LDR      r0,|L1.820|
+0000f8  4895              LDR      r0,|L1.848|
 0000fa  f7fffffe          BL       OSTaskCreate
-;;;171    
-;;;172    		OSTaskCreate(GPSTask, (void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);	
-0000fe  230e              MOVS     r3,#0xe
-000100  4a8d              LDR      r2,|L1.824|
+;;;172    		
+;;;173    		OSTaskCreate(CDMARecvTask, (void *)0,(OS_STK*)&CDMARecv_TASK_STK[CDMARecv_STK_SIZE-1],CDMARevc_TASK_PRIO);	
+0000fe  230c              MOVS     r3,#0xc
+000100  4a94              LDR      r2,|L1.852|
 000102  2100              MOVS     r1,#0
-000104  488d              LDR      r0,|L1.828|
+000104  4894              LDR      r0,|L1.856|
 000106  f7fffffe          BL       OSTaskCreate
-;;;173    
-;;;174    		OSTaskCreate(OBDTask, (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);
-00010a  230f              MOVS     r3,#0xf
-00010c  4a8c              LDR      r2,|L1.832|
+;;;174    
+;;;175    		OSTaskCreate(GPSTask,      (void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE-1],GPS_TASK_PRIO);	
+00010a  230e              MOVS     r3,#0xe
+00010c  4a93              LDR      r2,|L1.860|
 00010e  2100              MOVS     r1,#0
-000110  488c              LDR      r0,|L1.836|
+000110  4893              LDR      r0,|L1.864|
 000112  f7fffffe          BL       OSTaskCreate
-;;;175    		OSTaskCreate(DealJ1939Date, (void *)0,(OS_STK*)&J1939_TASK_STK[J1939_STK_SIZE-1],J1939_TASK_PRIO);//创建J1939处理任务		
-000116  2310              MOVS     r3,#0x10
-000118  4a8b              LDR      r2,|L1.840|
+;;;176    
+;;;177    		OSTaskCreate(OBDTask,      (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE-1],OBD_TASK_PRIO);
+000116  230f              MOVS     r3,#0xf
+000118  4a92              LDR      r2,|L1.868|
 00011a  2100              MOVS     r1,#0
-00011c  488b              LDR      r0,|L1.844|
+00011c  4892              LDR      r0,|L1.872|
 00011e  f7fffffe          BL       OSTaskCreate
-;;;176    		
-;;;177    		OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE-1],CDMA_LED_PRIO);
-000122  2314              MOVS     r3,#0x14
-000124  4a8a              LDR      r2,|L1.848|
+;;;178    		OSTaskCreate(DealJ1939Date,(void *)0,(OS_STK*)&J1939_TASK_STK[J1939_STK_SIZE-1],J1939_TASK_PRIO);//创建J1939处理任务		
+000122  2310              MOVS     r3,#0x10
+000124  4a91              LDR      r2,|L1.876|
 000126  2100              MOVS     r1,#0
-000128  488a              LDR      r0,|L1.852|
+000128  4891              LDR      r0,|L1.880|
 00012a  f7fffffe          BL       OSTaskCreate
-;;;178    		OSTaskCreate(GPSLEDTask, (void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1], GPS_LED_PRIO);		
-00012e  2315              MOVS     r3,#0x15
-000130  4a89              LDR      r2,|L1.856|
+;;;179    		OSTaskCreate(SaveFuleTask, (void *)0,(OS_STK*)&SAVEFULE_TASK_STK[SAVEFUEL_STK_SIZE-1],SAVE_FUEL_PEIO);//创建节油任务		
+00012e  2311              MOVS     r3,#0x11
+000130  4a90              LDR      r2,|L1.884|
 000132  2100              MOVS     r1,#0
-000134  4889              LDR      r0,|L1.860|
+000134  4890              LDR      r0,|L1.888|
 000136  f7fffffe          BL       OSTaskCreate
-;;;179    		OSTaskCreate(OBDLEDTask, (void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1], OBD_LED_PRIO);	
-00013a  2316              MOVS     r3,#0x16
-00013c  4a88              LDR      r2,|L1.864|
+;;;180    
+;;;181    		OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE-1],CDMA_LED_PRIO);
+00013a  2314              MOVS     r3,#0x14
+00013c  4a8f              LDR      r2,|L1.892|
 00013e  2100              MOVS     r1,#0
-000140  4888              LDR      r0,|L1.868|
+000140  488f              LDR      r0,|L1.896|
 000142  f7fffffe          BL       OSTaskCreate
-;;;180    		OSTaskCreate(BeepTask,   (void *)0,(OS_STK*)&BEEP_STK[BEEP_STK_SIZE-1],   BEEP_TASK_PRIO);
-000146  2317              MOVS     r3,#0x17
-000148  4a87              LDR      r2,|L1.872|
+;;;182    		OSTaskCreate(GPSLEDTask, (void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE-1], GPS_LED_PRIO);		
+000146  2315              MOVS     r3,#0x15
+000148  4a8e              LDR      r2,|L1.900|
 00014a  2100              MOVS     r1,#0
-00014c  4887              LDR      r0,|L1.876|
+00014c  488e              LDR      r0,|L1.904|
 00014e  f7fffffe          BL       OSTaskCreate
-;;;181    		
-;;;182    		OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
-000152  4638              MOV      r0,r7
-000154  f7fffffe          BL       OS_CPU_SR_Restore
-                  |L1.344|
-;;;183    	}
-;;;184    	while(1)
-000158  e0aa              B        |L1.688|
-                  |L1.346|
-;;;185    	{
-;;;186    		OSTimeDlyHMSM(0,0,0,4);         //4ms扫描一次
-00015a  2304              MOVS     r3,#4
-00015c  2200              MOVS     r2,#0
-00015e  4611              MOV      r1,r2
-000160  4610              MOV      r0,r2
-000162  f7fffffe          BL       OSTimeDlyHMSM
-;;;187    		if(varOperation.isDataFlow == 1)
-000166  4854              LDR      r0,|L1.696|
-000168  f890002d          LDRB     r0,[r0,#0x2d]  ; varOperation
-00016c  2801              CMP      r0,#1
-00016e  d100              BNE      |L1.370|
-;;;188    			continue;
-000170  e09e              B        |L1.688|
+;;;183    		OSTaskCreate(OBDLEDTask, (void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE-1], OBD_LED_PRIO);	
+000152  2316              MOVS     r3,#0x16
+000154  4a8d              LDR      r2,|L1.908|
+000156  2100              MOVS     r1,#0
+000158  488d              LDR      r0,|L1.912|
+00015a  f7fffffe          BL       OSTaskCreate
+;;;184    		OSTaskCreate(BeepTask,   (void *)0,(OS_STK*)&BEEP_STK[BEEP_STK_SIZE-1],   BEEP_TASK_PRIO);
+00015e  2317              MOVS     r3,#0x17
+000160  4a8c              LDR      r2,|L1.916|
+000162  2100              MOVS     r1,#0
+000164  488c              LDR      r0,|L1.920|
+000166  f7fffffe          BL       OSTaskCreate
+;;;185    		
+;;;186    /***************************************************************************************************************/		
+;;;187    		
+;;;188    		OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
+00016a  4638              MOV      r0,r7
+00016c  f7fffffe          BL       OS_CPU_SR_Restore
+                  |L1.368|
+;;;189    	}
+;;;190    	while(1)
+000170  e0af              B        |L1.722|
                   |L1.370|
-;;;189    		timeToSendLogin++;
-000172  1c76              ADDS     r6,r6,#1
-;;;190    		if(timeToSendLogin % 45000 == 0)//定期3分钟发送登录报文
-000174  f64a70c8          MOV      r0,#0xafc8
-000178  fbb6f1f0          UDIV     r1,r6,r0
-00017c  fb006011          MLS      r0,r0,r1,r6
-000180  b908              CBNZ     r0,|L1.390|
-;;;191    		{
-;;;192    			LoginDataSend(); 
-000182  f7fffffe          BL       LoginDataSend
-                  |L1.390|
-;;;193    		}
-;;;194    		if(varOperation.canTest == 2)   //CAN的波特率和ID均已确定
-000186  484c              LDR      r0,|L1.696|
-000188  f8b00090          LDRH     r0,[r0,#0x90]  ; varOperation
-00018c  2802              CMP      r0,#2
-00018e  d147              BNE      |L1.544|
-;;;195    		{
-;;;196    			for(i=0;i<varOperation.pidNum;i++)//todo:PID指令的数目 后期需要配置 varOperation.pidNum
-000190  2400              MOVS     r4,#0
-000192  e040              B        |L1.534|
-                  |L1.404|
-;;;197    			{
-;;;198    				(ptrPIDAllDat + i)->timeCount += 4;
-000194  eb041004          ADD      r0,r4,r4,LSL #4
-000198  4975              LDR      r1,|L1.880|
-00019a  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
-00019c  4408              ADD      r0,r0,r1
-00019e  6840              LDR      r0,[r0,#4]
-0001a0  1d00              ADDS     r0,r0,#4
-0001a2  eb041104          ADD      r1,r4,r4,LSL #4
-0001a6  4a72              LDR      r2,|L1.880|
-0001a8  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
-0001aa  4411              ADD      r1,r1,r2
-0001ac  6048              STR      r0,[r1,#4]
-;;;199    				if((ptrPIDAllDat + i)->timeCount < (ptrPIDAllDat + i)->period)
-0001ae  eb041004          ADD      r0,r4,r4,LSL #4
-0001b2  496f              LDR      r1,|L1.880|
-0001b4  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
-0001b6  4408              ADD      r0,r0,r1
-0001b8  6840              LDR      r0,[r0,#4]
-0001ba  eb041104          ADD      r1,r4,r4,LSL #4
-0001be  4a6c              LDR      r2,|L1.880|
-0001c0  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
-0001c2  4411              ADD      r1,r1,r2
-0001c4  6809              LDR      r1,[r1,#0]
-0001c6  4288              CMP      r0,r1
-0001c8  d200              BCS      |L1.460|
-;;;200    					continue;
-0001ca  e022              B        |L1.530|
-                  |L1.460|
-;;;201    				(ptrPIDAllDat + i)->timeCount = 0;
-0001cc  2100              MOVS     r1,#0
-0001ce  eb041004          ADD      r0,r4,r4,LSL #4
-0001d2  4a67              LDR      r2,|L1.880|
-0001d4  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
-0001d6  4410              ADD      r0,r0,r2
-0001d8  6041              STR      r1,[r0,#4]
-;;;202    				ptrOBDSend = Mem_malloc(9);
-0001da  2009              MOVS     r0,#9
-0001dc  f7fffffe          BL       Mem_malloc
-0001e0  4605              MOV      r5,r0
-;;;203    				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
-0001e2  eb041004          ADD      r0,r4,r4,LSL #4
-0001e6  4962              LDR      r1,|L1.880|
-0001e8  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
-0001ea  4408              ADD      r0,r0,r1
-0001ec  6881              LDR      r1,[r0,#8]
-0001ee  6029              STR      r1,[r5,#0]
-0001f0  68c1              LDR      r1,[r0,#0xc]
-0001f2  6069              STR      r1,[r5,#4]
-0001f4  7c00              LDRB     r0,[r0,#0x10]
-0001f6  7228              STRB     r0,[r5,#8]
-;;;204    				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
-0001f8  4629              MOV      r1,r5
-0001fa  4844              LDR      r0,|L1.780|
-0001fc  6800              LDR      r0,[r0,#0]  ; canSendQ
-0001fe  f7fffffe          BL       OSQPost
-000202  9000              STR      r0,[sp,#0]
-;;;205    				if(err != OS_ERR_NONE)
-000204  f89d0000          LDRB     r0,[sp,#0]
-000208  b110              CBZ      r0,|L1.528|
-;;;206    					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
-00020a  4628              MOV      r0,r5
-00020c  f7fffffe          BL       Mem_free
-                  |L1.528|
-000210  bf00              NOP                            ;200
-                  |L1.530|
-000212  1c60              ADDS     r0,r4,#1              ;196
-000214  b2c4              UXTB     r4,r0                 ;196
-                  |L1.534|
-000216  4828              LDR      r0,|L1.696|
-000218  f8b00078          LDRH     r0,[r0,#0x78]         ;196  ; varOperation
-00021c  42a0              CMP      r0,r4                 ;196
-00021e  dcb9              BGT      |L1.404|
-                  |L1.544|
-;;;207    			}
-;;;208    		}
-;;;209    		if(cdmaDataToSend->datLength > 36)         //要发送的数据不为空
-000220  4824              LDR      r0,|L1.692|
-000222  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000224  8800              LDRH     r0,[r0,#0]
-000226  2824              CMP      r0,#0x24
-000228  dd06              BLE      |L1.568|
-;;;210    			cdmaDataToSend->timeCount += 4;
-00022a  4822              LDR      r0,|L1.692|
-00022c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00022e  8840              LDRH     r0,[r0,#2]
-000230  1d00              ADDS     r0,r0,#4
-000232  4920              LDR      r1,|L1.692|
-000234  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000236  8048              STRH     r0,[r1,#2]
+;;;191    	{
+;;;192    		OSTimeDlyHMSM(0,0,0,4);         //4ms扫描一次
+000172  2304              MOVS     r3,#4
+000174  2200              MOVS     r2,#0
+000176  4611              MOV      r1,r2
+000178  4610              MOV      r0,r2
+00017a  f7fffffe          BL       OSTimeDlyHMSM
+;;;193    		if(varOperation.isDataFlow == 1)
+00017e  4856              LDR      r0,|L1.728|
+000180  f890002d          LDRB     r0,[r0,#0x2d]  ; varOperation
+000184  2801              CMP      r0,#1
+000186  d100              BNE      |L1.394|
+;;;194    			continue;                   //数据流未流动
+000188  e0a3              B        |L1.722|
+                  |L1.394|
+;;;195    		timeToSendLogin++;
+00018a  1c76              ADDS     r6,r6,#1
+;;;196    		if(timeToSendLogin % 45000 == 0)//定期3分钟发送登录报文
+00018c  f64a70c8          MOV      r0,#0xafc8
+000190  fbb6f1f0          UDIV     r1,r6,r0
+000194  fb006011          MLS      r0,r0,r1,r6
+000198  b908              CBNZ     r0,|L1.414|
+;;;197    		{
+;;;198    			LoginDataSend(); 
+00019a  f7fffffe          BL       LoginDataSend
+                  |L1.414|
+;;;199    		}
+;;;200    		if(varOperation.canTest == 2 && varOperation.pidTset == 0)   //CAN的波特率和ID均已确定
+00019e  484e              LDR      r0,|L1.728|
+0001a0  f8b00090          LDRH     r0,[r0,#0x90]  ; varOperation
+0001a4  2802              CMP      r0,#2
+0001a6  d14c              BNE      |L1.578|
+0001a8  484b              LDR      r0,|L1.728|
+0001aa  f8900092          LDRB     r0,[r0,#0x92]  ; varOperation
+0001ae  2800              CMP      r0,#0
+0001b0  d147              BNE      |L1.578|
+;;;201    		{
+;;;202    			for(i=0;i<varOperation.pidNum;i++)//PID指令的数目
+0001b2  2400              MOVS     r4,#0
+0001b4  e040              B        |L1.568|
+                  |L1.438|
+;;;203    			{
+;;;204    				(ptrPIDAllDat + i)->timeCount += 4;
+0001b6  eb041004          ADD      r0,r4,r4,LSL #4
+0001ba  4978              LDR      r1,|L1.924|
+0001bc  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
+0001be  4408              ADD      r0,r0,r1
+0001c0  6840              LDR      r0,[r0,#4]
+0001c2  1d00              ADDS     r0,r0,#4
+0001c4  eb041104          ADD      r1,r4,r4,LSL #4
+0001c8  4a74              LDR      r2,|L1.924|
+0001ca  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
+0001cc  4411              ADD      r1,r1,r2
+0001ce  6048              STR      r0,[r1,#4]
+;;;205    				if((ptrPIDAllDat + i)->timeCount < (ptrPIDAllDat + i)->period)
+0001d0  eb041004          ADD      r0,r4,r4,LSL #4
+0001d4  4971              LDR      r1,|L1.924|
+0001d6  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
+0001d8  4408              ADD      r0,r0,r1
+0001da  6840              LDR      r0,[r0,#4]
+0001dc  eb041104          ADD      r1,r4,r4,LSL #4
+0001e0  4a6e              LDR      r2,|L1.924|
+0001e2  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
+0001e4  4411              ADD      r1,r1,r2
+0001e6  6809              LDR      r1,[r1,#0]
+0001e8  4288              CMP      r0,r1
+0001ea  d200              BCS      |L1.494|
+;;;206    					continue;
+0001ec  e022              B        |L1.564|
+                  |L1.494|
+;;;207    				(ptrPIDAllDat + i)->timeCount = 0;
+0001ee  2000              MOVS     r0,#0
+0001f0  eb041104          ADD      r1,r4,r4,LSL #4
+0001f4  4a69              LDR      r2,|L1.924|
+0001f6  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
+0001f8  4411              ADD      r1,r1,r2
+0001fa  6048              STR      r0,[r1,#4]
+;;;208    				ptrOBDSend = Mem_malloc(9);
+0001fc  2009              MOVS     r0,#9
+0001fe  f7fffffe          BL       Mem_malloc
+000202  4605              MOV      r5,r0
+;;;209    				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
+000204  eb041004          ADD      r0,r4,r4,LSL #4
+000208  4964              LDR      r1,|L1.924|
+00020a  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
+00020c  4408              ADD      r0,r0,r1
+00020e  6881              LDR      r1,[r0,#8]
+000210  6029              STR      r1,[r5,#0]
+000212  68c1              LDR      r1,[r0,#0xc]
+000214  6069              STR      r1,[r5,#4]
+000216  7c00              LDRB     r0,[r0,#0x10]
+000218  7228              STRB     r0,[r5,#8]
+;;;210    				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+00021a  4629              MOV      r1,r5
+00021c  4844              LDR      r0,|L1.816|
+00021e  6800              LDR      r0,[r0,#0]  ; canSendQ
+000220  f7fffffe          BL       OSQPost
+000224  9000              STR      r0,[sp,#0]
+;;;211    				if(err != OS_ERR_NONE)
+000226  f89d0000          LDRB     r0,[sp,#0]
+00022a  b110              CBZ      r0,|L1.562|
+;;;212    					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+00022c  4628              MOV      r0,r5
+00022e  f7fffffe          BL       Mem_free
+                  |L1.562|
+000232  bf00              NOP                            ;206
+                  |L1.564|
+000234  1c60              ADDS     r0,r4,#1              ;202
+000236  b2c4              UXTB     r4,r0                 ;202
                   |L1.568|
-;;;211    		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 850))//发送时间到或者要发送的数组长度超过850个字节
-000238  481e              LDR      r0,|L1.692|
-00023a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00023c  8840              LDRH     r0,[r0,#2]
-00023e  f64031b8          MOV      r1,#0xbb8
-000242  4288              CMP      r0,r1
-000244  da06              BGE      |L1.596|
-000246  481b              LDR      r0,|L1.692|
-000248  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00024a  8800              LDRH     r0,[r0,#0]
-00024c  f2403152          MOV      r1,#0x352
-000250  4288              CMP      r0,r1
-000252  db2c              BLT      |L1.686|
-                  |L1.596|
-;;;212    		{
-;;;213    			MemLog(cdmaDataToSend);                //todo：调试时用，产品的时候要注释掉
-000254  4817              LDR      r0,|L1.692|
-000256  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000258  f7fffffe          BL       MemLog
-;;;214    			J1939DataLog();                        
-00025c  f7fffffe          BL       J1939DataLog
-;;;215    			
-;;;216    			OSMutexPend(CDMASendMutex,0,&err);
-000260  466a              MOV      r2,sp
-000262  2100              MOVS     r1,#0
-000264  481e              LDR      r0,|L1.736|
-000266  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-000268  f7fffffe          BL       OSMutexPend
-;;;217    			
-;;;218    			CDMASendDataPack(cdmaDataToSend);
-00026c  4811              LDR      r0,|L1.692|
-00026e  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000270  f7fffffe          BL       CDMASendDataPack
-;;;219    			
-;;;220    			err = OSQPost(CDMASendQ,cdmaDataToSend);
-000274  480f              LDR      r0,|L1.692|
-000276  6801              LDR      r1,[r0,#0]  ; cdmaDataToSend
-000278  481e              LDR      r0,|L1.756|
-00027a  6800              LDR      r0,[r0,#0]  ; CDMASendQ
-00027c  f7fffffe          BL       OSQPost
-000280  9000              STR      r0,[sp,#0]
-;;;221    			if(err != OS_ERR_NONE)//发送失败
-000282  f89d0000          LDRB     r0,[sp,#0]
-000286  b140              CBZ      r0,|L1.666|
-;;;222    			{
-;;;223    				cdmaDataToSend->datLength = 27;
-000288  201b              MOVS     r0,#0x1b
-00028a  490a              LDR      r1,|L1.692|
-00028c  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-00028e  8008              STRH     r0,[r1,#0]
-;;;224    				cdmaDataToSend->timeCount = 0;
-000290  2000              MOVS     r0,#0
-000292  4908              LDR      r1,|L1.692|
-000294  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000296  8048              STRH     r0,[r1,#2]
-000298  e005              B        |L1.678|
-                  |L1.666|
-;;;225    			}
-;;;226    			else
-;;;227    			{
-;;;228    				cdmaDataToSend = CDMNSendDataInit(1000);
-00029a  f44f707a          MOV      r0,#0x3e8
-00029e  f7fffffe          BL       CDMNSendDataInit
-0002a2  4904              LDR      r1,|L1.692|
-0002a4  6008              STR      r0,[r1,#0]  ; cdmaDataToSend
-                  |L1.678|
-;;;229    			}	
-;;;230    			
-;;;231    			OSMutexPost(CDMASendMutex);
-0002a6  480e              LDR      r0,|L1.736|
-0002a8  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-0002aa  f7fffffe          BL       OSMutexPost
-                  |L1.686|
-0002ae  bf00              NOP                            ;188
-                  |L1.688|
-0002b0  e753              B        |L1.346|
-;;;232    		}
-;;;233    	}
-;;;234    }
-;;;235    
+000238  4827              LDR      r0,|L1.728|
+00023a  f8b00078          LDRH     r0,[r0,#0x78]         ;202  ; varOperation
+00023e  42a0              CMP      r0,r4                 ;202
+000240  dcb9              BGT      |L1.438|
+                  |L1.578|
+;;;213    			}
+;;;214    		}
+;;;215    		if(cdmaDataToSend->datLength > 36)         //要发送的数据不为空
+000242  4824              LDR      r0,|L1.724|
+000244  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000246  8800              LDRH     r0,[r0,#0]
+000248  2824              CMP      r0,#0x24
+00024a  dd06              BLE      |L1.602|
+;;;216    			cdmaDataToSend->timeCount += 4;
+00024c  4821              LDR      r0,|L1.724|
+00024e  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000250  8840              LDRH     r0,[r0,#2]
+000252  1d00              ADDS     r0,r0,#4
+000254  491f              LDR      r1,|L1.724|
+000256  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000258  8048              STRH     r0,[r1,#2]
+                  |L1.602|
+;;;217    		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 850))//发送时间到或者要发送的数组长度超过850个字节
+00025a  481e              LDR      r0,|L1.724|
+00025c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00025e  8840              LDRH     r0,[r0,#2]
+000260  f64031b8          MOV      r1,#0xbb8
+000264  4288              CMP      r0,r1
+000266  da06              BGE      |L1.630|
+000268  481a              LDR      r0,|L1.724|
+00026a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00026c  8800              LDRH     r0,[r0,#0]
+00026e  f2403152          MOV      r1,#0x352
+000272  4288              CMP      r0,r1
+000274  db2c              BLT      |L1.720|
+                  |L1.630|
+;;;218    		{
+;;;219    			MemLog(cdmaDataToSend);                //todo：这两行代码用于调试时监控，真正产品的时候可以注释掉
+000276  4817              LDR      r0,|L1.724|
+000278  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00027a  f7fffffe          BL       MemLog
+;;;220    			J1939DataLog();                        
+00027e  f7fffffe          BL       J1939DataLog
+;;;221    			
+;;;222    			OSMutexPend(CDMASendMutex,0,&err);     //提高优先级，独占此包数据
+000282  466a              MOV      r2,sp
+000284  2100              MOVS     r1,#0
+000286  481e              LDR      r0,|L1.768|
+000288  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+00028a  f7fffffe          BL       OSMutexPend
+;;;223    			
+;;;224    			CDMASendDataPack(cdmaDataToSend);
+00028e  4811              LDR      r0,|L1.724|
+000290  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000292  f7fffffe          BL       CDMASendDataPack
+;;;225    			
+;;;226    			err = OSQPost(CDMASendQ,cdmaDataToSend);
+000296  480f              LDR      r0,|L1.724|
+000298  6801              LDR      r1,[r0,#0]  ; cdmaDataToSend
+00029a  481f              LDR      r0,|L1.792|
+00029c  6800              LDR      r0,[r0,#0]  ; CDMASendQ
+00029e  f7fffffe          BL       OSQPost
+0002a2  9000              STR      r0,[sp,#0]
+;;;227    			if(err != OS_ERR_NONE)//发送失败
+0002a4  f89d0000          LDRB     r0,[sp,#0]
+0002a8  b140              CBZ      r0,|L1.700|
+;;;228    			{
+;;;229    				cdmaDataToSend->datLength = 27;
+0002aa  201b              MOVS     r0,#0x1b
+0002ac  4909              LDR      r1,|L1.724|
+0002ae  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+0002b0  8008              STRH     r0,[r1,#0]
+;;;230    				cdmaDataToSend->timeCount = 0;
+0002b2  2000              MOVS     r0,#0
+0002b4  4907              LDR      r1,|L1.724|
+0002b6  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+0002b8  8048              STRH     r0,[r1,#2]
+0002ba  e005              B        |L1.712|
+                  |L1.700|
+;;;231    			}
+;;;232    			else
+;;;233    			{
+;;;234    				cdmaDataToSend = CDMNSendDataInit(1000);
+0002bc  f44f707a          MOV      r0,#0x3e8
+0002c0  f7fffffe          BL       CDMNSendDataInit
+0002c4  4903              LDR      r1,|L1.724|
+0002c6  6008              STR      r0,[r1,#0]  ; cdmaDataToSend
+                  |L1.712|
+;;;235    			}	
+;;;236    			OSMutexPost(CDMASendMutex);
+0002c8  480d              LDR      r0,|L1.768|
+0002ca  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+0002cc  f7fffffe          BL       OSMutexPost
+                  |L1.720|
+0002d0  bf00              NOP                            ;194
+                  |L1.722|
+0002d2  e74e              B        |L1.370|
+;;;237    		}
+;;;238    	}
+;;;239    }
+;;;240    
                           ENDP
 
-0002b2  0000              DCW      0x0000
-                  |L1.692|
-                          DCD      cdmaDataToSend
-                  |L1.696|
-                          DCD      varOperation
-                  |L1.700|
-                          DCD      usbRecBuf
-                  |L1.704|
-                          DCD      USBRecieveQ
-                  |L1.708|
-                          DCD      usbSendBuf
-                  |L1.712|
-                          DCD      USBSendQ
-                  |L1.716|
-                          DCD      USB_TASK_STK+0x1fc
-                  |L1.720|
-                          DCD      USBUpdataTask
                   |L1.724|
-                          DCD      beepSem
+                          DCD      cdmaDataToSend
                   |L1.728|
-                          DCD      LoginMes
+                          DCD      varOperation
                   |L1.732|
-                          DCD      sendMsg
+                          DCD      usbRecBuf
                   |L1.736|
-                          DCD      CDMASendMutex
+                          DCD      USBRecieveQ
                   |L1.740|
-                          DCD      CDMAPowerMutex
+                          DCD      usbSendBuf
                   |L1.744|
-                          DCD      cdmaRecBuf
+                          DCD      USBSendQ
                   |L1.748|
-                          DCD      CDMARecieveQ
+                          DCD      USB_TASK_STK+0x1fc
                   |L1.752|
-                          DCD      cdmaSendBuf
+                          DCD      USBUpdataTask
                   |L1.756|
-                          DCD      CDMASendQ
+                          DCD      beepSem
                   |L1.760|
-                          DCD      ZIPRecBuf
+                          DCD      LoginMes
                   |L1.764|
-                          DCD      ZIPRecv_Q
+                          DCD      sendMsg
                   |L1.768|
-                          DCD      gpsRecBuf
+                          DCD      CDMASendMutex
                   |L1.772|
-                          DCD      receGPSQ
+                          DCD      CDMAPowerMutex
                   |L1.776|
-                          DCD      canSendBuf
+                          DCD      CANSendMutex
                   |L1.780|
-                          DCD      canSendQ
+                          DCD      cdmaRecBuf
                   |L1.784|
-                          DCD      canRecBuf
+                          DCD      CDMARecieveQ
                   |L1.788|
-                          DCD      canRecieveQ
+                          DCD      cdmaSendBuf
                   |L1.792|
-                          DCD      canJ1939Buf
+                          DCD      CDMASendQ
                   |L1.796|
-                          DCD      canJ1939Q
+                          DCD      ZIPRecBuf
                   |L1.800|
-                          DCD      POWER_TASK_STK+0x1fc
+                          DCD      ZIPRecv_Q
                   |L1.804|
-                          DCD      PowerDeal
+                          DCD      gpsRecBuf
                   |L1.808|
-                          DCD      CDMA_TASK_STK+0x1fc
+                          DCD      receGPSQ
                   |L1.812|
-                          DCD      CDMATask
+                          DCD      canSendBuf
                   |L1.816|
-                          DCD      CDMARecv_TASK_STK+0x2cc
+                          DCD      canSendQ
                   |L1.820|
-                          DCD      CDMARecvTask
+                          DCD      canRecBuf
                   |L1.824|
-                          DCD      GPS_TASK_STK+0x1fc
+                          DCD      canRecieveQ
                   |L1.828|
-                          DCD      GPSTask
+                          DCD      canJ1939Buf
                   |L1.832|
-                          DCD      OBD_TASK_STK+0x1fc
+                          DCD      canJ1939Q
                   |L1.836|
-                          DCD      OBDTask
+                          DCD      POWER_TASK_STK+0x1fc
                   |L1.840|
-                          DCD      J1939_TASK_STK+0x1fc
+                          DCD      PowerDeal
                   |L1.844|
-                          DCD      DealJ1939Date
+                          DCD      CDMA_TASK_STK+0x1fc
                   |L1.848|
-                          DCD      CDMA_LED_STK+0x13c
+                          DCD      CDMATask
                   |L1.852|
-                          DCD      CDMALEDTask
+                          DCD      CDMARecv_TASK_STK+0x2cc
                   |L1.856|
-                          DCD      GPS_LED_STK+0x13c
+                          DCD      CDMARecvTask
                   |L1.860|
-                          DCD      GPSLEDTask
+                          DCD      GPS_TASK_STK+0x1fc
                   |L1.864|
-                          DCD      OBD_LED_STK+0x13c
+                          DCD      GPSTask
                   |L1.868|
-                          DCD      OBDLEDTask
+                          DCD      OBD_TASK_STK+0x1fc
                   |L1.872|
-                          DCD      BEEP_STK+0x13c
+                          DCD      OBDTask
                   |L1.876|
-                          DCD      BeepTask
+                          DCD      J1939_TASK_STK+0x1fc
                   |L1.880|
+                          DCD      DealJ1939Date
+                  |L1.884|
+                          DCD      SAVEFULE_TASK_STK+0x1fc
+                  |L1.888|
+                          DCD      SaveFuleTask
+                  |L1.892|
+                          DCD      CDMA_LED_STK+0x13c
+                  |L1.896|
+                          DCD      CDMALEDTask
+                  |L1.900|
+                          DCD      GPS_LED_STK+0x13c
+                  |L1.904|
+                          DCD      GPSLEDTask
+                  |L1.908|
+                          DCD      OBD_LED_STK+0x13c
+                  |L1.912|
+                          DCD      OBDLEDTask
+                  |L1.916|
+                          DCD      BEEP_STK+0x13c
+                  |L1.920|
+                          DCD      BeepTask
+                  |L1.924|
                           DCD      ptrPIDAllDat
 
                           AREA ||i.main||, CODE, READONLY, ALIGN=2
 
                   main PROC
-;;;94     ****************************************************************/
-;;;95     int main(void )
+;;;96     ****************************************************************/
+;;;97     int main(void )
 000000  b510              PUSH     {r4,lr}
-;;;96     {
-;;;97     	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+;;;98     {
+;;;99     	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 000002  f44f60a0          MOV      r0,#0x500
 000006  f7fffffe          BL       NVIC_PriorityGroupConfig
-;;;98     	
-;;;99     	OSInit(); 
-00000a  f7fffffe          BL       OSInit
 ;;;100    	
-;;;101    	MemBuf_Init();   //建立内存块
-00000e  f7fffffe          BL       MemBuf_Init
+;;;101    	OSInit(); 
+00000a  f7fffffe          BL       OSInit
 ;;;102    	
-;;;103    	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列 缓冲区
+;;;103    	MemBuf_Init();   //建立内存块
+00000e  f7fffffe          BL       MemBuf_Init
+;;;104    	
+;;;105    	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列 缓冲区
 000012  f44f707a          MOV      r0,#0x3e8
 000016  f7fffffe          BL       Cir_Queue_Init
 00001a  490f              LDR      r1,|L2.88|
 00001c  6008              STR      r0,[r1,#0]  ; sendCDMA_Q
-;;;104    	receCDMA_S = Store_Init(1020);    //CDMA 串口接收 数据堆   缓冲区
+;;;106    	receCDMA_S = Store_Init(1020);    //CDMA 串口接收 数据堆   缓冲区
 00001e  f44f707f          MOV      r0,#0x3fc
 000022  f7fffffe          BL       Store_Init
 000026  490d              LDR      r1,|L2.92|
 000028  6008              STR      r0,[r1,#0]  ; receCDMA_S
-;;;105    	
-;;;106    	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列 缓冲区
+;;;107    	
+;;;108    	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列 缓冲区
 00002a  20e6              MOVS     r0,#0xe6
 00002c  f7fffffe          BL       Cir_Queue_Init
 000030  490b              LDR      r1,|L2.96|
 000032  6008              STR      r0,[r1,#0]  ; sendGPS_Q
-;;;107    	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
+;;;109    	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
 000034  20e6              MOVS     r0,#0xe6
 000036  f7fffffe          BL       Store_Init
 00003a  490a              LDR      r1,|L2.100|
 00003c  6008              STR      r0,[r1,#0]  ; receGPS_S
-;;;108    	
-;;;109    	SystemBspInit();                  //硬件初始化 
-00003e  f7fffffe          BL       SystemBspInit
 ;;;110    	
-;;;111    	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
+;;;111    	SystemBspInit();                  //硬件初始化 
+00003e  f7fffffe          BL       SystemBspInit
+;;;112    	
+;;;113    	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
 000042  230a              MOVS     r3,#0xa
 000044  4a08              LDR      r2,|L2.104|
 000046  2100              MOVS     r1,#0
 000048  4808              LDR      r0,|L2.108|
 00004a  f7fffffe          BL       OSTaskCreate
-;;;112    	
-;;;113    	OSStart();	 
+;;;114    	
+;;;115    	OSStart();	 
 00004e  f7fffffe          BL       OSStart
-;;;114    }
+;;;116    }
 000052  2000              MOVS     r0,#0
 000054  bd10              POP      {r4,pc}
-;;;115    
+;;;117    
                           ENDP
 
 000056  0000              DCW      0x0000
@@ -625,6 +647,8 @@
                           %        512
                   J1939_TASK_STK
                           %        512
+                  SAVEFULE_TASK_STK
+                          %        512
                   POWER_TASK_STK
                           %        512
                   CDMA_LED_STK
@@ -638,11 +662,11 @@
                   sysUpdateVar
                           %        16
                   varOperation
-                          %        147
+                          %        157
                   canDataConfig
-                          %        19
+                          %        27
                   carAllRecord
-                          %        90
+                          %        91
                   gpsMC
                           %        107
 
@@ -657,6 +681,8 @@
                   CDMASendMutex
                           DCD      0x00000000
                   CDMAPowerMutex
+                          DCD      0x00000000
+                  CANSendMutex
                           DCD      0x00000000
                   CDMARecieveQ
                           DCD      0x00000000

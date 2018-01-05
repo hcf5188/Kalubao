@@ -9,789 +9,504 @@
 ;;;13     void PowerDeal(void *pdata)
 000000  2400              MOVS     r4,#0
 ;;;14     {
-;;;15     	uint8_t  timeTemp  = 0;
-;;;16     	uint8_t  locaTemp  = 0;
-000002  2500              MOVS     r5,#0
-;;;17     	uint32_t timeCount = 0;  //发动机 启动 - 停止 时间
-000004  2600              MOVS     r6,#0
-;;;18     	
-;;;19     	
-;;;20     	while(1)
-000006  e063              B        |L1.208|
-                  |L1.8|
-;;;21     	{
-;;;22     		OSTimeDlyHMSM(0,0,1,200);   //2s 巡检一次
-000008  23c8              MOVS     r3,#0xc8
-00000a  2201              MOVS     r2,#1
-00000c  2100              MOVS     r1,#0
-00000e  4608              MOV      r0,r1
-000010  f7fffffe          BL       OSTimeDlyHMSM
-;;;23     		if(carAllRecord.cdmaReStart < 30)//CDMA连续重启次数小余30，喂狗
-000014  482f              LDR      r0,|L1.212|
-000016  f890002a          LDRB     r0,[r0,#0x2a]  ; carAllRecord
-00001a  281e              CMP      r0,#0x1e
-00001c  da01              BGE      |L1.34|
-;;;24     			IWDG_ReloadCounter();     // 喂狗
-00001e  f7fffffe          BL       IWDG_ReloadCounter
-                  |L1.34|
-;;;25     
-;;;26     		timeCount = 0;
-000022  2600              MOVS     r6,#0
-;;;27     		
-;;;28     		if(((timeTemp & 0x01) == 0) && (carAllRecord.engineSpeed > 100))//发动机启动
-000024  f0040001          AND      r0,r4,#1
-000028  b958              CBNZ     r0,|L1.66|
-00002a  482a              LDR      r0,|L1.212|
-00002c  8e40              LDRH     r0,[r0,#0x32]  ; carAllRecord
-00002e  2864              CMP      r0,#0x64
-000030  dd07              BLE      |L1.66|
-;;;29     		{
-;;;30     			timeTemp |= 0x01;
-000032  f0440401          ORR      r4,r4,#1
-;;;31     			timeTemp &= 0xFD;
-000036  f00404fd          AND      r4,r4,#0xfd
-;;;32     			carAllRecord.startTime = RTC_GetCounter();
-00003a  f7fffffe          BL       RTC_GetCounter
-00003e  4925              LDR      r1,|L1.212|
-000040  6008              STR      r0,[r1,#0]  ; carAllRecord
-                  |L1.66|
-;;;33     		}//发动机停止
-;;;34     		if((carAllRecord.engineSpeed < 100) && ((timeTemp & 0x02) == 0))
-000042  4824              LDR      r0,|L1.212|
-000044  8e40              LDRH     r0,[r0,#0x32]  ; carAllRecord
-000046  2864              CMP      r0,#0x64
-000048  da17              BGE      |L1.122|
-00004a  f0040002          AND      r0,r4,#2
-00004e  b9a0              CBNZ     r0,|L1.122|
-;;;35     		{
-;;;36     			timeTemp |= 0x02;
-000050  f0440402          ORR      r4,r4,#2
-;;;37     			timeTemp &= 0xFE;
-000054  f00404fe          AND      r4,r4,#0xfe
-;;;38     			carAllRecord.stopTime = RTC_GetCounter();
-000058  f7fffffe          BL       RTC_GetCounter
-00005c  491d              LDR      r1,|L1.212|
-00005e  6048              STR      r0,[r1,#4]  ; carAllRecord
-;;;39     			timeCount = carAllRecord.stopTime>carAllRecord.startTime?carAllRecord.stopTime-carAllRecord.startTime:0;
-000060  4608              MOV      r0,r1
-000062  6840              LDR      r0,[r0,#4]  ; carAllRecord
-000064  6809              LDR      r1,[r1,#0]  ; carAllRecord
-000066  4288              CMP      r0,r1
-000068  d905              BLS      |L1.118|
-00006a  481a              LDR      r0,|L1.212|
-00006c  6840              LDR      r0,[r0,#4]  ; carAllRecord
-00006e  4919              LDR      r1,|L1.212|
-000070  6809              LDR      r1,[r1,#0]  ; carAllRecord
-000072  1a40              SUBS     r0,r0,r1
-000074  e000              B        |L1.120|
-                  |L1.118|
-000076  2000              MOVS     r0,#0
-                  |L1.120|
-000078  4606              MOV      r6,r0
-                  |L1.122|
-;;;40     		}//起始经纬度
-;;;41     		if(((locaTemp & 0x01) == 0)&&(gpsMC.longitude != 0)&&((timeTemp & 0x01) != 0))
-00007a  f0050001          AND      r0,r5,#1
-00007e  b980              CBNZ     r0,|L1.162|
-000080  4815              LDR      r0,|L1.216|
-000082  f8d00049          LDR      r0,[r0,#0x49]  ; gpsMC
-000086  b160              CBZ      r0,|L1.162|
-000088  f0040001          AND      r0,r4,#1
-00008c  b148              CBZ      r0,|L1.162|
-;;;42     		{
-;;;43     			locaTemp |= 0x01;
-00008e  f0450501          ORR      r5,r5,#1
-;;;44     			carAllRecord.startlongitude = gpsMC.longitude;
-000092  4811              LDR      r0,|L1.216|
-000094  f8d00049          LDR      r0,[r0,#0x49]  ; gpsMC
-000098  490e              LDR      r1,|L1.212|
-00009a  6108              STR      r0,[r1,#0x10]  ; carAllRecord
-;;;45     			carAllRecord.startlatitude  = gpsMC.latitude;
-00009c  480e              LDR      r0,|L1.216|
-00009e  6c40              LDR      r0,[r0,#0x44]  ; gpsMC
-0000a0  6148              STR      r0,[r1,#0x14]  ; carAllRecord
-                  |L1.162|
-;;;46     		}//车停后的经纬度
-;;;47     		if((gpsMC.longitude != 0)&&((timeTemp & 0x02) != 0))
-0000a2  480d              LDR      r0,|L1.216|
-0000a4  f8d00049          LDR      r0,[r0,#0x49]  ; gpsMC
-0000a8  b160              CBZ      r0,|L1.196|
-0000aa  f0040002          AND      r0,r4,#2
-0000ae  b148              CBZ      r0,|L1.196|
-;;;48     		{
-;;;49     			locaTemp &= 0xFE;
-0000b0  f00505fe          AND      r5,r5,#0xfe
-;;;50     			carAllRecord.stoplongitude = gpsMC.longitude;
-0000b4  4808              LDR      r0,|L1.216|
-0000b6  f8d00049          LDR      r0,[r0,#0x49]  ; gpsMC
-0000ba  4906              LDR      r1,|L1.212|
-0000bc  6188              STR      r0,[r1,#0x18]  ; carAllRecord
-;;;51     			carAllRecord.stoplatitude  = gpsMC.latitude;
-0000be  4806              LDR      r0,|L1.216|
-0000c0  6c40              LDR      r0,[r0,#0x44]  ; gpsMC
-0000c2  61c8              STR      r0,[r1,#0x1c]  ; carAllRecord
-                  |L1.196|
-;;;52     		}
-;;;53     		if(timeCount > 60)    //发动机启停超1分钟  上报运行数据
-0000c4  2e3c              CMP      r6,#0x3c
-0000c6  d901              BLS      |L1.204|
-;;;54     			RunDataReport();
-0000c8  f7fffffe          BL       RunDataReport
-                  |L1.204|
-;;;55     		
-;;;56     		SpeedPlusSubCompute();//计算加减速、总行程
-0000cc  f7fffffe          BL       SpeedPlusSubCompute
-                  |L1.208|
-0000d0  e79a              B        |L1.8|
-;;;57     	}
-;;;58     } 
-;;;59     
+;;;15     
+;;;16     	uint8_t timeCount = 0;  //发动机 启动 - 停止 时间
+;;;17     
+;;;18     	while(1)
+000002  e019              B        |L1.56|
+                  |L1.4|
+;;;19     	{
+;;;20     		OSTimeDlyHMSM(0,0,1,0); 
+000004  2300              MOVS     r3,#0
+000006  2201              MOVS     r2,#1
+000008  4619              MOV      r1,r3
+00000a  4618              MOV      r0,r3
+00000c  f7fffffe          BL       OSTimeDlyHMSM
+;;;21     		
+;;;22     		if(carAllRecord.cdmaReStart < 30)//CDMA连续重启次数小余30，喂狗
+000010  480a              LDR      r0,|L1.60|
+000012  f890002a          LDRB     r0,[r0,#0x2a]  ; carAllRecord
+000016  281e              CMP      r0,#0x1e
+000018  da01              BGE      |L1.30|
+;;;23     			IWDG_ReloadCounter();        // 喂狗
+00001a  f7fffffe          BL       IWDG_ReloadCounter
+                  |L1.30|
+;;;24     		timeCount ++;
+00001e  1c60              ADDS     r0,r4,#1
+000020  b2c4              UXTB     r4,r0
+;;;25     		if((timeCount >= 60) && (varOperation.isDataFlow == 0))//运行1分钟，数据流在流动，上报行程信息
+000022  2c3c              CMP      r4,#0x3c
+000024  db06              BLT      |L1.52|
+000026  4806              LDR      r0,|L1.64|
+000028  f890002d          LDRB     r0,[r0,#0x2d]  ; varOperation
+00002c  b910              CBNZ     r0,|L1.52|
+;;;26     		{
+;;;27     			RunDataReport();
+00002e  f7fffffe          BL       RunDataReport
+;;;28     			timeCount = 0;
+000032  2400              MOVS     r4,#0
+                  |L1.52|
+;;;29     		}
+;;;30     		SpeedPlusSubCompute();//计算加减速、总行程
+000034  f7fffffe          BL       SpeedPlusSubCompute
+                  |L1.56|
+000038  e7e4              B        |L1.4|
+;;;31     	}
+;;;32     } 
+;;;33       
                           ENDP
 
-0000d2  0000              DCW      0x0000
-                  |L1.212|
+00003a  0000              DCW      0x0000
+                  |L1.60|
                           DCD      carAllRecord
-                  |L1.216|
-                          DCD      gpsMC
+                  |L1.64|
+                          DCD      varOperation
 
                           AREA ||i.RunDataReport||, CODE, READONLY, ALIGN=2
 
                   RunDataReport PROC
-;;;94     //运行数据上报
-;;;95     void RunDataReport(void)
+;;;68     //运行数据上报
+;;;69     void RunDataReport(void)
 000000  b538              PUSH     {r3-r5,lr}
-;;;96     {
-;;;97     	uint8_t* ptrCarState;
-;;;98     	uint8_t offset  = 0,err;
+;;;70     {
+;;;71     	uint8_t* ptrCarState;
+;;;72     	uint8_t offset  = 0,err;
 000002  2500              MOVS     r5,#0
-;;;99     	
-;;;100    	ptrCarState = Mem_malloc(sizeof(CARRunRecord) + 10);
-000004  2064              MOVS     r0,#0x64
+;;;73     	
+;;;74     	ptrCarState = Mem_malloc(sizeof(CARRunRecord) + 10);
+000004  2065              MOVS     r0,#0x65
 000006  f7fffffe          BL       Mem_malloc
 00000a  4604              MOV      r4,r0
-;;;101    	if(ptrCarState == NULL)
+;;;75     	if(ptrCarState == NULL)
 00000c  b924              CBNZ     r4,|L2.24|
-;;;102    	{
-;;;103    		LogReport("MEM Error! %d not enough!",sizeof(CARRunRecord) + 10);
-00000e  2164              MOVS     r1,#0x64
-000010  a0c3              ADR      r0,|L2.800|
+;;;76     	{
+;;;77     		LogReport("MEM Error! %d not enough!",sizeof(CARRunRecord) + 10);
+00000e  2165              MOVS     r1,#0x65
+000010  a06c              ADR      r0,|L2.452|
 000012  f7fffffe          BL       LogReport
                   |L2.22|
-;;;104    		return;
-;;;105    	}
-;;;106    	ptrCarState[offset++] = 49;//行程信息上报
-;;;107    	ptrCarState[offset++] = 0x50;
-;;;108    	ptrCarState[offset++] = 0x06;
-;;;109    	//行程开始时间
-;;;110    	ptrCarState[offset++] = (carAllRecord.startTime >> 24) & 0x000000FF;
-;;;111    	ptrCarState[offset++] = (carAllRecord.startTime >> 16) & 0x000000FF;
-;;;112    	ptrCarState[offset++] = (carAllRecord.startTime >> 8)  & 0x000000FF;
-;;;113    	ptrCarState[offset++] = (carAllRecord.startTime >> 0)  & 0x000000FF;
-;;;114    	//行程截止时间
-;;;115    	ptrCarState[offset++] = (carAllRecord.stopTime >> 24) & 0x000000FF;
-;;;116    	ptrCarState[offset++] = (carAllRecord.stopTime >> 16) & 0x000000FF;
-;;;117    	ptrCarState[offset++] = (carAllRecord.stopTime >> 8)  & 0x000000FF;
-;;;118    	ptrCarState[offset++] = (carAllRecord.stopTime >> 0)  & 0x000000FF;
-;;;119    	//总里程
-;;;120    	ptrCarState[offset++] = (carAllRecord.totalMileage >> 24) & 0x000000FF;
-;;;121    	ptrCarState[offset++] = (carAllRecord.totalMileage >> 16) & 0x000000FF;
-;;;122    	ptrCarState[offset++] = (carAllRecord.totalMileage >> 8)  & 0x000000FF;
-;;;123    	ptrCarState[offset++] = (carAllRecord.totalMileage >> 0)  & 0x000000FF;
-;;;124    	//总油耗
-;;;125    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 24) & 0x000000FF;
-;;;126    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 16) & 0x000000FF;
-;;;127    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 8)  & 0x000000FF;
-;;;128    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 0)  & 0x000000FF;
-;;;129    	
-;;;130    //	carAllRecord.startlongitude = 12163188;
-;;;131    //	carAllRecord.startlatitude  = 3106432;
-;;;132    //	carAllRecord.stoplongitude  = 12163188;
-;;;133    //	carAllRecord.stoplatitude   = 3106432;
-;;;134    	
-;;;135    	//开始经度
-;;;136    	ptrCarState[offset++] = (carAllRecord.startlongitude >> 24) & 0x000000FF;
-;;;137    	ptrCarState[offset++] = (carAllRecord.startlongitude >> 16) & 0x000000FF;
-;;;138    	ptrCarState[offset++] = (carAllRecord.startlongitude >> 8)  & 0x000000FF;
-;;;139    	ptrCarState[offset++] = (carAllRecord.startlongitude >> 0)  & 0x000000FF;
-;;;140    	//开始纬度
-;;;141    	ptrCarState[offset++] = (carAllRecord.startlatitude >> 24) & 0x000000FF;
-;;;142    	ptrCarState[offset++] = (carAllRecord.startlatitude >> 16) & 0x000000FF;
-;;;143    	ptrCarState[offset++] = (carAllRecord.startlatitude >> 8)  & 0x000000FF;
-;;;144    	ptrCarState[offset++] = (carAllRecord.startlatitude >> 0)  & 0x000000FF;
-;;;145    	//结束经度
-;;;146    	ptrCarState[offset++] = (carAllRecord.stoplongitude >> 24) & 0x000000FF;
-;;;147    	ptrCarState[offset++] = (carAllRecord.stoplongitude >> 16) & 0x000000FF;
-;;;148    	ptrCarState[offset++] = (carAllRecord.stoplongitude >> 8)  & 0x000000FF;
-;;;149    	ptrCarState[offset++] = (carAllRecord.stoplongitude >> 0)  & 0x000000FF;
-;;;150    	//结束纬度
-;;;151    	ptrCarState[offset++] = (carAllRecord.stoplatitude >> 24) & 0x000000FF;
-;;;152    	ptrCarState[offset++] = (carAllRecord.stoplatitude >> 16) & 0x000000FF;
-;;;153    	ptrCarState[offset++] = (carAllRecord.stoplatitude >> 8)  & 0x000000FF;
-;;;154    	ptrCarState[offset++] = (carAllRecord.stoplatitude >> 0)  & 0x000000FF;
-;;;155    	//急加速次数
-;;;156    	ptrCarState[offset++] = carAllRecord.rapidlyPlusNum & 0xFF;
-;;;157    	//急减速次数
-;;;158    	ptrCarState[offset++] = carAllRecord.rapidlySubNum & 0xFF;
-;;;159    	//最高转速
-;;;160    	ptrCarState[offset++] = (carAllRecord.engineSpeedMax >> 8)  & 0x00FF;
-;;;161    	ptrCarState[offset++] = (carAllRecord.engineSpeedMax >> 0)  & 0x00FF;
-;;;162    	//最高车速
-;;;163    	ptrCarState[offset++] = (carAllRecord.carSpeedMax >> 8)  & 0x00FF;
-;;;164    	ptrCarState[offset++] = (carAllRecord.carSpeedMax >> 0)  & 0x00FF;
-;;;165    	//消息条数
-;;;166    	ptrCarState[offset++] = (carAllRecord.messageNum >> 24) & 0x000000FF;
-;;;167    	ptrCarState[offset++] = (carAllRecord.messageNum >> 16) & 0x000000FF;
-;;;168    	ptrCarState[offset++] = (carAllRecord.messageNum >> 8)  & 0x000000FF;
-;;;169    	ptrCarState[offset++] = (carAllRecord.messageNum >> 0)  & 0x000000FF;
-;;;170    	//网络流量
-;;;171    	ptrCarState[offset++] = (carAllRecord.netFlow >> 24) & 0x000000FF;
-;;;172    	ptrCarState[offset++] = (carAllRecord.netFlow >> 16) & 0x000000FF;
-;;;173    	ptrCarState[offset++] = (carAllRecord.netFlow >> 8)  & 0x000000FF;
-;;;174    	ptrCarState[offset++] = (carAllRecord.netFlow >> 0)  & 0x000000FF;
-;;;175    	
-;;;176    	OSMutexPend(CDMASendMutex,0,&err);					
-;;;177    	memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrCarState,ptrCarState[0]);
-;;;178    	cdmaDataToSend->datLength += ptrCarState[0];
-;;;179    	OSMutexPost(CDMASendMutex);
-;;;180    	
-;;;181    	Mem_free(ptrCarState);	
-;;;182    }
+;;;78     		return;
+;;;79     	}
+;;;80     	ptrCarState[offset++] = 25;//行程信息上报
+;;;81     	ptrCarState[offset++] = 0x50;
+;;;82     	ptrCarState[offset++] = 0x06;
+;;;83     	
+;;;84     	//急加速次数
+;;;85     	ptrCarState[offset++] = carAllRecord.rapidlyPlusNum & 0xFF;
+;;;86     	//急减速次数
+;;;87     	ptrCarState[offset++] = carAllRecord.rapidlySubNum & 0xFF;
+;;;88     	//最高转速
+;;;89     	ptrCarState[offset++] = (carAllRecord.engineSpeedMax >> 8)  & 0x00FF;
+;;;90     	ptrCarState[offset++] = (carAllRecord.engineSpeedMax >> 0)  & 0x00FF;
+;;;91     	//最高车速
+;;;92     	ptrCarState[offset++] = (carAllRecord.carSpeedMax >> 8)  & 0x00FF;
+;;;93     	ptrCarState[offset++] = (carAllRecord.carSpeedMax >> 0)  & 0x00FF;
+;;;94     	//总里程
+;;;95     	ptrCarState[offset++] = (carAllRecord.totalMileage >> 24) & 0x000000FF;
+;;;96     	ptrCarState[offset++] = (carAllRecord.totalMileage >> 16) & 0x000000FF;
+;;;97     	ptrCarState[offset++] = (carAllRecord.totalMileage >> 8)  & 0x000000FF;
+;;;98     	ptrCarState[offset++] = (carAllRecord.totalMileage >> 0)  & 0x000000FF;
+;;;99     	//总油耗
+;;;100    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 24) & 0x000000FF;
+;;;101    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 16) & 0x000000FF;
+;;;102    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 8)  & 0x000000FF;
+;;;103    	ptrCarState[offset++] = (carAllRecord.totalFuel >> 0)  & 0x000000FF;
+;;;104    	//消息条数
+;;;105    	ptrCarState[offset++] = (carAllRecord.messageNum >> 24) & 0x000000FF;
+;;;106    	ptrCarState[offset++] = (carAllRecord.messageNum >> 16) & 0x000000FF;
+;;;107    	ptrCarState[offset++] = (carAllRecord.messageNum >> 8)  & 0x000000FF;
+;;;108    	ptrCarState[offset++] = (carAllRecord.messageNum >> 0)  & 0x000000FF;
+;;;109    	//网络流量
+;;;110    	ptrCarState[offset++] = (carAllRecord.netFlow >> 24) & 0x000000FF;
+;;;111    	ptrCarState[offset++] = (carAllRecord.netFlow >> 16) & 0x000000FF;
+;;;112    	ptrCarState[offset++] = (carAllRecord.netFlow >> 8)  & 0x000000FF;
+;;;113    	ptrCarState[offset++] = (carAllRecord.netFlow >> 0)  & 0x000000FF;
+;;;114    	
+;;;115    	OSMutexPend(CDMASendMutex,0,&err);					
+;;;116    	memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrCarState,ptrCarState[0]);
+;;;117    	cdmaDataToSend->datLength += ptrCarState[0];
+;;;118    	OSMutexPost(CDMASendMutex);
+;;;119    	
+;;;120    	Mem_free(ptrCarState);	//释放内存块
+;;;121    }
 000016  bd38              POP      {r3-r5,pc}
                   |L2.24|
-000018  2231              MOVS     r2,#0x31              ;106
-00001a  4628              MOV      r0,r5                 ;106
-00001c  1c69              ADDS     r1,r5,#1              ;106
-00001e  b2cd              UXTB     r5,r1                 ;106
-000020  5422              STRB     r2,[r4,r0]            ;106
-000022  2250              MOVS     r2,#0x50              ;107
-000024  4628              MOV      r0,r5                 ;107
-000026  1c69              ADDS     r1,r5,#1              ;107
-000028  b2cd              UXTB     r5,r1                 ;107
-00002a  5422              STRB     r2,[r4,r0]            ;107
-00002c  2206              MOVS     r2,#6                 ;108
-00002e  4628              MOV      r0,r5                 ;108
-000030  1c69              ADDS     r1,r5,#1              ;108
-000032  b2cd              UXTB     r5,r1                 ;108
-000034  5422              STRB     r2,[r4,r0]            ;108
-000036  48c1              LDR      r0,|L2.828|
-000038  6800              LDR      r0,[r0,#0]            ;110  ; carAllRecord
-00003a  0e00              LSRS     r0,r0,#24             ;110
-00003c  4629              MOV      r1,r5                 ;110
-00003e  1c6a              ADDS     r2,r5,#1              ;110
-000040  b2d5              UXTB     r5,r2                 ;110
-000042  5460              STRB     r0,[r4,r1]            ;110
-000044  48bd              LDR      r0,|L2.828|
-000046  6800              LDR      r0,[r0,#0]            ;111  ; carAllRecord
-000048  f3c04207          UBFX     r2,r0,#16,#8          ;111
-00004c  4629              MOV      r1,r5                 ;111
-00004e  1c68              ADDS     r0,r5,#1              ;111
-000050  b2c5              UXTB     r5,r0                 ;111
-000052  5462              STRB     r2,[r4,r1]            ;111
-000054  48b9              LDR      r0,|L2.828|
-000056  8800              LDRH     r0,[r0,#0]            ;112  ; carAllRecord
-000058  f3c02207          UBFX     r2,r0,#8,#8           ;112
-00005c  4628              MOV      r0,r5                 ;112
-00005e  1c69              ADDS     r1,r5,#1              ;112
-000060  b2cd              UXTB     r5,r1                 ;112
-000062  5422              STRB     r2,[r4,r0]            ;112
-000064  48b5              LDR      r0,|L2.828|
-000066  7802              LDRB     r2,[r0,#0]            ;113  ; carAllRecord
-000068  4628              MOV      r0,r5                 ;113
-00006a  1c69              ADDS     r1,r5,#1              ;113
-00006c  b2cd              UXTB     r5,r1                 ;113
-00006e  5422              STRB     r2,[r4,r0]            ;113
-000070  48b2              LDR      r0,|L2.828|
-000072  6840              LDR      r0,[r0,#4]            ;115  ; carAllRecord
-000074  0e00              LSRS     r0,r0,#24             ;115
-000076  4629              MOV      r1,r5                 ;115
-000078  1c6a              ADDS     r2,r5,#1              ;115
-00007a  b2d5              UXTB     r5,r2                 ;115
-00007c  5460              STRB     r0,[r4,r1]            ;115
-00007e  48af              LDR      r0,|L2.828|
-000080  6840              LDR      r0,[r0,#4]            ;116  ; carAllRecord
-000082  f3c04207          UBFX     r2,r0,#16,#8          ;116
-000086  4628              MOV      r0,r5                 ;116
-000088  1c69              ADDS     r1,r5,#1              ;116
-00008a  b2cd              UXTB     r5,r1                 ;116
-00008c  5422              STRB     r2,[r4,r0]            ;116
-00008e  48ab              LDR      r0,|L2.828|
-000090  8880              LDRH     r0,[r0,#4]            ;117  ; carAllRecord
-000092  f3c02207          UBFX     r2,r0,#8,#8           ;117
-000096  4628              MOV      r0,r5                 ;117
-000098  1c69              ADDS     r1,r5,#1              ;117
-00009a  b2cd              UXTB     r5,r1                 ;117
-00009c  5422              STRB     r2,[r4,r0]            ;117
-00009e  48a7              LDR      r0,|L2.828|
-0000a0  7902              LDRB     r2,[r0,#4]            ;118  ; carAllRecord
-0000a2  4628              MOV      r0,r5                 ;118
-0000a4  1c69              ADDS     r1,r5,#1              ;118
-0000a6  b2cd              UXTB     r5,r1                 ;118
-0000a8  5422              STRB     r2,[r4,r0]            ;118
-0000aa  48a4              LDR      r0,|L2.828|
-0000ac  6880              LDR      r0,[r0,#8]            ;120  ; carAllRecord
-0000ae  0e00              LSRS     r0,r0,#24             ;120
-0000b0  4629              MOV      r1,r5                 ;120
-0000b2  1c6a              ADDS     r2,r5,#1              ;120
-0000b4  b2d5              UXTB     r5,r2                 ;120
-0000b6  5460              STRB     r0,[r4,r1]            ;120
-0000b8  48a0              LDR      r0,|L2.828|
-0000ba  6880              LDR      r0,[r0,#8]            ;121  ; carAllRecord
-0000bc  f3c04207          UBFX     r2,r0,#16,#8          ;121
-0000c0  4628              MOV      r0,r5                 ;121
-0000c2  1c69              ADDS     r1,r5,#1              ;121
-0000c4  b2cd              UXTB     r5,r1                 ;121
-0000c6  5422              STRB     r2,[r4,r0]            ;121
-0000c8  489c              LDR      r0,|L2.828|
-0000ca  8900              LDRH     r0,[r0,#8]            ;122  ; carAllRecord
-0000cc  f3c02207          UBFX     r2,r0,#8,#8           ;122
-0000d0  4628              MOV      r0,r5                 ;122
-0000d2  1c69              ADDS     r1,r5,#1              ;122
-0000d4  b2cd              UXTB     r5,r1                 ;122
-0000d6  5422              STRB     r2,[r4,r0]            ;122
-0000d8  4898              LDR      r0,|L2.828|
-0000da  7a02              LDRB     r2,[r0,#8]            ;123  ; carAllRecord
-0000dc  4628              MOV      r0,r5                 ;123
-0000de  1c69              ADDS     r1,r5,#1              ;123
-0000e0  b2cd              UXTB     r5,r1                 ;123
-0000e2  5422              STRB     r2,[r4,r0]            ;123
-0000e4  4895              LDR      r0,|L2.828|
-0000e6  68c0              LDR      r0,[r0,#0xc]          ;125  ; carAllRecord
-0000e8  0e00              LSRS     r0,r0,#24             ;125
-0000ea  4629              MOV      r1,r5                 ;125
-0000ec  1c6a              ADDS     r2,r5,#1              ;125
-0000ee  b2d5              UXTB     r5,r2                 ;125
-0000f0  5460              STRB     r0,[r4,r1]            ;125
-0000f2  4892              LDR      r0,|L2.828|
-0000f4  68c0              LDR      r0,[r0,#0xc]          ;126  ; carAllRecord
-0000f6  f3c04207          UBFX     r2,r0,#16,#8          ;126
-0000fa  4628              MOV      r0,r5                 ;126
-0000fc  1c69              ADDS     r1,r5,#1              ;126
-0000fe  b2cd              UXTB     r5,r1                 ;126
-000100  5422              STRB     r2,[r4,r0]            ;126
-000102  488e              LDR      r0,|L2.828|
-000104  8980              LDRH     r0,[r0,#0xc]          ;127  ; carAllRecord
-000106  f3c02207          UBFX     r2,r0,#8,#8           ;127
-00010a  4628              MOV      r0,r5                 ;127
-00010c  1c69              ADDS     r1,r5,#1              ;127
-00010e  b2cd              UXTB     r5,r1                 ;127
-000110  5422              STRB     r2,[r4,r0]            ;127
-000112  488a              LDR      r0,|L2.828|
-000114  7b02              LDRB     r2,[r0,#0xc]          ;128  ; carAllRecord
-000116  4628              MOV      r0,r5                 ;128
-000118  1c69              ADDS     r1,r5,#1              ;128
-00011a  b2cd              UXTB     r5,r1                 ;128
-00011c  5422              STRB     r2,[r4,r0]            ;128
-00011e  4887              LDR      r0,|L2.828|
-000120  6900              LDR      r0,[r0,#0x10]         ;136  ; carAllRecord
-000122  0e01              LSRS     r1,r0,#24             ;136
-000124  4628              MOV      r0,r5                 ;136
-000126  1c6a              ADDS     r2,r5,#1              ;136
-000128  b2d5              UXTB     r5,r2                 ;136
-00012a  5421              STRB     r1,[r4,r0]            ;136
-00012c  4883              LDR      r0,|L2.828|
-00012e  6900              LDR      r0,[r0,#0x10]         ;137  ; carAllRecord
-000130  f3c04207          UBFX     r2,r0,#16,#8          ;137
-000134  4628              MOV      r0,r5                 ;137
-000136  1c69              ADDS     r1,r5,#1              ;137
-000138  b2cd              UXTB     r5,r1                 ;137
-00013a  5422              STRB     r2,[r4,r0]            ;137
-00013c  487f              LDR      r0,|L2.828|
-00013e  8a00              LDRH     r0,[r0,#0x10]         ;138  ; carAllRecord
-000140  f3c02207          UBFX     r2,r0,#8,#8           ;138
-000144  4628              MOV      r0,r5                 ;138
-000146  1c69              ADDS     r1,r5,#1              ;138
-000148  b2cd              UXTB     r5,r1                 ;138
-00014a  5422              STRB     r2,[r4,r0]            ;138
-00014c  487b              LDR      r0,|L2.828|
-00014e  7c02              LDRB     r2,[r0,#0x10]         ;139  ; carAllRecord
-000150  4629              MOV      r1,r5                 ;139
-000152  1c68              ADDS     r0,r5,#1              ;139
-000154  b2c5              UXTB     r5,r0                 ;139
-000156  5462              STRB     r2,[r4,r1]            ;139
-000158  4878              LDR      r0,|L2.828|
-00015a  6940              LDR      r0,[r0,#0x14]         ;141  ; carAllRecord
-00015c  0e00              LSRS     r0,r0,#24             ;141
-00015e  4629              MOV      r1,r5                 ;141
-000160  1c6a              ADDS     r2,r5,#1              ;141
-000162  b2d5              UXTB     r5,r2                 ;141
-000164  5460              STRB     r0,[r4,r1]            ;141
-000166  4875              LDR      r0,|L2.828|
-000168  6940              LDR      r0,[r0,#0x14]         ;142  ; carAllRecord
-00016a  f3c04207          UBFX     r2,r0,#16,#8          ;142
-00016e  4628              MOV      r0,r5                 ;142
-000170  1c69              ADDS     r1,r5,#1              ;142
-000172  b2cd              UXTB     r5,r1                 ;142
-000174  5422              STRB     r2,[r4,r0]            ;142
-000176  4871              LDR      r0,|L2.828|
-000178  8a80              LDRH     r0,[r0,#0x14]         ;143  ; carAllRecord
-00017a  f3c02207          UBFX     r2,r0,#8,#8           ;143
-00017e  4628              MOV      r0,r5                 ;143
-000180  1c69              ADDS     r1,r5,#1              ;143
-000182  b2cd              UXTB     r5,r1                 ;143
-000184  5422              STRB     r2,[r4,r0]            ;143
-000186  486d              LDR      r0,|L2.828|
-000188  7d02              LDRB     r2,[r0,#0x14]         ;144  ; carAllRecord
-00018a  4628              MOV      r0,r5                 ;144
-00018c  1c69              ADDS     r1,r5,#1              ;144
-00018e  b2cd              UXTB     r5,r1                 ;144
-000190  5422              STRB     r2,[r4,r0]            ;144
-000192  486a              LDR      r0,|L2.828|
-000194  6980              LDR      r0,[r0,#0x18]         ;146  ; carAllRecord
-000196  0e00              LSRS     r0,r0,#24             ;146
-000198  4629              MOV      r1,r5                 ;146
-00019a  1c6a              ADDS     r2,r5,#1              ;146
-00019c  b2d5              UXTB     r5,r2                 ;146
-00019e  5460              STRB     r0,[r4,r1]            ;146
-0001a0  4866              LDR      r0,|L2.828|
-0001a2  6980              LDR      r0,[r0,#0x18]         ;147  ; carAllRecord
-0001a4  f3c04207          UBFX     r2,r0,#16,#8          ;147
-0001a8  4628              MOV      r0,r5                 ;147
-0001aa  1c69              ADDS     r1,r5,#1              ;147
-0001ac  b2cd              UXTB     r5,r1                 ;147
-0001ae  5422              STRB     r2,[r4,r0]            ;147
-0001b0  4862              LDR      r0,|L2.828|
-0001b2  8b00              LDRH     r0,[r0,#0x18]         ;148  ; carAllRecord
-0001b4  f3c02207          UBFX     r2,r0,#8,#8           ;148
-0001b8  4628              MOV      r0,r5                 ;148
-0001ba  1c69              ADDS     r1,r5,#1              ;148
-0001bc  b2cd              UXTB     r5,r1                 ;148
-0001be  5422              STRB     r2,[r4,r0]            ;148
-0001c0  485e              LDR      r0,|L2.828|
-0001c2  7e02              LDRB     r2,[r0,#0x18]         ;149  ; carAllRecord
-0001c4  4629              MOV      r1,r5                 ;149
-0001c6  1c68              ADDS     r0,r5,#1              ;149
-0001c8  b2c5              UXTB     r5,r0                 ;149
-0001ca  5462              STRB     r2,[r4,r1]            ;149
-0001cc  485b              LDR      r0,|L2.828|
-0001ce  69c0              LDR      r0,[r0,#0x1c]         ;151  ; carAllRecord
-0001d0  0e00              LSRS     r0,r0,#24             ;151
-0001d2  4629              MOV      r1,r5                 ;151
-0001d4  1c6a              ADDS     r2,r5,#1              ;151
-0001d6  b2d5              UXTB     r5,r2                 ;151
-0001d8  5460              STRB     r0,[r4,r1]            ;151
-0001da  4858              LDR      r0,|L2.828|
-0001dc  69c0              LDR      r0,[r0,#0x1c]         ;152  ; carAllRecord
-0001de  f3c04207          UBFX     r2,r0,#16,#8          ;152
-0001e2  4628              MOV      r0,r5                 ;152
-0001e4  1c69              ADDS     r1,r5,#1              ;152
-0001e6  b2cd              UXTB     r5,r1                 ;152
-0001e8  5422              STRB     r2,[r4,r0]            ;152
-0001ea  4854              LDR      r0,|L2.828|
-0001ec  8b80              LDRH     r0,[r0,#0x1c]         ;153  ; carAllRecord
-0001ee  f3c02207          UBFX     r2,r0,#8,#8           ;153
-0001f2  4628              MOV      r0,r5                 ;153
-0001f4  1c69              ADDS     r1,r5,#1              ;153
-0001f6  b2cd              UXTB     r5,r1                 ;153
-0001f8  5422              STRB     r2,[r4,r0]            ;153
-0001fa  4850              LDR      r0,|L2.828|
-0001fc  7f02              LDRB     r2,[r0,#0x1c]         ;154  ; carAllRecord
-0001fe  4628              MOV      r0,r5                 ;154
-000200  1c69              ADDS     r1,r5,#1              ;154
-000202  b2cd              UXTB     r5,r1                 ;154
-000204  5422              STRB     r2,[r4,r0]            ;154
-000206  484d              LDR      r0,|L2.828|
-000208  f8900020          LDRB     r0,[r0,#0x20]         ;156  ; carAllRecord
-00020c  4629              MOV      r1,r5                 ;156
-00020e  1c6a              ADDS     r2,r5,#1              ;156
-000210  b2d5              UXTB     r5,r2                 ;156
-000212  5460              STRB     r0,[r4,r1]            ;156
-000214  4849              LDR      r0,|L2.828|
-000216  f8900021          LDRB     r0,[r0,#0x21]         ;158  ; carAllRecord
-00021a  4629              MOV      r1,r5                 ;158
-00021c  1c6a              ADDS     r2,r5,#1              ;158
-00021e  b2d5              UXTB     r5,r2                 ;158
-000220  5460              STRB     r0,[r4,r1]            ;158
-000222  4846              LDR      r0,|L2.828|
-000224  8c40              LDRH     r0,[r0,#0x22]         ;160  ; carAllRecord
-000226  0a02              LSRS     r2,r0,#8              ;160
-000228  4628              MOV      r0,r5                 ;160
-00022a  1c69              ADDS     r1,r5,#1              ;160
-00022c  b2cd              UXTB     r5,r1                 ;160
-00022e  5422              STRB     r2,[r4,r0]            ;160
-000230  4842              LDR      r0,|L2.828|
-000232  f8902022          LDRB     r2,[r0,#0x22]         ;161  ; carAllRecord
-000236  4628              MOV      r0,r5                 ;161
-000238  1c69              ADDS     r1,r5,#1              ;161
-00023a  b2cd              UXTB     r5,r1                 ;161
-00023c  5422              STRB     r2,[r4,r0]            ;161
-00023e  483f              LDR      r0,|L2.828|
-000240  8c80              LDRH     r0,[r0,#0x24]         ;163  ; carAllRecord
-000242  0a02              LSRS     r2,r0,#8              ;163
-000244  4628              MOV      r0,r5                 ;163
-000246  1c69              ADDS     r1,r5,#1              ;163
-000248  b2cd              UXTB     r5,r1                 ;163
-00024a  5422              STRB     r2,[r4,r0]            ;163
-00024c  483b              LDR      r0,|L2.828|
-00024e  f8902024          LDRB     r2,[r0,#0x24]         ;164  ; carAllRecord
-000252  4628              MOV      r0,r5                 ;164
-000254  1c69              ADDS     r1,r5,#1              ;164
-000256  b2cd              UXTB     r5,r1                 ;164
-000258  5422              STRB     r2,[r4,r0]            ;164
-00025a  4838              LDR      r0,|L2.828|
-00025c  f8d00026          LDR      r0,[r0,#0x26]         ;166  ; carAllRecord
-000260  0e00              LSRS     r0,r0,#24             ;166
-000262  4629              MOV      r1,r5                 ;166
-000264  1c6a              ADDS     r2,r5,#1              ;166
-000266  b2d5              UXTB     r5,r2                 ;166
-000268  5460              STRB     r0,[r4,r1]            ;166
-00026a  4834              LDR      r0,|L2.828|
-00026c  f8d00026          LDR      r0,[r0,#0x26]         ;167  ; carAllRecord
-000270  f3c04207          UBFX     r2,r0,#16,#8          ;167
-000274  4628              MOV      r0,r5                 ;167
-000276  1c69              ADDS     r1,r5,#1              ;167
-000278  b2cd              UXTB     r5,r1                 ;167
-00027a  5422              STRB     r2,[r4,r0]            ;167
-00027c  482f              LDR      r0,|L2.828|
-00027e  8cc0              LDRH     r0,[r0,#0x26]         ;168  ; carAllRecord
-000280  f3c02207          UBFX     r2,r0,#8,#8           ;168
-000284  4628              MOV      r0,r5                 ;168
-000286  1c69              ADDS     r1,r5,#1              ;168
-000288  b2cd              UXTB     r5,r1                 ;168
-00028a  5422              STRB     r2,[r4,r0]            ;168
-00028c  482b              LDR      r0,|L2.828|
-00028e  f8902026          LDRB     r2,[r0,#0x26]         ;169  ; carAllRecord
-000292  4628              MOV      r0,r5                 ;169
-000294  1c69              ADDS     r1,r5,#1              ;169
-000296  b2cd              UXTB     r5,r1                 ;169
-000298  5422              STRB     r2,[r4,r0]            ;169
-00029a  4828              LDR      r0,|L2.828|
-00029c  f8d0002b          LDR      r0,[r0,#0x2b]         ;171  ; carAllRecord
-0002a0  0e00              LSRS     r0,r0,#24             ;171
-0002a2  4629              MOV      r1,r5                 ;171
-0002a4  1c6a              ADDS     r2,r5,#1              ;171
-0002a6  b2d5              UXTB     r5,r2                 ;171
-0002a8  5460              STRB     r0,[r4,r1]            ;171
-0002aa  4824              LDR      r0,|L2.828|
-0002ac  f8d0002b          LDR      r0,[r0,#0x2b]         ;172  ; carAllRecord
-0002b0  f3c04207          UBFX     r2,r0,#16,#8          ;172
-0002b4  4628              MOV      r0,r5                 ;172
-0002b6  1c69              ADDS     r1,r5,#1              ;172
-0002b8  b2cd              UXTB     r5,r1                 ;172
-0002ba  5422              STRB     r2,[r4,r0]            ;172
-0002bc  481f              LDR      r0,|L2.828|
-0002be  f8b0002b          LDRH     r0,[r0,#0x2b]         ;173  ; carAllRecord
-0002c2  f3c02207          UBFX     r2,r0,#8,#8           ;173
-0002c6  4628              MOV      r0,r5                 ;173
-0002c8  1c69              ADDS     r1,r5,#1              ;173
-0002ca  b2cd              UXTB     r5,r1                 ;173
-0002cc  5422              STRB     r2,[r4,r0]            ;173
-0002ce  481b              LDR      r0,|L2.828|
-0002d0  f890202b          LDRB     r2,[r0,#0x2b]         ;174  ; carAllRecord
-0002d4  4628              MOV      r0,r5                 ;174
-0002d6  1c69              ADDS     r1,r5,#1              ;174
-0002d8  b2cd              UXTB     r5,r1                 ;174
-0002da  5422              STRB     r2,[r4,r0]            ;174
-0002dc  466a              MOV      r2,sp                 ;176
-0002de  2100              MOVS     r1,#0                 ;176
-0002e0  4817              LDR      r0,|L2.832|
-0002e2  6800              LDR      r0,[r0,#0]            ;176  ; CDMASendMutex
-0002e4  f7fffffe          BL       OSMutexPend
-0002e8  4916              LDR      r1,|L2.836|
-0002ea  6809              LDR      r1,[r1,#0]            ;177  ; cdmaDataToSend
-0002ec  6849              LDR      r1,[r1,#4]            ;177
-0002ee  4b15              LDR      r3,|L2.836|
-0002f0  681b              LDR      r3,[r3,#0]            ;177  ; cdmaDataToSend
-0002f2  881b              LDRH     r3,[r3,#0]            ;177
-0002f4  18c8              ADDS     r0,r1,r3              ;177
-0002f6  7822              LDRB     r2,[r4,#0]            ;177
-0002f8  4621              MOV      r1,r4                 ;177
-0002fa  f7fffffe          BL       __aeabi_memcpy
-0002fe  4811              LDR      r0,|L2.836|
-000300  6800              LDR      r0,[r0,#0]            ;178  ; cdmaDataToSend
-000302  8800              LDRH     r0,[r0,#0]            ;178
-000304  7821              LDRB     r1,[r4,#0]            ;178
-000306  4408              ADD      r0,r0,r1              ;178
-000308  490e              LDR      r1,|L2.836|
-00030a  6809              LDR      r1,[r1,#0]            ;178  ; cdmaDataToSend
-00030c  8008              STRH     r0,[r1,#0]            ;178
-00030e  480c              LDR      r0,|L2.832|
-000310  6800              LDR      r0,[r0,#0]            ;179  ; CDMASendMutex
-000312  f7fffffe          BL       OSMutexPost
-000316  4620              MOV      r0,r4                 ;181
-000318  f7fffffe          BL       Mem_free
-00031c  bf00              NOP      
-00031e  e67a              B        |L2.22|
-;;;183    
+000018  2219              MOVS     r2,#0x19              ;80
+00001a  4628              MOV      r0,r5                 ;80
+00001c  1c69              ADDS     r1,r5,#1              ;80
+00001e  b2cd              UXTB     r5,r1                 ;80
+000020  5422              STRB     r2,[r4,r0]            ;80
+000022  2250              MOVS     r2,#0x50              ;81
+000024  4628              MOV      r0,r5                 ;81
+000026  1c69              ADDS     r1,r5,#1              ;81
+000028  b2cd              UXTB     r5,r1                 ;81
+00002a  5422              STRB     r2,[r4,r0]            ;81
+00002c  2206              MOVS     r2,#6                 ;82
+00002e  4628              MOV      r0,r5                 ;82
+000030  1c69              ADDS     r1,r5,#1              ;82
+000032  b2cd              UXTB     r5,r1                 ;82
+000034  5422              STRB     r2,[r4,r0]            ;82
+000036  486a              LDR      r0,|L2.480|
+000038  f8900020          LDRB     r0,[r0,#0x20]         ;85  ; carAllRecord
+00003c  4629              MOV      r1,r5                 ;85
+00003e  1c6a              ADDS     r2,r5,#1              ;85
+000040  b2d5              UXTB     r5,r2                 ;85
+000042  5460              STRB     r0,[r4,r1]            ;85
+000044  4866              LDR      r0,|L2.480|
+000046  f8900021          LDRB     r0,[r0,#0x21]         ;87  ; carAllRecord
+00004a  4629              MOV      r1,r5                 ;87
+00004c  1c6a              ADDS     r2,r5,#1              ;87
+00004e  b2d5              UXTB     r5,r2                 ;87
+000050  5460              STRB     r0,[r4,r1]            ;87
+000052  4863              LDR      r0,|L2.480|
+000054  8c40              LDRH     r0,[r0,#0x22]         ;89  ; carAllRecord
+000056  0a02              LSRS     r2,r0,#8              ;89
+000058  4628              MOV      r0,r5                 ;89
+00005a  1c69              ADDS     r1,r5,#1              ;89
+00005c  b2cd              UXTB     r5,r1                 ;89
+00005e  5422              STRB     r2,[r4,r0]            ;89
+000060  485f              LDR      r0,|L2.480|
+000062  f8902022          LDRB     r2,[r0,#0x22]         ;90  ; carAllRecord
+000066  4628              MOV      r0,r5                 ;90
+000068  1c69              ADDS     r1,r5,#1              ;90
+00006a  b2cd              UXTB     r5,r1                 ;90
+00006c  5422              STRB     r2,[r4,r0]            ;90
+00006e  485c              LDR      r0,|L2.480|
+000070  8c80              LDRH     r0,[r0,#0x24]         ;92  ; carAllRecord
+000072  0a02              LSRS     r2,r0,#8              ;92
+000074  4628              MOV      r0,r5                 ;92
+000076  1c69              ADDS     r1,r5,#1              ;92
+000078  b2cd              UXTB     r5,r1                 ;92
+00007a  5422              STRB     r2,[r4,r0]            ;92
+00007c  4858              LDR      r0,|L2.480|
+00007e  f8902024          LDRB     r2,[r0,#0x24]         ;93  ; carAllRecord
+000082  4628              MOV      r0,r5                 ;93
+000084  1c69              ADDS     r1,r5,#1              ;93
+000086  b2cd              UXTB     r5,r1                 ;93
+000088  5422              STRB     r2,[r4,r0]            ;93
+00008a  4855              LDR      r0,|L2.480|
+00008c  6880              LDR      r0,[r0,#8]            ;95  ; carAllRecord
+00008e  0e01              LSRS     r1,r0,#24             ;95
+000090  4628              MOV      r0,r5                 ;95
+000092  1c6a              ADDS     r2,r5,#1              ;95
+000094  b2d5              UXTB     r5,r2                 ;95
+000096  5421              STRB     r1,[r4,r0]            ;95
+000098  4851              LDR      r0,|L2.480|
+00009a  6880              LDR      r0,[r0,#8]            ;96  ; carAllRecord
+00009c  f3c04207          UBFX     r2,r0,#16,#8          ;96
+0000a0  4628              MOV      r0,r5                 ;96
+0000a2  1c69              ADDS     r1,r5,#1              ;96
+0000a4  b2cd              UXTB     r5,r1                 ;96
+0000a6  5422              STRB     r2,[r4,r0]            ;96
+0000a8  484d              LDR      r0,|L2.480|
+0000aa  8900              LDRH     r0,[r0,#8]            ;97  ; carAllRecord
+0000ac  f3c02207          UBFX     r2,r0,#8,#8           ;97
+0000b0  4628              MOV      r0,r5                 ;97
+0000b2  1c69              ADDS     r1,r5,#1              ;97
+0000b4  b2cd              UXTB     r5,r1                 ;97
+0000b6  5422              STRB     r2,[r4,r0]            ;97
+0000b8  4849              LDR      r0,|L2.480|
+0000ba  7a02              LDRB     r2,[r0,#8]            ;98  ; carAllRecord
+0000bc  4628              MOV      r0,r5                 ;98
+0000be  1c69              ADDS     r1,r5,#1              ;98
+0000c0  b2cd              UXTB     r5,r1                 ;98
+0000c2  5422              STRB     r2,[r4,r0]            ;98
+0000c4  4846              LDR      r0,|L2.480|
+0000c6  68c0              LDR      r0,[r0,#0xc]          ;100  ; carAllRecord
+0000c8  0e00              LSRS     r0,r0,#24             ;100
+0000ca  4629              MOV      r1,r5                 ;100
+0000cc  1c6a              ADDS     r2,r5,#1              ;100
+0000ce  b2d5              UXTB     r5,r2                 ;100
+0000d0  5460              STRB     r0,[r4,r1]            ;100
+0000d2  4843              LDR      r0,|L2.480|
+0000d4  68c0              LDR      r0,[r0,#0xc]          ;101  ; carAllRecord
+0000d6  f3c04207          UBFX     r2,r0,#16,#8          ;101
+0000da  4628              MOV      r0,r5                 ;101
+0000dc  1c69              ADDS     r1,r5,#1              ;101
+0000de  b2cd              UXTB     r5,r1                 ;101
+0000e0  5422              STRB     r2,[r4,r0]            ;101
+0000e2  483f              LDR      r0,|L2.480|
+0000e4  8980              LDRH     r0,[r0,#0xc]          ;102  ; carAllRecord
+0000e6  f3c02207          UBFX     r2,r0,#8,#8           ;102
+0000ea  4628              MOV      r0,r5                 ;102
+0000ec  1c69              ADDS     r1,r5,#1              ;102
+0000ee  b2cd              UXTB     r5,r1                 ;102
+0000f0  5422              STRB     r2,[r4,r0]            ;102
+0000f2  483b              LDR      r0,|L2.480|
+0000f4  7b02              LDRB     r2,[r0,#0xc]          ;103  ; carAllRecord
+0000f6  4628              MOV      r0,r5                 ;103
+0000f8  1c69              ADDS     r1,r5,#1              ;103
+0000fa  b2cd              UXTB     r5,r1                 ;103
+0000fc  5422              STRB     r2,[r4,r0]            ;103
+0000fe  4838              LDR      r0,|L2.480|
+000100  f8d00026          LDR      r0,[r0,#0x26]         ;105  ; carAllRecord
+000104  0e01              LSRS     r1,r0,#24             ;105
+000106  4628              MOV      r0,r5                 ;105
+000108  1c6a              ADDS     r2,r5,#1              ;105
+00010a  b2d5              UXTB     r5,r2                 ;105
+00010c  5421              STRB     r1,[r4,r0]            ;105
+00010e  4834              LDR      r0,|L2.480|
+000110  f8d00026          LDR      r0,[r0,#0x26]         ;106  ; carAllRecord
+000114  f3c04207          UBFX     r2,r0,#16,#8          ;106
+000118  4628              MOV      r0,r5                 ;106
+00011a  1c69              ADDS     r1,r5,#1              ;106
+00011c  b2cd              UXTB     r5,r1                 ;106
+00011e  5422              STRB     r2,[r4,r0]            ;106
+000120  482f              LDR      r0,|L2.480|
+000122  8cc0              LDRH     r0,[r0,#0x26]         ;107  ; carAllRecord
+000124  f3c02207          UBFX     r2,r0,#8,#8           ;107
+000128  4628              MOV      r0,r5                 ;107
+00012a  1c69              ADDS     r1,r5,#1              ;107
+00012c  b2cd              UXTB     r5,r1                 ;107
+00012e  5422              STRB     r2,[r4,r0]            ;107
+000130  482b              LDR      r0,|L2.480|
+000132  f8902026          LDRB     r2,[r0,#0x26]         ;108  ; carAllRecord
+000136  4628              MOV      r0,r5                 ;108
+000138  1c69              ADDS     r1,r5,#1              ;108
+00013a  b2cd              UXTB     r5,r1                 ;108
+00013c  5422              STRB     r2,[r4,r0]            ;108
+00013e  4828              LDR      r0,|L2.480|
+000140  f8d0002b          LDR      r0,[r0,#0x2b]         ;110  ; carAllRecord
+000144  0e00              LSRS     r0,r0,#24             ;110
+000146  4629              MOV      r1,r5                 ;110
+000148  1c6a              ADDS     r2,r5,#1              ;110
+00014a  b2d5              UXTB     r5,r2                 ;110
+00014c  5460              STRB     r0,[r4,r1]            ;110
+00014e  4824              LDR      r0,|L2.480|
+000150  f8d0002b          LDR      r0,[r0,#0x2b]         ;111  ; carAllRecord
+000154  f3c04207          UBFX     r2,r0,#16,#8          ;111
+000158  4628              MOV      r0,r5                 ;111
+00015a  1c69              ADDS     r1,r5,#1              ;111
+00015c  b2cd              UXTB     r5,r1                 ;111
+00015e  5422              STRB     r2,[r4,r0]            ;111
+000160  481f              LDR      r0,|L2.480|
+000162  f8b0002b          LDRH     r0,[r0,#0x2b]         ;112  ; carAllRecord
+000166  f3c02207          UBFX     r2,r0,#8,#8           ;112
+00016a  4629              MOV      r1,r5                 ;112
+00016c  1c68              ADDS     r0,r5,#1              ;112
+00016e  b2c5              UXTB     r5,r0                 ;112
+000170  5462              STRB     r2,[r4,r1]            ;112
+000172  481b              LDR      r0,|L2.480|
+000174  f890202b          LDRB     r2,[r0,#0x2b]         ;113  ; carAllRecord
+000178  4628              MOV      r0,r5                 ;113
+00017a  1c69              ADDS     r1,r5,#1              ;113
+00017c  b2cd              UXTB     r5,r1                 ;113
+00017e  5422              STRB     r2,[r4,r0]            ;113
+000180  466a              MOV      r2,sp                 ;115
+000182  2100              MOVS     r1,#0                 ;115
+000184  4817              LDR      r0,|L2.484|
+000186  6800              LDR      r0,[r0,#0]            ;115  ; CDMASendMutex
+000188  f7fffffe          BL       OSMutexPend
+00018c  4916              LDR      r1,|L2.488|
+00018e  6809              LDR      r1,[r1,#0]            ;116  ; cdmaDataToSend
+000190  6849              LDR      r1,[r1,#4]            ;116
+000192  4b15              LDR      r3,|L2.488|
+000194  681b              LDR      r3,[r3,#0]            ;116  ; cdmaDataToSend
+000196  881b              LDRH     r3,[r3,#0]            ;116
+000198  18c8              ADDS     r0,r1,r3              ;116
+00019a  7822              LDRB     r2,[r4,#0]            ;116
+00019c  4621              MOV      r1,r4                 ;116
+00019e  f7fffffe          BL       __aeabi_memcpy
+0001a2  4811              LDR      r0,|L2.488|
+0001a4  6800              LDR      r0,[r0,#0]            ;117  ; cdmaDataToSend
+0001a6  8800              LDRH     r0,[r0,#0]            ;117
+0001a8  7821              LDRB     r1,[r4,#0]            ;117
+0001aa  4408              ADD      r0,r0,r1              ;117
+0001ac  490e              LDR      r1,|L2.488|
+0001ae  6809              LDR      r1,[r1,#0]            ;117  ; cdmaDataToSend
+0001b0  8008              STRH     r0,[r1,#0]            ;117
+0001b2  480c              LDR      r0,|L2.484|
+0001b4  6800              LDR      r0,[r0,#0]            ;118  ; CDMASendMutex
+0001b6  f7fffffe          BL       OSMutexPost
+0001ba  4620              MOV      r0,r4                 ;120
+0001bc  f7fffffe          BL       Mem_free
+0001c0  bf00              NOP      
+0001c2  e728              B        |L2.22|
+;;;122    
                           ENDP
 
-                  |L2.800|
-000320  4d454d20          DCB      "MEM Error! %d not enough!",0
-000324  4572726f
-000328  72212025
-00032c  64206e6f
-000330  7420656e
-000334  6f756768
-000338  2100    
-00033a  00                DCB      0
-00033b  00                DCB      0
-                  |L2.828|
+                  |L2.452|
+0001c4  4d454d20          DCB      "MEM Error! %d not enough!",0
+0001c8  4572726f
+0001cc  72212025
+0001d0  64206e6f
+0001d4  7420656e
+0001d8  6f756768
+0001dc  2100    
+0001de  00                DCB      0
+0001df  00                DCB      0
+                  |L2.480|
                           DCD      carAllRecord
-                  |L2.832|
+                  |L2.484|
                           DCD      CDMASendMutex
-                  |L2.836|
+                  |L2.488|
                           DCD      cdmaDataToSend
 
                           AREA ||i.SpeedPlusSubCompute||, CODE, READONLY, ALIGN=2
 
                   SpeedPlusSubCompute PROC
-;;;60     
-;;;61     void SpeedPlusSubCompute(void)//加减速次数计算
+;;;33       
+;;;34     void SpeedPlusSubCompute(void)//加减速次数计算
 000000  b570              PUSH     {r4-r6,lr}
-;;;62     {
-;;;63     	static float speedRecord = 0;
-;;;64     	static uint16_t ensureOne = 0;//保证一次加减速的过程中，次数不会累加
-;;;65     	float speedCount;
-;;;66     	
-;;;67     	speedCount = gpsMC.speed > speedRecord ? gpsMC.speed - speedRecord : speedRecord - gpsMC.speed;
-000002  4941              LDR      r1,|L3.264|
-000004  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
-000008  f7fffffe          BL       __aeabi_ui2f
-00000c  4605              MOV      r5,r0
-00000e  483f              LDR      r0,|L3.268|
-000010  6801              LDR      r1,[r0,#0]  ; speedRecord
-000012  4628              MOV      r0,r5
-000014  f7fffffe          BL       __aeabi_cfrcmple
-000018  d20b              BCS      |L3.50|
-00001a  493b              LDR      r1,|L3.264|
-00001c  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
-000020  f7fffffe          BL       __aeabi_ui2f
-000024  4605              MOV      r5,r0
-000026  4839              LDR      r0,|L3.268|
-000028  6801              LDR      r1,[r0,#0]  ; speedRecord
-00002a  4628              MOV      r0,r5
-00002c  f7fffffe          BL       __aeabi_fsub
-000030  e00a              B        |L3.72|
-                  |L3.50|
-000032  4935              LDR      r1,|L3.264|
-000034  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
-000038  f7fffffe          BL       __aeabi_ui2f
-00003c  4605              MOV      r5,r0
-00003e  4833              LDR      r0,|L3.268|
-000040  6801              LDR      r1,[r0,#0]  ; speedRecord
-000042  4628              MOV      r0,r5
-000044  f7fffffe          BL       __aeabi_frsub
-                  |L3.72|
-000048  4604              MOV      r4,r0
-;;;68     	
-;;;69     	if(speedCount >= 2)//todo：这个 参考比较值 有待确定
-00004a  f04f4180          MOV      r1,#0x40000000
-00004e  4620              MOV      r0,r4
-000050  f7fffffe          BL       __aeabi_cfrcmple
-000054  d838              BHI      |L3.200|
-;;;70     	{
-;;;71     		if(ensureOne == 0)
-000056  482e              LDR      r0,|L3.272|
-000058  8800              LDRH     r0,[r0,#0]  ; ensureOne
-00005a  bba0              CBNZ     r0,|L3.198|
-;;;72     		{
-;;;73     			if((gpsMC.speed > speedRecord)&&(ensureOne != 1))
-00005c  492a              LDR      r1,|L3.264|
-00005e  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
-000062  f7fffffe          BL       __aeabi_ui2f
-000066  4605              MOV      r5,r0
-000068  4828              LDR      r0,|L3.268|
-00006a  6801              LDR      r1,[r0,#0]  ; speedRecord
-00006c  4628              MOV      r0,r5
-00006e  f7fffffe          BL       __aeabi_cfrcmple
-000072  d20e              BCS      |L3.146|
-000074  4826              LDR      r0,|L3.272|
-000076  8800              LDRH     r0,[r0,#0]  ; ensureOne
-000078  2801              CMP      r0,#1
-00007a  d00a              BEQ      |L3.146|
-;;;74     			{
-;;;75     				carAllRecord.rapidlyPlusNum ++;
-00007c  4825              LDR      r0,|L3.276|
-00007e  f8900020          LDRB     r0,[r0,#0x20]  ; carAllRecord
-000082  1c40              ADDS     r0,r0,#1
-000084  4923              LDR      r1,|L3.276|
-000086  f8810020          STRB     r0,[r1,#0x20]
-;;;76     				ensureOne = 1;
-00008a  2001              MOVS     r0,#1
-00008c  4920              LDR      r1,|L3.272|
-00008e  8008              STRH     r0,[r1,#0]
-000090  e01d              B        |L3.206|
-                  |L3.146|
-;;;77     			}
-;;;78     			else if((gpsMC.speed < speedRecord)&&(ensureOne != 2))
-000092  491d              LDR      r1,|L3.264|
-000094  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
-000098  f7fffffe          BL       __aeabi_ui2f
-00009c  4605              MOV      r5,r0
-00009e  481b              LDR      r0,|L3.268|
-0000a0  6801              LDR      r1,[r0,#0]  ; speedRecord
-0000a2  4628              MOV      r0,r5
-0000a4  f7fffffe          BL       __aeabi_cfcmple
-0000a8  d211              BCS      |L3.206|
-0000aa  4819              LDR      r0,|L3.272|
-0000ac  8800              LDRH     r0,[r0,#0]  ; ensureOne
-0000ae  2802              CMP      r0,#2
-0000b0  d00d              BEQ      |L3.206|
-;;;79     			{
-;;;80     				carAllRecord.rapidlySubNum ++;
-0000b2  4818              LDR      r0,|L3.276|
-0000b4  f8900021          LDRB     r0,[r0,#0x21]  ; carAllRecord
-0000b8  1c40              ADDS     r0,r0,#1
-0000ba  4916              LDR      r1,|L3.276|
-0000bc  f8810021          STRB     r0,[r1,#0x21]
-;;;81     				ensureOne = 2;
-0000c0  2002              MOVS     r0,#2
-0000c2  4913              LDR      r1,|L3.272|
-0000c4  8008              STRH     r0,[r1,#0]
-                  |L3.198|
-0000c6  e002              B        |L3.206|
-                  |L3.200|
-;;;82     			}	
-;;;83     		}
-;;;84     	}else 
-;;;85     		ensureOne = 0;
-0000c8  2000              MOVS     r0,#0
-0000ca  4911              LDR      r1,|L3.272|
-0000cc  8008              STRH     r0,[r1,#0]
-                  |L3.206|
-;;;86     	
-;;;87     	speedRecord = gpsMC.speed;//记录当前车速
-0000ce  490e              LDR      r1,|L3.264|
-0000d0  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
-0000d4  f7fffffe          BL       __aeabi_ui2f
-0000d8  490c              LDR      r1,|L3.268|
-0000da  6008              STR      r0,[r1,#0]  ; speedRecord
-;;;88     	
-;;;89     	if(carAllRecord.carSpeedMax < gpsMC.speed)//得到最大车速
-0000dc  480d              LDR      r0,|L3.276|
-0000de  8c80              LDRH     r0,[r0,#0x24]  ; carAllRecord
-0000e0  4909              LDR      r1,|L3.264|
-0000e2  f8b11069          LDRH     r1,[r1,#0x69]  ; gpsMC
-0000e6  4288              CMP      r0,r1
-0000e8  da04              BGE      |L3.244|
-;;;90     		carAllRecord.carSpeedMax = gpsMC.speed;
-0000ea  4807              LDR      r0,|L3.264|
-0000ec  f8b00069          LDRH     r0,[r0,#0x69]  ; gpsMC
-0000f0  4908              LDR      r1,|L3.276|
-0000f2  8488              STRH     r0,[r1,#0x24]
-                  |L3.244|
-;;;91     	
-;;;92     	carAllRecord.totalMileage += gpsMC.speed;//计算总行程
-0000f4  4807              LDR      r0,|L3.276|
-0000f6  6880              LDR      r0,[r0,#8]  ; carAllRecord
-0000f8  4903              LDR      r1,|L3.264|
-0000fa  f8b11069          LDRH     r1,[r1,#0x69]  ; gpsMC
-0000fe  4408              ADD      r0,r0,r1
-000100  4904              LDR      r1,|L3.276|
-000102  6088              STR      r0,[r1,#8]  ; carAllRecord
-;;;93     }
-000104  bd70              POP      {r4-r6,pc}
-;;;94     //运行数据上报
+;;;35     {
+;;;36     	static float speedRecord = 0;
+;;;37     	static uint16_t ensureOne = 0;//保证一次加减速的过程中，次数不会累加
+;;;38     	float speedCount;
+;;;39     	uint16_t speed;
+;;;40     	speed = carAllRecord.carSpeed == 0?gpsMC.speed:carAllRecord.carSpeed;
+000002  483e              LDR      r0,|L3.252|
+000004  f8b0002f          LDRH     r0,[r0,#0x2f]  ; carAllRecord
+000008  b918              CBNZ     r0,|L3.18|
+00000a  483d              LDR      r0,|L3.256|
+00000c  f8b00069          LDRH     r0,[r0,#0x69]  ; gpsMC
+000010  e002              B        |L3.24|
+                  |L3.18|
+000012  483a              LDR      r0,|L3.252|
+000014  f8b0002f          LDRH     r0,[r0,#0x2f]  ; carAllRecord
+                  |L3.24|
+000018  4604              MOV      r4,r0
+;;;41     	speedCount = speed > speedRecord ? speed - speedRecord : speedRecord - speed;
+00001a  4620              MOV      r0,r4
+00001c  f7fffffe          BL       __aeabi_ui2f
+000020  4606              MOV      r6,r0
+000022  4838              LDR      r0,|L3.260|
+000024  6801              LDR      r1,[r0,#0]  ; speedRecord
+000026  4630              MOV      r0,r6
+000028  f7fffffe          BL       __aeabi_cfrcmple
+00002c  d209              BCS      |L3.66|
+00002e  4620              MOV      r0,r4
+000030  f7fffffe          BL       __aeabi_ui2f
+000034  4606              MOV      r6,r0
+000036  4833              LDR      r0,|L3.260|
+000038  6801              LDR      r1,[r0,#0]  ; speedRecord
+00003a  4630              MOV      r0,r6
+00003c  f7fffffe          BL       __aeabi_fsub
+000040  e008              B        |L3.84|
+                  |L3.66|
+000042  4620              MOV      r0,r4
+000044  f7fffffe          BL       __aeabi_ui2f
+000048  4606              MOV      r6,r0
+00004a  482e              LDR      r0,|L3.260|
+00004c  6801              LDR      r1,[r0,#0]  ; speedRecord
+00004e  4630              MOV      r0,r6
+000050  f7fffffe          BL       __aeabi_frsub
+                  |L3.84|
+000054  4605              MOV      r5,r0
+;;;42     	
+;;;43     	if(speedCount >= 20)//todo：这个 参考比较值 有待确定
+000056  492c              LDR      r1,|L3.264|
+000058  4628              MOV      r0,r5
+00005a  f7fffffe          BL       __aeabi_cfrcmple
+00005e  d838              BHI      |L3.210|
+;;;44     	{
+;;;45     		if(ensureOne == 0)
+000060  482a              LDR      r0,|L3.268|
+000062  8800              LDRH     r0,[r0,#0]  ; ensureOne
+000064  bba0              CBNZ     r0,|L3.208|
+;;;46     		{
+;;;47     			if((gpsMC.speed > speedRecord)&&(ensureOne != 1))
+000066  4926              LDR      r1,|L3.256|
+000068  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
+00006c  f7fffffe          BL       __aeabi_ui2f
+000070  4606              MOV      r6,r0
+000072  4824              LDR      r0,|L3.260|
+000074  6801              LDR      r1,[r0,#0]  ; speedRecord
+000076  4630              MOV      r0,r6
+000078  f7fffffe          BL       __aeabi_cfrcmple
+00007c  d20e              BCS      |L3.156|
+00007e  4823              LDR      r0,|L3.268|
+000080  8800              LDRH     r0,[r0,#0]  ; ensureOne
+000082  2801              CMP      r0,#1
+000084  d00a              BEQ      |L3.156|
+;;;48     			{
+;;;49     				carAllRecord.rapidlyPlusNum ++;
+000086  481d              LDR      r0,|L3.252|
+000088  f8900020          LDRB     r0,[r0,#0x20]  ; carAllRecord
+00008c  1c40              ADDS     r0,r0,#1
+00008e  491b              LDR      r1,|L3.252|
+000090  f8810020          STRB     r0,[r1,#0x20]
+;;;50     				ensureOne = 1;
+000094  2001              MOVS     r0,#1
+000096  491d              LDR      r1,|L3.268|
+000098  8008              STRH     r0,[r1,#0]
+00009a  e01d              B        |L3.216|
+                  |L3.156|
+;;;51     			}
+;;;52     			else if((gpsMC.speed < speedRecord)&&(ensureOne != 2))
+00009c  4918              LDR      r1,|L3.256|
+00009e  f8b10069          LDRH     r0,[r1,#0x69]  ; gpsMC
+0000a2  f7fffffe          BL       __aeabi_ui2f
+0000a6  4606              MOV      r6,r0
+0000a8  4816              LDR      r0,|L3.260|
+0000aa  6801              LDR      r1,[r0,#0]  ; speedRecord
+0000ac  4630              MOV      r0,r6
+0000ae  f7fffffe          BL       __aeabi_cfcmple
+0000b2  d211              BCS      |L3.216|
+0000b4  4815              LDR      r0,|L3.268|
+0000b6  8800              LDRH     r0,[r0,#0]  ; ensureOne
+0000b8  2802              CMP      r0,#2
+0000ba  d00d              BEQ      |L3.216|
+;;;53     			{
+;;;54     				carAllRecord.rapidlySubNum ++;
+0000bc  480f              LDR      r0,|L3.252|
+0000be  f8900021          LDRB     r0,[r0,#0x21]  ; carAllRecord
+0000c2  1c40              ADDS     r0,r0,#1
+0000c4  490d              LDR      r1,|L3.252|
+0000c6  f8810021          STRB     r0,[r1,#0x21]
+;;;55     				ensureOne = 2;
+0000ca  2002              MOVS     r0,#2
+0000cc  490f              LDR      r1,|L3.268|
+0000ce  8008              STRH     r0,[r1,#0]
+                  |L3.208|
+0000d0  e002              B        |L3.216|
+                  |L3.210|
+;;;56     			}	
+;;;57     		}
+;;;58     	}else 
+;;;59     		ensureOne = 0;
+0000d2  2000              MOVS     r0,#0
+0000d4  490d              LDR      r1,|L3.268|
+0000d6  8008              STRH     r0,[r1,#0]
+                  |L3.216|
+;;;60     	
+;;;61     	speedRecord = speed;//记录当前车速
+0000d8  4620              MOV      r0,r4
+0000da  f7fffffe          BL       __aeabi_ui2f
+0000de  4909              LDR      r1,|L3.260|
+0000e0  6008              STR      r0,[r1,#0]  ; speedRecord
+;;;62     	
+;;;63     	if(carAllRecord.carSpeedMax < speed)//得到最大车速
+0000e2  4806              LDR      r0,|L3.252|
+0000e4  8c80              LDRH     r0,[r0,#0x24]  ; carAllRecord
+0000e6  42a0              CMP      r0,r4
+0000e8  da01              BGE      |L3.238|
+;;;64     		carAllRecord.carSpeedMax = speed;
+0000ea  4804              LDR      r0,|L3.252|
+0000ec  8484              STRH     r4,[r0,#0x24]
+                  |L3.238|
+;;;65     	
+;;;66     	carAllRecord.totalMileage += speed;//计算总行程
+0000ee  4803              LDR      r0,|L3.252|
+0000f0  6880              LDR      r0,[r0,#8]  ; carAllRecord
+0000f2  4420              ADD      r0,r0,r4
+0000f4  4901              LDR      r1,|L3.252|
+0000f6  6088              STR      r0,[r1,#8]  ; carAllRecord
+;;;67     }
+0000f8  bd70              POP      {r4-r6,pc}
+;;;68     //运行数据上报
                           ENDP
 
-000106  0000              DCW      0x0000
-                  |L3.264|
-                          DCD      gpsMC
-                  |L3.268|
-                          DCD      speedRecord
-                  |L3.272|
-                          DCD      ensureOne
-                  |L3.276|
+0000fa  0000              DCW      0x0000
+                  |L3.252|
                           DCD      carAllRecord
+                  |L3.256|
+                          DCD      gpsMC
+                  |L3.260|
+                          DCD      speedRecord
+                  |L3.264|
+                          DCD      0x41a00000
+                  |L3.268|
+                          DCD      ensureOne
 
                           AREA ||.data||, DATA, ALIGN=2
 

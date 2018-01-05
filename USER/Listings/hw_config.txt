@@ -563,7 +563,7 @@
 000030  f7fffffe          BL       OS_CPU_SR_Restore
 000034  2001              MOVS     r0,#1                 ;250
 000036  4903              LDR      r1,|L13.68|
-000038  f8810092          STRB     r0,[r1,#0x92]         ;250
+000038  f8810094          STRB     r0,[r1,#0x94]         ;250
 00003c  bf00              NOP      
 00003e  e7e8              B        |L13.18|
 ;;;252    
@@ -634,7 +634,7 @@
 ;;;277    	varOperation.isUSBSendDat = 1;//通知USB进行数据发送
 00004a  2001              MOVS     r0,#1
 00004c  4904              LDR      r1,|L14.96|
-00004e  f8810092          STRB     r0,[r1,#0x92]
+00004e  f8810094          STRB     r0,[r1,#0x94]
 ;;;278    	
 ;;;279    } 
 000052  bc38              POP      {r3-r5}
