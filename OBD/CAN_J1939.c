@@ -30,11 +30,12 @@ void DealJ1939Date(void *pdata)
 		{
 			case  0x0CF00400:           //发动机转速
 				carAllRecord.engineSpeedTemp = 1;
-				carAllRecord.engineSpeed = CAN1_RxMsg->Data[4];
-				carAllRecord.engineSpeed = (carAllRecord.engineSpeed * 256) + CAN1_RxMsg->Data[3];
+				carAllRecord.engineSpeed = ((uint16_t) CAN1_RxMsg->Data[4]* 256) + CAN1_RxMsg->Data[3];
+			    carAllRecord.engineSpeed /= 8;  //得到实际转速
+			
 				if(carAllRecord.engineSpeed > carAllRecord.engineSpeedMax)//获得发动机最高转速
 					carAllRecord.engineSpeedMax = carAllRecord.engineSpeed;
-				carAllRecord.engineSpeed /= 8;  //得到实际转速
+				
 				memcpy(RCVData0,CAN1_RxMsg->Data,8);
 				CANr1=1;
 				break;
@@ -91,19 +92,20 @@ void DealJ1939Date(void *pdata)
 		if(CANr1==1&&CANr2==1&&CANr3==1&&CANr4==1&&CANr5==1&&CANr6==1&&CANr7==1)
 		{
 		   fCanOK = 1;
-		}
+		}else
+			fCanOK = 0;
 	}
 }
 
 void J1939DataLog(void)
 {
-	LogReport("EngineSpeed: 0x0CF00400 - %d;",carAllRecord.engineSpeed);
-	LogReport("RunDistance: 0x18FEE000 - 1:%d,2:%d;",carAllRecord.runLen1,carAllRecord.runLen2);
-	LogReport("CarSpeed: 0x18FEF100 - %d;",carAllRecord.carSpeed);
-	LogReport("RunOil: 0x18FEE900 - %f;",carAllRecord.allFuel);
+//	LogReport("EngineSpeed: 0x0CF00400 - %d;",carAllRecord.engineSpeed);
+//	LogReport("RunDistance: 0x18FEE000 - 1:%d,2:%d;",carAllRecord.runLen1,carAllRecord.runLen2);
+//	LogReport("CarSpeed: 0x18FEF100 - %d;",carAllRecord.carSpeed);
+//	LogReport("RunOil: 0x18FEE900 - %f;",carAllRecord.allFuel);
 	
-	LogReport("ECU Version - %s",varOperation.ecuVersion);//打印版本信息
-	LogReport("Oil Mode - %d",varOperation.oilMode);      //打印动力模式
+	LogReport("\r\n01-ECUdatLenersion:%s",varOperation.ecuVersion);//打印版本信息
+	LogReport("\r\n02-OilMode:%d",varOperation.oilMode);      //打印动力模式
 }
 
 

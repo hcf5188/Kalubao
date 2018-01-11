@@ -3,16 +3,18 @@
 
 #include "includes.h"
 
-#define PIDVersion              0x00000001    //ECU版本号
-
 #define SBOOT_UPGREAD_ADDR   	0x08007800    //此地址存放SBOOT升级用的参数
 
-#define PIDConfig_ADDR          0x0802E800    //此地址存放服务器下发PID参数
-
-#define STRENGE_Q               0x08060000    //此地址保存强动力模式记录ECU的原始值
-#define ValueVarAddr            0x08060800    //此地址保存程序运行的关键数据
-
 #define NEW_SOFT_ADDR           0x08030000    //此地址存放新程序代码
+
+#define STRENGE_Q               0x08060000    //此地址保存强动力模式下的喷油量（原始值、减小值、增大值）
+
+#define PIDCONFIG               0x08060800    //CAN 通讯参数保存地址
+
+#define PID2CONFIGADDR          0x08061000    //第二配置文件区
+
+#define PID1CONFIGADDR          0x08063000    //此地址存放服务器下发PID参数
+
 #define CDMA_OPEN               0             //打开CDMA
 #define CDMA_CLOSE              1             //关闭CDMA
 #define ENGINE_RUN              0             //发动机正常运行
@@ -32,10 +34,7 @@ typedef enum
 	CANBAUD_1M
 }CANBAUD_Enum;//CAN 波特率标志
 
-
-
-
-typedef struct     //与升级相关的结构体
+typedef struct     //与升级相关的结构体   为了与王老师的Sboot兼容，此不可一字节对齐
 {
 	uint8_t  isSoftUpdate;  //程序是否需要升级  1 - 需要升级    0 - 不需要升级
 	uint8_t  isSoftSucc;    //（兼容SBOOT）上次启动是否成功
@@ -45,7 +44,6 @@ typedef struct     //与升级相关的结构体
 	uint16_t newSoftCRC;    //新固件CRC
 	uint32_t softByteSize;  //新固件占用的字节数
 }_SystemInformation;
-
 
 
 #pragma pack(1)             //1字节对齐
@@ -96,7 +94,7 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint16_t pidNum;        //PID 参数的数量
 	uint32_t pidVersion;    //当前程序运行的ECU版本号
 	uint32_t newPIDVersion; //保存 登录报文下发的ECU版本
-	uint8_t  newPidNum;     //PID 新的个数 
+	uint16_t  newPidNum;     //PID 新的个数 
 	
 	uint16_t pidVarNum;     //需要运算的 ECU 变量的个数
 	
@@ -128,8 +126,8 @@ __packed typedef struct//第二个配置文件的结构体
 }VARConfig;
 __packed typedef struct     //内存监控变量
 {
-	uint8_t memUsedNum1;    //内存块1当前正在使用的数量
-	uint8_t memUsedMax1;    //内存块1历史同一时间使用最大的数量
+	uint16_t memUsedNum1;    //内存块1当前正在使用的数量
+	uint16_t memUsedMax1;    //内存块1历史同一时间使用最大的数量
 	uint8_t memUsedNum2;
 	uint8_t memUsedMax2;
 	uint8_t memUsedNum3;
@@ -236,8 +234,8 @@ void SoftErasePage(uint32_t addr);//擦除单页 2K
 void SoftProgramUpdate(uint32_t wAddr,uint8_t* ptrBuff,uint16_t datLength);//写入单页
 void Save2KDataToFlash(uint8_t* ptrBuff,uint32_t flashAddr,uint16_t datLength);
 void SbootParameterSaveToFlash(_SystemInformation* parameter);//保存Sboot参数
-int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength);
-void PIDConfigReadWrite(uint8_t* purl,uint8_t* conf,uint8_t length,uint8_t cmd);
+int Flash_ReadDat( uint8_t *buf,uint32_t iAddress, int32_t readLength);
+int PIDConfig2DataRead(uint8_t *buf,uint32_t iAddress, int32_t readLength);
 
 // 短整型大小端互换
 #define BigLittleSwap16(A)  ((((uint16_t)(A) & 0xff00) >> 8) | (((uint16_t)(A) & 0x00ff) << 8))

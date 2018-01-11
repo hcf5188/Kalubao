@@ -32,7 +32,7 @@ OS_EVENT * USBRecieveQ;           //USB  接收消息队列的指针
 #define ZIPRECVBUF_SIZE   5         //RECV接收消息队列保存消息的最大量
 #define GPSRECBUF_SIZE    10        //接收GPS消息队列保存消息的最大量
 #define CANRECBUF_SIZE    20        //CAN接收消息队列保存消息的最大量
-#define CANSENDBUF_SIZE   80        //CAN发送消息队列保存消息的最大量
+#define CANSENDBUF_SIZE   390       //CAN发送消息队列保存消息的最大量
 #define CANJ1939BUF_SIZE  20        //CAN接收J1939消息队列保存消息的最大量
 #define USBRECBUF_SIZE    10        //接收消息队列保存消息的最大量
 #define USBSENDBUF_SIZE   5         //发送消息队列保存消息的最大量
@@ -87,6 +87,7 @@ CARRunRecord       carAllRecord;  //整车运行状态信息
 nmea_msg           gpsMC;         //GPS信息
 
 _CDMADataToSend*   cdmaDataToSend = NULL;  //CDMAl发送的数据中（OBD、GPS），是通过它来作为载体
+pSTORE             cdmaLogData    = NULL;
 
 /****************************************************************
 *			void	int main(void )
@@ -129,11 +130,13 @@ void StartTask(void *pdata)
 	uint8_t   err;
 	uint8_t   i = 0;
 	uint8_t   *ptrOBDSend;
+	uint16_t  dataLength;
 	uint32_t  timeToSendLogin  = 0;
 	OS_CPU_SR cpu_sr=0;
 	pdata = pdata; 
 	
 	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
+	cdmaLogData    = Store_Init(1000);
 	if(varOperation.USB_NormalMode == 1)//USB 升级模式
 	{
 		USBRecieveQ = OSQCreate(&usbRecBuf[0],USBRECBUF_SIZE);  //建立USB接收 消息队列
@@ -209,18 +212,41 @@ void StartTask(void *pdata)
 				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
 				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
 				if(err != OS_ERR_NONE)
+				{
 					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+					LogReport("\r\n PID cmd OVERLoad;");
+				}
+					
 			}
 		}
-		if(cdmaDataToSend->datLength > 36)         //要发送的数据不为空
+		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
+		if(dataLength > 36)         //要发送的数据不为空
 			cdmaDataToSend->timeCount += 4;
-		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 850))//发送时间到或者要发送的数组长度超过850个字节
+		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 650) )//发送时间到或者要发送的数组长度超过850个字节
 		{
 			MemLog(cdmaDataToSend);                //todo：这两行代码用于调试时监控，真正产品的时候可以注释掉
 			J1939DataLog();                        
 			
 			OSMutexPend(CDMASendMutex,0,&err);     //提高优先级，独占此包数据
-			
+//			//将日志报文打包
+			if(cdmaLogData->top <= 250)
+			{
+				cdmaDataToSend->data[cdmaDataToSend->datLength++] = (uint8_t)cdmaLogData->top + 3;
+				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x50;
+				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x03;
+				
+				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],cdmaLogData->base,cdmaLogData->top);
+				cdmaDataToSend->datLength += cdmaLogData->top;
+				Store_Clear(cdmaLogData);
+			}
+			else
+			{
+				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 253;
+				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x50;
+				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x03;
+				Store_Getdates(cdmaLogData,&cdmaDataToSend->data[cdmaDataToSend->datLength],250);
+				cdmaDataToSend->datLength += 250;
+			}
 			CDMASendDataPack(cdmaDataToSend);
 			
 			err = OSQPost(CDMASendQ,cdmaDataToSend);
@@ -230,9 +256,8 @@ void StartTask(void *pdata)
 				cdmaDataToSend->timeCount = 0;
 			}
 			else
-			{
 				cdmaDataToSend = CDMNSendDataInit(1000);
-			}	
+				
 			OSMutexPost(CDMASendMutex);
 		}
 	}
@@ -240,5 +265,5 @@ void StartTask(void *pdata)
 
 
 
-
+   
 

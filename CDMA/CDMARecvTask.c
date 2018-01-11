@@ -338,9 +338,10 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 	uint16_t cmdId;
 	
 	uint16_t i = 0,offset = 0;
-    static uint16_t currentNum = 0; //发送下一个配置请求包
+    static uint16_t currentNum = 0;//发送下一个配置请求包
 	static uint16_t frameIndex = 0;
 	static uint8_t  pidPackNum = 0;//PID 总包数
+	static uint32_t addrSavePid = 0;
 		
 	cmdId     = ptrDeal[3];
 	cmdId     = (cmdId << 8) + ptrDeal[4];
@@ -361,6 +362,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 		
 		varOperation.newPidNum = ptrDeal[offset++];//新的PID命令个数
+		varOperation.newPidNum = varOperation.newPidNum * 256 + ptrDeal[offset++];//新的PID命令个数
 		
 		pidPackNum = ptrDeal[offset++];            //一帧共有多少PID包配置项
 		
@@ -369,7 +371,8 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		memcpy(varOperation.pidVerCmd,&ptrDeal[offset],8);  //提取 读取ECU版本号的指令
 		
 		currentNum = 0x4001;
-		frameIndex = 50;
+		frameIndex = 0;
+		addrSavePid  = PID1CONFIGADDR;
 		memset(updateBuff,0,2048);
 		SendConfigNum(currentNum);//发送第一包程序请求帧0x4001
 		
@@ -380,27 +383,34 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 			//SendConfigNum(currentNum);//todo：重新发送？
 			return;
 		}
+		
 		offset = 2;
 		frameLen = ptrDeal[offset++] - 3;
 		cmdId    = ptrDeal[offset++];
 		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
 		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
 		frameIndex += frameLen;
-		
-		if((cmdId - pidPackNum) == 0x4000)
+		if(((cmdId - 0x4000) % 11 == 0)&&((cmdId - pidPackNum) != 0x4000))//2K 存110个PID，一个PID占17byte
 		{
-			//todo:保存参数，包括全局变量参数和配置参数,启动数据流
-			canDataConfig.pidVersion = varOperation.newPIDVersion;
-			canDataConfig.pidNum     = varOperation.newPidNum;
-			
-			canDataConfig.busType    = varOperation.busType;   //todo:CAN线和K线的切换，后期处理
-			canDataConfig.canIdType  = varOperation.canIdType;
-			canDataConfig.canTxId    = varOperation.canTxId;
-			canDataConfig.canRxId    = varOperation.canRxId;
-			canDataConfig.canBaud    = varOperation.canBaud;
-			memcpy(canDataConfig.pidVerCmd,varOperation.pidVerCmd,8);
-			
-			for(i = 50;i < frameIndex;i += 17)      //更改 指令发送周期 的字节序
+			for(i = 0;i < frameIndex;i += 17)      //更改 指令发送周期 的字节序
+			{
+				temp            = updateBuff[i];
+				updateBuff[i]   = updateBuff[i+3];
+				updateBuff[i+3] = temp;
+				temp            = updateBuff[i+1];
+				updateBuff[i+1] = updateBuff[i+2];
+				updateBuff[i+2] = temp;
+			}
+			Save2KDataToFlash(updateBuff,addrSavePid,2048);
+			addrSavePid += 0x800;
+			frameIndex = 0;
+			memset(updateBuff,0,2048);
+			currentNum = cmdId + 1;   
+			SendConfigNum(currentNum);//请求下一包数据
+		}
+		else if((cmdId - pidPackNum) == 0x4000)
+		{
+			for(i = 0;i < frameIndex;i += 17)                   //更改 指令发送周期 的字节序
 			{
 				temp            = updateBuff[i];
 				updateBuff[i]   = updateBuff[i+3];
@@ -409,9 +419,13 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 				updateBuff[i+1]   = updateBuff[i+2];
 				updateBuff[i+2] = temp;
 			}
+			Save2KDataToFlash(updateBuff,addrSavePid,2048);
+			addrSavePid = PID2CONFIGADDR;
+			frameIndex = 0;
+			memset(updateBuff,0,2048);
 			SendConfigNum(0x5012);//请求第二个配置文件
 		}
-		else
+		else  
 		{
 			currentNum = cmdId + 1;   
 			SendConfigNum(currentNum);//请求下一包数据
@@ -422,33 +436,42 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		offset = 2;
 		frameLen = ptrDeal[offset++] - 3;
 		
-		canDataConfig.pidVarNum = frameLen / 13;   //得到上报 ECU 变量的个数
+		canDataConfig.pidVarNum = frameLen / 14;   //得到上报 ECU 变量的个数
 		
 		cmdId    = ptrDeal[offset++];
 		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
+		memcpy(updateBuff,&ptrDeal[offset],frameLen);
 		frameIndex += frameLen;
 		
-		PIDConfigReadWrite(updateBuff,(uint8_t *)&canDataConfig,sizeof(_CANDataConfig),0);
+		for(i = 0;i < 500;i += 14)      //更改系数、偏移量的字节序
+		{
+			temp            = updateBuff[i+6];
+			updateBuff[i+6] = updateBuff[i+9];
+			updateBuff[i+9] = temp;
+			temp            = updateBuff[i+7];
+			updateBuff[i+7] = updateBuff[i+8];
+			updateBuff[i+8] = temp;
+			
+			temp             = updateBuff[i+10];
+			updateBuff[i+10] = updateBuff[i+13];
+			updateBuff[i+13] = temp;
+			temp             = updateBuff[i+11];
+			updateBuff[i+11] = updateBuff[i+12];
+			updateBuff[i+12] = temp;
+		}
 		
-		for(i = (17*canDataConfig.pidNum)+50;i < frameIndex;i += 14)      //更改系数、偏移量的字节序
-			{
-				temp            = updateBuff[i+6];
-				updateBuff[i+6]   = updateBuff[i+9];
-				updateBuff[i+9] = temp;
-				temp            = updateBuff[i+7];
-				updateBuff[i+7]   = updateBuff[i+8];
-				updateBuff[i+8] = temp;
-				
-				temp            = updateBuff[i+10];
-				updateBuff[i+10]   = updateBuff[i+13];
-				updateBuff[i+13] = temp;
-				temp            = updateBuff[i+11];
-				updateBuff[i+11]   = updateBuff[i+12];
-				updateBuff[i+12] = temp;
-			}
+		Save2KDataToFlash(updateBuff,PID2CONFIGADDR,500);//将数据写入第二配置文件区，（flash:0x08061000）
 		
-		Save2KDataToFlash(updateBuff,PIDConfig_ADDR,2048);      //将数据写入配置文件区，（flash:0x0802E000）
+		canDataConfig.pidVersion = varOperation.newPIDVersion;
+		canDataConfig.pidNum     = varOperation.newPidNum;
+		
+		canDataConfig.busType    = varOperation.busType;     //todo:CAN线和K线的切换，后期处理
+		canDataConfig.canIdType  = varOperation.canIdType;
+		canDataConfig.canTxId    = varOperation.canTxId;
+		canDataConfig.canRxId    = varOperation.canRxId;
+		canDataConfig.canBaud    = varOperation.canBaud;
+		memcpy(canDataConfig.pidVerCmd,varOperation.pidVerCmd,8);
+		Save2KDataToFlash((uint8_t *)&canDataConfig,PIDCONFIG,(sizeof(_CANDataConfig)+3)); //保存 CAN 通讯参数
 		
 		__disable_fault_irq();                    //重启
 		NVIC_SystemReset();
@@ -469,7 +492,7 @@ static void SendPidCmdData(uint8_t* cmdData)
 }
 extern uint8_t pidManyBag[8];
 extern CAN1DataToSend  dataToSend; 
-static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的
+static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
 {
 	uint32_t flowId;
 	uint32_t canRxId;
@@ -529,13 +552,21 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的
 	{
 		if(CAN1_RxMsg->Data[0] == 0x10)     // 多包处理
 		{
-			pidVerCmd = Mem_malloc(CAN1_RxMsg->Data[1] + 10);// 申请的内存块足够长
+			pidVerCmd = Mem_malloc(CAN1_RxMsg->Data[1] + 15);// 申请的内存块足够长
 			if(pidVerCmd != NULL)
 			{
-				pidVerCmd[0] = CAN1_RxMsg -> Data[1] + 3;
+				pidVerCmd[0] = CAN1_RxMsg -> Data[1] + 8;
 				pidVerCmd[1] = 0x50;
 				pidVerCmd[2] = 0x17;
-				memcpy(&pidVerCmd[3],&CAN1_RxMsg->Data[2],6);
+				
+				pidVerCmd[3] = (flowId>>24) & 0xFF;//指令流水号
+				pidVerCmd[4] = (flowId>>16) & 0xFF;
+				pidVerCmd[5] = (flowId>>8)  & 0xFF;
+				pidVerCmd[6] = (flowId>>0)  & 0xFF;
+				
+				pidVerCmd[7] = CAN1_RxMsg->Data[1];//收到的数据长度
+				
+				memcpy(&pidVerCmd[8],&CAN1_RxMsg->Data[2],6);
 				cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6) % 7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
 				Mem_free(CAN1_RxMsg);
 				dataToSend.pdat = pidManyBag;//发送 0x30 请求接下来的多包
@@ -545,7 +576,7 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的
 					CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);// 接收多包
 					if(err == OS_ERR_NONE)
 					{
-						memcpy(&pidVerCmd[7*i + 9],&CAN1_RxMsg->Data[1],7);
+						memcpy(&pidVerCmd[7*i + 14],&CAN1_RxMsg->Data[1],7);
 						Mem_free(CAN1_RxMsg);
 					}
 					else 
@@ -555,21 +586,46 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的
 				{
 					SendPidCmdData(pidVerCmd);
 				}
-				
 				Mem_free(pidVerCmd);
 			}
 		}
 		else  //单包处理
 		{
-			pidVerCmd = Mem_malloc(11);
-			pidVerCmd[0] = 11;
-			pidVerCmd[1] = 0x50;
-			pidVerCmd[2] = 0x17;
-			memcpy(&pidVerCmd[3],CAN1_RxMsg->Data,8);
+			offset = 0;
+			pidVerCmd = Mem_malloc(16);
+			pidVerCmd[offset++] = 16;
+			pidVerCmd[offset++] = 0x50;
+			pidVerCmd[offset++] = 0x17;
+			
+			pidVerCmd[offset++] = (flowId>>24) & 0xFF;//指令流水号
+			pidVerCmd[offset++] = (flowId>>16) & 0xFF;
+			pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
+			pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
+			
+			pidVerCmd[offset++] = 8;//收到的数据长度
+			memcpy(&pidVerCmd[offset++],CAN1_RxMsg->Data,8);
 			SendPidCmdData(pidVerCmd);
 			Mem_free(pidVerCmd);
 			Mem_free(CAN1_RxMsg);
 		}
+	}else//ECU 无回复
+	{	offset = 0;
+		pidVerCmd = Mem_malloc(16);
+		pidVerCmd[offset++] = 13;
+		pidVerCmd[offset++] = 0x50;
+		pidVerCmd[offset++] = 0x17;
+		
+		pidVerCmd[offset++] = (flowId>>24) & 0xFF;//指令流水号
+		pidVerCmd[offset++] = (flowId>>16) & 0xFF;
+		pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
+		pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
+		
+		pidVerCmd[offset++] = 5;//ERROR  -  配置指令错误
+		pidVerCmd[offset++] = 'E';pidVerCmd[offset++] = 'R';pidVerCmd[offset++] = 'R';
+		pidVerCmd[offset++] = 'O';pidVerCmd[offset++] = 'R';
+		SendPidCmdData(pidVerCmd);
+		Mem_free(pidVerCmd);
+		Mem_free(CAN1_RxMsg);
 	}
 	if(varOperation.canTest == 2)
 	{

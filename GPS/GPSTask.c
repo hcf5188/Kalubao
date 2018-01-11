@@ -192,83 +192,7 @@ int NMEA_Str2num(u8 *buf,u8*dx)
 	if(mask&0X02)res=-res;		   
 	return res;
 }	  							 
-//分析GPGSV信息
-//gpsx:nmea信息结构体
-//buf:接收到的GPS数据缓冲区首地址
-void NMEA_GPGSV_Analysis(nmea_msg *gpsx,u8 *buf)
-{
-	u8 *p,*p1,dx;
-	u8 len,i,j,slx=0;
-	u8 posx;   	 
-	p=buf;
-	p1=(u8*)strstr((const char *)p,"$GPGSV");
-	len=p1[7]-'0';								//得到GPGSV的条数
-	posx=NMEA_Comma_Pos(p1,3); 					//得到可见卫星总数
-	if(posx!=0XFF)gpsx->svnum=NMEA_Str2num(p1+posx,&dx);
-	for(i=0;i<len;i++)
-	{	 
-		p1=(u8*)strstr((const char *)p,"$GPGSV");  
-		for(j=0;j<4;j++)
-		{	  
-			posx=NMEA_Comma_Pos(p1,4+j*4);
-			if(posx!=0XFF)gpsx->slmsg[slx].num=NMEA_Str2num(p1+posx,&dx);	//得到卫星编号
-			else break; 
-			posx=NMEA_Comma_Pos(p1,5+j*4);
-			if(posx!=0XFF)gpsx->slmsg[slx].eledeg=NMEA_Str2num(p1+posx,&dx);//得到卫星仰角 
-			else break;
-			posx=NMEA_Comma_Pos(p1,6+j*4);
-			if(posx!=0XFF)gpsx->slmsg[slx].azideg=NMEA_Str2num(p1+posx,&dx);//得到卫星方位角
-			else break; 
-			posx=NMEA_Comma_Pos(p1,7+j*4);
-			if(posx!=0XFF)gpsx->slmsg[slx].sn=NMEA_Str2num(p1+posx,&dx);	//得到卫星信噪比
-			else break;
-			slx++;	   
-		}   
- 		p=p1+1;//切换到下一个GPGSV信息
-	}   
-}
-//分析GPGGA信息
-//gpsx:nmea信息结构体
-//buf:接收到的GPS数据缓冲区首地址
-void NMEA_GPGGA_Analysis(nmea_msg *gpsx,u8 *buf)
-{
-	u8 *p1,dx;			 
-	u8 posx;    
-	p1=(u8*)strstr((const char *)buf,"$GPGGA");
-	posx=NMEA_Comma_Pos(p1,6);								//得到GPS状态
-	if(posx!=0XFF)
-		gpsx->gpssta = NMEA_Str2num(p1+posx,&dx);	
-	posx=NMEA_Comma_Pos(p1,7);								//得到用于定位的卫星数
-	if(posx!=0XFF)
-		gpsx->posslnum = NMEA_Str2num(p1+posx,&dx); 
-	posx=NMEA_Comma_Pos(p1,9);								//得到海拔高度
-	if(posx!=0XFF)
-		gpsx->altitude = NMEA_Str2num(p1+posx,&dx);  
-}
-//分析GPGSA信息
-//gpsx:nmea信息结构体
-//buf:接收到的GPS数据缓冲区首地址
-void NMEA_GPGSA_Analysis(nmea_msg *gpsx,u8 *buf)
-{
-	u8 *p1,dx;	//dx小数点位数		 
-	u8 posx; 
-	u8 i;   
-	p1=(u8*)strstr((const char *)buf,"$GPGSA");
-	posx=NMEA_Comma_Pos(p1,2);								//得到定位类型
-	if(posx!=0XFF)gpsx->fixmode=NMEA_Str2num(p1+posx,&dx);	
-	for(i=0;i<12;i++)										//得到定位卫星编号
-	{
-		posx=NMEA_Comma_Pos(p1,3+i);					 
-		if(posx!=0XFF)gpsx->possl[i]=NMEA_Str2num(p1+posx,&dx);
-		else break; 
-	}				  
-	posx=NMEA_Comma_Pos(p1,15);								//得到PDOP位置精度因子
-	if(posx!=0XFF)gpsx->pdop=NMEA_Str2num(p1+posx,&dx);  
-	posx=NMEA_Comma_Pos(p1,16);								//得到HDOP位置精度因子
-	if(posx!=0XFF)gpsx->hdop=NMEA_Str2num(p1+posx,&dx);  
-	posx=NMEA_Comma_Pos(p1,17);								//得到VDOP位置精度因子
-	if(posx!=0XFF)gpsx->vdop=NMEA_Str2num(p1+posx,&dx);  
-}
+
 //分析GPRMC信息
 //gpsx:nmea信息结构体
 //buf:接收到的GPS数据缓冲区首地址
@@ -333,32 +257,13 @@ void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
 		gpsx->utc.year=2000+temp%100;	 	 
 	} 
 }
-//分析GPVTG信息
-//gpsx:nmea信息结构体
-//buf:接收到的GPS数据缓冲区首地址
-void NMEA_GPVTG_Analysis(nmea_msg *gpsx,u8 *buf)
-{
-//	u8 *p1;//,dx;			 
-//	u8 posx;    
-//	p1=(u8*)strstr((const char *)buf,"$GPVTG");							 
-//	posx=NMEA_Comma_Pos(p1,7);								//得到地面速率
-//	if(posx!=0XFF)
-//	{
-//		gpsx->speed=NMEA_Str2num(p1+posx,&dx);
-//		if(dx<3)gpsx->speed *= 10;//NMEA_Pow(10,3-dx);	 	 		//确保扩大1000倍
-//	}
-}  
+
 //提取NMEA-0183信息
 //gpsx:nmea信息结构体
 //buf:接收到的GPS数据缓冲区首地址
 void GPS_Analysis(nmea_msg *gpsx,u8 *buf)
 {
 	NMEA_GPRMC_Analysis(gpsx,buf);	//GPRMC解析  只解析这一个就行了，下面的不需要啦
-	
-//	NMEA_GPGSV_Analysis(gpsx,buf);	//GPGSV解析
-//	NMEA_GPGGA_Analysis(gpsx,buf);	//GPGGA解析 	
-//	NMEA_GPGSA_Analysis(gpsx,buf);	//GPGSA解析
-//	NMEA_GPVTG_Analysis(gpsx,buf);	//GPVTG解析
 }
 
 //GPS校验和计算

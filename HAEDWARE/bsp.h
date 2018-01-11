@@ -5,7 +5,7 @@
 #include "memblock.h"
 #include "globalvar.h"
 #include "gps.h"
-
+#include "stm32f10x_wwdg.h"
 
 #define GPIO_LED		GPIOB
 #define LED_GPIO_OBD 	GPIO_Pin_5
@@ -22,7 +22,8 @@ extern _CANDataConfig     canDataConfig;//保存CAN通讯参数
 
 extern CARRunRecord       carAllRecord; //汽车运行过程中，几乎全部信息
 extern nmea_msg           gpsMC; 	    //保存GPS信息
-extern _CDMADataToSend* cdmaDataToSend; //发送给 CDMA 的信息载体
+extern _CDMADataToSend*  cdmaDataToSend;//发送给 CDMA 的信息载体
+extern pSTORE            cdmaLogData ;  //发送日志缓冲区
 
 #define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB,GPIO_Pin_15)
 #define CDMA_POWER_LOW   GPIO_ResetBits(GPIOB,GPIO_Pin_15)

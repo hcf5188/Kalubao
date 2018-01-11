@@ -35,7 +35,7 @@ _CDMADataToSend* CDMNSendInfoInit(uint16_t length)//要发送的数据，进行初始化
 	return ptr;
 }
 uint32_t realTime = 0;
-uint16_t crc = 0;
+uint16_t crc      = 0;
 void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验等
 {
 	_PROTOCOL_HEAD *pHead = NULL;
@@ -61,34 +61,43 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	ptr->data[ptr->datLength++] = crc&0xff;
 	ptr->data[ptr->datLength++] = 0x7E;
 }
+
+
+/***********************************************************************************/
 #if 1
 const uint8_t ipAddr[] = "116.228.88.101"; //本地：116.228.88.101  29999 
 #define IP_Port          29999            //端口号
 #else
 const uint8_t ipAddr[] = "116.62.195.99";  //todo: 后期是域名解析 外网：116.62.195.99   9998
-#define IP_Port          9998             //端口号
+#define IP_Port          6556             //端口号 9998 6556
 #endif
+/***********************************************************************************/
+
 
 _OBD_PID_Cmd *ptrPIDAllDat;    //指向第一配置区
 VARConfig    *ptrPIDVars;      //指向第二配置区
 
-uint8_t configData[2048] = {0};//用来存储配置PID
-uint8_t strengPower[200] = {0};//用来存储强动力模式下的数据
+uint8_t configData[6000] = {0};//用来存储配置PID
+uint8_t strengPower[300] = {0};//用来存储强动力模式下的数据
+uint8_t pid2Config[300]  = {0};//此数组用来保存PID第二配置文件数据
 void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
 {    
 	//从Flash中载入数据进全局变量
-	Flash_ReadDat(SBOOT_UPGREAD_ADDR,(uint8_t *)&sysUpdateVar,sizeof(_SystemInformation));
+	Flash_ReadDat((uint8_t *)&sysUpdateVar,SBOOT_UPGREAD_ADDR,sizeof(_SystemInformation));
 	//从Flash中读取PID参数
-	Flash_ReadDat(PIDConfig_ADDR,configData,2048);
-	Flash_ReadDat(STRENGE_Q,strengPower,100);//读出喷油量的原始值
+	Flash_ReadDat((uint8_t *)&canDataConfig,PIDCONFIG,sizeof(_CANDataConfig));
+	
+	PIDConfig2DataRead(configData,PID1CONFIGADDR,6000);
+	ptrPIDAllDat = (_OBD_PID_Cmd *)configData;
+	
+	Flash_ReadDat(pid2Config,PID2CONFIGADDR,300);//读取第二配置文件数据
+	ptrPIDVars   = (VARConfig*)pid2Config;
+	
+	Flash_ReadDat(strengPower,STRENGE_Q,300);//读出喷油量的原始值
 	if(strengPower[0] != 0x1A)//从未记录过该车的喷油量
-		memset(strengPower,0,100);
+		memset(strengPower,0,300);	
 	
-	PIDConfigReadWrite(configData,(uint8_t *)&canDataConfig,sizeof(_CANDataConfig),1);
-	
-	ptrPIDAllDat = (_OBD_PID_Cmd *)&configData[50];
-		
-	varOperation.pidNum = canDataConfig.pidNum;//得到PID指令的个数
+	varOperation.pidNum      = canDataConfig.pidNum;//得到PID指令的个数
 	varOperation.isDataFlow  = 1;              //设备启动的时候，数据流未流动
 	varOperation.isCDMAStart = CDMA_CLOSE;     //CDMA初始状态为关闭
 	varOperation.isEngineRun = ENGINE_RUN;     //初始认为发动机是启动了的
@@ -226,31 +235,28 @@ void RevolvingSpeedDeal(void)//todo:发动机转速处理
 	}
 }
 
-extern _CDMADataToSend* cdmaDataToSend;//CDMA发送的数据中（OBD、GPS），是通过它来作为载体
 void LogReport(char* fmt,...)          //上传日志文件
 {
 	u8 datLen,err;
 	va_list ap;
 	uint8_t * ptrSaveLog;
 
-	if(cdmaDataToSend->datLength > 850)
+	if(cdmaDataToSend->datLength > 750)
 		return;
-	ptrSaveLog = Mem_malloc(500);
+	ptrSaveLog = Mem_malloc(255);
 	va_start(ap,fmt);
-	vsprintf((char*)(&ptrSaveLog[3]),fmt,ap);
+	vsprintf((char*)ptrSaveLog,fmt,ap);
 	va_end(ap);
 	
-	datLen=strlen((const char*)(&ptrSaveLog[3]));//此次发送数据的长度
-
-	ptrSaveLog[0] = datLen + 3;
-	ptrSaveLog[1] = 0x50;
-	ptrSaveLog[2] = 0x03;
+	datLen=strlen((const char*)ptrSaveLog);//此次发送数据的长度
 	
 	OSMutexPend(CDMASendMutex,0,&err);
-						
-	memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrSaveLog,ptrSaveLog[0]);
-	cdmaDataToSend->datLength += ptrSaveLog[0];
 	
+	if((datLen + cdmaLogData->top) < 900)				
+	{
+		memcpy(&cdmaLogData->base[cdmaLogData->top],ptrSaveLog,datLen);
+		cdmaLogData->top += datLen;
+	}
 	OSMutexPost(CDMASendMutex);
 	Mem_free(ptrSaveLog);
 }
@@ -260,14 +266,14 @@ extern MEM_Check allMemState;         //内存监控变量
 
 void MemLog(_CDMADataToSend* ptr)
 {
-	LogReport("m1:%d,%d;m2:%d,%d;m3:%d,%d;m4:%d,%d;m5:%d,%d;m6:%d,%d;m7:%d,%d;",\
-			allMemState.memUsedNum1,allMemState.memUsedMax1,\
-			allMemState.memUsedNum2,allMemState.memUsedMax2,\
-			allMemState.memUsedNum3,allMemState.memUsedMax3,\
-			allMemState.memUsedNum4,allMemState.memUsedMax4,\
-			allMemState.memUsedNum5,allMemState.memUsedMax5,\
-			allMemState.memUsedNum6,allMemState.memUsedMax6,\
-			allMemState.memUsedNum7,allMemState.memUsedMax7);
+	LogReport("\r\n03-1:%d;2:%d;3:%d;4:%d;5:%d;6:%d;7:%d;",\
+			allMemState.memUsedMax1,\
+			allMemState.memUsedMax2,\
+			allMemState.memUsedMax3,\
+			allMemState.memUsedMax4,\
+			allMemState.memUsedMax5,\
+			allMemState.memUsedMax6,\
+			allMemState.memUsedMax7);
 }
 //车辆运行的数据 初始化
 void CARVarInit(void)

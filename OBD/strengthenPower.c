@@ -75,10 +75,10 @@ void SafeALG(uint8_t* ptrVer)
 	if(err == OS_ERR_NONE)
 	{
 		if(CAN1_RxMsg->Data[1] != 0x7F)
-			LogReport("NTRU Success.");	
+			LogReport("\r\n13-NTRU Success.");//安全算法通过
 		else
 		{
-			LogReport("NTRU Fail.");
+			LogReport("\r\n14-NTRU Fail.");//没通过安全算法
 			varOperation.oilMode = 0;
 			goto end;
 		}
@@ -108,10 +108,10 @@ void SafeALG(uint8_t* ptrVer)
 	CAN1_RxMsg = OSQPend(canRecieveQ,0,&err);
 	if(CAN1_RxMsg->Data[1] == 0x7F)
 	{
-		LogReport("Strength Oil Fail!");
+		LogReport("\r\n15-Strength Fail!");//增强动力失败
 		varOperation.oilMode = 0;
 	}else{
-		LogReport("Strength Oil Success.");
+		LogReport("\r\n16-Strength Success.");//增强动力成功
 		varOperation.oilMode = 1;
 	}
 end:	
@@ -138,7 +138,11 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 		Mem_free(CAN1_RxMsg);
 	}
 	else 
+	{
+		LogReport("\r\n17-ECUVer read fail!");
 		return 200;
+	}
+		
 	dataToSend.pdat   = verMany;
 	OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
 	do{
@@ -152,7 +156,7 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 	}while(err == OS_ERR_NONE);
 	if(i<2)
 	{
-		LogReport("Config ECU version read error!!!");
+		LogReport("\r\n18-ECUVer read fail!");
 		return 200;//识别错误
 	}
 		
@@ -164,6 +168,7 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 		{
 			if((varOperation.ecuVersion[i] < 0x20)||(varOperation.ecuVersion[i] > 0x7E))//读取到非显示字符
 			{
+				LogReport("\r\n19-ECUVer read fail!");
 				return 200;//版本号识别出错
 			}	
 		}
@@ -171,7 +176,7 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 			varOperation.ecuVersion[i] =  '\0';
 		
 	}	
-	LogReport("ECU version is %s.",varOperation.ecuVersion);//上报版本号
+	LogReport("\r\n20-ECUVer:%s.",varOperation.ecuVersion);//上报版本号
 	
 //根据ECU版本号 确定ECU安全算法的掩码
 	if(strcmp(varOperation.ecuVersion,"P949V732") == 0)
@@ -218,7 +223,7 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 //	}
 	else
 	{
-		LogReport("ECU Version %s can't be distinguished!!",varOperation.ecuVersion);
+		LogReport("\r\n21-ECUVer Mismatching;");
 		return 100;//版本号读取出来了，但是这个版本号的ECU还不能做强动力
 	}
 		
@@ -300,7 +305,7 @@ void Get_Q_FromECU(uint8_t ver)
 				
 				dat2 = dat1 + datSma;
 			
-				LogReport("CURR_OIL:%d,COM_OIL:%d",dat1,dat2);
+//				LogReport("CURR_OIL:%d,COM_OIL:%d",dat1,dat2);
 				if(offset % 8 == 0)
 					ptrVer[offset++] = bag++;
 				ptrVer[offset++] = dat2 & 0x00FF;

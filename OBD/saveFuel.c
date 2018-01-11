@@ -89,9 +89,9 @@ u8    nop;
  float Eng_nAvg,Eng_nAvgFlt, Eng_nAvgFltOld,Accped_r,Accped_rFlt,Accped_rFltOld,RateSpeed,CoEng_rCurLoad,CoEng_rAvg20Load,CoEng_rAvg3Load,CoEng_rDrv10Load;
  float CoEng_rDrvLoadFlt,CoEng_rDrvLoadFltOld;
  float CoEng_rSumLoad,CoEng_rSum3Load;
- u16 Eng_nAvgplus,Eng_nAvgFltInt;
- int CoEng_trqint,Accped_rint,Accped_rFltint;
- u8 Num_ConstLim,Num_LowLoad,Num_MidLoad,TrqDrvFlt;
+ u16   Eng_nAvgplus,Eng_nAvgFltInt;
+ int   CoEng_trqint,Accped_rint,Accped_rFltint;
+ u8    Num_ConstLim,Num_LowLoad,Num_MidLoad,TrqDrvFlt;
  
  
  void GearDetect(void);
@@ -99,10 +99,10 @@ u8    nop;
  void TrqLim(void);
  void ConstLimitation(void);
 /*========================================================================
-功  能:CAN通讯故障检测                                               
-参  数:ErrDetecSW:故障检测开关, ErrDebT:设定时间(unit:10ms),Signal:接收到CAN信号标志                                                             
+功  能: CAN通讯故障检测                                               
+参  数: ErrDetecSW:故障检测开关, ErrDebT:设定时间( unit:10ms ), Signal: 接收到CAN信号标志                                                             
 返  回:                                     
-说  明:超过设定时间ErrDebT没有接收到CAN数据时故障灯点亮
+说  明:超过设定时间 ErrDebT 没有接收到 CAN 数据时故障灯点亮
        per 1ms
 ========================================================================*/
 u8 CanErrDetec(u16 ErrDebT,u8 Signal)
@@ -121,26 +121,26 @@ u8 CanErrDetec(u16 ErrDebT,u8 Signal)
 }
 u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
 {
-   static u16 CanErrCnt = 150;
-    
-   if(CanErrCnt<65530)CanErrCnt++;
-   if(Signal==1&&CANr1==1&&CANr2==1&&CANr3==1&&CANr4==1&&CANr5==1&&CANr6==1){
-     CanErrCnt = 0; 
-   }     
-   if(CanErrCnt>=ErrDebT)return 0;
-   else return 1;
+	static u16 CanErrCnt = 150;
+
+	if(CanErrCnt<65530)CanErrCnt++;
+	if(Signal==1&&CANr1==1&&CANr2==1&&CANr3==1&&CANr4==1&&CANr5==1&&CANr6==1){
+	 CanErrCnt = 0; 
+	}     
+	if(CanErrCnt>=ErrDebT)return 0;
+	else return 1;
 
 }
 u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
 {
-   static u16 CanErrCnt = 150;
-    
-   if(CanErrCnt<65530)CanErrCnt++;
-   if(Signal == 1 && CANr1 == 1&&CANr2 == 1 && CANr3==1&&CANr4==1&&CANr5==1&&CANr6==1){
-     CanErrCnt = 0; 
-   }     
-   if(CanErrCnt >= ErrDebT)return 0;
-   else return 1;
+	static u16 CanErrCnt = 150;
+
+	if(CanErrCnt<65530)CanErrCnt++;
+	if(Signal == 1 && CANr1 == 1&&CANr2 == 1 && CANr3 == 1 && CANr4 == 1 && CANr5==1 && CANr6 == 1){
+	 CanErrCnt = 0; 
+	}     
+	if(CanErrCnt >= ErrDebT)return 0;
+	else return 1;
 }
 
 /* CANRXERR
@@ -155,16 +155,7 @@ CANTFLG */
 返  回:
 说  明:per 10ms
 ======================================================================== */
-void UpdateTxData1(void)
-{
-//	 if(swt==1) tx_send1[6]|=0x01;
-//	 else tx_send1[6]&=0xfe;
-//	 if(swt1==1) tx_send1[6]|=0x02;
-//	 else tx_send1[6]&=0xfd;
-//	 if(AC_st==1) tx_send1[6]|=0x04;
-//	 else tx_send1[6]&=0xfb;
-	 tx_send1[7] = 1;//	
-}
+
 //按照低的来限制
 void UpdateTxDataAMT(void)
 {
@@ -175,42 +166,47 @@ void UpdateTxDataAMT(void)
     {
          if(DRVDEM_TRQFLT_ENABLE)    //始终是使能的
          {
-            if(Load_stCurr == Midload||Load_stCurr==Lowload)
+            if(Load_stCurr == Midload || Load_stCurr == Lowload)
             {
-               TrqDrvFlt=(u8)CoEng_rDrvLoadFlt+125; //需求扭矩
+               TrqDrvFlt=(u8)CoEng_rDrvLoadFlt + 125; //需求扭矩
             } 
 			else TrqDrvFlt = 255;
          } 
-		 else TrqDrvFlt = 255; //此举没有任何意义，永远也执行不到。
+		 else 
+			 TrqDrvFlt = 255;  //此举没有任何意义，永远也执行不到。
          if(TrqLoad < trqmax)  //限制小于最大值。
          {
-            if(TrqLoad < TrqDrvFlt) trq[3] = TrqLoad;
-            else trq[3] = TrqDrvFlt;
+            if(TrqLoad < TrqDrvFlt) 
+				trq[3] = TrqLoad;
+            else 
+				trq[3] = TrqDrvFlt;
          }
          else
          {
-            if(trqmax < TrqDrvFlt) trq[3] = trqmax;
-            else trq[3] = TrqDrvFlt;
+            if(trqmax < TrqDrvFlt) 
+				trq[3] = trqmax;
+            else 
+				trq[3] = TrqDrvFlt;
          }
-		 trq[0]=35;
+		 trq[0] = 35;
     }
 }
 
- //节油任务
+//节油任务
  void SaveFuleTask(void *pdata)
 {
 	Load_stCurr   = Highload;      // 默认当前油门最大
 	Load_stTarget = Highload;      // 默认计算的油门也是最大
+	trqmax        = 225;
 	while(1)
 	{
 		OSTimeDlyHMSM(0,0,0,1);	
-		
-		SystemTime10ms ++;
-		SystemTime50ms ++;
+		SystemTime10ms  ++;
+		SystemTime50ms  ++;
 		SystemTime100ms ++;
 		SystemTime500ms ++;
 		SystemTime1s ++;
-		
+
 //每毫秒都会进行数据检查
 		if(SystemTime10ms >= 10)
 		{
@@ -222,15 +218,15 @@ void UpdateTxDataAMT(void)
 /*############################################################################### 
 						载荷状态变化时, 扭拒限制的斜率变化
 ################################################################################*/           
-				if(Load_stCurr == Highload)//当前是强动力模式
+				if(Load_stCurr == Highload)//当前是重载模式  此处是标志
 				{
-					if(Load_stTarget == Midload)//手机设定是中档模式
+					if(Load_stTarget == Midload)//手机设定是中档模式   此处是模式标志
 					{
-						if(TrqLoad>TrqlimMid) 
+						if(TrqLoad>TrqlimMid)                 //这个就是拿真实值进行比较了
 							TrqLoad = TrqLoad - 0.08; //8/s
 						else 
 						{
-							Load_stCurr = Load_stTarget;
+							Load_stCurr = Load_stTarget; //达到预期状态了，赋值、相应标志
 							TrqLoad = TrqlimMid;
 						}
 					} 
@@ -273,10 +269,10 @@ void UpdateTxDataAMT(void)
 				{
 					if(Load_stTarget == Highload)
 					{
-						if(TrqLoad < 225) TrqLoad=TrqLoad+0.08; //8/s
+						if(TrqLoad < 225) TrqLoad = TrqLoad + 0.08; //8/s
 						else
 						{
-							Load_stCurr=Load_stTarget;
+							Load_stCurr = Load_stTarget;
 							TrqLoad=225;
 						}
 					} 
@@ -292,19 +288,19 @@ void UpdateTxDataAMT(void)
 					else TrqLoad = TrqlimLow; 
 				}            
 				
-				if(varOperation.oilMode == 2)//节油功能
-				{
+//				if(varOperation.oilMode == 2)//节油功能
+//				{
 					ConstLimitation();    //稳油功能
-					UpdateTxDataAMT();    //todo:确定这个函数的功能  225  180  按照180来设定
+					UpdateTxDataAMT();    //限制按照最小的值来   需求扭矩 跟 设定扭矩
 					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
-				}
-				else if(trq[3]<225)//当前模式非节油
-				{
-					trq[3]++;
-					trq[0] = 35;
-					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq);
-				}
-					
+//				}
+//				else if(trq[3]<225)//当前模式非节油
+//				{
+//					trq[3]++;
+//					trq[0] = 35;
+//					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq);
+//				}
+//					
 			}
 		}
 		if(SystemTime50ms)            //稳油退出 斜率   50ms + 1
@@ -314,7 +310,7 @@ void UpdateTxDataAMT(void)
 			{
 				if(CL_stOutflag == 1) 
 				{
-					if(trqmax < 225)    //最大值为啥要自增
+					if(trqmax < 225)    //退出节油模式 最大值要自增
 					{
 						trqmax++;
 					} 
@@ -338,6 +334,11 @@ void UpdateTxDataAMT(void)
 			else 
 				CANerr_flg = 0; 
 		} 
+		if(SystemTime500ms >= 500)
+		{
+			SystemTime500ms = 0;
+			CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;
+		}
 	}
 }
  
@@ -421,7 +422,7 @@ void CoEng_rloadCal(void)  //100ms   平均负荷率计算, 平均转速计算, 平均油门计算,
 		CoEng_rDrvLoad100ms[i] =CoEng_rDrvLoad100ms[i+1];
 	}
 	CoEng_rDrvLoad100ms[99] = CoEng_rDrvLoad;
-	Coeng_rDrvLoadSum=0;                                           //10s平均驾驶员需求扭矩%
+	Coeng_rDrvLoadSum=0;                                           //10s驾驶员平均需求扭矩%
 	for(j=0;j<100;j++)
 	{
 		Coeng_rDrvLoadSum = Coeng_rDrvLoadSum + CoEng_rDrvLoad100ms[j];
@@ -481,49 +482,48 @@ void TrqLim(void)          //扭矩限制计算
 //稳油功能
 void ConstLimitation(void)
 {
-   static u16 TimerAPPCnt0;
-   static u8  APP_T0;
+	static u16 TimerAPPCnt0;
+	static u8  APP_T0;
 
-   if(TimerAPPCnt0 < 65530)
-	   TimerAPPCnt0 ++;
-   if(TimerAPPCnt0 >= 500) 
-	   APP_T0 = 1; 
+	if(TimerAPPCnt0 < 65530)
+		TimerAPPCnt0 ++;
+	if(TimerAPPCnt0 >= 500) 
+		APP_T0 = 1; 
 
-   rdev = 20;mrdev = - 20;
-   
-   App_dev = Accped_rint - Accped_r3s;
-   
-	if(App_rFreeze == 0) //油门开度值冻结   在冻结状态 - 不是零    不在冻结状态 = 0
+	rdev = 20;mrdev = -20;
+
+	App_dev = Accped_rint - Accped_r3s;  //油门开度  - 3s的平均油门开度
+
+	if(App_rFreeze == 0) //油门开度值冻结   在冻结状态 - !0  不在冻结状态 = 0
 	{ 	
-		if((Load_stCurr == Midload || Load_stCurr == Lowload) && App_dev >= mrdev && //油门的波动范围  正负 20%
-			App_dev <= rdev && Eng_nAvg > 1000 && Accped_rint > 10 &&    //发动机转速 > 1000，油门开度 > 10%
-			Accped_rint < 85 && Accped_r3s > 10)                          //踏板波动小于 20  3 秒的平均开度
+		if((Load_stCurr == Midload || Load_stCurr == Lowload) && //设置在 中载 或者 轻载 模式下
+			App_dev >= mrdev && App_dev <= rdev &&   //油门的波动范围  正负 20%
+			Eng_nAvg > 1000 && 				         //发动机转速 > 1000
+			Accped_rint > 10 && Accped_rint < 85 &&  //油门开度   >10%   <85%
+		    Accped_r3s > 10)                         //3 秒的平均开度 >10%
 		{
-			if((APP_T0 == 1)&&(CL_stOutflag == 0))  //计时保持 5 秒
+			if((APP_T0 == 1)&&(CL_stOutflag == 0))   //计时保持 5 秒
 			{
-				trqmax = CoEng_rtrqInrAvg + 1; // todo:跟平均负荷有什么关系   trqmax - 稳油的扭矩限制
+				trqmax = CoEng_rtrqInrAvg + 1; // trqmax - 稳油的扭矩限制
 				TimerAPP0Reset();              // 定时器复位就是清  APP_T0
 				App_rFreeze = Accped_rint;     // 记住当前的油门开度
 			}
 		}
 		else 
-		{
 			TimerAPP0Reset();                  //退出稳油
-		}
 	}
 	else if(Load_stCurr == Highload            //当前在重载
 		||Accped_r <= 10||Accped_r >= 85       //松掉油门 或者 踩到底
-		||App_dev <- 25 ||App_dev  >  15 || (Accped_rint - App_rFreeze) >20 
-		||(Accped_rint - App_rFreeze) <- 25||(Accped_r3s - App_rFreeze)>15)//踩踏板大于 5 
+		||App_dev <- 25 ||App_dev  >  15       //当前油门开度 - 3s平均开度
+		|| (Accped_rint - App_rFreeze) > 20 ||(Accped_rint - App_rFreeze) <- 25//当前踏板开度与冻结值进行比较
+		||(Accped_r3s - App_rFreeze)>15)       //3秒踏板平均开度与冻结值比较 
 	{
 		CL_stOutflag = 1; //取消扭矩限制
-		App_rFreeze = 0; 
+		App_rFreeze  = 0; //等待
 		TimerAPP0Reset(); //重新计时 
 	}
 	else 
-	{
-		TimerAPP0Reset();	  
-	}
+		TimerAPP0Reset();	 
 }
 
 

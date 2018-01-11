@@ -117,7 +117,7 @@ void Save2KDataToFlash(uint8_t* ptrBuff,uint32_t flashAddr,uint16_t datLength)
 }
 //程序启动的时候，从Flash中读取全局参数用
 
-int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength) 
+int Flash_ReadDat( uint8_t *buf,uint32_t iAddress, int32_t readLength) 
 {
 	int i = 0;
 	while(i < readLength) 
@@ -128,21 +128,21 @@ int Flash_ReadDat(uint32_t iAddress, uint8_t *buf, int32_t readLength)
 	return i;
 }
 
-void PIDConfigReadWrite(uint8_t* purl,uint8_t* conf,uint8_t length,uint8_t cmd)
+int PIDConfig2DataRead(uint8_t *buf,uint32_t iAddress, int32_t readLength)
 {
-	uint8_t i = 0;
-	if(cmd == 0)
+	int i,j,index = 0;
+	uint32_t addrSet = iAddress;
+	for(i = 0;i<3;i++)
 	{
-		for(i=0;i<length;i++)
-			*(purl + i) = *(conf + i);
+		for(j=0;j<1870;j++)
+		{
+			*(buf + index) = *(__IO uint8_t*) (addrSet + j);
+			index ++;
+		}
+		addrSet += 0x800;
 	}
-	else
-	{
-		for(i=0;i<length;i++)
-			*(conf + i) = *(purl + i);
-	}
+	return i;
 }
-
 
 
 

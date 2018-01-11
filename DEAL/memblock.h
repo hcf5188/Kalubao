@@ -32,7 +32,7 @@ typedef struct
 {
 	uint16_t top;
 	uint16_t length;
-	uint8_t *base;
+	uint8_t* base;
 }STORE, *pSTORE;
 
 //队列初始化
@@ -63,7 +63,7 @@ NORMAL_STATE Store_Push(pSTORE S,uint8_t dat);
 *                  内存控制相关声明
 ***********************************************************/
 
-#define MEM_16B_ROW		100
+#define MEM_16B_ROW		400
 #define MEM_16B_COL		18
 
 #define MEM_32B_ROW		100
@@ -72,16 +72,16 @@ NORMAL_STATE Store_Push(pSTORE S,uint8_t dat);
 #define MEM_64B_ROW		100
 #define MEM_64B_COL		66
 
-#define MEM_128B_ROW	20
+#define MEM_128B_ROW	10
 #define MEM_128B_COL	130
 
 #define MEM_256B_ROW	8
 #define MEM_256B_COL	258
 
-#define MEM_512B_ROW	3
+#define MEM_512B_ROW	4
 #define MEM_512B_COL	514
 
-#define MEM_1KB_ROW	    8
+#define MEM_1KB_ROW	    6
 #define MEM_1KB_COL	    1026
 
 void    *Mem_malloc(uint16_t size);

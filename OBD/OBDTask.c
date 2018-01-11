@@ -101,7 +101,7 @@ void OBDTask(void *pdata)
 				}
 				else if((CAN1_RxMsg->Data[0]==0x03)&&(CAN1_RxMsg->Data[1]==0x7F))
 				{
-					LogReport("03 7F - ECU refuse to reply! PID - %d err:%d,%d,%d,%d,%d,%d;",cmdNum,
+					LogReport("\r\n05-ECU report:03 7F;PID:%d err:%d,%d,%d,%d,%d,%d;",cmdNum,
 					CAN1_RxMsg->Data[2],CAN1_RxMsg->Data[3],CAN1_RxMsg->Data[4],CAN1_RxMsg->Data[5],
 					CAN1_RxMsg->Data[6],CAN1_RxMsg->Data[7]);
 				}
@@ -110,7 +110,7 @@ void OBDTask(void *pdata)
 		}
 		else
 		{
-			LogReport("PID cmd %d read error!!!",cmdNum);
+			LogReport("\r\n04-PIDcmd don't report:%d;",cmdNum);//发送PID指令，ECU不回复
 		}
 		Mem_free(can1_Txbuff);                 //释放内存块
 	}
@@ -128,14 +128,14 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 	if((varOperation.pidVersion == 0xFFFFFFFF )||(varOperation.pidNum == 0xFFFF)||(varOperation.busType == 0xFF))
 	{
 		varOperation.canTest = 0;
-		LogReport("Please binDing this equipment!");
+		LogReport("\r\n06-Unknown Equipment;");
 		CANTestChannel();
 		return;
 	}	
 	
 	if(varOperation.pidVersion == 0)
 	{
-		LogReport("01 - ECU Version %d,Need Config.",canDataConfig.pidVersion);
+		LogReport("\r\n07-ECUID don't Config:%d;",canDataConfig.pidVersion);
 		CANTestChannel();
 		return	;
 	}
@@ -159,7 +159,7 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 	if(err == OS_ERR_NONE)
 	{
 		Mem_free(CAN1_RxMsg);
-		LogReport("01 - PID Version %d test Success.",canDataConfig.pidVersion);
+		LogReport("\r\n08-ECUID Right:%d;",canDataConfig.pidVersion);//ECU有回应，配置文件正确
 		
 		dataToSend.ide   = canDataConfig.canIdType;
 		dataToSend.canId = canDataConfig.canTxId;
@@ -186,6 +186,12 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 		}
 		else if(temp == 200)           //读取版本号失败（ 配置文件有误 ）
 		{
+			CAN_DeInit(CAN1);  
+			CAN_StructInit(&CAN_InitStructure);
+			CAN1_BaudSet(canDataConfig.canBaud);   
+			CAN1_ClearFilter();                    
+			CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);
+			varOperation.canTest = 2; 
 			CANTestChannel();
 		}
 		else//版本号读取出来了，但是不能提升动力，那就正常跑吧
@@ -195,7 +201,7 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 	}
 	else
 	{
-		LogReport("ECU Version %d test Error!",canDataConfig.pidVersion);
+		LogReport("\r\n09-ECUID Error:%d!",canDataConfig.pidVersion);
 		CANTestChannel();
 	}	
 }
@@ -227,13 +233,13 @@ void CANTestChannel(void )
 		{
 			canDataConfig.canBaud = canBaudEnum[i];
 			Mem_free(CAN1_RxMsg);
-			LogReport("Baud %d Test Success.",canDataConfig.canBaud);
+			LogReport("\r\n10-Test Baud:%d;",canDataConfig.canBaud);
 			break;
 		}
 	}//如果波特率没有确定就上报日志并退出
 	if((i >= NUMOfCANBaud) && (err != OS_ERR_NONE))
 	{
-		LogReport("Baud Test Fail!!!");
+		LogReport("\r\n11-Baud Test Fail!");
 		varOperation.canTest = 0;
 		goto idOK;
 	}
@@ -287,7 +293,7 @@ void CANTestChannel(void )
 	}
 	if(varOperation.canTest == 0)
 	{
-		LogReport("CANID EXT Test Fail!");
+		LogReport("\r\n12-CAN Test Fail!");
 		return;
 	}
 idOK:
@@ -388,11 +394,9 @@ void PIDVarGet(uint8_t cmdId,uint8_t ptrData[])
 				break;
 			case 2://转速
 				if(carAllRecord.engineSpeedTemp != 1)
-				{
 					carAllRecord.engineSpeed = (uint16_t)(saveDate * ((ptrPIDVars + i)->ceo) + (ptrPIDVars + i)->offset);
-					if(carAllRecord.engineSpeed > carAllRecord.engineSpeedMax)//获得发动机最高转速
-						carAllRecord.engineSpeedMax = carAllRecord.engineSpeed;
-				}
+				if(carAllRecord.engineSpeed > carAllRecord.engineSpeedMax)//获得发动机最高转速
+					carAllRecord.engineSpeedMax = carAllRecord.engineSpeed;
 				break;
 			case 3://总喷油量
 				if(carAllRecord.allFuelTemp != 1)
@@ -439,7 +443,7 @@ void PIDVarGet(uint8_t cmdId,uint8_t ptrData[])
 				if(curFuelTimes >= 4)//计算瞬时油耗  1s 的
 				{
 					carAllRecord.instantFuel = allFuelCom * carAllRecord.engineSpeed / 7;
-					LogReport("penyou: %d,zhaunsu: %d;",allFuelCom,carAllRecord.engineSpeed);
+					LogReport("\r\n60-oil:%d,r:%d;",allFuelCom,carAllRecord.engineSpeed);
 					ptr = Mem_malloc(9);
 					
 					ptr[0] = 0x09;ptr[1] = 0x50;ptr[2] = 0x16;
