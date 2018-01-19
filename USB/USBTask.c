@@ -15,7 +15,7 @@ uint8_t upda[3][3]={{0x00,0xAA,0xBB},{0x01,0x00,0x00},{0x02,0x4F,0x4B}};
 //USB Éı¼¶ÈÎÎñ
 void USBUpdataTask (void *pdata)
 {
-	uint8_t err;
+	uint8_t err;     
 	uint16_t i;
 	uint16_t cmdId = 0;
 	
