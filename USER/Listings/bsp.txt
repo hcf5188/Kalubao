@@ -962,7 +962,7 @@
 000038  480a              LDR      r0,|L11.100|
 00003a  f7fffffe          BL       GPIO_ReadInputDataBit
 00003e  4604              MOV      r4,r0
-;;;29     	if(bitValue == 1)
+;;;29     	if(bitValue == 1)//USB升级模式
 000040  2c01              CMP      r4,#1
 000042  d106              BNE      |L11.82|
 ;;;30     	{
@@ -975,13 +975,13 @@
 00004c  f7fffffe          BL       GPIO_SetBits
 000050  e007              B        |L11.98|
                   |L11.82|
-;;;33     	}else
+;;;33     	}else            //正常工作模式
 ;;;34     	{
 ;;;35     		varOperation.USB_NormalMode = 0;
 000052  2000              MOVS     r0,#0
 000054  4904              LDR      r1,|L11.104|
 000056  7208              STRB     r0,[r1,#8]
-;;;36     		WatchDogInit(7,2000);//看门狗初始化，系统卡死大概12s后重启 		
+;;;36     		WatchDogInit(7,2000);           //看门狗初始化，系统卡死大概12s后重启 		
 000058  f44f61fa          MOV      r1,#0x7d0
 00005c  2007              MOVS     r0,#7
 00005e  f7fffffe          BL       WatchDogInit

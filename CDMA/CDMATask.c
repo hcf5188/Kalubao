@@ -69,7 +69,7 @@ receCDMA:
 				Mem_free(pCDMASend);
 			
 				varOperation.isDataFlow = 1;    //数据流未流动
-				freCDMALed = 100;               //CDMA小灯快闪
+				freCDMALed = LEDFAST;               //CDMA小灯快闪
 				CDMAPowerOpen_Close(CDMA_CLOSE);//关闭CDMA电源
 				
 				CDMAConfigInit();               //重新启动CDMA
@@ -93,7 +93,7 @@ receCDMA:
 			Mem_free(pCDMASend);
 		
 			varOperation.isDataFlow = 1;    //数据流未流动
-			freCDMALed = 100;               //CDMA小灯快闪
+			freCDMALed = LEDFAST;               //CDMA小灯快闪
 			CDMAPowerOpen_Close(CDMA_CLOSE);//关闭CDMA电源
 			
 			CDMAConfigInit();               //重新启动CDMA
@@ -170,21 +170,22 @@ void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength)
 			Mem_free(ptrCDMACfg);
 		}
 	}while((err != 0) && (count < 200));
-//	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
-//	Mem_free(ptrCDMACfg);
+	OSTimeDlyHMSM(0,0,0,100);
+	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
+	Mem_free(ptrCDMACfg);
 }
 
 static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t datSave[],uint8_t datLength )
 {
 	uint8_t err;
-	uint8_t i = 0;
+	uint8_t i = 0,j=0;
 	uint8_t *ptrCDMACfg;
 	do{
 		CDMASendDatas(at_Get,cmdLength);
 		ptrCDMACfg = OSQPend(CDMARecieveQ,500,&err);//todo:添加 +CPIN  判断
 		if(err == OS_ERR_NONE)
 		{
-			while( (ptrCDMACfg[i]<0x30)|| (ptrCDMACfg[i]>0x39))
+			while( (ptrCDMACfg[i] < 0x30)|| (ptrCDMACfg[i]>0x39))
 			{
 				i++;
 				if(i>15)
@@ -193,7 +194,15 @@ static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t 
 					break;
 				}
 			}
-			memcpy(datSave,&ptrCDMACfg[i],datLength);
+			for(j=0;j<datLength;j++)
+			{
+				if((ptrCDMACfg[i+j]>=0x30)&&(ptrCDMACfg[i+j]<=0x39))
+					continue;
+				else 
+					break;
+			}
+			if(j == datLength)
+				memcpy(datSave,&ptrCDMACfg[i],datLength);
 			Mem_free(ptrCDMACfg);
 		}
 	}while(err != OS_ERR_NONE);
@@ -205,6 +214,7 @@ void CDMAConfigInit(void )
 {
 	char sendCmd[45];
 	uint8_t sendlen = 0;
+	static uint8_t tt = 0; 
 	CDMAPowerOpen_Close(CDMA_OPEN);  //启动MG2639模块
 	
 	CDMASendCmd(atCmd,"OK",sizeof(atCmd));
@@ -213,9 +223,12 @@ void CDMAConfigInit(void )
 	CDMASendCmd(at_CSQ,"+CSQ:",sizeof(at_CSQ));
 
 	CDMASendCmd(at_CNMI,"OK",sizeof(at_CNMI));
-	
-	CDMAReadIMEI_ICCID(at_GSN,sizeof(at_GSN),varOperation.imei,15);     //读取IMEI号
-	CDMAReadIMEI_ICCID(at_ICCID,sizeof(at_ICCID),varOperation.iccID,20);//读取SIM卡的ICCID号
+	if(tt == 0)
+	{
+		CDMAReadIMEI_ICCID(at_GSN,sizeof(at_GSN),varOperation.imei,15);     //读取IMEI号
+		tt = 1;
+	}
+//	CDMAReadIMEI_ICCID(at_ICCID,sizeof(at_ICCID),varOperation.iccID,20);    //读取SIM卡的ICCID号
 	
 	CDMASendCmd(at_SetZpNum,"OK",sizeof(at_SetZpNum));
 	CDMASendCmd(at_ZPPPSTATUS,"+ZPPPSTATUS:",sizeof(at_ZPPPSTATUS));
@@ -224,7 +237,7 @@ void CDMAConfigInit(void )
 	sendlen = sprintf(sendCmd,(const char*)at_ZIPSETUP,varOperation.ipAddr,varOperation.ipPotr);//TCP连接
 	CDMASendCmd((uint8_t *)sendCmd,"+ZIPSETUP:CONNECTED",sendlen);
 
-	freCDMALed = 500;           //网络连接成功
+	freCDMALed = LEDSLOW;           //网络连接成功
 }
 
 

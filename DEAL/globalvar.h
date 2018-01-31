@@ -15,10 +15,15 @@
 
 #define PID1CONFIGADDR          0x08063000    //此地址存放服务器下发PID参数
 
+#define PROMOTE_ADDR            0x08065000    //此地址保存提升动力的指令（安全算法、模式、地址、掩码等等）
+
 #define CDMA_OPEN               0             //打开CDMA
 #define CDMA_CLOSE              1             //关闭CDMA
 #define ENGINE_RUN              0             //发动机正常运行
 #define ENGINE_STOP             1             //发动机停止运行
+
+#define LEDFAST                 200           //小灯快闪
+#define LEDSLOW                 1000          //小灯慢闪
 
 typedef enum
 {
@@ -106,8 +111,10 @@ __packed typedef struct//程序正常运行时候的各个参数
 	
 	uint16_t canTest;       //CAN 测试波特率、ID
 	uint8_t  pidTset;       //测试服务器下发的PID指令
+	uint8_t  strengthRun;   //正在提升动力
 	
-	uint8_t  oilMode;       //0 - 正常模式    1 - 强动力模式   2 - 节油模式
+	signed char  oilMode;   //0 - 正常模式    1 - 强动力模式   2 - 节油模式
+	uint8_t  isStrenOilOK;  //是否可以进行提升动力
 	uint8_t  isUSBSendDat;  //USB是否要发送数据  0 - 不要   1 - 正在发送
 	uint8_t   pidVerCmd[8];
 }SYS_OperationVar;
@@ -124,6 +131,19 @@ __packed typedef struct//第二个配置文件的结构体
 	float    offset;        //偏移量
 
 }VARConfig;
+__packed typedef struct     //内存监控变量
+{
+	uint8_t ecuVer[16];     //ECU版本
+	uint8_t fuelAddr[5];    //读取喷油量曲线的地址
+	uint8_t mask[4];        //安全算法掩码
+	signed char coe;            //增强动力系数
+	uint8_t safe1[8];       //安全算法指令1
+	uint8_t safe2[8];       //安全算法指令2
+	uint8_t mode1[8];       //模式指令1
+	uint8_t mode2[8];       //模式指令2
+	uint8_t modeOrder;      //模式指令执行顺序
+	
+}STRENFUEL_Struct;
 __packed typedef struct     //内存监控变量
 {
 	uint16_t memUsedNum1;    //内存块1当前正在使用的数量
@@ -180,7 +200,7 @@ __packed typedef struct
 	uint8_t  afterFuelTemp; 
 	uint16_t curFuel;         //当前喷油量
 	uint8_t  curFuelTemp;
-	uint8_t  instantFuel;     //瞬时油耗
+	uint16_t  instantFuel;     //瞬时油耗
 	uint32_t runLen1;         //行驶距离
 	uint32_t runLen2;         //车辆距离
 }CARRunRecord;

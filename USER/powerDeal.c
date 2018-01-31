@@ -9,10 +9,8 @@ void SpeedPlusSubCompute(void);//加减速次数计算
 void RunDataReport(void );     //运行数据上报
 
 //整车运行状态管理       todo：看门狗加进去  死机了就重启
-
 void PowerDeal(void *pdata)
 {
-
 	uint8_t timeCount = 0;  //发动机 启动 - 停止 时间
 
 	while(1)

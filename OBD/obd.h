@@ -91,10 +91,11 @@ void CAN1_BaudSet(CANBAUD_Enum baud);
 void CAN1_ClearFilter(void);
 void CAN1_SetFilter(uint32_t canId,uint32_t canIde);
 
-void SafeALG(uint8_t* ptrVer);       //安全算法
+void SafeALG(void);                   //安全算法、过模式、进入功能模式、写入ECU新标定值
 uint8_t ReadECUVersion(uint8_t cmd[]);//读取ECU版本号
-void Get_Q_FromECU(uint8_t ver);//增强动力
-void J1939DataLog(void);  //上报J1939采集到的数据
+void Get_Q_FromECU(void);             //得到喷油量数据，并计算出当前的模式
+void StrengthFuel(void);              //将新的标定写入
+void J1939DataLog(void);              //上报J1939采集到的数据
 
 void PIDVarGet(uint8_t cmdId,uint8_t *ptrData);//第二配置文件数据解析
 

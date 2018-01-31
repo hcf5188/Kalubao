@@ -37,7 +37,7 @@ void DealJ1939Date(void *pdata)
 					carAllRecord.engineSpeedMax = carAllRecord.engineSpeed;
 				
 				memcpy(RCVData0,CAN1_RxMsg->Data,8);
-				CANr1=1;
+				CANr1 = 1;
 				break;
 			case  0x18FEE000:           //行驶距离，车辆距离
 				carAllRecord.runLen1 =  CAN1_RxMsg->Data[3];
@@ -72,7 +72,7 @@ void DealJ1939Date(void *pdata)
 				carAllRecord.allFuel     = (carAllRecord.allFuel * 256) + CAN1_RxMsg->Data[4];
 				break;
 			
-//			case 0x0CF00400:break;
+//			case 0x0CF00400: break;
 			
 			case 0x0CF00300: memcpy(RCVData1,CAN1_RxMsg->Data,8);CANr2=1;break;
 			
@@ -89,9 +89,9 @@ void DealJ1939Date(void *pdata)
 			default: break;
 		}
 		Mem_free(CAN1_RxMsg);
-		if(CANr1==1&&CANr2==1&&CANr3==1&&CANr4==1&&CANr5==1&&CANr6==1&&CANr7==1)
+		if(CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1 && CANr7==1)
 		{
-		   fCanOK = 1;
+			fCanOK = 1;
 		}else
 			fCanOK = 0;
 	}
@@ -103,9 +103,16 @@ void J1939DataLog(void)
 //	LogReport("RunDistance: 0x18FEE000 - 1:%d,2:%d;",carAllRecord.runLen1,carAllRecord.runLen2);
 //	LogReport("CarSpeed: 0x18FEF100 - %d;",carAllRecord.carSpeed);
 //	LogReport("RunOil: 0x18FEE900 - %f;",carAllRecord.allFuel);
-	
+	signed char coe = 0;
+	coe = strengthFuelFlash.coe;
 	LogReport("\r\n01-ECUdatLenersion:%s",varOperation.ecuVersion);//打印版本信息
-	LogReport("\r\n02-OilMode:%d",varOperation.oilMode);      //打印动力模式
+	if(coe >= 0)
+		LogReport("\r\n02-OilMode:%d;",coe);      //打印动力模式
+	else
+	{
+		coe = 0-coe;
+		LogReport("\r\n02-OilMode:-%d;",coe);
+	}
 }
 
 

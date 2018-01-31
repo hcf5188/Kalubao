@@ -35,14 +35,16 @@ void CDMARecvTask(void *pdata)
 			
 			if(cmdId == 0x5001)                          //接收到登录报文
 				RecvLoginDatDeal(ptrDeal);
+			
 			else if(cmdId == 0x5015)                     //模式切换
 				FuelModeChange(ptrDeal);
+			
 			else if(cmdId == 0x5017)                     //服务器下发的测试指令
 				CanTestCmd(ptrDeal);
-			else if((cmdId >= 0x4000)&&(cmdId < 0x5000)) //第一部分的配置文件
+			
+			else if(((cmdId >= 0x4000)&&(cmdId < 0x5000))||(cmdId == 0x5012)||(cmdId == 0x5018)) //第一、二部分的配置文件
 				ConfigUpdata(ptrDeal);
-			else if(cmdId == 0x5012)                     //第二部分的配置文件
-				ConfigUpdata(ptrDeal);
+			
 			else if((cmdId >= 0x8000)&&(cmdId < 0x9000)) //程序升级报文    
 				OTA_Updata(ptrDeal);
 			
@@ -67,14 +69,14 @@ void LoginDataSend(void)
 {
 	uint8_t err;
 	uint32_t buff;
-	_CDMADataToSend* loginData = CDMNSendInfoInit(100);        //发送登录报文
+	_CDMADataToSend* loginData = CDMNSendInfoInit(100);    //发送登录报文
 	
 	loginData->data[loginData->datLength++] = 31;
 	loginData->data[loginData->datLength++] = 0x50;
 	loginData->data[loginData->datLength++] = 0x01;
 	
 	buff = sysUpdateVar.curSoftVer; 
-	buff =t_htonl(buff);			//软件固件版本  
+	buff =t_htonl(buff);			                       //软件固件版本  
 	memcpy(&loginData->data[loginData->datLength],&buff,4);
 	loginData->datLength += 4;
 	
@@ -85,21 +87,21 @@ void LoginDataSend(void)
 	memcpy(&loginData->data[loginData->datLength],varOperation.iccID,20);
 	loginData->datLength += 20;
 	
-	CDMASendDataPack(loginData);//对登录报文进行打包（添加帧头、校验码、帧尾）
+	CDMASendDataPack(loginData);     //对登录报文进行打包（添加帧头、校验码、帧尾）
 	err = OSQPost(CDMASendQ,loginData);
 	if(err != OS_ERR_NONE)
 	{
 		Mem_free(loginData);
 	}
-	varOperation.isLoginDeal = 0;//正在处理登录报文
+	varOperation.isLoginDeal = 0;     //正在处理登录报文
 }
 static void GetConfigInfo(void)
 {
 	_CDMADataToSend* otaUpdatSend;
 	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
 
-	otaUpdatSend->data[otaUpdatSend->datLength++] = 11;   //长度
-	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;
+	otaUpdatSend->data[otaUpdatSend->datLength++] = 11;  //长度
+	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x40;    
 	otaUpdatSend->data[otaUpdatSend->datLength++] = 0x00;
 	//当前版本
 	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.pidVersion >> 24) & 0x00FF; 
@@ -153,7 +155,7 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 	ecuId = (ecuId << 8) + ptr[offset++];
 	ecuId = (ecuId << 8) + ptr[offset++];
 	
-	ipLen = ptr[offset++];              //得到IP长度
+	ipLen = ptr[offset++];               //得到IP长度
 	memset(varOperation.newIP_Addr,0,18);//清零
 	memcpy(varOperation.newIP_Addr,&ptr[offset],ipLen); //得到IP地址
 	
@@ -161,7 +163,7 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 	varOperation.newIP_Potr = (varOperation.newIP_Potr << 8) + ptr[offset + ipLen + 1];
 	
 	varOperation.oilMode = ptr[offset + ipLen + 2];
-	
+	strengthFuel.coe = ptr[offset + ipLen + 2];
 	if(softVersion != sysUpdateVar.curSoftVer) //先考虑OTA升级
 	{
 		varOperation.newSoftVersion = softVersion;
@@ -336,7 +338,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 	uint8_t  temp;
 	uint16_t frameLen;
 	uint16_t cmdId;
-	
+	uint8_t* ptrMode;
 	uint16_t i = 0,offset = 0;
     static uint16_t currentNum = 0;//发送下一个配置请求包
 	static uint16_t frameIndex = 0;
@@ -383,7 +385,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 			//SendConfigNum(currentNum);//todo：重新发送？
 			return;
 		}
-		
+		 
 		offset = 2;
 		frameLen = ptrDeal[offset++] - 3;
 		cmdId    = ptrDeal[offset++];
@@ -472,6 +474,49 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		canDataConfig.canBaud    = varOperation.canBaud;
 		memcpy(canDataConfig.pidVerCmd,varOperation.pidVerCmd,8);
 		Save2KDataToFlash((uint8_t *)&canDataConfig,PIDCONFIG,(sizeof(_CANDataConfig)+3)); //保存 CAN 通讯参数
+		SendConfigNum(0x5018);
+	}else if(cmdId == 0x5018)
+	{
+		offset = 5;
+		memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16); //版本号
+		offset += 16;
+		memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5);//读取喷油量的地址
+		offset += 5;
+		memcpy(strengthFuel.mask,&ptrDeal[offset],4); //安全算法掩码
+		offset += 4;
+		strengthFuel.coe = ptrDeal[offset];           //提升动力的系数
+		offset ++;
+		memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
+		offset += 8;
+		memcpy(strengthFuel.safe2,&ptrDeal[offset],8);//安全算法cmd 2
+		offset += 8;
+		memcpy(strengthFuel.mode1,&ptrDeal[offset],8);//模式 cmd 1
+		offset += 8;
+		memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
+		offset += 8;
+		strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
+		
+		ptrMode = Mem_malloc(80);
+		offset = 0;
+		
+		memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);//为了拷贝代码，我就用中间数据的方法得了
+		offset += 16;
+		memcpy(&ptrMode[offset],strengthFuel.fuelAddr,5);
+		offset += 5;
+		memcpy(&ptrMode[offset],strengthFuel.mask,4);
+		offset += 4;
+		memcpy(&ptrMode[offset],strengthFuel.safe1,8);
+		offset += 8;
+		memcpy(&ptrMode[offset],strengthFuel.safe2,8);
+		offset += 8;
+		memcpy(&ptrMode[offset],strengthFuel.mode1,8);
+		offset += 8;
+		memcpy(&ptrMode[offset],strengthFuel.mode2,8);
+		offset += 8;
+		ptrMode[offset++] = strengthFuel.modeOrder;
+		
+		Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);
+		Mem_free(ptrMode);
 		
 		__disable_fault_irq();                    //重启
 		NVIC_SystemReset();
@@ -559,17 +604,17 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
 				pidVerCmd[1] = 0x50;
 				pidVerCmd[2] = 0x17;
 				
-				pidVerCmd[3] = (flowId>>24) & 0xFF;//指令流水号
+				pidVerCmd[3] = (flowId>>24) & 0xFF;           //指令流水号
 				pidVerCmd[4] = (flowId>>16) & 0xFF;
 				pidVerCmd[5] = (flowId>>8)  & 0xFF;
 				pidVerCmd[6] = (flowId>>0)  & 0xFF;
 				
-				pidVerCmd[7] = CAN1_RxMsg->Data[1];//收到的数据长度
+				pidVerCmd[7] = CAN1_RxMsg->Data[1];           //收到的数据长度
 				
 				memcpy(&pidVerCmd[8],&CAN1_RxMsg->Data[2],6);
 				cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6) % 7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
 				Mem_free(CAN1_RxMsg);
-				dataToSend.pdat = pidManyBag;//发送 0x30 请求接下来的多包
+				dataToSend.pdat = pidManyBag;                 //发送 0x30 请求接下来的多包
 				OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
 				for(i=0;i<cmdManyPackNum;i++)
 				{
@@ -620,7 +665,7 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
 		pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
 		pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
 		
-		pidVerCmd[offset++] = 5;//ERROR  -  配置指令错误
+		pidVerCmd[offset++] = 5;      //ERROR  -  配置指令错误
 		pidVerCmd[offset++] = 'E';pidVerCmd[offset++] = 'R';pidVerCmd[offset++] = 'R';
 		pidVerCmd[offset++] = 'O';pidVerCmd[offset++] = 'R';
 		SendPidCmdData(pidVerCmd);
@@ -638,22 +683,131 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
 	varOperation.pidTset = 0;
 	Mem_free(pidVerCmd);
 }
-
+extern uint8_t strengPower[300];
 static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切换
 {
+	uint16_t offset = 5;
 	uint8_t* ptrMode;
-	ptrMode = Mem_malloc(4);
-	ptrMode[0] = 4;
+	uint16_t newCRC = 0,nowCRC = 0;
+	
+	
+	memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16); //版本号
+	offset += 16;
+	memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5);//读取喷油量的地址
+	offset += 5;
+	memcpy(strengthFuel.mask,&ptrDeal[offset],4); //安全算法掩码
+	offset += 4;
+	strengthFuel.coe = ptrDeal[offset];           //提升动力的系数
+	offset ++;
+	memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
+	offset += 8;
+	memcpy(strengthFuel.safe2,&ptrDeal[offset],8);//安全算法cmd 2
+	offset += 8;
+	memcpy(strengthFuel.mode1,&ptrDeal[offset],8);//模式 cmd 1
+	offset += 8;
+	memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
+	offset += 8;
+	strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
+	
+	
+	ptrMode = Mem_malloc(5);  //
+	ptrMode[0] = 4;           //长度
 	ptrMode[1] = 0x50;
 	ptrMode[2] = 0x15;
-	ptrMode[3] = ptrDeal[5];
+	ptrMode[3] = strengthFuel.coe;
 	SendPidCmdData(ptrMode);
 	
-	varOperation.oilMode = ptrDeal[5];
-
 	Mem_free(ptrMode);
 	Mem_free(ptrDeal);
+	
+	newCRC = CRC_ComputeFile(newCRC,strengthFuel.ecuVer,16);
+	newCRC = CRC_ComputeFile(newCRC,strengthFuel.fuelAddr,5);
+	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mask,4);
+	newCRC = CRC_ComputeFile(newCRC,strengthFuel.safe1,8);
+	newCRC = CRC_ComputeFile(newCRC,strengthFuel.safe2,8);
+	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mode1,8);
+	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mode2,8);
+	
+	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.ecuVer,16);
+	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.fuelAddr,5);
+	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mask,4);
+	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.safe1,8);
+	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.safe2,8);
+	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mode1,8);
+	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mode2,8);
+	if(nowCRC == newCRC)
+		return;
+	ptrMode = Mem_malloc(80);
+	offset = 0;
+	
+	memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);
+	offset += 16;
+	memcpy(&ptrMode[offset],strengthFuel.fuelAddr,5);
+	offset += 5;
+	memcpy(&ptrMode[offset],strengthFuel.mask,4);
+	offset += 4;
+	memcpy(&ptrMode[offset],strengthFuel.safe1,8);
+	offset += 8;
+	memcpy(&ptrMode[offset],strengthFuel.safe2,8);
+	offset += 8;
+	memcpy(&ptrMode[offset],strengthFuel.mode1,8);
+	offset += 8;
+	memcpy(&ptrMode[offset],strengthFuel.mode2,8);
+	offset += 8;
+	ptrMode[offset++] = strengthFuel.modeOrder;
+	Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);//将新的增强动力指令写入Flash
+	
+	Mem_free(ptrMode);
+	memcpy(strengthFuelFlash.ecuVer,strengthFuel.ecuVer,16);   //版本号
+	memcpy(strengthFuelFlash.fuelAddr,strengthFuel.fuelAddr,5);//读取喷油量的地址
+	memcpy(strengthFuelFlash.mask,strengthFuel.mask,4);        //安全算法掩码
+	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //安全算法cmd 1
+	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //安全算法cmd 2
+	memcpy(strengthFuelFlash.mode1,strengthFuel.mode1,8);      //模式 cmd 1
+	memcpy(strengthFuelFlash.mode2,strengthFuel.mode2,8);      //模式 cmd 2
+	strengthFuelFlash.modeOrder = strengthFuel.modeOrder;      //模式指令与安全算法执行的顺序
+
+//	strengPower[0] = 0x00;
+//	SoftErasePage(STRENGE_Q);
+//	Save2KDataToFlash(strengPower,STRENGE_Q,200);
+	
+	__disable_fault_irq();                    //重启
+	NVIC_SystemReset();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

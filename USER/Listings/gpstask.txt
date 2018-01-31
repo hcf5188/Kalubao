@@ -107,8 +107,8 @@
 00002a  f8d00049          LDR      r0,[r0,#0x49]  ; gpsMC
 00002e  b918              CBNZ     r0,|L2.56|
 ;;;32     		{
-;;;33     			freGPSLed = 100;//GPS 绿灯快闪，GPS定位不成功
-000030  2064              MOVS     r0,#0x64
+;;;33     			freGPSLed =  LEDFAST; ;//GPS 绿灯快闪，GPS定位不成功
+000030  20c8              MOVS     r0,#0xc8
 000032  4958              LDR      r1,|L2.404|
 000034  8008              STRH     r0,[r1,#0]
 ;;;34     			continue;
@@ -304,8 +304,8 @@
 00017a  6e08              LDR      r0,[r1,#0x60]  ; varOperation
 00017c  f7fffffe          BL       RTC_Time_Adjust
                   |L2.384|
-;;;88     		freGPSLed = 500;          //LED  指示，GPS定位正常
-000180  f44f70fa          MOV      r0,#0x1f4
+;;;88     		freGPSLed = LEDSLOW; ;          //LED  指示，GPS定位正常
+000180  f44f707a          MOV      r0,#0x3e8
 000184  4903              LDR      r1,|L2.404|
 000186  8008              STRH     r0,[r1,#0]
 000188  bf00              NOP                            ;34

@@ -212,7 +212,7 @@
                           AREA ||i.CDMALEDTask||, CODE, READONLY, ALIGN=2
 
                   CDMALEDTask PROC
-;;;10     uint16_t freCDMALed = 100;//»ÆµÆ  GPRS
+;;;10     uint16_t freCDMALed = LEDFAST;//»ÆµÆ  GPRS
 ;;;11     void CDMALEDTask(void *pdata)
 000000  e026              B        |L4.80|
                   |L4.2|
@@ -266,7 +266,7 @@
 000050  e7d7              B        |L4.2|
 ;;;23     	}
 ;;;24     }
-;;;25     uint16_t freGPSLed = 100;//ÂÌµÆ  GPS
+;;;25     uint16_t freGPSLed = LEDFAST;//ÂÌµÆ  GPS
                           ENDP
 
 000052  0000              DCW      0x0000
@@ -278,7 +278,7 @@
                           AREA ||i.GPSLEDTask||, CODE, READONLY, ALIGN=2
 
                   GPSLEDTask PROC
-;;;25     uint16_t freGPSLed = 100;//ÂÌµÆ  GPS
+;;;25     uint16_t freGPSLed = LEDFAST;//ÂÌµÆ  GPS
 ;;;26     void GPSLEDTask(void *pdata)
 000000  e026              B        |L5.80|
                   |L5.2|
@@ -332,7 +332,7 @@
 000050  e7d7              B        |L5.2|
 ;;;38     	}
 ;;;39     }
-;;;40     uint16_t freOBDLed = 100;//ºìµÆ  CAN
+;;;40     uint16_t freOBDLed = LEDFAST;//ºìµÆ  CAN
                           ENDP
 
 000052  0000              DCW      0x0000
@@ -344,7 +344,7 @@
                           AREA ||i.OBDLEDTask||, CODE, READONLY, ALIGN=2
 
                   OBDLEDTask PROC
-;;;40     uint16_t freOBDLed = 100;//ºìµÆ  CAN
+;;;40     uint16_t freOBDLed = LEDFAST;//ºìµÆ  CAN
 ;;;41     void OBDLEDTask(void *pdata)
 000000  e026              B        |L6.80|
                   |L6.2|
@@ -410,11 +410,11 @@
                           AREA ||.data||, DATA, ALIGN=1
 
                   freCDMALed
-000000  0064              DCW      0x0064
+000000  00c8              DCW      0x00c8
                   freGPSLed
-000002  0064              DCW      0x0064
+000002  00c8              DCW      0x00c8
                   freOBDLed
-000004  0064              DCW      0x0064
+000004  00c8              DCW      0x00c8
 
 ;*** Start embedded assembler ***
 

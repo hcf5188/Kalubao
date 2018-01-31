@@ -30,7 +30,7 @@ void GPSTask(void *pdata)
 		//todo：要根据有效无效判断位来解析， 此时若解析的经度为0  视为无效定位
 		if(gpsMC.longitude == 0) 
 		{
-			freGPSLed = 100;//GPS 绿灯快闪，GPS定位不成功
+			freGPSLed =  LEDFAST; ;//GPS 绿灯快闪，GPS定位不成功
 			continue;
 		}	
 		
@@ -85,7 +85,7 @@ void GPSTask(void *pdata)
 		timeStamp = varOperation.currentTime > osTime? (varOperation.currentTime - osTime):(osTime - varOperation.currentTime);
 		if(timeStamp > 300)//时间相差5分钟后，校时（以GPS时间为准）
 			RTC_Time_Adjust(varOperation.currentTime);
-		freGPSLed = 500;          //LED  指示，GPS定位正常
+		freGPSLed = LEDSLOW; ;          //LED  指示，GPS定位正常
 	}
 }
 

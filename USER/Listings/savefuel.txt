@@ -1181,17 +1181,17 @@
 000000  2003              MOVS     r0,#3
 ;;;197    {
 ;;;198    	Load_stCurr   = Highload;      // 默认当前油门最大
-000002  49c5              LDR      r1,|L7.792|
+000002  49c2              LDR      r1,|L7.780|
 000004  7008              STRB     r0,[r1,#0]
 ;;;199    	Load_stTarget = Highload;      // 默认计算的油门也是最大
-000006  49c5              LDR      r1,|L7.796|
+000006  49c2              LDR      r1,|L7.784|
 000008  7008              STRB     r0,[r1,#0]
 ;;;200    	trqmax        = 225;
 00000a  20e1              MOVS     r0,#0xe1
-00000c  49c4              LDR      r1,|L7.800|
+00000c  49c1              LDR      r1,|L7.788|
 00000e  8008              STRH     r0,[r1,#0]
 ;;;201    	while(1)
-000010  e180              B        |L7.788|
+000010  e17b              B        |L7.778|
                   |L7.18|
 ;;;202    	{
 ;;;203    		OSTimeDlyHMSM(0,0,0,1);	
@@ -1201,49 +1201,49 @@
 000018  4610              MOV      r0,r2
 00001a  f7fffffe          BL       OSTimeDlyHMSM
 ;;;204    		SystemTime10ms  ++;
-00001e  48c1              LDR      r0,|L7.804|
-000020  7800              LDRB     r0,[r0,#0]  ; SystemTime10ms
+00001e  48be              LDR      r0,|L7.792|
+000020  8800              LDRH     r0,[r0,#0]  ; SystemTime10ms
 000022  1c40              ADDS     r0,r0,#1
-000024  49bf              LDR      r1,|L7.804|
-000026  7008              STRB     r0,[r1,#0]
+000024  49bc              LDR      r1,|L7.792|
+000026  8008              STRH     r0,[r1,#0]
 ;;;205    		SystemTime50ms  ++;
-000028  48bf              LDR      r0,|L7.808|
-00002a  7800              LDRB     r0,[r0,#0]  ; SystemTime50ms
+000028  48bc              LDR      r0,|L7.796|
+00002a  8800              LDRH     r0,[r0,#0]  ; SystemTime50ms
 00002c  1c40              ADDS     r0,r0,#1
-00002e  49be              LDR      r1,|L7.808|
-000030  7008              STRB     r0,[r1,#0]
+00002e  49bb              LDR      r1,|L7.796|
+000030  8008              STRH     r0,[r1,#0]
 ;;;206    		SystemTime100ms ++;
-000032  48be              LDR      r0,|L7.812|
-000034  7800              LDRB     r0,[r0,#0]  ; SystemTime100ms
+000032  48bb              LDR      r0,|L7.800|
+000034  8800              LDRH     r0,[r0,#0]  ; SystemTime100ms
 000036  1c40              ADDS     r0,r0,#1
-000038  49bc              LDR      r1,|L7.812|
-00003a  7008              STRB     r0,[r1,#0]
+000038  49b9              LDR      r1,|L7.800|
+00003a  8008              STRH     r0,[r1,#0]
 ;;;207    		SystemTime500ms ++;
-00003c  48bc              LDR      r0,|L7.816|
-00003e  7800              LDRB     r0,[r0,#0]  ; SystemTime500ms
+00003c  48b9              LDR      r0,|L7.804|
+00003e  8800              LDRH     r0,[r0,#0]  ; SystemTime500ms
 000040  1c40              ADDS     r0,r0,#1
-000042  49bb              LDR      r1,|L7.816|
-000044  7008              STRB     r0,[r1,#0]
+000042  49b8              LDR      r1,|L7.804|
+000044  8008              STRH     r0,[r1,#0]
 ;;;208    		SystemTime1s ++;
-000046  48bb              LDR      r0,|L7.820|
-000048  7800              LDRB     r0,[r0,#0]  ; SystemTime1s
+000046  48b8              LDR      r0,|L7.808|
+000048  8800              LDRH     r0,[r0,#0]  ; SystemTime1s
 00004a  1c40              ADDS     r0,r0,#1
-00004c  49b9              LDR      r1,|L7.820|
-00004e  7008              STRB     r0,[r1,#0]
+00004c  49b6              LDR      r1,|L7.808|
+00004e  8008              STRH     r0,[r1,#0]
 ;;;209    
 ;;;210    //每毫秒都会进行数据检查
 ;;;211    		if(SystemTime10ms >= 10)
-000050  48b4              LDR      r0,|L7.804|
-000052  7800              LDRB     r0,[r0,#0]  ; SystemTime10ms
+000050  48b1              LDR      r0,|L7.792|
+000052  8800              LDRH     r0,[r0,#0]  ; SystemTime10ms
 000054  280a              CMP      r0,#0xa
 000056  db7d              BLT      |L7.340|
 ;;;212    		{
 ;;;213    			SystemTime10ms = 0;
 000058  2000              MOVS     r0,#0
-00005a  49b2              LDR      r1,|L7.804|
-00005c  7008              STRB     r0,[r1,#0]
+00005a  49af              LDR      r1,|L7.792|
+00005c  8008              STRH     r0,[r1,#0]
 ;;;214    			if(fCanOK) 
-00005e  48b6              LDR      r0,|L7.824|
+00005e  48b3              LDR      r0,|L7.812|
 000060  7800              LDRB     r0,[r0,#0]  ; fCanOK
 000062  2800              CMP      r0,#0
 000064  d076              BEQ      |L7.340|
@@ -1256,315 +1256,315 @@
 ;;;219    						载荷状态变化时, 扭拒限制的斜率变化
 ;;;220    ################################################################################*/           
 ;;;221    				if(Load_stCurr == Highload)//当前是重载模式  此处是标志
-00006e  48aa              LDR      r0,|L7.792|
+00006e  48a7              LDR      r0,|L7.780|
 000070  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 000072  2803              CMP      r0,#3
 000074  d155              BNE      |L7.290|
 ;;;222    				{
 ;;;223    					if(Load_stTarget == Midload)//手机设定是中档模式   此处是模式标志
-000076  48a9              LDR      r0,|L7.796|
+000076  48a6              LDR      r0,|L7.784|
 000078  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00007a  2802              CMP      r0,#2
 00007c  d124              BNE      |L7.200|
 ;;;224    					{
 ;;;225    						if(TrqLoad>TrqlimMid)                 //这个就是拿真实值进行比较了
-00007e  48af              LDR      r0,|L7.828|
+00007e  48ac              LDR      r0,|L7.816|
 000080  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 000082  f7fffffe          BL       __aeabi_i2f
 000086  4604              MOV      r4,r0
-000088  48ad              LDR      r0,|L7.832|
+000088  48aa              LDR      r0,|L7.820|
 00008a  6801              LDR      r1,[r0,#0]  ; TrqLoad
 00008c  4620              MOV      r0,r4
 00008e  f7fffffe          BL       __aeabi_cfcmple
 000092  d20e              BCS      |L7.178|
 ;;;226    							TrqLoad = TrqLoad - 0.08; //8/s
-000094  48aa              LDR      r0,|L7.832|
+000094  48a7              LDR      r0,|L7.820|
 000096  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000098  f7fffffe          BL       __aeabi_f2d
 00009c  4606              MOV      r6,r0
-00009e  4aa9              LDR      r2,|L7.836|
-0000a0  4ba9              LDR      r3,|L7.840|
+00009e  4aa6              LDR      r2,|L7.824|
+0000a0  4ba6              LDR      r3,|L7.828|
 0000a2  f7fffffe          BL       __aeabi_dsub
 0000a6  4604              MOV      r4,r0
 0000a8  f7fffffe          BL       __aeabi_d2f
-0000ac  49a4              LDR      r1,|L7.832|
+0000ac  49a1              LDR      r1,|L7.820|
 0000ae  6008              STR      r0,[r1,#0]  ; TrqLoad
 0000b0  e0e2              B        |L7.632|
                   |L7.178|
 ;;;227    						else 
 ;;;228    						{
 ;;;229    							Load_stCurr = Load_stTarget; //达到预期状态了，赋值、相应标志
-0000b2  489a              LDR      r0,|L7.796|
+0000b2  4897              LDR      r0,|L7.784|
 0000b4  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
-0000b6  4998              LDR      r1,|L7.792|
+0000b6  4995              LDR      r1,|L7.780|
 0000b8  7008              STRB     r0,[r1,#0]
 ;;;230    							TrqLoad = TrqlimMid;
-0000ba  48a0              LDR      r0,|L7.828|
+0000ba  489d              LDR      r0,|L7.816|
 0000bc  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 0000be  f7fffffe          BL       __aeabi_i2f
-0000c2  499f              LDR      r1,|L7.832|
+0000c2  499c              LDR      r1,|L7.820|
 0000c4  6008              STR      r0,[r1,#0]  ; TrqLoad
 0000c6  e0d7              B        |L7.632|
                   |L7.200|
 ;;;231    						}
 ;;;232    					} 
 ;;;233    					else if(Load_stTarget == Lowload)    //应该是低档模式
-0000c8  4894              LDR      r0,|L7.796|
+0000c8  4891              LDR      r0,|L7.784|
 0000ca  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 0000cc  2801              CMP      r0,#1
 0000ce  d124              BNE      |L7.282|
 ;;;234    					{
 ;;;235    						if(TrqLoad > TrqlimLow) TrqLoad = TrqLoad - 0.08; //8/s
-0000d0  489e              LDR      r0,|L7.844|
+0000d0  489b              LDR      r0,|L7.832|
 0000d2  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 0000d4  f7fffffe          BL       __aeabi_i2f
 0000d8  4604              MOV      r4,r0
-0000da  4899              LDR      r0,|L7.832|
+0000da  4896              LDR      r0,|L7.820|
 0000dc  6801              LDR      r1,[r0,#0]  ; TrqLoad
 0000de  4620              MOV      r0,r4
 0000e0  f7fffffe          BL       __aeabi_cfcmple
 0000e4  d20e              BCS      |L7.260|
-0000e6  4896              LDR      r0,|L7.832|
+0000e6  4893              LDR      r0,|L7.820|
 0000e8  6800              LDR      r0,[r0,#0]  ; TrqLoad
 0000ea  f7fffffe          BL       __aeabi_f2d
 0000ee  4606              MOV      r6,r0
-0000f0  4a94              LDR      r2,|L7.836|
-0000f2  4b95              LDR      r3,|L7.840|
+0000f0  4a91              LDR      r2,|L7.824|
+0000f2  4b92              LDR      r3,|L7.828|
 0000f4  f7fffffe          BL       __aeabi_dsub
 0000f8  4604              MOV      r4,r0
 0000fa  f7fffffe          BL       __aeabi_d2f
-0000fe  4990              LDR      r1,|L7.832|
+0000fe  498d              LDR      r1,|L7.820|
 000100  6008              STR      r0,[r1,#0]  ; TrqLoad
 000102  e0b9              B        |L7.632|
                   |L7.260|
 ;;;236    						else 
 ;;;237    						{
 ;;;238    							Load_stCurr = Load_stTarget;
-000104  4885              LDR      r0,|L7.796|
+000104  4882              LDR      r0,|L7.784|
 000106  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
-000108  4983              LDR      r1,|L7.792|
+000108  4980              LDR      r1,|L7.780|
 00010a  7008              STRB     r0,[r1,#0]
 ;;;239    							TrqLoad = TrqlimLow;
-00010c  488f              LDR      r0,|L7.844|
+00010c  488c              LDR      r0,|L7.832|
 00010e  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 000110  f7fffffe          BL       __aeabi_i2f
-000114  498a              LDR      r1,|L7.832|
+000114  4987              LDR      r1,|L7.820|
 000116  6008              STR      r0,[r1,#0]  ; TrqLoad
 000118  e0ae              B        |L7.632|
                   |L7.282|
 ;;;240    						}
 ;;;241    					} 
 ;;;242    					else TrqLoad = 225;     
-00011a  488d              LDR      r0,|L7.848|
-00011c  4988              LDR      r1,|L7.832|
+00011a  488a              LDR      r0,|L7.836|
+00011c  4985              LDR      r1,|L7.820|
 00011e  6008              STR      r0,[r1,#0]  ; TrqLoad
 000120  e0aa              B        |L7.632|
                   |L7.290|
 ;;;243    				} 
 ;;;244    				else if(Load_stCurr == Midload)
-000122  487d              LDR      r0,|L7.792|
+000122  487a              LDR      r0,|L7.780|
 000124  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 000126  2802              CMP      r0,#2
 000128  d152              BNE      |L7.464|
 ;;;245    				{
 ;;;246    					if(Load_stTarget == Highload)
-00012a  487c              LDR      r0,|L7.796|
+00012a  4879              LDR      r0,|L7.784|
 00012c  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00012e  2803              CMP      r0,#3
 000130  d11e              BNE      |L7.368|
 ;;;247    					{
 ;;;248    						if(TrqLoad < 225) 
-000132  4987              LDR      r1,|L7.848|
-000134  4882              LDR      r0,|L7.832|
+000132  4984              LDR      r1,|L7.836|
+000134  487f              LDR      r0,|L7.820|
 000136  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000138  f7fffffe          BL       __aeabi_cfcmple
 00013c  d210              BCS      |L7.352|
 ;;;249    							TrqLoad = TrqLoad + 0.08; //8/s
-00013e  4880              LDR      r0,|L7.832|
+00013e  487d              LDR      r0,|L7.820|
 000140  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000142  f7fffffe          BL       __aeabi_f2d
 000146  4606              MOV      r6,r0
-000148  4a7e              LDR      r2,|L7.836|
-00014a  4b7f              LDR      r3,|L7.840|
+000148  4a7b              LDR      r2,|L7.824|
+00014a  4b7c              LDR      r3,|L7.828|
 00014c  f7fffffe          BL       __aeabi_dadd
 000150  4604              MOV      r4,r0
 000152  e000              B        |L7.342|
                   |L7.340|
-000154  e099              B        |L7.650|
+000154  e094              B        |L7.640|
                   |L7.342|
 000156  f7fffffe          BL       __aeabi_d2f
-00015a  4979              LDR      r1,|L7.832|
+00015a  4976              LDR      r1,|L7.820|
 00015c  6008              STR      r0,[r1,#0]  ; TrqLoad
 00015e  e08b              B        |L7.632|
                   |L7.352|
 ;;;250    						else 
 ;;;251    						{
 ;;;252    							Load_stCurr = Load_stTarget;
-000160  486e              LDR      r0,|L7.796|
+000160  486b              LDR      r0,|L7.784|
 000162  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
-000164  496c              LDR      r1,|L7.792|
+000164  4969              LDR      r1,|L7.780|
 000166  7008              STRB     r0,[r1,#0]
 ;;;253    							TrqLoad = 225;
-000168  4879              LDR      r0,|L7.848|
-00016a  4975              LDR      r1,|L7.832|
+000168  4876              LDR      r0,|L7.836|
+00016a  4972              LDR      r1,|L7.820|
 00016c  6008              STR      r0,[r1,#0]  ; TrqLoad
 00016e  e083              B        |L7.632|
                   |L7.368|
 ;;;254    						}
 ;;;255    					} 
 ;;;256    					else if(Load_stTarget == Lowload)
-000170  486a              LDR      r0,|L7.796|
+000170  4867              LDR      r0,|L7.784|
 000172  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 000174  2801              CMP      r0,#1
 000176  d124              BNE      |L7.450|
 ;;;257    					{
 ;;;258    						if(TrqLoad > TrqlimLow) 
-000178  4874              LDR      r0,|L7.844|
+000178  4871              LDR      r0,|L7.832|
 00017a  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 00017c  f7fffffe          BL       __aeabi_i2f
 000180  4604              MOV      r4,r0
-000182  486f              LDR      r0,|L7.832|
+000182  486c              LDR      r0,|L7.820|
 000184  6801              LDR      r1,[r0,#0]  ; TrqLoad
 000186  4620              MOV      r0,r4
 000188  f7fffffe          BL       __aeabi_cfcmple
 00018c  d20e              BCS      |L7.428|
 ;;;259    							TrqLoad = TrqLoad-0.08; //8/s
-00018e  486c              LDR      r0,|L7.832|
+00018e  4869              LDR      r0,|L7.820|
 000190  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000192  f7fffffe          BL       __aeabi_f2d
 000196  4606              MOV      r6,r0
-000198  4a6a              LDR      r2,|L7.836|
-00019a  4b6b              LDR      r3,|L7.840|
+000198  4a67              LDR      r2,|L7.824|
+00019a  4b68              LDR      r3,|L7.828|
 00019c  f7fffffe          BL       __aeabi_dsub
 0001a0  4604              MOV      r4,r0
 0001a2  f7fffffe          BL       __aeabi_d2f
-0001a6  4966              LDR      r1,|L7.832|
+0001a6  4963              LDR      r1,|L7.820|
 0001a8  6008              STR      r0,[r1,#0]  ; TrqLoad
 0001aa  e065              B        |L7.632|
                   |L7.428|
 ;;;260    						else 
 ;;;261    						{
 ;;;262    							Load_stCurr = Load_stTarget;
-0001ac  485b              LDR      r0,|L7.796|
+0001ac  4858              LDR      r0,|L7.784|
 0001ae  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
-0001b0  4959              LDR      r1,|L7.792|
+0001b0  4956              LDR      r1,|L7.780|
 0001b2  7008              STRB     r0,[r1,#0]
 ;;;263    							TrqLoad = TrqlimLow;
-0001b4  4865              LDR      r0,|L7.844|
+0001b4  4862              LDR      r0,|L7.832|
 0001b6  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 0001b8  f7fffffe          BL       __aeabi_i2f
-0001bc  4960              LDR      r1,|L7.832|
+0001bc  495d              LDR      r1,|L7.820|
 0001be  6008              STR      r0,[r1,#0]  ; TrqLoad
 0001c0  e05a              B        |L7.632|
                   |L7.450|
 ;;;264    						}
 ;;;265    					} 
 ;;;266    					else TrqLoad = TrqlimMid; 
-0001c2  485e              LDR      r0,|L7.828|
+0001c2  485b              LDR      r0,|L7.816|
 0001c4  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 0001c6  f7fffffe          BL       __aeabi_i2f
-0001ca  495d              LDR      r1,|L7.832|
+0001ca  495a              LDR      r1,|L7.820|
 0001cc  6008              STR      r0,[r1,#0]  ; TrqLoad
 0001ce  e053              B        |L7.632|
                   |L7.464|
 ;;;267    				}
 ;;;268    				else if(Load_stCurr == Lowload)
-0001d0  4851              LDR      r0,|L7.792|
+0001d0  484e              LDR      r0,|L7.780|
 0001d2  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 0001d4  2801              CMP      r0,#1
 0001d6  d14f              BNE      |L7.632|
 ;;;269    				{
 ;;;270    					if(Load_stTarget == Highload)
-0001d8  4850              LDR      r0,|L7.796|
+0001d8  484d              LDR      r0,|L7.784|
 0001da  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 0001dc  2803              CMP      r0,#3
 0001de  d11c              BNE      |L7.538|
 ;;;271    					{
 ;;;272    						if(TrqLoad < 225) TrqLoad = TrqLoad + 0.08; //8/s
-0001e0  495b              LDR      r1,|L7.848|
-0001e2  4857              LDR      r0,|L7.832|
+0001e0  4958              LDR      r1,|L7.836|
+0001e2  4854              LDR      r0,|L7.820|
 0001e4  6800              LDR      r0,[r0,#0]  ; TrqLoad
 0001e6  f7fffffe          BL       __aeabi_cfcmple
 0001ea  d20e              BCS      |L7.522|
-0001ec  4854              LDR      r0,|L7.832|
+0001ec  4851              LDR      r0,|L7.820|
 0001ee  6800              LDR      r0,[r0,#0]  ; TrqLoad
 0001f0  f7fffffe          BL       __aeabi_f2d
 0001f4  4606              MOV      r6,r0
-0001f6  4a53              LDR      r2,|L7.836|
-0001f8  4b53              LDR      r3,|L7.840|
+0001f6  4a50              LDR      r2,|L7.824|
+0001f8  4b50              LDR      r3,|L7.828|
 0001fa  f7fffffe          BL       __aeabi_dadd
 0001fe  4604              MOV      r4,r0
 000200  f7fffffe          BL       __aeabi_d2f
-000204  494e              LDR      r1,|L7.832|
+000204  494b              LDR      r1,|L7.820|
 000206  6008              STR      r0,[r1,#0]  ; TrqLoad
 000208  e036              B        |L7.632|
                   |L7.522|
 ;;;273    						else
 ;;;274    						{
 ;;;275    							Load_stCurr = Load_stTarget;
-00020a  4844              LDR      r0,|L7.796|
+00020a  4841              LDR      r0,|L7.784|
 00020c  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
-00020e  4942              LDR      r1,|L7.792|
+00020e  493f              LDR      r1,|L7.780|
 000210  7008              STRB     r0,[r1,#0]
 ;;;276    							TrqLoad=225;
-000212  484f              LDR      r0,|L7.848|
-000214  494a              LDR      r1,|L7.832|
+000212  484c              LDR      r0,|L7.836|
+000214  4947              LDR      r1,|L7.820|
 000216  6008              STR      r0,[r1,#0]  ; TrqLoad
 000218  e02e              B        |L7.632|
                   |L7.538|
 ;;;277    						}
 ;;;278    					} 
 ;;;279    					else if(Load_stTarget == Midload)
-00021a  4840              LDR      r0,|L7.796|
+00021a  483d              LDR      r0,|L7.784|
 00021c  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00021e  2802              CMP      r0,#2
 000220  d124              BNE      |L7.620|
 ;;;280    					{
 ;;;281    						if(TrqLoad<TrqlimMid) TrqLoad = TrqLoad + 0.08; //  8/s
-000222  4846              LDR      r0,|L7.828|
+000222  4843              LDR      r0,|L7.816|
 000224  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 000226  f7fffffe          BL       __aeabi_i2f
 00022a  4604              MOV      r4,r0
-00022c  4844              LDR      r0,|L7.832|
+00022c  4841              LDR      r0,|L7.820|
 00022e  6801              LDR      r1,[r0,#0]  ; TrqLoad
 000230  4620              MOV      r0,r4
 000232  f7fffffe          BL       __aeabi_cfrcmple
 000236  d20e              BCS      |L7.598|
-000238  4841              LDR      r0,|L7.832|
+000238  483e              LDR      r0,|L7.820|
 00023a  6800              LDR      r0,[r0,#0]  ; TrqLoad
 00023c  f7fffffe          BL       __aeabi_f2d
 000240  4606              MOV      r6,r0
-000242  4a40              LDR      r2,|L7.836|
-000244  4b40              LDR      r3,|L7.840|
+000242  4a3d              LDR      r2,|L7.824|
+000244  4b3d              LDR      r3,|L7.828|
 000246  f7fffffe          BL       __aeabi_dadd
 00024a  4604              MOV      r4,r0
 00024c  f7fffffe          BL       __aeabi_d2f
-000250  493b              LDR      r1,|L7.832|
+000250  4938              LDR      r1,|L7.820|
 000252  6008              STR      r0,[r1,#0]  ; TrqLoad
 000254  e010              B        |L7.632|
                   |L7.598|
 ;;;282    						else 
 ;;;283    						{
 ;;;284    							Load_stCurr = Load_stTarget;
-000256  4831              LDR      r0,|L7.796|
+000256  482e              LDR      r0,|L7.784|
 000258  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
-00025a  492f              LDR      r1,|L7.792|
+00025a  492c              LDR      r1,|L7.780|
 00025c  7008              STRB     r0,[r1,#0]
 ;;;285    							TrqLoad = TrqlimMid;
-00025e  4837              LDR      r0,|L7.828|
+00025e  4834              LDR      r0,|L7.816|
 000260  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 000262  f7fffffe          BL       __aeabi_i2f
-000266  4936              LDR      r1,|L7.832|
+000266  4933              LDR      r1,|L7.820|
 000268  6008              STR      r0,[r1,#0]  ; TrqLoad
 00026a  e005              B        |L7.632|
                   |L7.620|
 ;;;286    						}
 ;;;287    					} 
 ;;;288    					else TrqLoad = TrqlimLow; 
-00026c  4837              LDR      r0,|L7.844|
+00026c  4834              LDR      r0,|L7.832|
 00026e  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 000270  f7fffffe          BL       __aeabi_i2f
-000274  4932              LDR      r1,|L7.832|
+000274  492f              LDR      r1,|L7.820|
 000276  6008              STR      r0,[r1,#0]  ; TrqLoad
                   |L7.632|
 ;;;289    				}            
@@ -1575,12 +1575,8 @@
 000278  f7fffffe          BL       ConstLimitation
 ;;;294    					UpdateTxDataAMT();    //限制按照最小的值来   需求扭矩 跟 设定扭矩
 00027c  f7fffffe          BL       UpdateTxDataAMT
-;;;295    					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
-000280  4a34              LDR      r2,|L7.852|
-000282  2104              MOVS     r1,#4
-000284  4834              LDR      r0,|L7.856|
-000286  f7fffffe          BL       OBD_CAN_SendData
-                  |L7.650|
+                  |L7.640|
+;;;295    //					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
 ;;;296    //				}
 ;;;297    //				else if(trq[3]<225)//当前模式非节油
 ;;;298    //				{
@@ -1592,173 +1588,168 @@
 ;;;304    			}
 ;;;305    		}
 ;;;306    		if(SystemTime50ms)            //稳油退出 斜率   50ms + 1
-00028a  4827              LDR      r0,|L7.808|
-00028c  7800              LDRB     r0,[r0,#0]  ; SystemTime50ms
-00028e  b1b0              CBZ      r0,|L7.702|
+000280  4826              LDR      r0,|L7.796|
+000282  8800              LDRH     r0,[r0,#0]  ; SystemTime50ms
+000284  b1b0              CBZ      r0,|L7.692|
 ;;;307    		{
 ;;;308    			SystemTime50ms = 0;
-000290  2000              MOVS     r0,#0
-000292  4925              LDR      r1,|L7.808|
-000294  7008              STRB     r0,[r1,#0]
+000286  2000              MOVS     r0,#0
+000288  4924              LDR      r1,|L7.796|
+00028a  8008              STRH     r0,[r1,#0]
 ;;;309    			if(fCanOK) 
-000296  4828              LDR      r0,|L7.824|
-000298  7800              LDRB     r0,[r0,#0]  ; fCanOK
-00029a  b180              CBZ      r0,|L7.702|
+00028c  4827              LDR      r0,|L7.812|
+00028e  7800              LDRB     r0,[r0,#0]  ; fCanOK
+000290  b180              CBZ      r0,|L7.692|
 ;;;310    			{
 ;;;311    				if(CL_stOutflag == 1) 
-00029c  482f              LDR      r0,|L7.860|
-00029e  7800              LDRB     r0,[r0,#0]  ; CL_stOutflag
-0002a0  2801              CMP      r0,#1
-0002a2  d10c              BNE      |L7.702|
+000292  482d              LDR      r0,|L7.840|
+000294  7800              LDRB     r0,[r0,#0]  ; CL_stOutflag
+000296  2801              CMP      r0,#1
+000298  d10c              BNE      |L7.692|
 ;;;312    				{
 ;;;313    					if(trqmax < 225)    //退出节油模式 最大值要自增
-0002a4  481e              LDR      r0,|L7.800|
-0002a6  8800              LDRH     r0,[r0,#0]  ; trqmax
-0002a8  28e1              CMP      r0,#0xe1
-0002aa  da05              BGE      |L7.696|
+00029a  481e              LDR      r0,|L7.788|
+00029c  8800              LDRH     r0,[r0,#0]  ; trqmax
+00029e  28e1              CMP      r0,#0xe1
+0002a0  da05              BGE      |L7.686|
 ;;;314    					{
 ;;;315    						trqmax++;
-0002ac  481c              LDR      r0,|L7.800|
-0002ae  8800              LDRH     r0,[r0,#0]  ; trqmax
-0002b0  1c40              ADDS     r0,r0,#1
-0002b2  491b              LDR      r1,|L7.800|
-0002b4  8008              STRH     r0,[r1,#0]
-0002b6  e002              B        |L7.702|
-                  |L7.696|
+0002a2  481c              LDR      r0,|L7.788|
+0002a4  8800              LDRH     r0,[r0,#0]  ; trqmax
+0002a6  1c40              ADDS     r0,r0,#1
+0002a8  491a              LDR      r1,|L7.788|
+0002aa  8008              STRH     r0,[r1,#0]
+0002ac  e002              B        |L7.692|
+                  |L7.686|
 ;;;316    					} 
 ;;;317    					else
 ;;;318    					{
 ;;;319    						CL_stOutflag = 0;
-0002b8  2000              MOVS     r0,#0
-0002ba  4928              LDR      r1,|L7.860|
-0002bc  7008              STRB     r0,[r1,#0]
-                  |L7.702|
+0002ae  2000              MOVS     r0,#0
+0002b0  4925              LDR      r1,|L7.840|
+0002b2  7008              STRB     r0,[r1,#0]
+                  |L7.692|
 ;;;320    					}
 ;;;321    				}
 ;;;322    			}
 ;;;323    		}
 ;;;324    		if(SystemTime100ms >= 100)//计算20秒的平均扭矩，3秒的平均油门
-0002be  481b              LDR      r0,|L7.812|
-0002c0  7800              LDRB     r0,[r0,#0]  ; SystemTime100ms
-0002c2  2864              CMP      r0,#0x64
-0002c4  db10              BLT      |L7.744|
+0002b4  481a              LDR      r0,|L7.800|
+0002b6  8800              LDRH     r0,[r0,#0]  ; SystemTime100ms
+0002b8  2864              CMP      r0,#0x64
+0002ba  db10              BLT      |L7.734|
 ;;;325    		{
 ;;;326    			SystemTime100ms = 0;
-0002c6  2000              MOVS     r0,#0
-0002c8  4918              LDR      r1,|L7.812|
-0002ca  7008              STRB     r0,[r1,#0]
+0002bc  2000              MOVS     r0,#0
+0002be  4918              LDR      r1,|L7.800|
+0002c0  8008              STRH     r0,[r1,#0]
 ;;;327    			numCAN=0;
-0002cc  4924              LDR      r1,|L7.864|
-0002ce  6008              STR      r0,[r1,#0]  ; numCAN
+0002c2  4922              LDR      r1,|L7.844|
+0002c4  6008              STR      r0,[r1,#0]  ; numCAN
 ;;;328    			if(fCanOK)
-0002d0  4819              LDR      r0,|L7.824|
-0002d2  7800              LDRB     r0,[r0,#0]  ; fCanOK
-0002d4  b128              CBZ      r0,|L7.738|
+0002c6  4819              LDR      r0,|L7.812|
+0002c8  7800              LDRB     r0,[r0,#0]  ; fCanOK
+0002ca  b128              CBZ      r0,|L7.728|
 ;;;329    			{
 ;;;330    				CoEng_rloadCal();    //平均负荷率计算, 平均转速计算, 平均油门计算
-0002d6  f7fffffe          BL       CoEng_rloadCal
+0002cc  f7fffffe          BL       CoEng_rloadCal
 ;;;331    //##############################################################
 ;;;332    				CANerr_flg = 1;  
-0002da  2001              MOVS     r0,#1
-0002dc  4921              LDR      r1,|L7.868|
-0002de  7008              STRB     r0,[r1,#0]
-0002e0  e002              B        |L7.744|
-                  |L7.738|
+0002d0  2001              MOVS     r0,#1
+0002d2  491f              LDR      r1,|L7.848|
+0002d4  7008              STRB     r0,[r1,#0]
+0002d6  e002              B        |L7.734|
+                  |L7.728|
 ;;;333    			}
 ;;;334    			else 
 ;;;335    				CANerr_flg = 0; 
-0002e2  2000              MOVS     r0,#0
-0002e4  491f              LDR      r1,|L7.868|
-0002e6  7008              STRB     r0,[r1,#0]
-                  |L7.744|
+0002d8  2000              MOVS     r0,#0
+0002da  491d              LDR      r1,|L7.848|
+0002dc  7008              STRB     r0,[r1,#0]
+                  |L7.734|
 ;;;336    		} 
 ;;;337    		if(SystemTime500ms >= 500)
-0002e8  4811              LDR      r0,|L7.816|
-0002ea  7800              LDRB     r0,[r0,#0]  ; SystemTime500ms
-0002ec  f5b07ffa          CMP      r0,#0x1f4
-0002f0  db10              BLT      |L7.788|
+0002de  4811              LDR      r0,|L7.804|
+0002e0  8800              LDRH     r0,[r0,#0]  ; SystemTime500ms
+0002e2  f5b07ffa          CMP      r0,#0x1f4
+0002e6  db10              BLT      |L7.778|
 ;;;338    		{
 ;;;339    			SystemTime500ms = 0;
-0002f2  2000              MOVS     r0,#0
-0002f4  490e              LDR      r1,|L7.816|
-0002f6  7008              STRB     r0,[r1,#0]
+0002e8  2000              MOVS     r0,#0
+0002ea  490e              LDR      r1,|L7.804|
+0002ec  8008              STRH     r0,[r1,#0]
 ;;;340    			CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;
-0002f8  491b              LDR      r1,|L7.872|
-0002fa  7008              STRB     r0,[r1,#0]
-0002fc  491b              LDR      r1,|L7.876|
-0002fe  7008              STRB     r0,[r1,#0]
-000300  491b              LDR      r1,|L7.880|
-000302  7008              STRB     r0,[r1,#0]
-000304  491b              LDR      r1,|L7.884|
-000306  7008              STRB     r0,[r1,#0]
-000308  491b              LDR      r1,|L7.888|
-00030a  7008              STRB     r0,[r1,#0]
-00030c  491b              LDR      r1,|L7.892|
-00030e  7008              STRB     r0,[r1,#0]
-000310  491b              LDR      r1,|L7.896|
-000312  7008              STRB     r0,[r1,#0]
-                  |L7.788|
-000314  e67d              B        |L7.18|
+0002ee  4919              LDR      r1,|L7.852|
+0002f0  7008              STRB     r0,[r1,#0]
+0002f2  4919              LDR      r1,|L7.856|
+0002f4  7008              STRB     r0,[r1,#0]
+0002f6  4919              LDR      r1,|L7.860|
+0002f8  7008              STRB     r0,[r1,#0]
+0002fa  4919              LDR      r1,|L7.864|
+0002fc  7008              STRB     r0,[r1,#0]
+0002fe  4919              LDR      r1,|L7.868|
+000300  7008              STRB     r0,[r1,#0]
+000302  4919              LDR      r1,|L7.872|
+000304  7008              STRB     r0,[r1,#0]
+000306  4919              LDR      r1,|L7.876|
+000308  7008              STRB     r0,[r1,#0]
+                  |L7.778|
+00030a  e682              B        |L7.18|
 ;;;341    		}
 ;;;342    	}
 ;;;343    }
 ;;;344     
                           ENDP
 
-000316  0000              DCW      0x0000
-                  |L7.792|
+                  |L7.780|
                           DCD      Load_stCurr
-                  |L7.796|
+                  |L7.784|
                           DCD      Load_stTarget
-                  |L7.800|
+                  |L7.788|
                           DCD      trqmax
-                  |L7.804|
+                  |L7.792|
                           DCD      SystemTime10ms
-                  |L7.808|
+                  |L7.796|
                           DCD      SystemTime50ms
-                  |L7.812|
+                  |L7.800|
                           DCD      SystemTime100ms
-                  |L7.816|
+                  |L7.804|
                           DCD      SystemTime500ms
-                  |L7.820|
+                  |L7.808|
                           DCD      SystemTime1s
-                  |L7.824|
+                  |L7.812|
                           DCD      fCanOK
-                  |L7.828|
+                  |L7.816|
                           DCD      TrqlimMid
-                  |L7.832|
+                  |L7.820|
                           DCD      TrqLoad
-                  |L7.836|
+                  |L7.824|
                           DCD      0x47ae147b
-                  |L7.840|
+                  |L7.828|
                           DCD      0x3fb47ae1
-                  |L7.844|
+                  |L7.832|
                           DCD      TrqlimLow
-                  |L7.848|
+                  |L7.836|
                           DCD      0x43610000
-                  |L7.852|
-                          DCD      trq
-                  |L7.856|
-                          DCD      0x0c000021
-                  |L7.860|
+                  |L7.840|
                           DCD      CL_stOutflag
-                  |L7.864|
+                  |L7.844|
                           DCD      numCAN
-                  |L7.868|
+                  |L7.848|
                           DCD      CANerr_flg
-                  |L7.872|
+                  |L7.852|
                           DCD      CANr1
-                  |L7.876|
+                  |L7.856|
                           DCD      CANr2
-                  |L7.880|
+                  |L7.860|
                           DCD      CANr3
-                  |L7.884|
+                  |L7.864|
                           DCD      CANr4
-                  |L7.888|
+                  |L7.868|
                           DCD      CANr5
-                  |L7.892|
+                  |L7.872|
                           DCD      CANr6
-                  |L7.896|
+                  |L7.876|
                           DCD      CANr7
 
                           AREA ||i.SaveJieYouData||, CODE, READONLY, ALIGN=1
@@ -2198,63 +2189,63 @@
                           AREA ||.data||, DATA, ALIGN=2
 
                   SystemTime250us
-000000  00                DCB      0x00
+000000  0000              DCB      0x00,0x00
                   SystemTime1ms
-000001  00                DCB      0x00
+000002  0000              DCB      0x00,0x00
                   SystemTime10ms
-000002  00                DCB      0x00
+000004  0000              DCB      0x00,0x00
                   SystemTime50ms
-000003  00                DCB      0x00
+000006  0000              DCB      0x00,0x00
                   SystemTime100ms
-000004  00                DCB      0x00
+000008  0000              DCB      0x00,0x00
                   SystemTime500ms
-000005  00                DCB      0x00
+00000a  0000              DCB      0x00,0x00
                   SystemTime1s
-000006  00                DCB      0x00
+00000c  0000              DCB      0x00,0x00
                   SystemTime3s
-000007  00                DCB      0x00
+00000e  0000              DCB      0x00,0x00
                   B_TimeOut
-000008  00                DCB      0x00
-                  CL_stOutflag
-000009  00                DCB      0x00
-                  app1
-00000a  00                DCB      0x00
-                  app2
-00000b  00                DCB      0x00
-                  app3
-00000c  00                DCB      0x00
-                  numapp
-00000d  00                DCB      0x00
-                  appold1
-00000e  00                DCB      0x00
-                  appold2
-00000f  00                DCB      0x00
-                  appold3
 000010  00                DCB      0x00
-                  appold4
+                  CL_stOutflag
 000011  00                DCB      0x00
-                  appold5
+                  app1
 000012  00                DCB      0x00
-                  appold6
+                  app2
 000013  00                DCB      0x00
-                  CANerr_flg
+                  app3
 000014  00                DCB      0x00
-                  CANerr_state
+                  numapp
 000015  00                DCB      0x00
-                  CANr1
+                  appold1
 000016  00                DCB      0x00
-                  CANr2
+                  appold2
 000017  00                DCB      0x00
-                  CANr3
+                  appold3
 000018  00                DCB      0x00
-                  CANr4
+                  appold4
 000019  00                DCB      0x00
-                  CANr5
+                  appold5
 00001a  00                DCB      0x00
-                  CANr6
+                  appold6
 00001b  00                DCB      0x00
+                  CANerr_flg
+00001c  00                DCB      0x00
+                  CANerr_state
+00001d  00                DCB      0x00
+                  CANr1
+00001e  00                DCB      0x00
+                  CANr2
+00001f  00                DCB      0x00
+                  CANr3
+000020  00                DCB      0x00
+                  CANr4
+000021  00                DCB      0x00
+                  CANr5
+000022  00                DCB      0x00
+                  CANr6
+000023  00                DCB      0x00
                   CANr7
-00001c  00000000          DCB      0x00,0x00,0x00,0x00
+000024  00000000          DCB      0x00,0x00,0x00,0x00
                   App_rFreeze
                           DCD      0x00000000
                   App_rquit
@@ -2270,27 +2261,27 @@
                   EngPrt_trqNet
                           DCD      0x00000000
                   trqmax
-00003c  0000              DCB      0x00,0x00
+000044  0000              DCB      0x00,0x00
                   Load_stCurr
-00003e  00                DCB      0x00
+000046  00                DCB      0x00
                   Load_stTarget
-00003f  00                DCB      0x00
+000047  00                DCB      0x00
                   iout
-000040  00                DCB      0x00
+000048  00                DCB      0x00
                   jout
-000041  000000            DCB      0x00,0x00,0x00
+000049  000000            DCB      0x00,0x00,0x00
                   App_dev
                           DCD      0x00000000
                   rdev
-000048  00                DCB      0x00
+000050  00                DCB      0x00
                   mrdev
-000049  00                DCB      0x00
+000051  00                DCB      0x00
                   Curr_trq
-00004a  00                DCB      0x00
+000052  00                DCB      0x00
                   CAN7flag
-00004b  00                DCB      0x00
+000053  00                DCB      0x00
                   CAN17flag
-00004c  00000000          DCB      0x00,0x00,0x00,0x00
+000054  00000000          DCB      0x00,0x00,0x00,0x00
                   numCAN
                           DCD      0x00000000
                   flagCAN
@@ -2302,21 +2293,21 @@
                   trq
                           %        8
                   fReceivedData
-00006c  00                DCB      0x00
+000074  00                DCB      0x00
                   fReceivedData17
-00006d  00                DCB      0x00
+000075  00                DCB      0x00
                   fReceivedData7
-00006e  00                DCB      0x00
+000076  00                DCB      0x00
                   fCAN7OK
-00006f  00                DCB      0x00
+000077  00                DCB      0x00
                   fCAN17OK
-000070  00                DCB      0x00
+000078  00                DCB      0x00
                   fCANBUSOK
-000071  00                DCB      0x00
+000079  00                DCB      0x00
                   CANBUSNUM
-000072  00                DCB      0x00
+00007a  00                DCB      0x00
                   CANbusClr
-000073  00                DCB      0x00
+00007b  00                DCB      0x00
                   Eng_nAvgSum
                           DCD      0x00000000
                   Coeng_rtrqInrSum
@@ -2330,7 +2321,7 @@
                   CoEng_rtrqInrAvg
                           DCD      0x00000000
                   CoEng_rDrvLoad
-00008c  00000000          DCB      0x00,0x00,0x00,0x00
+000094  00000000          DCB      0x00,0x00,0x00,0x00
                   Accped_rSum
                           DCD      0x00000000
                   Accped_r3s
@@ -2344,15 +2335,15 @@
                   CoEng_trqDrv10Load
                           DCD      0x00000000
                   fCanOK
-0000a8  00                DCB      0x00
+0000b0  00                DCB      0x00
                   n
-0000a9  00                DCB      0x00
+0000b1  00                DCB      0x00
                   nop
-0000aa  00                DCB      0x00
+0000b2  00                DCB      0x00
                   ||swt||
-0000ab  00                DCB      0x00
+0000b3  00                DCB      0x00
                   swt1
-0000ac  00000000          DCB      0x00,0x00,0x00,0x00
+0000b4  00000000          DCB      0x00,0x00,0x00,0x00
                   Eng_nAvg
                           DCD      0x00000000
                   Eng_nAvgFlt
@@ -2384,9 +2375,9 @@
                   CoEng_rSum3Load
                           DCD      0x00000000
                   Eng_nAvgplus
-0000ec  0000              DCB      0x00,0x00
+0000f4  0000              DCB      0x00,0x00
                   Eng_nAvgFltInt
-0000ee  0000              DCB      0x00,0x00
+0000f6  0000              DCB      0x00,0x00
                   CoEng_trqint
                           DCD      0x00000000
                   Accped_rint
@@ -2394,31 +2385,31 @@
                   Accped_rFltint
                           DCD      0x00000000
                   Num_ConstLim
-0000fc  00                DCB      0x00
+000104  00                DCB      0x00
                   Num_LowLoad
-0000fd  00                DCB      0x00
+000105  00                DCB      0x00
                   Num_MidLoad
-0000fe  00                DCB      0x00
-                  TrqDrvFlt
-0000ff  00                DCB      0x00
-                  CanErrCnt
-000100  0096              DCW      0x0096
-                  |symbol_number.41|
-000102  0096              DCW      0x0096
-                  |symbol_number.42|
-000104  0096              DCW      0x0096
-                  i
 000106  00                DCB      0x00
-                  j
+                  TrqDrvFlt
 000107  00                DCB      0x00
+                  CanErrCnt
+000108  0096              DCW      0x0096
+                  |symbol_number.41|
+00010a  0096              DCW      0x0096
+                  |symbol_number.42|
+00010c  0096              DCW      0x0096
+                  i
+00010e  00                DCB      0x00
+                  j
+00010f  00                DCB      0x00
                   |symbol_number.45|
-000108  00                DCB      0x00
+000110  00                DCB      0x00
                   inow
-000109  00                DCB      0x00
+000111  00                DCB      0x00
                   TimerAPPCnt0
-00010a  0000              DCB      0x00,0x00
+000112  0000              DCB      0x00,0x00
                   APP_T0
-00010c  00                DCB      0x00
+000114  00                DCB      0x00
 
 ;*** Start embedded assembler ***
 

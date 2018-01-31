@@ -7,7 +7,7 @@
 *                           LED¡¢·äÃùÆ÷¿ØÖÆÈÎÎñ
 *************************************************************************/
 
-uint16_t freCDMALed = 100;//»ÆµÆ  GPRS
+uint16_t freCDMALed = LEDFAST;//»ÆµÆ  GPRS
 void CDMALEDTask(void *pdata)
 {
 	while(1)
@@ -22,7 +22,7 @@ void CDMALEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freCDMALed);
 	}
 }
-uint16_t freGPSLed = 100;//ÂÌµÆ  GPS
+uint16_t freGPSLed = LEDFAST;//ÂÌµÆ  GPS
 void GPSLEDTask(void *pdata)
 {
 	while(1)
@@ -37,7 +37,7 @@ void GPSLEDTask(void *pdata)
 		OSTimeDlyHMSM(0,0,0,freGPSLed);
 	}
 }
-uint16_t freOBDLed = 100;//ºìµÆ  CAN
+uint16_t freOBDLed = LEDFAST;//ºìµÆ  CAN
 void OBDLEDTask(void *pdata)
 {
 	while(1)

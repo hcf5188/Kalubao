@@ -69,7 +69,7 @@ const uint8_t ipAddr[] = "116.228.88.101"; //本地：116.228.88.101  29999
 #define IP_Port          29999            //端口号
 #else
 const uint8_t ipAddr[] = "116.62.195.99";  //todo: 后期是域名解析 外网：116.62.195.99   9998
-#define IP_Port          6556             //端口号 9998 6556
+#define IP_Port          9998             //端口号 9998 6556
 #endif
 /***********************************************************************************/
 
@@ -82,6 +82,10 @@ uint8_t strengPower[300] = {0};//用来存储强动力模式下的数据
 uint8_t pid2Config[300]  = {0};//此数组用来保存PID第二配置文件数据
 void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
 {    
+	uint8_t *ptrMode;
+	uint8_t offset = 0;
+	ptrMode = Mem_malloc(80);
+	
 	//从Flash中载入数据进全局变量
 	Flash_ReadDat((uint8_t *)&sysUpdateVar,SBOOT_UPGREAD_ADDR,sizeof(_SystemInformation));
 	//从Flash中读取PID参数
@@ -93,9 +97,27 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	Flash_ReadDat(pid2Config,PID2CONFIGADDR,300);//读取第二配置文件数据
 	ptrPIDVars   = (VARConfig*)pid2Config;
 	
-	Flash_ReadDat(strengPower,STRENGE_Q,300);//读出喷油量的原始值
-	if(strengPower[0] != 0x1A)//从未记录过该车的喷油量
+	Flash_ReadDat(strengPower,STRENGE_Q,300);  //读出喷油量的原始值
+	if(strengPower[0] != 0xAF)                 //从未记录过该车的喷油量
 		memset(strengPower,0,300);	
+	
+	Flash_ReadDat(ptrMode,PROMOTE_ADDR,80);    //读取提升动力相关参数
+	memcpy(strengthFuelFlash.ecuVer,&ptrMode[offset],16);
+	offset += 16;
+	memcpy(strengthFuelFlash.fuelAddr,&ptrMode[offset],5);
+	offset += 5;
+	memcpy(strengthFuelFlash.mask,&ptrMode[offset],4);
+	offset += 4;
+	memcpy(strengthFuelFlash.safe1,&ptrMode[offset],8);
+	offset += 8;
+	memcpy(strengthFuelFlash.safe2,&ptrMode[offset],8);
+	offset += 8;
+	memcpy(strengthFuelFlash.mode1,&ptrMode[offset],8);
+	offset += 8;
+	memcpy(strengthFuelFlash.mode2,&ptrMode[offset],8);
+	offset += 8;
+	strengthFuelFlash.modeOrder = ptrMode[offset++];
+	Mem_free(ptrMode);
 	
 	varOperation.pidNum      = canDataConfig.pidNum;//得到PID指令的个数
 	varOperation.isDataFlow  = 1;              //设备启动的时候，数据流未流动
@@ -110,12 +132,11 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	varOperation.canRxId    = canDataConfig.canRxId;
 	varOperation.canBaud    = canDataConfig.canBaud;
 	varOperation.oilMode    = 0;//默认正常模式
-	
+	varOperation.isStrenOilOK = 0;//默认不可以进行动力提升
+	varOperation.strengthRun = 0;
 	memset(varOperation.ecuVersion,0,20);
 	
 	varOperation.pidVarNum  = canDataConfig.pidVarNum;
-	
-	ptrPIDVars              = (VARConfig*)&configData[varOperation.pidNum * 17 + 50];//得到第二配置文件的地址
 	
 	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
 	memset(varOperation.ipAddr,0,18);
@@ -294,7 +315,7 @@ void CARVarInit(void)
 	carAllRecord.cdmaReStart     = 0;//CDMA重启次数
 	carAllRecord.netFlow         = 0;//网络流量
 	
-	carAllRecord.afterFuel       = 0; //后喷油量
+	carAllRecord.afterFuel       = 0;//后喷油量
 	carAllRecord.afterFuel1      = 0;
 	carAllRecord.afterFuel2      = 0;
 	carAllRecord.afterFuel3      = 0;

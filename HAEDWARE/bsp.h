@@ -17,13 +17,15 @@
 
 extern SYS_OperationVar   varOperation; //程序运行过程中的全局变量参数
 
-extern _SystemInformation sysUpdateVar; //用来保存升级用
-extern _CANDataConfig     canDataConfig;//保存CAN通讯参数
+extern _SystemInformation sysUpdateVar;  //用来保存升级用
+extern _CANDataConfig     canDataConfig; //保存CAN通讯参数
 
-extern CARRunRecord       carAllRecord; //汽车运行过程中，几乎全部信息
-extern nmea_msg           gpsMC; 	    //保存GPS信息
-extern _CDMADataToSend*  cdmaDataToSend;//发送给 CDMA 的信息载体
-extern pSTORE            cdmaLogData ;  //发送日志缓冲区
+extern CARRunRecord       carAllRecord;  //汽车运行过程中，几乎全部信息
+extern nmea_msg           gpsMC; 	     //保存GPS信息
+extern _CDMADataToSend*   cdmaDataToSend;//发送给 CDMA 的信息载体
+extern pSTORE             cdmaLogData ;  //发送日志缓冲区
+extern STRENFUEL_Struct   strengthFuel;  //增强动力、节油
+extern STRENFUEL_Struct   strengthFuelFlash;  //Flash保存的增强动力
 
 #define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB,GPIO_Pin_15)
 #define CDMA_POWER_LOW   GPIO_ResetBits(GPIOB,GPIO_Pin_15)

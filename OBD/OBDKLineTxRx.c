@@ -1,6 +1,14 @@
 #include "bsp.h"
 #include "obd.h"
 
+
+
+
+
+
+
+
+
 void KLineFastInit(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;

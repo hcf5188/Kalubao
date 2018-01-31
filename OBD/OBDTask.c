@@ -20,16 +20,16 @@ void OBDTask(void *pdata)
 	CanRxMsg* CAN1_RxMsg;        //指向接收到的OBD信息
 	uint8_t * can1_Txbuff;       //指向要发送的OBD信息
 	uint8_t * ptrSaveBuff;       //
-	
+	varOperation.canTest = 2; 
 	CAN1Config();                //CAN 配置
 	OSTimeDlyHMSM(0,0,10,4);     
 	TestServer();                //测试服务器
-	
 	while(1)
 	{	
+		StrengthFuel();
 		if((varOperation.canTest == 0)||(varOperation.pidTset == 1))//配置文件不成功，则停止CAN，或者在测试PID指令
 		{
-			OSTimeDlyHMSM(0,0,1,0);
+			OSTimeDlyHMSM(0,0,1,0);	
 			continue;
 		}	 
 		can1_Txbuff = OSQPend(canSendQ,1000,&err);//收到PID指令，进行发送
@@ -38,14 +38,14 @@ void OBDTask(void *pdata)
 		cmdNum = can1_Txbuff[0];  //记录PID指令序号
 		cmdLen = can1_Txbuff[1];  //记录PID指令长度
 		
-		dataToSend.pdat = &can1_Txbuff[1];     
+		dataToSend.pdat = &can1_Txbuff[1];   
 		OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);//发送PID指令
 		
 		CAN1_RxMsg = OSQPend(canRecieveQ,500,&err); // 接收到OBD回复
 		if(err == OS_ERR_NONE)
 		{
-			freOBDLed = 500;                    // OBD 初始化成功
-			if(CAN1_RxMsg->Data[0] == 0x10)     // 多包处理
+			freOBDLed = LEDSLOW;                    // OBD 初始化成功
+			if(CAN1_RxMsg->Data[0] == 0x10)         // 多包处理
 			{
 				ptrSaveBuff = Mem_malloc(CAN1_RxMsg->Data[1] + 10);// 申请的内存块足够长
 				if(ptrSaveBuff != NULL)
@@ -57,12 +57,12 @@ void OBDTask(void *pdata)
 					cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6) % 7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
 					Mem_free(CAN1_RxMsg);
 					
-					dataToSend.pdat = pidManyBag;//发送 0x30 请求接下来的多包
+					dataToSend.pdat = pidManyBag;   //发送 0x30 请求接下来的多包
 					OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
 					
 					for(i=0;i<cmdManyPackNum;i++)
 					{
-						CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);// 接收多包
+						CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);   // 接收多包
 						if(err == OS_ERR_NONE)
 						{
 							memcpy(&ptrSaveBuff[7*i + 9],&CAN1_RxMsg->Data[1],7);
@@ -110,21 +110,22 @@ void OBDTask(void *pdata)
 		}
 		else
 		{
+			freOBDLed = LEDFAST; 
 			LogReport("\r\n04-PIDcmd don't report:%d;",cmdNum);//发送PID指令，ECU不回复
 		}
 		Mem_free(can1_Txbuff);                 //释放内存块
 	}
 }
 
-extern uint8_t configData[2048];
+extern uint8_t configData[6000];
 
 void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 {
-	uint8_t err,temp;
+	uint8_t   err,temp;
 	CanRxMsg* CAN1_RxMsg;
-	CAN_InitTypeDef   CAN_InitStructure;
+	CAN_InitTypeDef CAN_InitStructure;
 	
-	OSSemPend(LoginMes,0,&err); // 1394606080
+	OSSemPend(LoginMes,0,&err);           //1394606080
 	if((varOperation.pidVersion == 0xFFFFFFFF )||(varOperation.pidNum == 0xFFFF)||(varOperation.busType == 0xFF))
 	{
 		varOperation.canTest = 0;
@@ -141,7 +142,7 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 	}
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);//使能CAN1时钟
 	
-	varOperation.canTest = 2;//Flash中的CAN配置成功
+	varOperation.canTest = 2;             //Flash中的CAN配置成功
 	
 	CAN_DeInit(CAN1);  
 	CAN_StructInit(&CAN_InitStructure);
@@ -151,7 +152,7 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 	
 	dataToSend.canId = canDataConfig.canTxId;
 	dataToSend.ide   = canDataConfig.canIdType;
-	dataToSend.pdat  = &configData[59];//CAN PID 的第一包数据
+	dataToSend.pdat  = &configData[9];    //CAN PID 的第一包数据
 	
 	OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
 	
@@ -167,14 +168,13 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 		temp = ReadECUVersion(canDataConfig.pidVerCmd);
 		if(temp < 100)                  //读取ECU版本号，读取不成功则不进行动力提升
 		{
-			Get_Q_FromECU(temp);        //增强动力
-			
+			Get_Q_FromECU();            //读取喷油量的原始值，得到当前车辆系数
+		
 			CAN_DeInit(CAN1);
 			CAN_StructInit(&CAN_InitStructure);
 			CAN1_BaudSet(canDataConfig.canBaud);  
 			CAN1_SetFilter(varOperation.canRxId ,CAN_ID_EXT);
 			CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);
-			varOperation.canTest = 0;
 			OSTimeDlyHMSM(0,0,20,0);    //等待 20s 读取故障码，若不等待的话，读出来都是拒绝应答
 			
 			CAN_DeInit(CAN1);  
@@ -209,15 +209,14 @@ void TestServer(void)//用服务器下发的ID、Baud等等进行CAN配置
 extern CANBAUD_Enum canBaudEnum[NUMOfCANBaud];
 extern const CmdVersion canIdExt[NUMOfCANID_EXT];
 //服务器的配置文件出错，或者还没进行配置，系统进入自识别，识别成功则将信息上报
-void CANTestChannel(void )
+void CANTestChannel(void)
 {
-	uint8_t err,i,temp;
+	uint8_t   err,i,temp;
 	CanRxMsg* CAN1_RxMsg;
 	uint8_t*  ptrOK;
-	CAN_InitTypeDef   CAN_InitStructure;
+	CAN_InitTypeDef CAN_InitStructure;
 	
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);//使能CAN1时钟
-
 	varOperation.canTest = 0;
 	for(i = 0;i<NUMOfCANBaud;i++)       //获得CAN的波特率
 	{
@@ -241,12 +240,13 @@ void CANTestChannel(void )
 	{
 		LogReport("\r\n11-Baud Test Fail!");
 		varOperation.canTest = 0;
+		
 		goto idOK;
 	}
 	dataToSend.ide = CAN_ID_EXT;
 	for(i=0;i<NUMOfCANID_EXT;i++)
 	{
-		varOperation.canRxId  =(canIdExt[i].canID>>24) &0x000000FF;
+		varOperation.canRxId  =(canIdExt[i].canID>>24) & 0x000000FF;
 		varOperation.canRxId  =(varOperation.canRxId  << 8)+((canIdExt[i].canID>>16) & 0x000000FF);
 		varOperation.canRxId  =(varOperation.canRxId  << 8)+(canIdExt[i].canID & 0x000000FF);
 		varOperation.canRxId  =(varOperation.canRxId  << 8)+((canIdExt[i].canID>>8) & 0x000000FF);
@@ -258,12 +258,9 @@ void CANTestChannel(void )
 		CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//重置CAN滤波器
 		
 		varOperation.canTest = 0;
-		
 		dataToSend.canId = canIdExt[i].canID;
 		dataToSend.ide     = CAN_ID_EXT;
-		
 		temp = ReadECUVersion((uint8_t *)canIdExt[i].pidVerCmd); 
-		
 	    if(temp != 200)//版本号读取成功
 		{
 			i=0;
@@ -277,27 +274,24 @@ void CANTestChannel(void )
 			ptrOK[i++] = (dataToSend.canId>>24) & 0x000000FF;ptrOK[i++] = (dataToSend.canId>>16) & 0x000000FF;
 			ptrOK[i++] = (dataToSend.canId>>8) & 0x000000FF;ptrOK[i++] = (dataToSend.canId>>0) & 0x000000FF;
 			memcpy(&ptrOK[i],varOperation.ecuVersion,20);
-			
 			OSMutexPend(CDMASendMutex,0,&err);
-				
 			memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrOK,ptrOK[0]);
 			cdmaDataToSend->datLength += ptrOK[0];
-
 			OSMutexPost(CDMASendMutex);
-			
 			Mem_free(ptrOK);
 			memcpy(canDataConfig.pidVerCmd,canIdExt[i].pidVerCmd,4);//todo:保存当前读取版本号的指令
-			
 			break;
 		}
 	}
 	if(varOperation.canTest == 0)
 	{
 		LogReport("\r\n12-CAN Test Fail!");
+		varOperation.isStrenOilOK = 0;
 		return;
 	}
 idOK:
 	varOperation.canTest = 0;//不再获取 PID 信息
+	varOperation.isStrenOilOK = 0;//一旦进入自识别，就不能再进行动力提升
 	return;
 }
 extern VARConfig* ptrPIDVars;//指向第二配置区
@@ -312,7 +306,6 @@ void PIDVarGet(uint8_t cmdId,uint8_t ptrData[])
 	uint8_t* ptr;
 	static uint8_t  curFuelTimes = 0;//四次一计算
 	static uint32_t allFuelCom   = 0;//累加喷油量
-	
 	for(i = 0;i < varOperation.pidVarNum;i ++)
 	{
 		if((ptrPIDVars + i)->pidId != cmdId)

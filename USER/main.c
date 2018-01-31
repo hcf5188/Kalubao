@@ -55,10 +55,10 @@ OS_STK START_TASK_STK[START_STK_SIZE]; //起始任务堆栈
 OS_STK CDMA_TASK_STK[CDMA_STK_SIZE];   //网络通讯CDMA任务堆栈
 OS_STK CDMARecv_TASK_STK[CDMARecv_STK_SIZE];//网络通讯CDMA接收服务器数据任务堆栈
 
-OS_STK GPS_TASK_STK[GPS_STK_SIZE];     //车辆定位GPS任务堆栈
+OS_STK GPS_TASK_STK[GPS_STK_SIZE];          //车辆定位GPS任务堆栈
 
-OS_STK OBD_TASK_STK[OBD_STK_SIZE];     //汽车诊断OBD任务堆栈
-OS_STK J1939_TASK_STK[J1939_STK_SIZE]; //SAE - J1939任务堆栈
+OS_STK OBD_TASK_STK[OBD_STK_SIZE];          //汽车诊断OBD任务堆栈
+OS_STK J1939_TASK_STK[J1939_STK_SIZE];      //SAE - J1939任务堆栈
 OS_STK SAVEFULE_TASK_STK[SAVEFUEL_STK_SIZE];//节油任务堆栈
 
 OS_STK POWER_TASK_STK[POWER_STK_SIZE]; //系统电源管理任务堆栈
@@ -78,13 +78,16 @@ pSTORE     receGPS_S = NULL;      //指向 GPS 串口接收数据堆的指针
 
 /***********************  系统全局变量  *****************************/
 
-_SystemInformation sysUpdateVar;  //用来保存升级用
+_SystemInformation sysUpdateVar;       //用来保存升级用
 
-SYS_OperationVar   varOperation;  //程序运行的全局变量参数
-_CANDataConfig     canDataConfig; //保存CAN通讯参数
+SYS_OperationVar   varOperation;       //程序运行的全局变量参数
+_CANDataConfig     canDataConfig;      //保存CAN通讯参数
 
-CARRunRecord       carAllRecord;  //整车运行状态信息
-nmea_msg           gpsMC;         //GPS信息
+CARRunRecord       carAllRecord;       //整车运行状态信息
+nmea_msg           gpsMC;              //GPS信息
+
+STRENFUEL_Struct   strengthFuel;       //增强动力、节油
+STRENFUEL_Struct   strengthFuelFlash;  //Flash保存的增强动力
 
 _CDMADataToSend*   cdmaDataToSend = NULL;  //CDMAl发送的数据中（OBD、GPS），是通过它来作为载体
 pSTORE             cdmaLogData    = NULL;
@@ -200,14 +203,14 @@ void StartTask(void *pdata)
 		{
 			LoginDataSend(); 
 		}
-		if(varOperation.canTest == 2 && varOperation.pidTset == 0)   //CAN的波特率和ID均已确定
+		if(varOperation.canTest == 2 && varOperation.pidTset == 0 && varOperation.strengthRun == 0)   //CAN的波特率和ID均已确定
 		{
 			for(i=0;i<varOperation.pidNum;i++)//PID指令的数目
 			{
-				(ptrPIDAllDat + i)->timeCount += 4;
-				if((ptrPIDAllDat + i)->timeCount < (ptrPIDAllDat + i)->period)
+				(ptrPIDAllDat + i) -> timeCount += 4;
+				if((ptrPIDAllDat + i) -> timeCount < (ptrPIDAllDat + i) -> period)
 					continue;
-				(ptrPIDAllDat + i)->timeCount = 0;
+				(ptrPIDAllDat + i) -> timeCount = 0;
 				ptrOBDSend = Mem_malloc(9);
 				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
 				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
@@ -216,7 +219,6 @@ void StartTask(void *pdata)
 					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
 					LogReport("\r\n PID cmd OVERLoad;");
 				}
-					
 			}
 		}
 		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
@@ -228,7 +230,7 @@ void StartTask(void *pdata)
 			J1939DataLog();                        
 			
 			OSMutexPend(CDMASendMutex,0,&err);     //提高优先级，独占此包数据
-//			//将日志报文打包
+//将日志报文打包
 			if(cdmaLogData->top <= 250)
 			{
 				cdmaDataToSend->data[cdmaDataToSend->datLength++] = (uint8_t)cdmaLogData->top + 3;

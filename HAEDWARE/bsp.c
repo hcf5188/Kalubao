@@ -26,14 +26,14 @@ void SystemBspInit(void )
 	
 	
 	bitValue = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0);
-	if(bitValue == 1)
+	if(bitValue == 1)//USB升级模式
 	{
 		varOperation.USB_NormalMode = 1;
 		GPIO_SetBits(GPIOA,GPIO_Pin_15);//使能USB接口
-	}else
+	}else            //正常工作模式
 	{
 		varOperation.USB_NormalMode = 0;
-		WatchDogInit(7,2000);//看门狗初始化，系统卡死大概12s后重启 		
+		WatchDogInit(7,2000);           //看门狗初始化，系统卡死大概12s后重启 		
 	}
 //	CDMAUart2Init();
 //	GPSConfigInit(9600);

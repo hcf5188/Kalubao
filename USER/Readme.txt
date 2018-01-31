@@ -27,7 +27,7 @@
 		+ZIPSTATUS: ESTABLISHED
 		OK
    说明：ESTABLISHED： TCP已经建立
-		DISCONNECTED： TCP 已经关闭
+		 DISCONNECTED： TCP 已经关闭
 6、+ZIPRECV:N,LEN,<DATA>       -  提示从当前数据链路接收到数据
    示例：+ZIPRECV:1,5,abcde
    说明：<N>：  TCP 连接的通道号
@@ -36,7 +36,7 @@
 
 
 二、程序升级注意事项
-		1、运行的版本必须与服务器保持一致，不然模块会一直升级，即程序中的#define SOFTVersion             0x10001001    //软件固件版本号
+		1、运行的版本必须与服务器保持一致，不然模块会一直升级，即程序中的#define SOFTVersion     0x10001001    //软件固件版本号
 	中的SOFTVersion 的值要与服务器的值一致。
 
 

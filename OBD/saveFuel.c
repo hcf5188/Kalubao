@@ -34,7 +34,7 @@
  
 //----------------------------------------------------------------------------------------------- 
 //systerm
-u8	  SystemTime250us,SystemTime1ms,SystemTime10ms,SystemTime50ms,SystemTime100ms,SystemTime500ms,SystemTime1s,SystemTime3s;
+u16	  SystemTime250us,SystemTime1ms,SystemTime10ms,SystemTime50ms,SystemTime100ms,SystemTime500ms,SystemTime1s,SystemTime3s;
 u8	  B_TimeOut,CL_stOutflag;
 u8    app1, app2, app3, numapp,appold1,appold2,appold3,appold4,appold5,appold6;
 u8    CANerr_flg,CANerr_state,CANr1,CANr2,CANr3,CANr4,CANr5,CANr6,CANr7;
@@ -292,7 +292,7 @@ void UpdateTxDataAMT(void)
 //				{
 					ConstLimitation();    //稳油功能
 					UpdateTxDataAMT();    //限制按照最小的值来   需求扭矩 跟 设定扭矩
-					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
+//					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
 //				}
 //				else if(trq[3]<225)//当前模式非节油
 //				{
