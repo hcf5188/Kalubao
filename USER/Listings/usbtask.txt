@@ -9,7 +9,7 @@
 ;;;16     void USBUpdataTask (void *pdata)
 000000  b51c              PUSH     {r2-r4,lr}
 ;;;17     {
-;;;18     	uint8_t err;
+;;;18     	uint8_t err;     
 ;;;19     	uint16_t i;
 ;;;20     	uint16_t cmdId = 0;
 000002  f04f0b00          MOV      r11,#0
