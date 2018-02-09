@@ -642,12 +642,12 @@
 ;;;69     				Mem_free(pCDMASend);
 00008c  4620              MOV      r0,r4
 00008e  f7fffffe          BL       Mem_free
-;;;70     			
+;;;70     				
 ;;;71     				varOperation.isDataFlow = 1;    //数据流未流动
 000092  2001              MOVS     r0,#1
 000094  493c              LDR      r1,|L6.392|
 000096  f881002d          STRB     r0,[r1,#0x2d]
-;;;72     				freCDMALed = LEDFAST;               //CDMA小灯快闪
+;;;72     				freCDMALed = LEDFAST;           //CDMA小灯快闪
 00009a  20c8              MOVS     r0,#0xc8
 00009c  4945              LDR      r1,|L6.436|
 00009e  8008              STRH     r0,[r1,#0]

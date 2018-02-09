@@ -169,40 +169,40 @@
                           AREA ||i.CanTestCmd||, CODE, READONLY, ALIGN=2
 
                   CanTestCmd PROC
-;;;539    extern CAN1DataToSend  dataToSend; 
-;;;540    static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
+;;;536    extern CAN1DataToSend  dataToSend; 
+;;;537    static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
 000000  e92d4ff0          PUSH     {r4-r11,lr}
-;;;541    {
+;;;538    {
 000004  b087              SUB      sp,sp,#0x1c
 000006  4606              MOV      r6,r0
-;;;542    	uint32_t flowId;
-;;;543    	uint32_t canRxId;
-;;;544    //	uint32_t recordId;
-;;;545    	uint32_t canTxId;
-;;;546    	uint8_t*  pidVerCmd;
-;;;547    	uint16_t cmdId;
-;;;548    	uint8_t offset = 3,err = 0,i = 0,cmdManyPackNum = 0;
+;;;539    	uint32_t flowId;
+;;;540    	uint32_t canRxId;
+;;;541    //	uint32_t recordId;
+;;;542    	uint32_t canTxId;
+;;;543    	uint8_t*  pidVerCmd;
+;;;544    	uint16_t cmdId;
+;;;545    	uint8_t offset = 3,err = 0,i = 0,cmdManyPackNum = 0;
 000008  2403              MOVS     r4,#3
 00000a  2000              MOVS     r0,#0
 00000c  9005              STR      r0,[sp,#0x14]
 00000e  4681              MOV      r9,r0
 000010  9004              STR      r0,[sp,#0x10]
-;;;549    	CanRxMsg* CAN1_RxMsg;
-;;;550    	CAN_InitTypeDef   CAN_InitStructure;
-;;;551    	
-;;;552    //	recordId = dataToSend.canId;//记录之前的  CANID
-;;;553    	
-;;;554    	pidVerCmd = Mem_malloc(8);
+;;;546    	CanRxMsg* CAN1_RxMsg;
+;;;547    	CAN_InitTypeDef   CAN_InitStructure;
+;;;548    	
+;;;549    //	recordId = dataToSend.canId;//记录之前的  CANID
+;;;550    	
+;;;551    	pidVerCmd = Mem_malloc(8);
 000012  2008              MOVS     r0,#8
 000014  f7fffffe          BL       Mem_malloc
 000018  4605              MOV      r5,r0
-;;;555    	
-;;;556    	cmdId     = ptrDeal[offset ++];
+;;;552    	
+;;;553    	cmdId     = ptrDeal[offset ++];
 00001a  4621              MOV      r1,r4
 00001c  1c64              ADDS     r4,r4,#1
 00001e  5c70              LDRB     r0,[r6,r1]
 000020  9006              STR      r0,[sp,#0x18]
-;;;557    	cmdId     = (cmdId << 8) + ptrDeal[offset ++];
+;;;554    	cmdId     = (cmdId << 8) + ptrDeal[offset ++];
 000022  4621              MOV      r1,r4
 000024  1c64              ADDS     r4,r4,#1
 000026  5c71              LDRB     r1,[r6,r1]
@@ -210,207 +210,207 @@
 00002a  eb012000          ADD      r0,r1,r0,LSL #8
 00002e  b280              UXTH     r0,r0
 000030  9006              STR      r0,[sp,#0x18]
-;;;558    	
-;;;559    	flowId = ptrDeal[offset ++];//流水ID
+;;;555    	
+;;;556    	flowId = ptrDeal[offset ++];//流水ID
 000032  4621              MOV      r1,r4
 000034  1c64              ADDS     r4,r4,#1
 000036  5c77              LDRB     r7,[r6,r1]
-;;;560    	flowId = (flowId<<8) + ptrDeal[offset++];
+;;;557    	flowId = (flowId<<8) + ptrDeal[offset++];
 000038  4621              MOV      r1,r4
 00003a  1c64              ADDS     r4,r4,#1
 00003c  5c70              LDRB     r0,[r6,r1]
 00003e  eb002707          ADD      r7,r0,r7,LSL #8
-;;;561    	flowId = (flowId<<8) + ptrDeal[offset++];
+;;;558    	flowId = (flowId<<8) + ptrDeal[offset++];
 000042  4621              MOV      r1,r4
 000044  1c64              ADDS     r4,r4,#1
 000046  5c70              LDRB     r0,[r6,r1]
 000048  eb002707          ADD      r7,r0,r7,LSL #8
-;;;562    	flowId = (flowId<<8) + ptrDeal[offset++];
+;;;559    	flowId = (flowId<<8) + ptrDeal[offset++];
 00004c  4621              MOV      r1,r4
 00004e  1c64              ADDS     r4,r4,#1
 000050  5c70              LDRB     r0,[r6,r1]
 000052  eb002707          ADD      r7,r0,r7,LSL #8
-;;;563    	
-;;;564    	canRxId = ptrDeal[offset ++];//卡路宝ID
+;;;560    	
+;;;561    	canRxId = ptrDeal[offset ++];//卡路宝ID
 000056  4620              MOV      r0,r4
 000058  1c61              ADDS     r1,r4,#1
 00005a  b2cc              UXTB     r4,r1
 00005c  f816a000          LDRB     r10,[r6,r0]
-;;;565    	canRxId = (canRxId<<8) + ptrDeal[offset++];
+;;;562    	canRxId = (canRxId<<8) + ptrDeal[offset++];
 000060  4620              MOV      r0,r4
 000062  1c61              ADDS     r1,r4,#1
 000064  b2cc              UXTB     r4,r1
 000066  5c30              LDRB     r0,[r6,r0]
 000068  eb002a0a          ADD      r10,r0,r10,LSL #8
-;;;566    	canRxId = (canRxId<<8) + ptrDeal[offset++];
+;;;563    	canRxId = (canRxId<<8) + ptrDeal[offset++];
 00006c  4620              MOV      r0,r4
 00006e  1c61              ADDS     r1,r4,#1
 000070  b2cc              UXTB     r4,r1
 000072  5c30              LDRB     r0,[r6,r0]
 000074  eb002a0a          ADD      r10,r0,r10,LSL #8
-;;;567    	canRxId = (canRxId<<8) + ptrDeal[offset++];
+;;;564    	canRxId = (canRxId<<8) + ptrDeal[offset++];
 000078  4620              MOV      r0,r4
 00007a  1c61              ADDS     r1,r4,#1
 00007c  b2cc              UXTB     r4,r1
 00007e  5c30              LDRB     r0,[r6,r0]
 000080  eb002a0a          ADD      r10,r0,r10,LSL #8
-;;;568    	
-;;;569    	canTxId = ptrDeal[offset ++];//ECU ID 
+;;;565    	
+;;;566    	canTxId = ptrDeal[offset ++];//ECU ID 
 000084  4620              MOV      r0,r4
 000086  1c61              ADDS     r1,r4,#1
 000088  b2cc              UXTB     r4,r1
 00008a  f816b000          LDRB     r11,[r6,r0]
-;;;570    	canTxId = (canTxId<<8) + ptrDeal[offset++];
+;;;567    	canTxId = (canTxId<<8) + ptrDeal[offset++];
 00008e  4620              MOV      r0,r4
 000090  1c61              ADDS     r1,r4,#1
 000092  b2cc              UXTB     r4,r1
 000094  5c30              LDRB     r0,[r6,r0]
 000096  eb002b0b          ADD      r11,r0,r11,LSL #8
-;;;571    	canTxId = (canTxId<<8) + ptrDeal[offset++];
+;;;568    	canTxId = (canTxId<<8) + ptrDeal[offset++];
 00009a  4620              MOV      r0,r4
 00009c  1c61              ADDS     r1,r4,#1
 00009e  b2cc              UXTB     r4,r1
 0000a0  5c30              LDRB     r0,[r6,r0]
 0000a2  eb002b0b          ADD      r11,r0,r11,LSL #8
-;;;572    	canTxId = (canTxId<<8) + ptrDeal[offset++];
+;;;569    	canTxId = (canTxId<<8) + ptrDeal[offset++];
 0000a6  4620              MOV      r0,r4
 0000a8  1c61              ADDS     r1,r4,#1
 0000aa  b2cc              UXTB     r4,r1
 0000ac  5c30              LDRB     r0,[r6,r0]
 0000ae  eb002b0b          ADD      r11,r0,r11,LSL #8
-;;;573    	
-;;;574    	memcpy(pidVerCmd,&ptrDeal[offset],8);//要测试的 PID 指令
+;;;570    	
+;;;571    	memcpy(pidVerCmd,&ptrDeal[offset],8);//要测试的 PID 指令
 0000b2  1930              ADDS     r0,r6,r4
 0000b4  6801              LDR      r1,[r0,#0]
 0000b6  6029              STR      r1,[r5,#0]
 0000b8  6840              LDR      r0,[r0,#4]
 0000ba  6068              STR      r0,[r5,#4]
-;;;575    	
-;;;576    	varOperation.pidTset = 1;
+;;;572    	
+;;;573    	varOperation.pidTset = 1;
 0000bc  2001              MOVS     r0,#1
 0000be  49b1              LDR      r1,|L2.900|
 0000c0  f8810093          STRB     r0,[r1,#0x93]
-;;;577    	
-;;;578    	CAN_DeInit(CAN1);  
+;;;574    	
+;;;575    	CAN_DeInit(CAN1);  
 0000c4  48b0              LDR      r0,|L2.904|
 0000c6  f7fffffe          BL       CAN_DeInit
-;;;579    	CAN_StructInit(&CAN_InitStructure);
+;;;576    	CAN_StructInit(&CAN_InitStructure);
 0000ca  a801              ADD      r0,sp,#4
 0000cc  f7fffffe          BL       CAN_StructInit
-;;;580    	CAN1_BaudSet(canDataConfig.canBaud);  //先用flash中的CAN配置进行测试
+;;;577    	CAN1_BaudSet(canDataConfig.canBaud);  //先用flash中的CAN配置进行测试
 0000d0  49ae              LDR      r1,|L2.908|
 0000d2  7c88              LDRB     r0,[r1,#0x12]  ; canDataConfig
 0000d4  f7fffffe          BL       CAN1_BaudSet
-;;;581    	CAN1_SetFilter(canRxId ,CAN_ID_EXT); 
+;;;578    	CAN1_SetFilter(canRxId ,CAN_ID_EXT); 
 0000d8  2104              MOVS     r1,#4
 0000da  4650              MOV      r0,r10
 0000dc  f7fffffe          BL       CAN1_SetFilter
-;;;582    	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//重置CAN滤波器
+;;;579    	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//重置CAN滤波器
 0000e0  2201              MOVS     r2,#1
 0000e2  2110              MOVS     r1,#0x10
 0000e4  48a8              LDR      r0,|L2.904|
 0000e6  f7fffffe          BL       CAN_ITConfig
-;;;583    	
-;;;584    	for(i = 0;i < 200;i ++)//清空消息队列
+;;;580    	
+;;;581    	for(i = 0;i < 200;i ++)//清空消息队列
 0000ea  bf00              NOP      
 0000ec  e011              B        |L2.274|
                   |L2.238|
-;;;585    	{
-;;;586    		CAN1_RxMsg = OSQPend(canRecieveQ,40,&err);
+;;;582    	{
+;;;583    		CAN1_RxMsg = OSQPend(canRecieveQ,40,&err);
 0000ee  aa05              ADD      r2,sp,#0x14
 0000f0  2128              MOVS     r1,#0x28
 0000f2  48a7              LDR      r0,|L2.912|
 0000f4  6800              LDR      r0,[r0,#0]  ; canRecieveQ
 0000f6  f7fffffe          BL       OSQPend
 0000fa  4680              MOV      r8,r0
-;;;587    		if(err != OS_ERR_NONE)//消息队列没数据了
+;;;584    		if(err != OS_ERR_NONE)//消息队列没数据了
 0000fc  f89d0014          LDRB     r0,[sp,#0x14]
 000100  b100              CBZ      r0,|L2.260|
-;;;588    			break;
+;;;585    			break;
 000102  e009              B        |L2.280|
                   |L2.260|
-;;;589    		Mem_free(CAN1_RxMsg);
+;;;586    		Mem_free(CAN1_RxMsg);
 000104  4640              MOV      r0,r8
 000106  f7fffffe          BL       Mem_free
-00010a  f1090001          ADD      r0,r9,#1              ;584
-00010e  f00009ff          AND      r9,r0,#0xff           ;584
+00010a  f1090001          ADD      r0,r9,#1              ;581
+00010e  f00009ff          AND      r9,r0,#0xff           ;581
                   |L2.274|
-000112  f1b90fc8          CMP      r9,#0xc8              ;584
+000112  f1b90fc8          CMP      r9,#0xc8              ;581
 000116  dbea              BLT      |L2.238|
                   |L2.280|
-000118  bf00              NOP                            ;588
-;;;590    	}
-;;;591    	dataToSend.canId = canTxId;
+000118  bf00              NOP                            ;585
+;;;587    	}
+;;;588    	dataToSend.canId = canTxId;
 00011a  489e              LDR      r0,|L2.916|
 00011c  f8c0b000          STR      r11,[r0,#0]  ; dataToSend
-;;;592    	dataToSend.pdat  = pidVerCmd;
+;;;589    	dataToSend.pdat  = pidVerCmd;
 000120  6085              STR      r5,[r0,#8]  ; dataToSend
-;;;593    	OBD_CAN_SendData(dataToSend.canId,CAN_ID_EXT,dataToSend.pdat);//发送PID指令
+;;;590    	OBD_CAN_SendData(dataToSend.canId,CAN_ID_EXT,dataToSend.pdat);//发送PID指令
 000122  4601              MOV      r1,r0
 000124  688a              LDR      r2,[r1,#8]  ; dataToSend
 000126  6808              LDR      r0,[r1,#0]  ; dataToSend
 000128  2104              MOVS     r1,#4
 00012a  f7fffffe          BL       OBD_CAN_SendData
-;;;594    
-;;;595    	CAN1_RxMsg = OSQPend(canRecieveQ,500,&err); // 接收到OBD回复
+;;;591    
+;;;592    	CAN1_RxMsg = OSQPend(canRecieveQ,500,&err); // 接收到OBD回复
 00012e  aa05              ADD      r2,sp,#0x14
 000130  f44f71fa          MOV      r1,#0x1f4
 000134  4896              LDR      r0,|L2.912|
 000136  6800              LDR      r0,[r0,#0]  ; canRecieveQ
 000138  f7fffffe          BL       OSQPend
 00013c  4680              MOV      r8,r0
-;;;596    	if(err == OS_ERR_NONE)
+;;;593    	if(err == OS_ERR_NONE)
 00013e  f89d0014          LDRB     r0,[sp,#0x14]
 000142  2800              CMP      r0,#0
 000144  d179              BNE      |L2.570|
-;;;597    	{
-;;;598    		if(CAN1_RxMsg->Data[0] == 0x10)     // 多包处理
+;;;594    	{
+;;;595    		if(CAN1_RxMsg->Data[0] == 0x10)     // 多包处理
 000146  f898000b          LDRB     r0,[r8,#0xb]
 00014a  2810              CMP      r0,#0x10
 00014c  d177              BNE      |L2.574|
-;;;599    		{
-;;;600    			pidVerCmd = Mem_malloc(CAN1_RxMsg->Data[1] + 15);// 申请的内存块足够长
+;;;596    		{
+;;;597    			pidVerCmd = Mem_malloc(CAN1_RxMsg->Data[1] + 15);// 申请的内存块足够长
 00014e  f898100c          LDRB     r1,[r8,#0xc]
 000152  f101000f          ADD      r0,r1,#0xf
 000156  f7fffffe          BL       Mem_malloc
 00015a  4605              MOV      r5,r0
-;;;601    			if(pidVerCmd != NULL)
+;;;598    			if(pidVerCmd != NULL)
 00015c  2d00              CMP      r5,#0
 00015e  d06b              BEQ      |L2.568|
-;;;602    			{
-;;;603    				pidVerCmd[0] = CAN1_RxMsg -> Data[1] + 8;
+;;;599    			{
+;;;600    				pidVerCmd[0] = CAN1_RxMsg -> Data[1] + 8;
 000160  f898000c          LDRB     r0,[r8,#0xc]
 000164  3008              ADDS     r0,r0,#8
 000166  7028              STRB     r0,[r5,#0]
-;;;604    				pidVerCmd[1] = 0x50;
+;;;601    				pidVerCmd[1] = 0x50;
 000168  2050              MOVS     r0,#0x50
 00016a  7068              STRB     r0,[r5,#1]
-;;;605    				pidVerCmd[2] = 0x17;
+;;;602    				pidVerCmd[2] = 0x17;
 00016c  2017              MOVS     r0,#0x17
 00016e  70a8              STRB     r0,[r5,#2]
-;;;606    				
-;;;607    				pidVerCmd[3] = (flowId>>24) & 0xFF;           //指令流水号
+;;;603    				
+;;;604    				pidVerCmd[3] = (flowId>>24) & 0xFF;           //指令流水号
 000170  0e38              LSRS     r0,r7,#24
 000172  70e8              STRB     r0,[r5,#3]
-;;;608    				pidVerCmd[4] = (flowId>>16) & 0xFF;
+;;;605    				pidVerCmd[4] = (flowId>>16) & 0xFF;
 000174  0c38              LSRS     r0,r7,#16
 000176  7128              STRB     r0,[r5,#4]
-;;;609    				pidVerCmd[5] = (flowId>>8)  & 0xFF;
+;;;606    				pidVerCmd[5] = (flowId>>8)  & 0xFF;
 000178  0a38              LSRS     r0,r7,#8
 00017a  7168              STRB     r0,[r5,#5]
-;;;610    				pidVerCmd[6] = (flowId>>0)  & 0xFF;
+;;;607    				pidVerCmd[6] = (flowId>>0)  & 0xFF;
 00017c  71af              STRB     r7,[r5,#6]
-;;;611    				
-;;;612    				pidVerCmd[7] = CAN1_RxMsg->Data[1];           //收到的数据长度
+;;;608    				
+;;;609    				pidVerCmd[7] = CAN1_RxMsg->Data[1];           //收到的数据长度
 00017e  f898000c          LDRB     r0,[r8,#0xc]
 000182  71e8              STRB     r0,[r5,#7]
-;;;613    				
-;;;614    				memcpy(&pidVerCmd[8],&CAN1_RxMsg->Data[2],6);
+;;;610    				
+;;;611    				memcpy(&pidVerCmd[8],&CAN1_RxMsg->Data[2],6);
 000184  f8d8100d          LDR      r1,[r8,#0xd]
 000188  60a9              STR      r1,[r5,#8]
 00018a  f8b80011          LDRH     r0,[r8,#0x11]
 00018e  81a8              STRH     r0,[r5,#0xc]
-;;;615    				cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6) % 7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
+;;;612    				cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6) % 7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
 000190  f898000c          LDRB     r0,[r8,#0xc]
 000194  1f80              SUBS     r0,r0,#6
 000196  2107              MOVS     r1,#7
@@ -430,36 +430,36 @@
                   |L2.444|
 0001bc  b2c0              UXTB     r0,r0
 0001be  9004              STR      r0,[sp,#0x10]
-;;;616    				Mem_free(CAN1_RxMsg);
+;;;613    				Mem_free(CAN1_RxMsg);
 0001c0  4640              MOV      r0,r8
 0001c2  f7fffffe          BL       Mem_free
-;;;617    				dataToSend.pdat = pidManyBag;                 //发送 0x30 请求接下来的多包
+;;;614    				dataToSend.pdat = pidManyBag;                 //发送 0x30 请求接下来的多包
 0001c6  4874              LDR      r0,|L2.920|
 0001c8  4972              LDR      r1,|L2.916|
 0001ca  6088              STR      r0,[r1,#8]  ; dataToSend
-;;;618    				OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
+;;;615    				OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
 0001cc  460b              MOV      r3,r1
 0001ce  689a              LDR      r2,[r3,#8]  ; dataToSend
 0001d0  6859              LDR      r1,[r3,#4]  ; dataToSend
 0001d2  6818              LDR      r0,[r3,#0]  ; dataToSend
 0001d4  f7fffffe          BL       OBD_CAN_SendData
-;;;619    				for(i=0;i<cmdManyPackNum;i++)
+;;;616    				for(i=0;i<cmdManyPackNum;i++)
 0001d8  f04f0900          MOV      r9,#0
 0001dc  e01f              B        |L2.542|
                   |L2.478|
-;;;620    				{
-;;;621    					CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);// 接收多包
+;;;617    				{
+;;;618    					CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);// 接收多包
 0001de  aa05              ADD      r2,sp,#0x14
 0001e0  2119              MOVS     r1,#0x19
 0001e2  486b              LDR      r0,|L2.912|
 0001e4  6800              LDR      r0,[r0,#0]  ; canRecieveQ
 0001e6  f7fffffe          BL       OSQPend
 0001ea  4680              MOV      r8,r0
-;;;622    					if(err == OS_ERR_NONE)
+;;;619    					if(err == OS_ERR_NONE)
 0001ec  f89d0014          LDRB     r0,[sp,#0x14]
 0001f0  b980              CBNZ     r0,|L2.532|
-;;;623    					{
-;;;624    						memcpy(&pidVerCmd[7*i + 14],&CAN1_RxMsg->Data[1],7);
+;;;620    					{
+;;;621    						memcpy(&pidVerCmd[7*i + 14],&CAN1_RxMsg->Data[1],7);
 0001f2  ebc900c9          RSB      r0,r9,r9,LSL #3
 0001f6  300e              ADDS     r0,r0,#0xe
 0001f8  1941              ADDS     r1,r0,r5
@@ -469,36 +469,36 @@
 000204  808a              STRH     r2,[r1,#4]
 000206  f8980012          LDRB     r0,[r8,#0x12]
 00020a  7188              STRB     r0,[r1,#6]
-;;;625    						Mem_free(CAN1_RxMsg);
+;;;622    						Mem_free(CAN1_RxMsg);
 00020c  4640              MOV      r0,r8
 00020e  f7fffffe          BL       Mem_free
 000212  e000              B        |L2.534|
                   |L2.532|
-;;;626    					}
-;;;627    					else 
-;;;628    						break;
+;;;623    					}
+;;;624    					else 
+;;;625    						break;
 000214  e006              B        |L2.548|
                   |L2.534|
-000216  f1090001          ADD      r0,r9,#1              ;619
-00021a  f00009ff          AND      r9,r0,#0xff           ;619
+000216  f1090001          ADD      r0,r9,#1              ;616
+00021a  f00009ff          AND      r9,r0,#0xff           ;616
                   |L2.542|
-00021e  9804              LDR      r0,[sp,#0x10]         ;619
-000220  4581              CMP      r9,r0                 ;619
+00021e  9804              LDR      r0,[sp,#0x10]         ;616
+000220  4581              CMP      r9,r0                 ;616
 000222  dbdc              BLT      |L2.478|
                   |L2.548|
 000224  bf00              NOP      
-;;;629    				} 
-;;;630    				if(i == cmdManyPackNum)
+;;;626    				} 
+;;;627    				if(i == cmdManyPackNum)
 000226  9804              LDR      r0,[sp,#0x10]
 000228  4581              CMP      r9,r0
 00022a  d102              BNE      |L2.562|
-;;;631    				{
-;;;632    					SendPidCmdData(pidVerCmd);
+;;;628    				{
+;;;629    					SendPidCmdData(pidVerCmd);
 00022c  4628              MOV      r0,r5
 00022e  f7fffffe          BL       SendPidCmdData
                   |L2.562|
-;;;633    				}
-;;;634    				Mem_free(pidVerCmd);
+;;;630    				}
+;;;631    				Mem_free(pidVerCmd);
 000232  4628              MOV      r0,r5
 000234  f7fffffe          BL       Mem_free
                   |L2.568|
@@ -507,59 +507,59 @@
 00023a  e03b              B        |L2.692|
 00023c  e7ff              B        |L2.574|
                   |L2.574|
-;;;635    			}
-;;;636    		}
-;;;637    		else  //单包处理
-;;;638    		{
-;;;639    			offset = 0;
+;;;632    			}
+;;;633    		}
+;;;634    		else  //单包处理
+;;;635    		{
+;;;636    			offset = 0;
 00023e  2400              MOVS     r4,#0
-;;;640    			pidVerCmd = Mem_malloc(16);
+;;;637    			pidVerCmd = Mem_malloc(16);
 000240  2010              MOVS     r0,#0x10
 000242  f7fffffe          BL       Mem_malloc
 000246  4605              MOV      r5,r0
-;;;641    			pidVerCmd[offset++] = 16;
+;;;638    			pidVerCmd[offset++] = 16;
 000248  2210              MOVS     r2,#0x10
 00024a  4621              MOV      r1,r4
 00024c  1c64              ADDS     r4,r4,#1
 00024e  546a              STRB     r2,[r5,r1]
-;;;642    			pidVerCmd[offset++] = 0x50;
+;;;639    			pidVerCmd[offset++] = 0x50;
 000250  2250              MOVS     r2,#0x50
 000252  4621              MOV      r1,r4
 000254  1c64              ADDS     r4,r4,#1
 000256  546a              STRB     r2,[r5,r1]
-;;;643    			pidVerCmd[offset++] = 0x17;
+;;;640    			pidVerCmd[offset++] = 0x17;
 000258  2217              MOVS     r2,#0x17
 00025a  4621              MOV      r1,r4
 00025c  1c64              ADDS     r4,r4,#1
 00025e  546a              STRB     r2,[r5,r1]
-;;;644    			
-;;;645    			pidVerCmd[offset++] = (flowId>>24) & 0xFF;//指令流水号
+;;;641    			
+;;;642    			pidVerCmd[offset++] = (flowId>>24) & 0xFF;//指令流水号
 000260  0e39              LSRS     r1,r7,#24
 000262  4622              MOV      r2,r4
 000264  1c64              ADDS     r4,r4,#1
 000266  54a9              STRB     r1,[r5,r2]
-;;;646    			pidVerCmd[offset++] = (flowId>>16) & 0xFF;
+;;;643    			pidVerCmd[offset++] = (flowId>>16) & 0xFF;
 000268  f3c74207          UBFX     r2,r7,#16,#8
 00026c  4621              MOV      r1,r4
 00026e  1c64              ADDS     r4,r4,#1
 000270  546a              STRB     r2,[r5,r1]
-;;;647    			pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
+;;;644    			pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
 000272  f3c72207          UBFX     r2,r7,#8,#8
 000276  4621              MOV      r1,r4
 000278  1c64              ADDS     r4,r4,#1
 00027a  546a              STRB     r2,[r5,r1]
-;;;648    			pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
+;;;645    			pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
 00027c  4621              MOV      r1,r4
 00027e  1c64              ADDS     r4,r4,#1
 000280  546f              STRB     r7,[r5,r1]
-;;;649    			
-;;;650    			pidVerCmd[offset++] = 8;//收到的数据长度
+;;;646    			
+;;;647    			pidVerCmd[offset++] = 8;//收到的数据长度
 000282  2208              MOVS     r2,#8
 000284  4620              MOV      r0,r4
 000286  1c61              ADDS     r1,r4,#1
 000288  b2cc              UXTB     r4,r1
 00028a  542a              STRB     r2,[r5,r0]
-;;;651    			memcpy(&pidVerCmd[offset++],CAN1_RxMsg->Data,8);
+;;;648    			memcpy(&pidVerCmd[offset++],CAN1_RxMsg->Data,8);
 00028c  4620              MOV      r0,r4
 00028e  1c61              ADDS     r1,r4,#1
 000290  b2cc              UXTB     r4,r1
@@ -568,68 +568,68 @@
 000298  6001              STR      r1,[r0,#0]
 00029a  f8d8100f          LDR      r1,[r8,#0xf]
 00029e  6041              STR      r1,[r0,#4]
-;;;652    			SendPidCmdData(pidVerCmd);
+;;;649    			SendPidCmdData(pidVerCmd);
 0002a0  4628              MOV      r0,r5
 0002a2  f7fffffe          BL       SendPidCmdData
-;;;653    			Mem_free(pidVerCmd);
+;;;650    			Mem_free(pidVerCmd);
 0002a6  4628              MOV      r0,r5
 0002a8  f7fffffe          BL       Mem_free
-;;;654    			Mem_free(CAN1_RxMsg);
+;;;651    			Mem_free(CAN1_RxMsg);
 0002ac  4640              MOV      r0,r8
 0002ae  f7fffffe          BL       Mem_free
 0002b2  e047              B        |L2.836|
                   |L2.692|
-;;;655    		}
-;;;656    	}else//ECU 无回复
-;;;657    	{	offset = 0;
+;;;652    		}
+;;;653    	}else//ECU 无回复
+;;;654    	{	offset = 0;
 0002b4  2400              MOVS     r4,#0
-;;;658    		pidVerCmd = Mem_malloc(16);
+;;;655    		pidVerCmd = Mem_malloc(16);
 0002b6  2010              MOVS     r0,#0x10
 0002b8  f7fffffe          BL       Mem_malloc
 0002bc  4605              MOV      r5,r0
-;;;659    		pidVerCmd[offset++] = 13;
+;;;656    		pidVerCmd[offset++] = 13;
 0002be  220d              MOVS     r2,#0xd
 0002c0  4621              MOV      r1,r4
 0002c2  1c64              ADDS     r4,r4,#1
 0002c4  546a              STRB     r2,[r5,r1]
-;;;660    		pidVerCmd[offset++] = 0x50;
+;;;657    		pidVerCmd[offset++] = 0x50;
 0002c6  2250              MOVS     r2,#0x50
 0002c8  4621              MOV      r1,r4
 0002ca  1c64              ADDS     r4,r4,#1
 0002cc  546a              STRB     r2,[r5,r1]
-;;;661    		pidVerCmd[offset++] = 0x17;
+;;;658    		pidVerCmd[offset++] = 0x17;
 0002ce  2217              MOVS     r2,#0x17
 0002d0  4621              MOV      r1,r4
 0002d2  1c64              ADDS     r4,r4,#1
 0002d4  546a              STRB     r2,[r5,r1]
-;;;662    		
-;;;663    		pidVerCmd[offset++] = (flowId>>24) & 0xFF;//指令流水号
+;;;659    		
+;;;660    		pidVerCmd[offset++] = (flowId>>24) & 0xFF;//指令流水号
 0002d6  0e39              LSRS     r1,r7,#24
 0002d8  4622              MOV      r2,r4
 0002da  1c64              ADDS     r4,r4,#1
 0002dc  54a9              STRB     r1,[r5,r2]
-;;;664    		pidVerCmd[offset++] = (flowId>>16) & 0xFF;
+;;;661    		pidVerCmd[offset++] = (flowId>>16) & 0xFF;
 0002de  f3c74207          UBFX     r2,r7,#16,#8
 0002e2  4621              MOV      r1,r4
 0002e4  1c64              ADDS     r4,r4,#1
 0002e6  546a              STRB     r2,[r5,r1]
-;;;665    		pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
+;;;662    		pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
 0002e8  f3c72207          UBFX     r2,r7,#8,#8
 0002ec  4621              MOV      r1,r4
 0002ee  1c64              ADDS     r4,r4,#1
 0002f0  546a              STRB     r2,[r5,r1]
-;;;666    		pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
+;;;663    		pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
 0002f2  4621              MOV      r1,r4
 0002f4  1c64              ADDS     r4,r4,#1
 0002f6  546f              STRB     r7,[r5,r1]
-;;;667    		
-;;;668    		pidVerCmd[offset++] = 5;      //ERROR  -  配置指令错误
+;;;664    		
+;;;665    		pidVerCmd[offset++] = 5;      //ERROR  -  配置指令错误
 0002f8  2205              MOVS     r2,#5
 0002fa  4620              MOV      r0,r4
 0002fc  1c61              ADDS     r1,r4,#1
 0002fe  b2cc              UXTB     r4,r1
 000300  542a              STRB     r2,[r5,r0]
-;;;669    		pidVerCmd[offset++] = 'E';pidVerCmd[offset++] = 'R';pidVerCmd[offset++] = 'R';
+;;;666    		pidVerCmd[offset++] = 'E';pidVerCmd[offset++] = 'R';pidVerCmd[offset++] = 'R';
 000302  2245              MOVS     r2,#0x45
 000304  4620              MOV      r0,r4
 000306  1c61              ADDS     r1,r4,#1
@@ -644,7 +644,7 @@
 000318  1c61              ADDS     r1,r4,#1
 00031a  b2cc              UXTB     r4,r1
 00031c  542a              STRB     r2,[r5,r0]
-;;;670    		pidVerCmd[offset++] = 'O';pidVerCmd[offset++] = 'R';
+;;;667    		pidVerCmd[offset++] = 'O';pidVerCmd[offset++] = 'R';
 00031e  224f              MOVS     r2,#0x4f
 000320  4620              MOV      r0,r4
 000322  1c61              ADDS     r1,r4,#1
@@ -655,53 +655,53 @@
 00032c  1c60              ADDS     r0,r4,#1
 00032e  b2c4              UXTB     r4,r0
 000330  546a              STRB     r2,[r5,r1]
-;;;671    		SendPidCmdData(pidVerCmd);
+;;;668    		SendPidCmdData(pidVerCmd);
 000332  4628              MOV      r0,r5
 000334  f7fffffe          BL       SendPidCmdData
-;;;672    		Mem_free(pidVerCmd);
+;;;669    		Mem_free(pidVerCmd);
 000338  4628              MOV      r0,r5
 00033a  f7fffffe          BL       Mem_free
-;;;673    		Mem_free(CAN1_RxMsg);
+;;;670    		Mem_free(CAN1_RxMsg);
 00033e  4640              MOV      r0,r8
 000340  f7fffffe          BL       Mem_free
                   |L2.836|
-;;;674    	}
-;;;675    	if(varOperation.canTest == 2)
+;;;671    	}
+;;;672    	if(varOperation.canTest == 2)
 000344  480f              LDR      r0,|L2.900|
 000346  f8b00091          LDRH     r0,[r0,#0x91]  ; varOperation
 00034a  2802              CMP      r0,#2
 00034c  d110              BNE      |L2.880|
-;;;676    	{
-;;;677    		CAN_DeInit(CAN1);  
+;;;673    	{
+;;;674    		CAN_DeInit(CAN1);  
 00034e  480e              LDR      r0,|L2.904|
 000350  f7fffffe          BL       CAN_DeInit
-;;;678    		CAN_StructInit(&CAN_InitStructure);
+;;;675    		CAN_StructInit(&CAN_InitStructure);
 000354  a801              ADD      r0,sp,#4
 000356  f7fffffe          BL       CAN_StructInit
-;;;679    		CAN1_BaudSet(canDataConfig.canBaud);  //先用flash中的CAN配置进行测试
+;;;676    		CAN1_BaudSet(canDataConfig.canBaud);  //先用flash中的CAN配置进行测试
 00035a  490c              LDR      r1,|L2.908|
 00035c  7c88              LDRB     r0,[r1,#0x12]  ; canDataConfig
 00035e  f7fffffe          BL       CAN1_BaudSet
-;;;680    		CAN1_ClearFilter();           
+;;;677    		CAN1_ClearFilter();           
 000362  f7fffffe          BL       CAN1_ClearFilter
-;;;681    		CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//重置CAN滤波器
+;;;678    		CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//重置CAN滤波器
 000366  2201              MOVS     r2,#1
 000368  2110              MOVS     r1,#0x10
 00036a  4807              LDR      r0,|L2.904|
 00036c  f7fffffe          BL       CAN_ITConfig
                   |L2.880|
-;;;682    	}
-;;;683    	varOperation.pidTset = 0;
+;;;679    	}
+;;;680    	varOperation.pidTset = 0;
 000370  2000              MOVS     r0,#0
 000372  4904              LDR      r1,|L2.900|
 000374  f8810093          STRB     r0,[r1,#0x93]
-;;;684    	Mem_free(pidVerCmd);
+;;;681    	Mem_free(pidVerCmd);
 000378  4628              MOV      r0,r5
 00037a  f7fffffe          BL       Mem_free
-;;;685    }
+;;;682    }
 00037e  b007              ADD      sp,sp,#0x1c
 000380  e8bd8ff0          POP      {r4-r11,pc}
-;;;686    extern uint8_t strengPower[300];
+;;;683    extern uint8_t strengPower[300];
                           ENDP
 
                   |L2.900|
@@ -720,55 +720,55 @@
                           AREA ||i.ConfigUpdata||, CODE, READONLY, ALIGN=2
 
                   ConfigUpdata PROC
-;;;335    }
-;;;336    static void ConfigUpdata(uint8_t* ptrDeal )
+;;;332    }
+;;;333    static void ConfigUpdata(uint8_t* ptrDeal )
 000000  e92d47f0          PUSH     {r4-r10,lr}
-;;;337    {
+;;;334    {
 000004  4606              MOV      r6,r0
-;;;338    	uint8_t  temp;
-;;;339    	uint16_t frameLen;
-;;;340    	uint16_t cmdId;
-;;;341    	uint8_t* ptrMode;
-;;;342    	uint16_t i = 0,offset = 0;
+;;;335    	uint8_t  temp;
+;;;336    	uint16_t frameLen;
+;;;337    	uint16_t cmdId;
+;;;338    	uint8_t* ptrMode;
+;;;339    	uint16_t i = 0,offset = 0;
 000006  2500              MOVS     r5,#0
 000008  2400              MOVS     r4,#0
-;;;343        static uint16_t currentNum = 0;//发送下一个配置请求包
-;;;344    	static uint16_t frameIndex = 0;
-;;;345    	static uint8_t  pidPackNum = 0;//PID 总包数
-;;;346    	static uint32_t addrSavePid = 0;
-;;;347    		
-;;;348    	cmdId     = ptrDeal[3];
+;;;340        static uint16_t currentNum = 0;//发送下一个配置请求包
+;;;341    	static uint16_t frameIndex = 0;
+;;;342    	static uint8_t  pidPackNum = 0;//PID 总包数
+;;;343    	static uint32_t addrSavePid = 0;
+;;;344    		
+;;;345    	cmdId     = ptrDeal[3];
 00000a  78f7              LDRB     r7,[r6,#3]
-;;;349    	cmdId     = (cmdId << 8) + ptrDeal[4];
+;;;346    	cmdId     = (cmdId << 8) + ptrDeal[4];
 00000c  7930              LDRB     r0,[r6,#4]
 00000e  eb002007          ADD      r0,r0,r7,LSL #8
 000012  b287              UXTH     r7,r0
-;;;350    	if(cmdId == 0x4000)
+;;;347    	if(cmdId == 0x4000)
 000014  f5b74f80          CMP      r7,#0x4000
 000018  d17e              BNE      |L3.280|
-;;;351    	{
-;;;352    		offset = 5;
+;;;348    	{
+;;;349    		offset = 5;
 00001a  2405              MOVS     r4,#5
-;;;353    		varOperation.busType   = ptrDeal[offset++];//总线类型  CAN总线还是K线
+;;;350    		varOperation.busType   = ptrDeal[offset++];//总线类型  CAN总线还是K线
 00001c  4621              MOV      r1,r4
 00001e  1c64              ADDS     r4,r4,#1
 000020  5c70              LDRB     r0,[r6,r1]
 000022  49fe              LDR      r1,|L3.1052|
 000024  f8810086          STRB     r0,[r1,#0x86]
-;;;354    		varOperation.canIdType = ptrDeal[offset++];//CAN ID类型，扩展帧还是标准帧
+;;;351    		varOperation.canIdType = ptrDeal[offset++];//CAN ID类型，扩展帧还是标准帧
 000028  4621              MOV      r1,r4
 00002a  1c64              ADDS     r4,r4,#1
 00002c  5c70              LDRB     r0,[r6,r1]
 00002e  49fb              LDR      r1,|L3.1052|
 000030  f8810087          STRB     r0,[r1,#0x87]
-;;;355    		
-;;;356    		varOperation.canRxId = ptrDeal[offset++];  //卡路宝 CAN 接收ID
+;;;352    		
+;;;353    		varOperation.canRxId = ptrDeal[offset++];  //卡路宝 CAN 接收ID
 000034  4621              MOV      r1,r4
 000036  1c64              ADDS     r4,r4,#1
 000038  5c70              LDRB     r0,[r6,r1]
 00003a  49f8              LDR      r1,|L3.1052|
 00003c  f8c1008c          STR      r0,[r1,#0x8c]  ; varOperation
-;;;357    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+;;;354    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
 000040  4621              MOV      r1,r4
 000042  1c64              ADDS     r4,r4,#1
 000044  5c70              LDRB     r0,[r6,r1]
@@ -777,7 +777,7 @@
 00004c  eb002001          ADD      r0,r0,r1,LSL #8
 000050  49f2              LDR      r1,|L3.1052|
 000052  f8c1008c          STR      r0,[r1,#0x8c]  ; varOperation
-;;;358    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+;;;355    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
 000056  4621              MOV      r1,r4
 000058  1c64              ADDS     r4,r4,#1
 00005a  5c70              LDRB     r0,[r6,r1]
@@ -786,7 +786,7 @@
 000062  eb002001          ADD      r0,r0,r1,LSL #8
 000066  49ed              LDR      r1,|L3.1052|
 000068  f8c1008c          STR      r0,[r1,#0x8c]  ; varOperation
-;;;359    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
+;;;356    		varOperation.canRxId = (varOperation.canRxId << 8) + ptrDeal[offset++];
 00006c  4621              MOV      r1,r4
 00006e  1c64              ADDS     r4,r4,#1
 000070  5c70              LDRB     r0,[r6,r1]
@@ -795,14 +795,14 @@
 000078  eb002001          ADD      r0,r0,r1,LSL #8
 00007c  49e7              LDR      r1,|L3.1052|
 00007e  f8c1008c          STR      r0,[r1,#0x8c]  ; varOperation
-;;;360    		
-;;;361    		varOperation.canTxId = ptrDeal[offset++];  //卡路宝 CAN 发送ID
+;;;357    		
+;;;358    		varOperation.canTxId = ptrDeal[offset++];  //卡路宝 CAN 发送ID
 000082  4621              MOV      r1,r4
 000084  1c64              ADDS     r4,r4,#1
 000086  5c70              LDRB     r0,[r6,r1]
 000088  49e4              LDR      r1,|L3.1052|
 00008a  f8c10088          STR      r0,[r1,#0x88]  ; varOperation
-;;;362    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+;;;359    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 00008e  4621              MOV      r1,r4
 000090  1c64              ADDS     r4,r4,#1
 000092  5c70              LDRB     r0,[r6,r1]
@@ -811,7 +811,7 @@
 00009a  eb002001          ADD      r0,r0,r1,LSL #8
 00009e  49df              LDR      r1,|L3.1052|
 0000a0  f8c10088          STR      r0,[r1,#0x88]  ; varOperation
-;;;363    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+;;;360    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 0000a4  4621              MOV      r1,r4
 0000a6  1c64              ADDS     r4,r4,#1
 0000a8  5c70              LDRB     r0,[r6,r1]
@@ -820,7 +820,7 @@
 0000b0  eb002001          ADD      r0,r0,r1,LSL #8
 0000b4  49d9              LDR      r1,|L3.1052|
 0000b6  f8c10088          STR      r0,[r1,#0x88]  ; varOperation
-;;;364    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
+;;;361    		varOperation.canTxId = (varOperation.canTxId << 8) + ptrDeal[offset++];
 0000ba  4621              MOV      r1,r4
 0000bc  1c64              ADDS     r4,r4,#1
 0000be  5c70              LDRB     r0,[r6,r1]
@@ -829,14 +829,14 @@
 0000c6  eb002001          ADD      r0,r0,r1,LSL #8
 0000ca  49d4              LDR      r1,|L3.1052|
 0000cc  f8c10088          STR      r0,[r1,#0x88]  ; varOperation
-;;;365    		
-;;;366    		varOperation.newPidNum = ptrDeal[offset++];//新的PID命令个数
+;;;362    		
+;;;363    		varOperation.newPidNum = ptrDeal[offset++];//新的PID命令个数
 0000d0  4621              MOV      r1,r4
 0000d2  1c64              ADDS     r4,r4,#1
 0000d4  5c70              LDRB     r0,[r6,r1]
 0000d6  49d1              LDR      r1,|L3.1052|
 0000d8  f8a10082          STRH     r0,[r1,#0x82]
-;;;367    		varOperation.newPidNum = varOperation.newPidNum * 256 + ptrDeal[offset++];//新的PID命令个数
+;;;364    		varOperation.newPidNum = varOperation.newPidNum * 256 + ptrDeal[offset++];//新的PID命令个数
 0000dc  4621              MOV      r1,r4
 0000de  1c64              ADDS     r4,r4,#1
 0000e0  5c71              LDRB     r1,[r6,r1]
@@ -845,23 +845,23 @@
 0000e8  eb012000          ADD      r0,r1,r0,LSL #8
 0000ec  49cb              LDR      r1,|L3.1052|
 0000ee  f8a10082          STRH     r0,[r1,#0x82]
-;;;368    		
-;;;369    		pidPackNum = ptrDeal[offset++];            //一帧共有多少PID包配置项
+;;;365    		
+;;;366    		pidPackNum = ptrDeal[offset++];            //一帧共有多少PID包配置项
 0000f2  4621              MOV      r1,r4
 0000f4  1c64              ADDS     r4,r4,#1
 0000f6  5c70              LDRB     r0,[r6,r1]
 0000f8  49c9              LDR      r1,|L3.1056|
 0000fa  7008              STRB     r0,[r1,#0]
-;;;370    		
-;;;371    		varOperation.canBaud = (CANBAUD_Enum)ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
+;;;367    		
+;;;368    		varOperation.canBaud = (CANBAUD_Enum)ptrDeal[offset++];  //CAN波特率，协议中的 protocolType
 0000fc  4620              MOV      r0,r4
 0000fe  1c61              ADDS     r1,r4,#1
 000100  b28c              UXTH     r4,r1
 000102  5c30              LDRB     r0,[r6,r0]
 000104  49c5              LDR      r1,|L3.1052|
 000106  f8810090          STRB     r0,[r1,#0x90]
-;;;372    		
-;;;373    		memcpy(varOperation.pidVerCmd,&ptrDeal[offset],8);  //提取 读取ECU版本号的指令
+;;;369    		
+;;;370    		memcpy(varOperation.pidVerCmd,&ptrDeal[offset],8);  //提取 读取ECU版本号的指令
 00010a  1931              ADDS     r1,r6,r4
 00010c  48c3              LDR      r0,|L3.1052|
 00010e  3080              ADDS     r0,r0,#0x80
@@ -873,490 +873,490 @@
 000118  e014              B        |L3.324|
                   |L3.282|
 00011a  61c1              STR      r1,[r0,#0x1c]  ; varOperation
-;;;374    		
-;;;375    		currentNum = 0x4001;
+;;;371    		
+;;;372    		currentNum = 0x4001;
 00011c  f2440001          MOV      r0,#0x4001
 000120  49c0              LDR      r1,|L3.1060|
 000122  8008              STRH     r0,[r1,#0]
-;;;376    		frameIndex = 0;
+;;;373    		frameIndex = 0;
 000124  2000              MOVS     r0,#0
 000126  49c0              LDR      r1,|L3.1064|
 000128  8008              STRH     r0,[r1,#0]
-;;;377    		addrSavePid  = PID1CONFIGADDR;
+;;;374    		addrSavePid  = PID1CONFIGADDR;
 00012a  48c0              LDR      r0,|L3.1068|
 00012c  49c0              LDR      r1,|L3.1072|
 00012e  6008              STR      r0,[r1,#0]  ; addrSavePid
-;;;378    		memset(updateBuff,0,2048);
+;;;375    		memset(updateBuff,0,2048);
 000130  f44f6100          MOV      r1,#0x800
 000134  48bf              LDR      r0,|L3.1076|
 000136  f7fffffe          BL       __aeabi_memclr
-;;;379    		SendConfigNum(currentNum);//发送第一包程序请求帧0x4001
+;;;376    		SendConfigNum(currentNum);//发送第一包程序请求帧0x4001
 00013a  48ba              LDR      r0,|L3.1060|
 00013c  8800              LDRH     r0,[r0,#0]  ; currentNum
 00013e  f7fffffe          BL       SendConfigNum
 000142  e1ec              B        |L3.1310|
                   |L3.324|
-;;;380    		
-;;;381    	}else if(cmdId > 0x4000 && cmdId < 0x5000)
+;;;377    		
+;;;378    	}else if(cmdId > 0x4000 && cmdId < 0x5000)
 000144  f5b74f80          CMP      r7,#0x4000
 000148  dd6f              BLE      |L3.554|
 00014a  f5b74fa0          CMP      r7,#0x5000
 00014e  da6c              BGE      |L3.554|
-;;;382    	{
-;;;383    		if(cmdId != currentNum)       //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
+;;;379    	{
+;;;380    		if(cmdId != currentNum)       //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
 000150  48b4              LDR      r0,|L3.1060|
 000152  8800              LDRH     r0,[r0,#0]  ; currentNum
 000154  4287              CMP      r7,r0
 000156  d001              BEQ      |L3.348|
                   |L3.344|
-;;;384    		{
-;;;385    			//SendConfigNum(currentNum);//todo：重新发送？
-;;;386    			return;
-;;;387    		}
-;;;388    		 
-;;;389    		offset = 2;
-;;;390    		frameLen = ptrDeal[offset++] - 3;
-;;;391    		cmdId    = ptrDeal[offset++];
-;;;392    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-;;;393    		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
-;;;394    		frameIndex += frameLen;
-;;;395    		if(((cmdId - 0x4000) % 11 == 0)&&((cmdId - pidPackNum) != 0x4000))//2K 存110个PID，一个PID占17byte
-;;;396    		{
-;;;397    			for(i = 0;i < frameIndex;i += 17)      //更改 指令发送周期 的字节序
-;;;398    			{
-;;;399    				temp            = updateBuff[i];
-;;;400    				updateBuff[i]   = updateBuff[i+3];
-;;;401    				updateBuff[i+3] = temp;
-;;;402    				temp            = updateBuff[i+1];
-;;;403    				updateBuff[i+1] = updateBuff[i+2];
-;;;404    				updateBuff[i+2] = temp;
-;;;405    			}
-;;;406    			Save2KDataToFlash(updateBuff,addrSavePid,2048);
-;;;407    			addrSavePid += 0x800;
-;;;408    			frameIndex = 0;
-;;;409    			memset(updateBuff,0,2048);
-;;;410    			currentNum = cmdId + 1;   
-;;;411    			SendConfigNum(currentNum);//请求下一包数据
-;;;412    		}
-;;;413    		else if((cmdId - pidPackNum) == 0x4000)
-;;;414    		{
-;;;415    			for(i = 0;i < frameIndex;i += 17)                   //更改 指令发送周期 的字节序
-;;;416    			{
-;;;417    				temp            = updateBuff[i];
-;;;418    				updateBuff[i]   = updateBuff[i+3];
-;;;419    				updateBuff[i+3] = temp;
-;;;420    				temp            = updateBuff[i+1];
-;;;421    				updateBuff[i+1]   = updateBuff[i+2];
-;;;422    				updateBuff[i+2] = temp;
-;;;423    			}
-;;;424    			Save2KDataToFlash(updateBuff,addrSavePid,2048);
-;;;425    			addrSavePid = PID2CONFIGADDR;
-;;;426    			frameIndex = 0;
-;;;427    			memset(updateBuff,0,2048);
-;;;428    			SendConfigNum(0x5012);//请求第二个配置文件
-;;;429    		}
-;;;430    		else  
-;;;431    		{
-;;;432    			currentNum = cmdId + 1;   
-;;;433    			SendConfigNum(currentNum);//请求下一包数据
-;;;434    		}
-;;;435    	}
-;;;436    	else if(cmdId == 0x5012)
-;;;437    	{
-;;;438    		offset = 2;
-;;;439    		frameLen = ptrDeal[offset++] - 3;
-;;;440    		
-;;;441    		canDataConfig.pidVarNum = frameLen / 14;   //得到上报 ECU 变量的个数
-;;;442    		
-;;;443    		cmdId    = ptrDeal[offset++];
-;;;444    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-;;;445    		memcpy(updateBuff,&ptrDeal[offset],frameLen);
-;;;446    		frameIndex += frameLen;
-;;;447    		
-;;;448    		for(i = 0;i < 500;i += 14)      //更改系数、偏移量的字节序
-;;;449    		{
-;;;450    			temp            = updateBuff[i+6];
-;;;451    			updateBuff[i+6] = updateBuff[i+9];
-;;;452    			updateBuff[i+9] = temp;
-;;;453    			temp            = updateBuff[i+7];
-;;;454    			updateBuff[i+7] = updateBuff[i+8];
-;;;455    			updateBuff[i+8] = temp;
-;;;456    			
-;;;457    			temp             = updateBuff[i+10];
-;;;458    			updateBuff[i+10] = updateBuff[i+13];
-;;;459    			updateBuff[i+13] = temp;
-;;;460    			temp             = updateBuff[i+11];
-;;;461    			updateBuff[i+11] = updateBuff[i+12];
-;;;462    			updateBuff[i+12] = temp;
-;;;463    		}
-;;;464    		
-;;;465    		Save2KDataToFlash(updateBuff,PID2CONFIGADDR,500);//将数据写入第二配置文件区，（flash:0x08061000）
+;;;381    		{
+;;;382    			//SendConfigNum(currentNum);//todo：重新发送？
+;;;383    			return;
+;;;384    		}
+;;;385    		 
+;;;386    		offset = 2;
+;;;387    		frameLen = ptrDeal[offset++] - 3;
+;;;388    		cmdId    = ptrDeal[offset++];
+;;;389    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+;;;390    		memcpy(&updateBuff[frameIndex],&ptrDeal[offset],frameLen);
+;;;391    		frameIndex += frameLen;
+;;;392    		if(((cmdId - 0x4000) % 11 == 0)&&((cmdId - pidPackNum) != 0x4000))//2K 存110个PID，一个PID占17byte
+;;;393    		{
+;;;394    			for(i = 0;i < frameIndex;i += 17)      //更改 指令发送周期 的字节序
+;;;395    			{
+;;;396    				temp            = updateBuff[i];
+;;;397    				updateBuff[i]   = updateBuff[i+3];
+;;;398    				updateBuff[i+3] = temp;
+;;;399    				temp            = updateBuff[i+1];
+;;;400    				updateBuff[i+1] = updateBuff[i+2];
+;;;401    				updateBuff[i+2] = temp;
+;;;402    			}
+;;;403    			Save2KDataToFlash(updateBuff,addrSavePid,2048);
+;;;404    			addrSavePid += 0x800;
+;;;405    			frameIndex = 0;
+;;;406    			memset(updateBuff,0,2048);
+;;;407    			currentNum = cmdId + 1;   
+;;;408    			SendConfigNum(currentNum);//请求下一包数据
+;;;409    		}
+;;;410    		else if((cmdId - pidPackNum) == 0x4000)
+;;;411    		{
+;;;412    			for(i = 0;i < frameIndex;i += 17)                   //更改 指令发送周期 的字节序
+;;;413    			{
+;;;414    				temp            = updateBuff[i];
+;;;415    				updateBuff[i]   = updateBuff[i+3];
+;;;416    				updateBuff[i+3] = temp;
+;;;417    				temp            = updateBuff[i+1];
+;;;418    				updateBuff[i+1]   = updateBuff[i+2];
+;;;419    				updateBuff[i+2] = temp;
+;;;420    			}
+;;;421    			Save2KDataToFlash(updateBuff,addrSavePid,2048);
+;;;422    			addrSavePid = PID2CONFIGADDR;
+;;;423    			frameIndex = 0;
+;;;424    			memset(updateBuff,0,2048);
+;;;425    			SendConfigNum(0x5012);//请求第二个配置文件
+;;;426    		}
+;;;427    		else  
+;;;428    		{
+;;;429    			currentNum = cmdId + 1;   
+;;;430    			SendConfigNum(currentNum);//请求下一包数据
+;;;431    		}
+;;;432    	}
+;;;433    	else if(cmdId == 0x5012)
+;;;434    	{
+;;;435    		offset = 2;
+;;;436    		frameLen = ptrDeal[offset++] - 3;
+;;;437    		
+;;;438    		canDataConfig.pidVarNum = frameLen / 14;   //得到上报 ECU 变量的个数
+;;;439    		
+;;;440    		cmdId    = ptrDeal[offset++];
+;;;441    		cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+;;;442    		memcpy(updateBuff,&ptrDeal[offset],frameLen);
+;;;443    		frameIndex += frameLen;
+;;;444    		
+;;;445    		for(i = 0;i < 500;i += 14)      //更改系数、偏移量的字节序
+;;;446    		{
+;;;447    			temp            = updateBuff[i+6];
+;;;448    			updateBuff[i+6] = updateBuff[i+9];
+;;;449    			updateBuff[i+9] = temp;
+;;;450    			temp            = updateBuff[i+7];
+;;;451    			updateBuff[i+7] = updateBuff[i+8];
+;;;452    			updateBuff[i+8] = temp;
+;;;453    			
+;;;454    			temp             = updateBuff[i+10];
+;;;455    			updateBuff[i+10] = updateBuff[i+13];
+;;;456    			updateBuff[i+13] = temp;
+;;;457    			temp             = updateBuff[i+11];
+;;;458    			updateBuff[i+11] = updateBuff[i+12];
+;;;459    			updateBuff[i+12] = temp;
+;;;460    		}
+;;;461    		
+;;;462    		Save2KDataToFlash(updateBuff,PID2CONFIGADDR,500);//将数据写入第二配置文件区，（flash:0x08061000）
+;;;463    		
+;;;464    		canDataConfig.pidVersion = varOperation.newPIDVersion;
+;;;465    		canDataConfig.pidNum     = varOperation.newPidNum;
 ;;;466    		
-;;;467    		canDataConfig.pidVersion = varOperation.newPIDVersion;
-;;;468    		canDataConfig.pidNum     = varOperation.newPidNum;
-;;;469    		
-;;;470    		canDataConfig.busType    = varOperation.busType;     //todo:CAN线和K线的切换，后期处理
-;;;471    		canDataConfig.canIdType  = varOperation.canIdType;
-;;;472    		canDataConfig.canTxId    = varOperation.canTxId;
-;;;473    		canDataConfig.canRxId    = varOperation.canRxId;
-;;;474    		canDataConfig.canBaud    = varOperation.canBaud;
-;;;475    		memcpy(canDataConfig.pidVerCmd,varOperation.pidVerCmd,8);
-;;;476    		Save2KDataToFlash((uint8_t *)&canDataConfig,PIDCONFIG,(sizeof(_CANDataConfig)+3)); //保存 CAN 通讯参数
-;;;477    		SendConfigNum(0x5018);
-;;;478    	}else if(cmdId == 0x5018)
-;;;479    	{
-;;;480    		offset = 5;
-;;;481    		memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16); //版本号
-;;;482    		offset += 16;
-;;;483    		memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5);//读取喷油量的地址
-;;;484    		offset += 5;
-;;;485    		memcpy(strengthFuel.mask,&ptrDeal[offset],4); //安全算法掩码
-;;;486    		offset += 4;
-;;;487    		strengthFuel.coe = ptrDeal[offset];           //提升动力的系数
-;;;488    		offset ++;
-;;;489    		memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
-;;;490    		offset += 8;
-;;;491    		memcpy(strengthFuel.safe2,&ptrDeal[offset],8);//安全算法cmd 2
-;;;492    		offset += 8;
-;;;493    		memcpy(strengthFuel.mode1,&ptrDeal[offset],8);//模式 cmd 1
-;;;494    		offset += 8;
-;;;495    		memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
-;;;496    		offset += 8;
-;;;497    		strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
+;;;467    		canDataConfig.busType    = varOperation.busType;     //todo:CAN线和K线的切换，后期处理
+;;;468    		canDataConfig.canIdType  = varOperation.canIdType;
+;;;469    		canDataConfig.canTxId    = varOperation.canTxId;
+;;;470    		canDataConfig.canRxId    = varOperation.canRxId;
+;;;471    		canDataConfig.canBaud    = varOperation.canBaud;
+;;;472    		memcpy(canDataConfig.pidVerCmd,varOperation.pidVerCmd,8);
+;;;473    		Save2KDataToFlash((uint8_t *)&canDataConfig,PIDCONFIG,(sizeof(_CANDataConfig)+3)); //保存 CAN 通讯参数
+;;;474    		SendConfigNum(0x5018);
+;;;475    	}else if(cmdId == 0x5018)
+;;;476    	{
+;;;477    		offset = 5;
+;;;478    		memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16); //版本号
+;;;479    		offset += 16;
+;;;480    		memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5);//读取喷油量的地址
+;;;481    		offset += 5;
+;;;482    		memcpy(strengthFuel.mask,&ptrDeal[offset],4); //安全算法掩码
+;;;483    		offset += 4;
+;;;484    		strengthFuel.coe = ptrDeal[offset];           //提升动力的系数
+;;;485    		offset ++;
+;;;486    		memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
+;;;487    		offset += 8;
+;;;488    		memcpy(strengthFuel.safe2,&ptrDeal[offset],8);//安全算法cmd 2
+;;;489    		offset += 8;
+;;;490    		memcpy(strengthFuel.mode1,&ptrDeal[offset],8);//模式 cmd 1
+;;;491    		offset += 8;
+;;;492    		memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
+;;;493    		offset += 8;
+;;;494    		strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
+;;;495    		
+;;;496    		ptrMode = Mem_malloc(80);
+;;;497    		offset = 0;
 ;;;498    		
-;;;499    		ptrMode = Mem_malloc(80);
-;;;500    		offset = 0;
-;;;501    		
-;;;502    		memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);//为了拷贝代码，我就用中间数据的方法得了
-;;;503    		offset += 16;
-;;;504    		memcpy(&ptrMode[offset],strengthFuel.fuelAddr,5);
-;;;505    		offset += 5;
-;;;506    		memcpy(&ptrMode[offset],strengthFuel.mask,4);
-;;;507    		offset += 4;
-;;;508    		memcpy(&ptrMode[offset],strengthFuel.safe1,8);
-;;;509    		offset += 8;
-;;;510    		memcpy(&ptrMode[offset],strengthFuel.safe2,8);
-;;;511    		offset += 8;
-;;;512    		memcpy(&ptrMode[offset],strengthFuel.mode1,8);
-;;;513    		offset += 8;
-;;;514    		memcpy(&ptrMode[offset],strengthFuel.mode2,8);
-;;;515    		offset += 8;
-;;;516    		ptrMode[offset++] = strengthFuel.modeOrder;
+;;;499    		memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);//为了拷贝代码，我就用中间数据的方法得了
+;;;500    		offset += 16;
+;;;501    		memcpy(&ptrMode[offset],strengthFuel.fuelAddr,5);
+;;;502    		offset += 5;
+;;;503    		memcpy(&ptrMode[offset],strengthFuel.mask,4);
+;;;504    		offset += 4;
+;;;505    		memcpy(&ptrMode[offset],strengthFuel.safe1,8);
+;;;506    		offset += 8;
+;;;507    		memcpy(&ptrMode[offset],strengthFuel.safe2,8);
+;;;508    		offset += 8;
+;;;509    		memcpy(&ptrMode[offset],strengthFuel.mode1,8);
+;;;510    		offset += 8;
+;;;511    		memcpy(&ptrMode[offset],strengthFuel.mode2,8);
+;;;512    		offset += 8;
+;;;513    		ptrMode[offset++] = strengthFuel.modeOrder;
+;;;514    		
+;;;515    		Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);
+;;;516    		Mem_free(ptrMode);
 ;;;517    		
-;;;518    		Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);
-;;;519    		Mem_free(ptrMode);
-;;;520    		
-;;;521    		__disable_fault_irq();                    //重启
-;;;522    		NVIC_SystemReset();
-;;;523    	}
-;;;524    }
+;;;518    		__disable_fault_irq();                    //重启
+;;;519    		NVIC_SystemReset();
+;;;520    	}
+;;;521    }
 000158  e8bd87f0          POP      {r4-r10,pc}
                   |L3.348|
-00015c  2402              MOVS     r4,#2                 ;389
-00015e  4621              MOV      r1,r4                 ;390
-000160  1c64              ADDS     r4,r4,#1              ;390
-000162  5c70              LDRB     r0,[r6,r1]            ;390
-000164  1ec0              SUBS     r0,r0,#3              ;390
-000166  fa1ffa80          UXTH     r10,r0                ;390
-00016a  4621              MOV      r1,r4                 ;391
-00016c  1c64              ADDS     r4,r4,#1              ;391
-00016e  5c77              LDRB     r7,[r6,r1]            ;391
-000170  4621              MOV      r1,r4                 ;392
-000172  1c64              ADDS     r4,r4,#1              ;392
-000174  5c70              LDRB     r0,[r6,r1]            ;392
-000176  eb002007          ADD      r0,r0,r7,LSL #8       ;392
-00017a  b287              UXTH     r7,r0                 ;392
-00017c  1931              ADDS     r1,r6,r4              ;393
+00015c  2402              MOVS     r4,#2                 ;386
+00015e  4621              MOV      r1,r4                 ;387
+000160  1c64              ADDS     r4,r4,#1              ;387
+000162  5c70              LDRB     r0,[r6,r1]            ;387
+000164  1ec0              SUBS     r0,r0,#3              ;387
+000166  fa1ffa80          UXTH     r10,r0                ;387
+00016a  4621              MOV      r1,r4                 ;388
+00016c  1c64              ADDS     r4,r4,#1              ;388
+00016e  5c77              LDRB     r7,[r6,r1]            ;388
+000170  4621              MOV      r1,r4                 ;389
+000172  1c64              ADDS     r4,r4,#1              ;389
+000174  5c70              LDRB     r0,[r6,r1]            ;389
+000176  eb002007          ADD      r0,r0,r7,LSL #8       ;389
+00017a  b287              UXTH     r7,r0                 ;389
+00017c  1931              ADDS     r1,r6,r4              ;390
 00017e  4aad              LDR      r2,|L3.1076|
 000180  4ba9              LDR      r3,|L3.1064|
-000182  881b              LDRH     r3,[r3,#0]            ;393  ; frameIndex
-000184  18d0              ADDS     r0,r2,r3              ;393
-000186  4652              MOV      r2,r10                ;393
+000182  881b              LDRH     r3,[r3,#0]            ;390  ; frameIndex
+000184  18d0              ADDS     r0,r2,r3              ;390
+000186  4652              MOV      r2,r10                ;390
 000188  f7fffffe          BL       __aeabi_memcpy
 00018c  48a6              LDR      r0,|L3.1064|
-00018e  8800              LDRH     r0,[r0,#0]            ;394  ; frameIndex
-000190  4450              ADD      r0,r0,r10             ;394
+00018e  8800              LDRH     r0,[r0,#0]            ;391  ; frameIndex
+000190  4450              ADD      r0,r0,r10             ;391
 000192  49a5              LDR      r1,|L3.1064|
-000194  8008              STRH     r0,[r1,#0]            ;394
-000196  f5a74080          SUB      r0,r7,#0x4000         ;395
-00019a  210b              MOVS     r1,#0xb               ;395
-00019c  fb90f2f1          SDIV     r2,r0,r1              ;395
-0001a0  fb010012          MLS      r0,r1,r2,r0           ;395
-0001a4  2800              CMP      r0,#0                 ;395
+000194  8008              STRH     r0,[r1,#0]            ;391
+000196  f5a74080          SUB      r0,r7,#0x4000         ;392
+00019a  210b              MOVS     r1,#0xb               ;392
+00019c  fb90f2f1          SDIV     r2,r0,r1              ;392
+0001a0  fb010012          MLS      r0,r1,r2,r0           ;392
+0001a4  2800              CMP      r0,#0                 ;392
 0001a6  d141              BNE      |L3.556|
 0001a8  489d              LDR      r0,|L3.1056|
-0001aa  7800              LDRB     r0,[r0,#0]            ;395  ; pidPackNum
-0001ac  1a38              SUBS     r0,r7,r0              ;395
-0001ae  f5b04f80          CMP      r0,#0x4000            ;395
+0001aa  7800              LDRB     r0,[r0,#0]            ;392  ; pidPackNum
+0001ac  1a38              SUBS     r0,r7,r0              ;392
+0001ae  f5b04f80          CMP      r0,#0x4000            ;392
 0001b2  d03b              BEQ      |L3.556|
-0001b4  2500              MOVS     r5,#0                 ;397
+0001b4  2500              MOVS     r5,#0                 ;394
 0001b6  e017              B        |L3.488|
                   |L3.440|
 0001b8  489e              LDR      r0,|L3.1076|
-0001ba  f8109005          LDRB     r9,[r0,r5]            ;399
-0001be  4601              MOV      r1,r0                 ;400
-0001c0  1ce8              ADDS     r0,r5,#3              ;400
-0001c2  5c08              LDRB     r0,[r1,r0]            ;400
-0001c4  5548              STRB     r0,[r1,r5]            ;400
-0001c6  1ce8              ADDS     r0,r5,#3              ;401
-0001c8  f8019000          STRB     r9,[r1,r0]            ;401
-0001cc  1c68              ADDS     r0,r5,#1              ;402
-0001ce  f8119000          LDRB     r9,[r1,r0]            ;402
-0001d2  1ca8              ADDS     r0,r5,#2              ;403
-0001d4  5c09              LDRB     r1,[r1,r0]            ;403
+0001ba  f8109005          LDRB     r9,[r0,r5]            ;396
+0001be  4601              MOV      r1,r0                 ;397
+0001c0  1ce8              ADDS     r0,r5,#3              ;397
+0001c2  5c08              LDRB     r0,[r1,r0]            ;397
+0001c4  5548              STRB     r0,[r1,r5]            ;397
+0001c6  1ce8              ADDS     r0,r5,#3              ;398
+0001c8  f8019000          STRB     r9,[r1,r0]            ;398
+0001cc  1c68              ADDS     r0,r5,#1              ;399
+0001ce  f8119000          LDRB     r9,[r1,r0]            ;399
+0001d2  1ca8              ADDS     r0,r5,#2              ;400
+0001d4  5c09              LDRB     r1,[r1,r0]            ;400
 0001d6  4a97              LDR      r2,|L3.1076|
-0001d8  1c68              ADDS     r0,r5,#1              ;403
-0001da  5411              STRB     r1,[r2,r0]            ;403
-0001dc  4611              MOV      r1,r2                 ;404
-0001de  1ca8              ADDS     r0,r5,#2              ;404
-0001e0  f8019000          STRB     r9,[r1,r0]            ;404
-0001e4  300f              ADDS     r0,r0,#0xf            ;397
-0001e6  b285              UXTH     r5,r0                 ;397
+0001d8  1c68              ADDS     r0,r5,#1              ;400
+0001da  5411              STRB     r1,[r2,r0]            ;400
+0001dc  4611              MOV      r1,r2                 ;401
+0001de  1ca8              ADDS     r0,r5,#2              ;401
+0001e0  f8019000          STRB     r9,[r1,r0]            ;401
+0001e4  300f              ADDS     r0,r0,#0xf            ;394
+0001e6  b285              UXTH     r5,r0                 ;394
                   |L3.488|
 0001e8  488f              LDR      r0,|L3.1064|
-0001ea  8800              LDRH     r0,[r0,#0]            ;397  ; frameIndex
-0001ec  4285              CMP      r5,r0                 ;397
+0001ea  8800              LDRH     r0,[r0,#0]            ;394  ; frameIndex
+0001ec  4285              CMP      r5,r0                 ;394
 0001ee  dbe3              BLT      |L3.440|
-0001f0  f44f6200          MOV      r2,#0x800             ;406
+0001f0  f44f6200          MOV      r2,#0x800             ;403
 0001f4  488e              LDR      r0,|L3.1072|
-0001f6  6801              LDR      r1,[r0,#0]            ;406  ; addrSavePid
+0001f6  6801              LDR      r1,[r0,#0]            ;403  ; addrSavePid
 0001f8  488e              LDR      r0,|L3.1076|
 0001fa  f7fffffe          BL       Save2KDataToFlash
 0001fe  488c              LDR      r0,|L3.1072|
-000200  6800              LDR      r0,[r0,#0]            ;407  ; addrSavePid
-000202  f5006000          ADD      r0,r0,#0x800          ;407
+000200  6800              LDR      r0,[r0,#0]            ;404  ; addrSavePid
+000202  f5006000          ADD      r0,r0,#0x800          ;404
 000206  498a              LDR      r1,|L3.1072|
-000208  6008              STR      r0,[r1,#0]            ;407  ; addrSavePid
-00020a  2000              MOVS     r0,#0                 ;408
+000208  6008              STR      r0,[r1,#0]            ;404  ; addrSavePid
+00020a  2000              MOVS     r0,#0                 ;405
 00020c  4986              LDR      r1,|L3.1064|
-00020e  8008              STRH     r0,[r1,#0]            ;408
-000210  f44f6100          MOV      r1,#0x800             ;409
+00020e  8008              STRH     r0,[r1,#0]            ;405
+000210  f44f6100          MOV      r1,#0x800             ;406
 000214  4887              LDR      r0,|L3.1076|
 000216  f7fffffe          BL       __aeabi_memclr
-00021a  1c78              ADDS     r0,r7,#1              ;410
+00021a  1c78              ADDS     r0,r7,#1              ;407
 00021c  4981              LDR      r1,|L3.1060|
-00021e  8008              STRH     r0,[r1,#0]            ;410
-000220  4608              MOV      r0,r1                 ;411
-000222  8800              LDRH     r0,[r0,#0]            ;411  ; currentNum
+00021e  8008              STRH     r0,[r1,#0]            ;407
+000220  4608              MOV      r0,r1                 ;408
+000222  8800              LDRH     r0,[r0,#0]            ;408  ; currentNum
 000224  f7fffffe          BL       SendConfigNum
 000228  e179              B        |L3.1310|
                   |L3.554|
 00022a  e042              B        |L3.690|
                   |L3.556|
 00022c  487c              LDR      r0,|L3.1056|
-00022e  7800              LDRB     r0,[r0,#0]            ;413  ; pidPackNum
-000230  1a38              SUBS     r0,r7,r0              ;413
-000232  f5b04f80          CMP      r0,#0x4000            ;413
+00022e  7800              LDRB     r0,[r0,#0]            ;410  ; pidPackNum
+000230  1a38              SUBS     r0,r7,r0              ;410
+000232  f5b04f80          CMP      r0,#0x4000            ;410
 000236  d134              BNE      |L3.674|
-000238  2500              MOVS     r5,#0                 ;415
+000238  2500              MOVS     r5,#0                 ;412
 00023a  e017              B        |L3.620|
                   |L3.572|
 00023c  487d              LDR      r0,|L3.1076|
-00023e  f8109005          LDRB     r9,[r0,r5]            ;417
-000242  4601              MOV      r1,r0                 ;418
-000244  1ce8              ADDS     r0,r5,#3              ;418
-000246  5c08              LDRB     r0,[r1,r0]            ;418
-000248  5548              STRB     r0,[r1,r5]            ;418
-00024a  1ce8              ADDS     r0,r5,#3              ;419
-00024c  f8019000          STRB     r9,[r1,r0]            ;419
-000250  1c68              ADDS     r0,r5,#1              ;420
-000252  f8119000          LDRB     r9,[r1,r0]            ;420
-000256  1ca8              ADDS     r0,r5,#2              ;421
-000258  5c09              LDRB     r1,[r1,r0]            ;421
+00023e  f8109005          LDRB     r9,[r0,r5]            ;414
+000242  4601              MOV      r1,r0                 ;415
+000244  1ce8              ADDS     r0,r5,#3              ;415
+000246  5c08              LDRB     r0,[r1,r0]            ;415
+000248  5548              STRB     r0,[r1,r5]            ;415
+00024a  1ce8              ADDS     r0,r5,#3              ;416
+00024c  f8019000          STRB     r9,[r1,r0]            ;416
+000250  1c68              ADDS     r0,r5,#1              ;417
+000252  f8119000          LDRB     r9,[r1,r0]            ;417
+000256  1ca8              ADDS     r0,r5,#2              ;418
+000258  5c09              LDRB     r1,[r1,r0]            ;418
 00025a  4a76              LDR      r2,|L3.1076|
-00025c  1c68              ADDS     r0,r5,#1              ;421
-00025e  5411              STRB     r1,[r2,r0]            ;421
-000260  4611              MOV      r1,r2                 ;422
-000262  1ca8              ADDS     r0,r5,#2              ;422
-000264  f8019000          STRB     r9,[r1,r0]            ;422
-000268  300f              ADDS     r0,r0,#0xf            ;415
-00026a  b285              UXTH     r5,r0                 ;415
+00025c  1c68              ADDS     r0,r5,#1              ;418
+00025e  5411              STRB     r1,[r2,r0]            ;418
+000260  4611              MOV      r1,r2                 ;419
+000262  1ca8              ADDS     r0,r5,#2              ;419
+000264  f8019000          STRB     r9,[r1,r0]            ;419
+000268  300f              ADDS     r0,r0,#0xf            ;412
+00026a  b285              UXTH     r5,r0                 ;412
                   |L3.620|
 00026c  486e              LDR      r0,|L3.1064|
-00026e  8800              LDRH     r0,[r0,#0]            ;415  ; frameIndex
-000270  4285              CMP      r5,r0                 ;415
+00026e  8800              LDRH     r0,[r0,#0]            ;412  ; frameIndex
+000270  4285              CMP      r5,r0                 ;412
 000272  dbe3              BLT      |L3.572|
-000274  f44f6200          MOV      r2,#0x800             ;424
+000274  f44f6200          MOV      r2,#0x800             ;421
 000278  486d              LDR      r0,|L3.1072|
-00027a  6801              LDR      r1,[r0,#0]            ;424  ; addrSavePid
+00027a  6801              LDR      r1,[r0,#0]            ;421  ; addrSavePid
 00027c  486d              LDR      r0,|L3.1076|
 00027e  f7fffffe          BL       Save2KDataToFlash
 000282  486d              LDR      r0,|L3.1080|
 000284  496a              LDR      r1,|L3.1072|
-000286  6008              STR      r0,[r1,#0]            ;425  ; addrSavePid
-000288  2000              MOVS     r0,#0                 ;426
+000286  6008              STR      r0,[r1,#0]            ;422  ; addrSavePid
+000288  2000              MOVS     r0,#0                 ;423
 00028a  4967              LDR      r1,|L3.1064|
-00028c  8008              STRH     r0,[r1,#0]            ;426
-00028e  f44f6100          MOV      r1,#0x800             ;427
+00028c  8008              STRH     r0,[r1,#0]            ;423
+00028e  f44f6100          MOV      r1,#0x800             ;424
 000292  4868              LDR      r0,|L3.1076|
 000294  f7fffffe          BL       __aeabi_memclr
-000298  f2450012          MOV      r0,#0x5012            ;428
+000298  f2450012          MOV      r0,#0x5012            ;425
 00029c  f7fffffe          BL       SendConfigNum
 0002a0  e13d              B        |L3.1310|
                   |L3.674|
-0002a2  1c78              ADDS     r0,r7,#1              ;432
+0002a2  1c78              ADDS     r0,r7,#1              ;429
 0002a4  495f              LDR      r1,|L3.1060|
-0002a6  8008              STRH     r0,[r1,#0]            ;432
-0002a8  4608              MOV      r0,r1                 ;433
-0002aa  8800              LDRH     r0,[r0,#0]            ;433  ; currentNum
+0002a6  8008              STRH     r0,[r1,#0]            ;429
+0002a8  4608              MOV      r0,r1                 ;430
+0002aa  8800              LDRH     r0,[r0,#0]            ;430  ; currentNum
 0002ac  f7fffffe          BL       SendConfigNum
 0002b0  e135              B        |L3.1310|
                   |L3.690|
-0002b2  f2450012          MOV      r0,#0x5012            ;436
-0002b6  4287              CMP      r7,r0                 ;436
+0002b2  f2450012          MOV      r0,#0x5012            ;433
+0002b6  4287              CMP      r7,r0                 ;433
 0002b8  d17e              BNE      |L3.952|
-0002ba  2402              MOVS     r4,#2                 ;438
-0002bc  4621              MOV      r1,r4                 ;439
-0002be  1c64              ADDS     r4,r4,#1              ;439
-0002c0  5c70              LDRB     r0,[r6,r1]            ;439
-0002c2  1ec0              SUBS     r0,r0,#3              ;439
-0002c4  fa1ffa80          UXTH     r10,r0                ;439
-0002c8  200e              MOVS     r0,#0xe               ;441
-0002ca  fb9af0f0          SDIV     r0,r10,r0             ;441
+0002ba  2402              MOVS     r4,#2                 ;435
+0002bc  4621              MOV      r1,r4                 ;436
+0002be  1c64              ADDS     r4,r4,#1              ;436
+0002c0  5c70              LDRB     r0,[r6,r1]            ;436
+0002c2  1ec0              SUBS     r0,r0,#3              ;436
+0002c4  fa1ffa80          UXTH     r10,r0                ;436
+0002c8  200e              MOVS     r0,#0xe               ;438
+0002ca  fb9af0f0          SDIV     r0,r10,r0             ;438
 0002ce  495b              LDR      r1,|L3.1084|
-0002d0  80c8              STRH     r0,[r1,#6]            ;441
-0002d2  4621              MOV      r1,r4                 ;443
-0002d4  1c64              ADDS     r4,r4,#1              ;443
-0002d6  5c77              LDRB     r7,[r6,r1]            ;443
-0002d8  4621              MOV      r1,r4                 ;444
-0002da  1c64              ADDS     r4,r4,#1              ;444
-0002dc  5c70              LDRB     r0,[r6,r1]            ;444
-0002de  eb002007          ADD      r0,r0,r7,LSL #8       ;444
-0002e2  b287              UXTH     r7,r0                 ;444
-0002e4  1931              ADDS     r1,r6,r4              ;445
-0002e6  4652              MOV      r2,r10                ;445
+0002d0  80c8              STRH     r0,[r1,#6]            ;438
+0002d2  4621              MOV      r1,r4                 ;440
+0002d4  1c64              ADDS     r4,r4,#1              ;440
+0002d6  5c77              LDRB     r7,[r6,r1]            ;440
+0002d8  4621              MOV      r1,r4                 ;441
+0002da  1c64              ADDS     r4,r4,#1              ;441
+0002dc  5c70              LDRB     r0,[r6,r1]            ;441
+0002de  eb002007          ADD      r0,r0,r7,LSL #8       ;441
+0002e2  b287              UXTH     r7,r0                 ;441
+0002e4  1931              ADDS     r1,r6,r4              ;442
+0002e6  4652              MOV      r2,r10                ;442
 0002e8  4852              LDR      r0,|L3.1076|
 0002ea  f7fffffe          BL       __aeabi_memcpy
 0002ee  484e              LDR      r0,|L3.1064|
-0002f0  8800              LDRH     r0,[r0,#0]            ;446  ; frameIndex
-0002f2  4450              ADD      r0,r0,r10             ;446
+0002f0  8800              LDRH     r0,[r0,#0]            ;443  ; frameIndex
+0002f2  4450              ADD      r0,r0,r10             ;443
 0002f4  494c              LDR      r1,|L3.1064|
-0002f6  8008              STRH     r0,[r1,#0]            ;446
-0002f8  2500              MOVS     r5,#0                 ;448
+0002f6  8008              STRH     r0,[r1,#0]            ;443
+0002f8  2500              MOVS     r5,#0                 ;445
 0002fa  e02f              B        |L3.860|
                   |L3.764|
 0002fc  494d              LDR      r1,|L3.1076|
-0002fe  1da8              ADDS     r0,r5,#6              ;450
-000300  f8119000          LDRB     r9,[r1,r0]            ;450
-000304  1cc0              ADDS     r0,r0,#3              ;451
-000306  5c09              LDRB     r1,[r1,r0]            ;451
+0002fe  1da8              ADDS     r0,r5,#6              ;447
+000300  f8119000          LDRB     r9,[r1,r0]            ;447
+000304  1cc0              ADDS     r0,r0,#3              ;448
+000306  5c09              LDRB     r1,[r1,r0]            ;448
 000308  4a4a              LDR      r2,|L3.1076|
-00030a  1da8              ADDS     r0,r5,#6              ;451
-00030c  5411              STRB     r1,[r2,r0]            ;451
-00030e  4611              MOV      r1,r2                 ;452
-000310  1cc0              ADDS     r0,r0,#3              ;452
-000312  f8019000          STRB     r9,[r1,r0]            ;452
-000316  1de8              ADDS     r0,r5,#7              ;453
-000318  f8119000          LDRB     r9,[r1,r0]            ;453
-00031c  1c40              ADDS     r0,r0,#1              ;454
-00031e  5c09              LDRB     r1,[r1,r0]            ;454
-000320  1de8              ADDS     r0,r5,#7              ;454
-000322  5411              STRB     r1,[r2,r0]            ;454
-000324  4611              MOV      r1,r2                 ;455
-000326  1c40              ADDS     r0,r0,#1              ;455
-000328  f8019000          STRB     r9,[r1,r0]            ;455
-00032c  1c80              ADDS     r0,r0,#2              ;457
-00032e  f8119000          LDRB     r9,[r1,r0]            ;457
-000332  1cc0              ADDS     r0,r0,#3              ;458
-000334  5c09              LDRB     r1,[r1,r0]            ;458
-000336  1ec0              SUBS     r0,r0,#3              ;458
-000338  5411              STRB     r1,[r2,r0]            ;458
-00033a  4611              MOV      r1,r2                 ;459
-00033c  1cc0              ADDS     r0,r0,#3              ;459
-00033e  f8019000          STRB     r9,[r1,r0]            ;459
-000342  1e80              SUBS     r0,r0,#2              ;460
-000344  f8119000          LDRB     r9,[r1,r0]            ;460
-000348  1c40              ADDS     r0,r0,#1              ;461
-00034a  5c09              LDRB     r1,[r1,r0]            ;461
-00034c  1e40              SUBS     r0,r0,#1              ;461
-00034e  5411              STRB     r1,[r2,r0]            ;461
-000350  4611              MOV      r1,r2                 ;462
-000352  1c40              ADDS     r0,r0,#1              ;462
-000354  f8019000          STRB     r9,[r1,r0]            ;462
-000358  1c80              ADDS     r0,r0,#2              ;448
-00035a  b285              UXTH     r5,r0                 ;448
+00030a  1da8              ADDS     r0,r5,#6              ;448
+00030c  5411              STRB     r1,[r2,r0]            ;448
+00030e  4611              MOV      r1,r2                 ;449
+000310  1cc0              ADDS     r0,r0,#3              ;449
+000312  f8019000          STRB     r9,[r1,r0]            ;449
+000316  1de8              ADDS     r0,r5,#7              ;450
+000318  f8119000          LDRB     r9,[r1,r0]            ;450
+00031c  1c40              ADDS     r0,r0,#1              ;451
+00031e  5c09              LDRB     r1,[r1,r0]            ;451
+000320  1de8              ADDS     r0,r5,#7              ;451
+000322  5411              STRB     r1,[r2,r0]            ;451
+000324  4611              MOV      r1,r2                 ;452
+000326  1c40              ADDS     r0,r0,#1              ;452
+000328  f8019000          STRB     r9,[r1,r0]            ;452
+00032c  1c80              ADDS     r0,r0,#2              ;454
+00032e  f8119000          LDRB     r9,[r1,r0]            ;454
+000332  1cc0              ADDS     r0,r0,#3              ;455
+000334  5c09              LDRB     r1,[r1,r0]            ;455
+000336  1ec0              SUBS     r0,r0,#3              ;455
+000338  5411              STRB     r1,[r2,r0]            ;455
+00033a  4611              MOV      r1,r2                 ;456
+00033c  1cc0              ADDS     r0,r0,#3              ;456
+00033e  f8019000          STRB     r9,[r1,r0]            ;456
+000342  1e80              SUBS     r0,r0,#2              ;457
+000344  f8119000          LDRB     r9,[r1,r0]            ;457
+000348  1c40              ADDS     r0,r0,#1              ;458
+00034a  5c09              LDRB     r1,[r1,r0]            ;458
+00034c  1e40              SUBS     r0,r0,#1              ;458
+00034e  5411              STRB     r1,[r2,r0]            ;458
+000350  4611              MOV      r1,r2                 ;459
+000352  1c40              ADDS     r0,r0,#1              ;459
+000354  f8019000          STRB     r9,[r1,r0]            ;459
+000358  1c80              ADDS     r0,r0,#2              ;445
+00035a  b285              UXTH     r5,r0                 ;445
                   |L3.860|
-00035c  f5b57ffa          CMP      r5,#0x1f4             ;448
+00035c  f5b57ffa          CMP      r5,#0x1f4             ;445
 000360  dbcc              BLT      |L3.764|
-000362  f44f72fa          MOV      r2,#0x1f4             ;465
+000362  f44f72fa          MOV      r2,#0x1f4             ;462
 000366  4934              LDR      r1,|L3.1080|
 000368  4832              LDR      r0,|L3.1076|
 00036a  f7fffffe          BL       Save2KDataToFlash
 00036e  482b              LDR      r0,|L3.1052|
-000370  f8d0007e          LDR      r0,[r0,#0x7e]         ;467  ; varOperation
+000370  f8d0007e          LDR      r0,[r0,#0x7e]         ;464  ; varOperation
 000374  4931              LDR      r1,|L3.1084|
-000376  6008              STR      r0,[r1,#0]            ;467  ; canDataConfig
+000376  6008              STR      r0,[r1,#0]            ;464  ; canDataConfig
 000378  4828              LDR      r0,|L3.1052|
-00037a  f8b00082          LDRH     r0,[r0,#0x82]         ;468  ; varOperation
-00037e  8088              STRH     r0,[r1,#4]            ;468
+00037a  f8b00082          LDRH     r0,[r0,#0x82]         ;465  ; varOperation
+00037e  8088              STRH     r0,[r1,#4]            ;465
 000380  4826              LDR      r0,|L3.1052|
-000382  f8900086          LDRB     r0,[r0,#0x86]         ;470  ; varOperation
-000386  7208              STRB     r0,[r1,#8]            ;470
+000382  f8900086          LDRB     r0,[r0,#0x86]         ;467  ; varOperation
+000386  7208              STRB     r0,[r1,#8]            ;467
 000388  4824              LDR      r0,|L3.1052|
-00038a  f8900087          LDRB     r0,[r0,#0x87]         ;471  ; varOperation
-00038e  7248              STRB     r0,[r1,#9]            ;471
+00038a  f8900087          LDRB     r0,[r0,#0x87]         ;468  ; varOperation
+00038e  7248              STRB     r0,[r1,#9]            ;468
 000390  4822              LDR      r0,|L3.1052|
-000392  f8d00088          LDR      r0,[r0,#0x88]         ;472  ; varOperation
-000396  f8c1000a          STR      r0,[r1,#0xa]          ;472  ; canDataConfig
+000392  f8d00088          LDR      r0,[r0,#0x88]         ;469  ; varOperation
+000396  f8c1000a          STR      r0,[r1,#0xa]          ;469  ; canDataConfig
 00039a  4820              LDR      r0,|L3.1052|
-00039c  f8d0008c          LDR      r0,[r0,#0x8c]         ;473  ; varOperation
-0003a0  f8c1000e          STR      r0,[r1,#0xe]          ;473  ; canDataConfig
+00039c  f8d0008c          LDR      r0,[r0,#0x8c]         ;470  ; varOperation
+0003a0  f8c1000e          STR      r0,[r1,#0xe]          ;470  ; canDataConfig
 0003a4  481d              LDR      r0,|L3.1052|
-0003a6  f8900090          LDRB     r0,[r0,#0x90]         ;474  ; varOperation
-0003aa  7488              STRB     r0,[r1,#0x12]         ;474
-0003ac  3113              ADDS     r1,r1,#0x13           ;475
+0003a6  f8900090          LDRB     r0,[r0,#0x90]         ;471  ; varOperation
+0003aa  7488              STRB     r0,[r1,#0x12]         ;471
+0003ac  3113              ADDS     r1,r1,#0x13           ;472
 0003ae  481b              LDR      r0,|L3.1052|
-0003b0  3080              ADDS     r0,r0,#0x80           ;475
-0003b2  6982              LDR      r2,[r0,#0x18]         ;475  ; varOperation
-0003b4  600a              STR      r2,[r1,#0]            ;475  ; canDataConfig
+0003b0  3080              ADDS     r0,r0,#0x80           ;472
+0003b2  6982              LDR      r2,[r0,#0x18]         ;472  ; varOperation
+0003b4  600a              STR      r2,[r1,#0]            ;472  ; canDataConfig
 0003b6  e000              B        |L3.954|
                   |L3.952|
 0003b8  e00b              B        |L3.978|
                   |L3.954|
-0003ba  69c0              LDR      r0,[r0,#0x1c]         ;475  ; varOperation
-0003bc  6048              STR      r0,[r1,#4]            ;475  ; canDataConfig
-0003be  221e              MOVS     r2,#0x1e              ;476
+0003ba  69c0              LDR      r0,[r0,#0x1c]         ;472  ; varOperation
+0003bc  6048              STR      r0,[r1,#4]            ;472  ; canDataConfig
+0003be  221e              MOVS     r2,#0x1e              ;473
 0003c0  491f              LDR      r1,|L3.1088|
 0003c2  481e              LDR      r0,|L3.1084|
 0003c4  f7fffffe          BL       Save2KDataToFlash
-0003c8  f2450018          MOV      r0,#0x5018            ;477
+0003c8  f2450018          MOV      r0,#0x5018            ;474
 0003cc  f7fffffe          BL       SendConfigNum
                   |L3.976|
 0003d0  e0a5              B        |L3.1310|
                   |L3.978|
-0003d2  f2450018          MOV      r0,#0x5018            ;478
-0003d6  4287              CMP      r7,r0                 ;478
+0003d2  f2450018          MOV      r0,#0x5018            ;475
+0003d6  4287              CMP      r7,r0                 ;475
 0003d8  d1fa              BNE      |L3.976|
-0003da  2405              MOVS     r4,#5                 ;480
-0003dc  1931              ADDS     r1,r6,r4              ;481
-0003de  2210              MOVS     r2,#0x10              ;481
+0003da  2405              MOVS     r4,#5                 ;477
+0003dc  1931              ADDS     r1,r6,r4              ;478
+0003de  2210              MOVS     r2,#0x10              ;478
 0003e0  4818              LDR      r0,|L3.1092|
 0003e2  f7fffffe          BL       __aeabi_memcpy
-0003e6  3410              ADDS     r4,r4,#0x10           ;482
-0003e8  1931              ADDS     r1,r6,r4              ;483
+0003e6  3410              ADDS     r4,r4,#0x10           ;479
+0003e8  1931              ADDS     r1,r6,r4              ;480
 0003ea  4816              LDR      r0,|L3.1092|
-0003ec  680a              LDR      r2,[r1,#0]            ;483
-0003ee  6102              STR      r2,[r0,#0x10]         ;483  ; strengthFuel
-0003f0  7909              LDRB     r1,[r1,#4]            ;483
-0003f2  7501              STRB     r1,[r0,#0x14]         ;483
-0003f4  1d64              ADDS     r4,r4,#5              ;484
-0003f6  1931              ADDS     r1,r6,r4              ;485
-0003f8  6809              LDR      r1,[r1,#0]            ;485
-0003fa  f8c01015          STR      r1,[r0,#0x15]         ;485  ; strengthFuel
-0003fe  1d24              ADDS     r4,r4,#4              ;486
-000400  5d30              LDRB     r0,[r6,r4]            ;487
-000402  b240              SXTB     r0,r0                 ;487
+0003ec  680a              LDR      r2,[r1,#0]            ;480
+0003ee  6102              STR      r2,[r0,#0x10]         ;480  ; strengthFuel
+0003f0  7909              LDRB     r1,[r1,#4]            ;480
+0003f2  7501              STRB     r1,[r0,#0x14]         ;480
+0003f4  1d64              ADDS     r4,r4,#5              ;481
+0003f6  1931              ADDS     r1,r6,r4              ;482
+0003f8  6809              LDR      r1,[r1,#0]            ;482
+0003fa  f8c01015          STR      r1,[r0,#0x15]         ;482  ; strengthFuel
+0003fe  1d24              ADDS     r4,r4,#4              ;483
+000400  5d30              LDRB     r0,[r6,r4]            ;484
+000402  b240              SXTB     r0,r0                 ;484
 000404  490f              LDR      r1,|L3.1092|
-000406  7648              STRB     r0,[r1,#0x19]         ;487
-000408  1c64              ADDS     r4,r4,#1              ;488
-00040a  1930              ADDS     r0,r6,r4              ;489
-00040c  311a              ADDS     r1,r1,#0x1a           ;489
-00040e  6802              LDR      r2,[r0,#0]            ;489
-000410  600a              STR      r2,[r1,#0]            ;489  ; strengthFuel
-000412  6840              LDR      r0,[r0,#4]            ;489
-000414  6048              STR      r0,[r1,#4]            ;489  ; strengthFuel
-000416  3408              ADDS     r4,r4,#8              ;490
-000418  1930              ADDS     r0,r6,r4              ;491
+000406  7648              STRB     r0,[r1,#0x19]         ;484
+000408  1c64              ADDS     r4,r4,#1              ;485
+00040a  1930              ADDS     r0,r6,r4              ;486
+00040c  311a              ADDS     r1,r1,#0x1a           ;486
+00040e  6802              LDR      r2,[r0,#0]            ;486
+000410  600a              STR      r2,[r1,#0]            ;486  ; strengthFuel
+000412  6840              LDR      r0,[r0,#4]            ;486
+000414  6048              STR      r0,[r1,#4]            ;486  ; strengthFuel
+000416  3408              ADDS     r4,r4,#8              ;487
+000418  1930              ADDS     r0,r6,r4              ;488
 00041a  e015              B        |L3.1096|
                   |L3.1052|
                           DCD      varOperation
@@ -1381,101 +1381,101 @@
                   |L3.1092|
                           DCD      strengthFuel
                   |L3.1096|
-000448  3108              ADDS     r1,r1,#8              ;491
-00044a  6802              LDR      r2,[r0,#0]            ;491
-00044c  600a              STR      r2,[r1,#0]            ;491  ; strengthFuel
-00044e  6840              LDR      r0,[r0,#4]            ;491
-000450  6048              STR      r0,[r1,#4]            ;491  ; strengthFuel
-000452  3408              ADDS     r4,r4,#8              ;492
-000454  1930              ADDS     r0,r6,r4              ;493
-000456  3108              ADDS     r1,r1,#8              ;493
-000458  6802              LDR      r2,[r0,#0]            ;493
-00045a  600a              STR      r2,[r1,#0]            ;493  ; strengthFuel
-00045c  6840              LDR      r0,[r0,#4]            ;493
-00045e  6048              STR      r0,[r1,#4]            ;493  ; strengthFuel
-000460  3408              ADDS     r4,r4,#8              ;494
-000462  1931              ADDS     r1,r6,r4              ;495
+000448  3108              ADDS     r1,r1,#8              ;488
+00044a  6802              LDR      r2,[r0,#0]            ;488
+00044c  600a              STR      r2,[r1,#0]            ;488  ; strengthFuel
+00044e  6840              LDR      r0,[r0,#4]            ;488
+000450  6048              STR      r0,[r1,#4]            ;488  ; strengthFuel
+000452  3408              ADDS     r4,r4,#8              ;489
+000454  1930              ADDS     r0,r6,r4              ;490
+000456  3108              ADDS     r1,r1,#8              ;490
+000458  6802              LDR      r2,[r0,#0]            ;490
+00045a  600a              STR      r2,[r1,#0]            ;490  ; strengthFuel
+00045c  6840              LDR      r0,[r0,#4]            ;490
+00045e  6048              STR      r0,[r1,#4]            ;490  ; strengthFuel
+000460  3408              ADDS     r4,r4,#8              ;491
+000462  1931              ADDS     r1,r6,r4              ;492
 000464  482f              LDR      r0,|L3.1316|
-000466  680a              LDR      r2,[r1,#0]            ;495
-000468  6002              STR      r2,[r0,#0]            ;495  ; strengthFuel
-00046a  6849              LDR      r1,[r1,#4]            ;495
-00046c  6041              STR      r1,[r0,#4]            ;495  ; strengthFuel
-00046e  3408              ADDS     r4,r4,#8              ;496
-000470  5d30              LDRB     r0,[r6,r4]            ;497
+000466  680a              LDR      r2,[r1,#0]            ;492
+000468  6002              STR      r2,[r0,#0]            ;492  ; strengthFuel
+00046a  6849              LDR      r1,[r1,#4]            ;492
+00046c  6041              STR      r1,[r0,#4]            ;492  ; strengthFuel
+00046e  3408              ADDS     r4,r4,#8              ;493
+000470  5d30              LDRB     r0,[r6,r4]            ;494
 000472  492c              LDR      r1,|L3.1316|
-000474  3932              SUBS     r1,r1,#0x32           ;497
-000476  f881003a          STRB     r0,[r1,#0x3a]         ;497
-00047a  2050              MOVS     r0,#0x50              ;499
+000474  3932              SUBS     r1,r1,#0x32           ;494
+000476  f881003a          STRB     r0,[r1,#0x3a]         ;494
+00047a  2050              MOVS     r0,#0x50              ;496
 00047c  f7fffffe          BL       Mem_malloc
-000480  4680              MOV      r8,r0                 ;499
-000482  2400              MOVS     r4,#0                 ;500
-000484  eb080004          ADD      r0,r8,r4              ;502
-000488  2210              MOVS     r2,#0x10              ;502
+000480  4680              MOV      r8,r0                 ;496
+000482  2400              MOVS     r4,#0                 ;497
+000484  eb080004          ADD      r0,r8,r4              ;499
+000488  2210              MOVS     r2,#0x10              ;499
 00048a  4926              LDR      r1,|L3.1316|
-00048c  3932              SUBS     r1,r1,#0x32           ;502
+00048c  3932              SUBS     r1,r1,#0x32           ;499
 00048e  f7fffffe          BL       __aeabi_memcpy
-000492  3410              ADDS     r4,r4,#0x10           ;503
-000494  eb080004          ADD      r0,r8,r4              ;504
+000492  3410              ADDS     r4,r4,#0x10           ;500
+000494  eb080004          ADD      r0,r8,r4              ;501
 000498  4922              LDR      r1,|L3.1316|
-00049a  3932              SUBS     r1,r1,#0x32           ;504
-00049c  690a              LDR      r2,[r1,#0x10]         ;504  ; strengthFuel
-00049e  6002              STR      r2,[r0,#0]            ;504
-0004a0  7d09              LDRB     r1,[r1,#0x14]         ;504  ; strengthFuel
-0004a2  7101              STRB     r1,[r0,#4]            ;504
-0004a4  1d64              ADDS     r4,r4,#5              ;505
-0004a6  eb080004          ADD      r0,r8,r4              ;506
+00049a  3932              SUBS     r1,r1,#0x32           ;501
+00049c  690a              LDR      r2,[r1,#0x10]         ;501  ; strengthFuel
+00049e  6002              STR      r2,[r0,#0]            ;501
+0004a0  7d09              LDRB     r1,[r1,#0x14]         ;501  ; strengthFuel
+0004a2  7101              STRB     r1,[r0,#4]            ;501
+0004a4  1d64              ADDS     r4,r4,#5              ;502
+0004a6  eb080004          ADD      r0,r8,r4              ;503
 0004aa  491e              LDR      r1,|L3.1316|
-0004ac  3932              SUBS     r1,r1,#0x32           ;506
-0004ae  f8d11015          LDR      r1,[r1,#0x15]         ;506  ; strengthFuel
-0004b2  6001              STR      r1,[r0,#0]            ;506
-0004b4  1d24              ADDS     r4,r4,#4              ;507
-0004b6  eb080004          ADD      r0,r8,r4              ;508
+0004ac  3932              SUBS     r1,r1,#0x32           ;503
+0004ae  f8d11015          LDR      r1,[r1,#0x15]         ;503  ; strengthFuel
+0004b2  6001              STR      r1,[r0,#0]            ;503
+0004b4  1d24              ADDS     r4,r4,#4              ;504
+0004b6  eb080004          ADD      r0,r8,r4              ;505
 0004ba  491a              LDR      r1,|L3.1316|
-0004bc  3918              SUBS     r1,r1,#0x18           ;508
-0004be  680a              LDR      r2,[r1,#0]            ;508  ; strengthFuel
-0004c0  6002              STR      r2,[r0,#0]            ;508
-0004c2  6849              LDR      r1,[r1,#4]            ;508  ; strengthFuel
-0004c4  6041              STR      r1,[r0,#4]            ;508
-0004c6  3408              ADDS     r4,r4,#8              ;509
-0004c8  eb080004          ADD      r0,r8,r4              ;510
+0004bc  3918              SUBS     r1,r1,#0x18           ;505
+0004be  680a              LDR      r2,[r1,#0]            ;505  ; strengthFuel
+0004c0  6002              STR      r2,[r0,#0]            ;505
+0004c2  6849              LDR      r1,[r1,#4]            ;505  ; strengthFuel
+0004c4  6041              STR      r1,[r0,#4]            ;505
+0004c6  3408              ADDS     r4,r4,#8              ;506
+0004c8  eb080004          ADD      r0,r8,r4              ;507
 0004cc  4915              LDR      r1,|L3.1316|
-0004ce  3910              SUBS     r1,r1,#0x10           ;510
-0004d0  680a              LDR      r2,[r1,#0]            ;510  ; strengthFuel
-0004d2  6002              STR      r2,[r0,#0]            ;510
-0004d4  6849              LDR      r1,[r1,#4]            ;510  ; strengthFuel
-0004d6  6041              STR      r1,[r0,#4]            ;510
-0004d8  3408              ADDS     r4,r4,#8              ;511
-0004da  eb080004          ADD      r0,r8,r4              ;512
+0004ce  3910              SUBS     r1,r1,#0x10           ;507
+0004d0  680a              LDR      r2,[r1,#0]            ;507  ; strengthFuel
+0004d2  6002              STR      r2,[r0,#0]            ;507
+0004d4  6849              LDR      r1,[r1,#4]            ;507  ; strengthFuel
+0004d6  6041              STR      r1,[r0,#4]            ;507
+0004d8  3408              ADDS     r4,r4,#8              ;508
+0004da  eb080004          ADD      r0,r8,r4              ;509
 0004de  4911              LDR      r1,|L3.1316|
-0004e0  3908              SUBS     r1,r1,#8              ;512
-0004e2  680a              LDR      r2,[r1,#0]            ;512  ; strengthFuel
-0004e4  6002              STR      r2,[r0,#0]            ;512
-0004e6  6849              LDR      r1,[r1,#4]            ;512  ; strengthFuel
-0004e8  6041              STR      r1,[r0,#4]            ;512
-0004ea  3408              ADDS     r4,r4,#8              ;513
-0004ec  eb080004          ADD      r0,r8,r4              ;514
+0004e0  3908              SUBS     r1,r1,#8              ;509
+0004e2  680a              LDR      r2,[r1,#0]            ;509  ; strengthFuel
+0004e4  6002              STR      r2,[r0,#0]            ;509
+0004e6  6849              LDR      r1,[r1,#4]            ;509  ; strengthFuel
+0004e8  6041              STR      r1,[r0,#4]            ;509
+0004ea  3408              ADDS     r4,r4,#8              ;510
+0004ec  eb080004          ADD      r0,r8,r4              ;511
 0004f0  490c              LDR      r1,|L3.1316|
-0004f2  680a              LDR      r2,[r1,#0]            ;514  ; strengthFuel
-0004f4  6002              STR      r2,[r0,#0]            ;514
-0004f6  6849              LDR      r1,[r1,#4]            ;514  ; strengthFuel
-0004f8  6041              STR      r1,[r0,#4]            ;514
-0004fa  3408              ADDS     r4,r4,#8              ;515
+0004f2  680a              LDR      r2,[r1,#0]            ;511  ; strengthFuel
+0004f4  6002              STR      r2,[r0,#0]            ;511
+0004f6  6849              LDR      r1,[r1,#4]            ;511  ; strengthFuel
+0004f8  6041              STR      r1,[r0,#4]            ;511
+0004fa  3408              ADDS     r4,r4,#8              ;512
 0004fc  4809              LDR      r0,|L3.1316|
-0004fe  3832              SUBS     r0,r0,#0x32           ;516
-000500  f890003a          LDRB     r0,[r0,#0x3a]         ;516  ; strengthFuel
-000504  f8080004          STRB     r0,[r8,r4]            ;516
-000508  2250              MOVS     r2,#0x50              ;518
+0004fe  3832              SUBS     r0,r0,#0x32           ;513
+000500  f890003a          LDRB     r0,[r0,#0x3a]         ;513  ; strengthFuel
+000504  f8080004          STRB     r0,[r8,r4]            ;513
+000508  2250              MOVS     r2,#0x50              ;515
 00050a  4907              LDR      r1,|L3.1320|
-00050c  4640              MOV      r0,r8                 ;518
+00050c  4640              MOV      r0,r8                 ;515
 00050e  f7fffffe          BL       Save2KDataToFlash
-000512  4640              MOV      r0,r8                 ;519
+000512  4640              MOV      r0,r8                 ;516
 000514  f7fffffe          BL       Mem_free
-000518  b671              CPSID    f                     ;521
+000518  b671              CPSID    f                     ;518
 00051a  f7fffffe          BL       __NVIC_SystemReset
                   |L3.1310|
 00051e  bf00              NOP      
 000520  e61a              B        |L3.344|
-;;;525    #include "obd.h"
+;;;522    #include "obd.h"
                           ENDP
 
 000522  0000              DCW      0x0000
@@ -1487,379 +1487,402 @@
                           AREA ||i.FuelModeChange||, CODE, READONLY, ALIGN=2
 
                   FuelModeChange PROC
-;;;686    extern uint8_t strengPower[300];
-;;;687    static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切换
+;;;683    extern uint8_t strengPower[300];
+;;;684    static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切换
 000000  e92d41f0          PUSH     {r4-r8,lr}
-;;;688    {
+;;;685    {
 000004  4606              MOV      r6,r0
-;;;689    	uint16_t offset = 5;
+;;;686    	uint16_t offset  = 5;
 000006  2405              MOVS     r4,#5
-;;;690    	uint8_t* ptrMode;
-;;;691    	uint16_t newCRC = 0,nowCRC = 0;
-000008  2700              MOVS     r7,#0
-00000a  f04f0800          MOV      r8,#0
-;;;692    	
-;;;693    	
-;;;694    	memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16); //版本号
-00000e  1931              ADDS     r1,r6,r4
-000010  2210              MOVS     r2,#0x10
-000012  4895              LDR      r0,|L4.616|
-000014  f7fffffe          BL       __aeabi_memcpy
-;;;695    	offset += 16;
-000018  3410              ADDS     r4,r4,#0x10
-;;;696    	memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5);//读取喷油量的地址
-00001a  1930              ADDS     r0,r6,r4
-00001c  4992              LDR      r1,|L4.616|
-00001e  6802              LDR      r2,[r0,#0]
-000020  610a              STR      r2,[r1,#0x10]  ; strengthFuel
-000022  7900              LDRB     r0,[r0,#4]
-000024  7508              STRB     r0,[r1,#0x14]
-;;;697    	offset += 5;
-000026  1d64              ADDS     r4,r4,#5
-;;;698    	memcpy(strengthFuel.mask,&ptrDeal[offset],4); //安全算法掩码
-000028  1931              ADDS     r1,r6,r4
-00002a  488f              LDR      r0,|L4.616|
-00002c  6809              LDR      r1,[r1,#0]
-00002e  f8c01015          STR      r1,[r0,#0x15]  ; strengthFuel
-;;;699    	offset += 4;
-000032  1d24              ADDS     r4,r4,#4
-;;;700    	strengthFuel.coe = ptrDeal[offset];           //提升动力的系数
-000034  5d30              LDRB     r0,[r6,r4]
-000036  b240              SXTB     r0,r0
-000038  498b              LDR      r1,|L4.616|
-00003a  7648              STRB     r0,[r1,#0x19]
-;;;701    	offset ++;
-00003c  1c64              ADDS     r4,r4,#1
-;;;702    	memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
-00003e  1930              ADDS     r0,r6,r4
-000040  311a              ADDS     r1,r1,#0x1a
-000042  6802              LDR      r2,[r0,#0]
-000044  600a              STR      r2,[r1,#0]  ; strengthFuel
-000046  6840              LDR      r0,[r0,#4]
-000048  6048              STR      r0,[r1,#4]  ; strengthFuel
-;;;703    	offset += 8;
-00004a  3408              ADDS     r4,r4,#8
-;;;704    	memcpy(strengthFuel.safe2,&ptrDeal[offset],8);//安全算法cmd 2
-00004c  1930              ADDS     r0,r6,r4
-00004e  3108              ADDS     r1,r1,#8
-000050  6802              LDR      r2,[r0,#0]
-000052  600a              STR      r2,[r1,#0]  ; strengthFuel
-000054  6840              LDR      r0,[r0,#4]
-000056  6048              STR      r0,[r1,#4]  ; strengthFuel
-;;;705    	offset += 8;
-000058  3408              ADDS     r4,r4,#8
-;;;706    	memcpy(strengthFuel.mode1,&ptrDeal[offset],8);//模式 cmd 1
-00005a  1930              ADDS     r0,r6,r4
-00005c  3108              ADDS     r1,r1,#8
-00005e  6802              LDR      r2,[r0,#0]
-000060  600a              STR      r2,[r1,#0]  ; strengthFuel
-000062  6840              LDR      r0,[r0,#4]
-000064  6048              STR      r0,[r1,#4]  ; strengthFuel
-;;;707    	offset += 8;
-000066  3408              ADDS     r4,r4,#8
-;;;708    	memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
-000068  1931              ADDS     r1,r6,r4
-00006a  487f              LDR      r0,|L4.616|
-00006c  3032              ADDS     r0,r0,#0x32
-00006e  680a              LDR      r2,[r1,#0]
-000070  6002              STR      r2,[r0,#0]  ; strengthFuel
-000072  6849              LDR      r1,[r1,#4]
-000074  6041              STR      r1,[r0,#4]  ; strengthFuel
-;;;709    	offset += 8;
-000076  3408              ADDS     r4,r4,#8
-;;;710    	strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
-000078  5d30              LDRB     r0,[r6,r4]
-00007a  497b              LDR      r1,|L4.616|
-00007c  f881003a          STRB     r0,[r1,#0x3a]
-;;;711    	
-;;;712    	
-;;;713    	ptrMode = Mem_malloc(5);  //
-000080  2005              MOVS     r0,#5
-000082  f7fffffe          BL       Mem_malloc
-000086  4605              MOV      r5,r0
-;;;714    	ptrMode[0] = 4;           //长度
-000088  2004              MOVS     r0,#4
-00008a  7028              STRB     r0,[r5,#0]
-;;;715    	ptrMode[1] = 0x50;
-00008c  2050              MOVS     r0,#0x50
-00008e  7068              STRB     r0,[r5,#1]
-;;;716    	ptrMode[2] = 0x15;
-000090  2015              MOVS     r0,#0x15
-000092  70a8              STRB     r0,[r5,#2]
-;;;717    	ptrMode[3] = strengthFuel.coe;
-000094  4874              LDR      r0,|L4.616|
-000096  7e40              LDRB     r0,[r0,#0x19]  ; strengthFuel
-000098  70e8              STRB     r0,[r5,#3]
-;;;718    	SendPidCmdData(ptrMode);
-00009a  4628              MOV      r0,r5
-00009c  f7fffffe          BL       SendPidCmdData
-;;;719    	
-;;;720    	Mem_free(ptrMode);
-0000a0  4628              MOV      r0,r5
-0000a2  f7fffffe          BL       Mem_free
-;;;721    	Mem_free(ptrDeal);
-0000a6  4630              MOV      r0,r6
-0000a8  f7fffffe          BL       Mem_free
-;;;722    	
-;;;723    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.ecuVer,16);
-0000ac  2210              MOVS     r2,#0x10
-0000ae  496e              LDR      r1,|L4.616|
-0000b0  4638              MOV      r0,r7
-0000b2  f7fffffe          BL       CRC_ComputeFile
-0000b6  4607              MOV      r7,r0
-;;;724    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.fuelAddr,5);
-0000b8  2205              MOVS     r2,#5
-0000ba  496b              LDR      r1,|L4.616|
-0000bc  3110              ADDS     r1,r1,#0x10
-0000be  4638              MOV      r0,r7
-0000c0  f7fffffe          BL       CRC_ComputeFile
-0000c4  4607              MOV      r7,r0
-;;;725    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mask,4);
-0000c6  2204              MOVS     r2,#4
-0000c8  4967              LDR      r1,|L4.616|
-0000ca  3115              ADDS     r1,r1,#0x15
-0000cc  4638              MOV      r0,r7
-0000ce  f7fffffe          BL       CRC_ComputeFile
-0000d2  4607              MOV      r7,r0
-;;;726    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.safe1,8);
-0000d4  2208              MOVS     r2,#8
-0000d6  4964              LDR      r1,|L4.616|
-0000d8  311a              ADDS     r1,r1,#0x1a
-0000da  4638              MOV      r0,r7
-0000dc  f7fffffe          BL       CRC_ComputeFile
-0000e0  4607              MOV      r7,r0
-;;;727    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.safe2,8);
-0000e2  2208              MOVS     r2,#8
-0000e4  4960              LDR      r1,|L4.616|
-0000e6  3122              ADDS     r1,r1,#0x22
-0000e8  4638              MOV      r0,r7
-0000ea  f7fffffe          BL       CRC_ComputeFile
-0000ee  4607              MOV      r7,r0
-;;;728    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mode1,8);
-0000f0  2208              MOVS     r2,#8
-0000f2  495d              LDR      r1,|L4.616|
-0000f4  312a              ADDS     r1,r1,#0x2a
-0000f6  4638              MOV      r0,r7
-0000f8  f7fffffe          BL       CRC_ComputeFile
-0000fc  4607              MOV      r7,r0
-;;;729    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mode2,8);
-0000fe  2208              MOVS     r2,#8
-000100  4959              LDR      r1,|L4.616|
-000102  3132              ADDS     r1,r1,#0x32
-000104  4638              MOV      r0,r7
-000106  f7fffffe          BL       CRC_ComputeFile
-00010a  4607              MOV      r7,r0
-;;;730    	
-;;;731    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.ecuVer,16);
-00010c  2210              MOVS     r2,#0x10
-00010e  4957              LDR      r1,|L4.620|
-000110  4640              MOV      r0,r8
-000112  f7fffffe          BL       CRC_ComputeFile
-000116  4680              MOV      r8,r0
-;;;732    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.fuelAddr,5);
-000118  2205              MOVS     r2,#5
-00011a  4954              LDR      r1,|L4.620|
-00011c  3110              ADDS     r1,r1,#0x10
-00011e  4640              MOV      r0,r8
-000120  f7fffffe          BL       CRC_ComputeFile
-000124  4680              MOV      r8,r0
-;;;733    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mask,4);
-000126  2204              MOVS     r2,#4
-000128  4950              LDR      r1,|L4.620|
-00012a  3115              ADDS     r1,r1,#0x15
-00012c  4640              MOV      r0,r8
-00012e  f7fffffe          BL       CRC_ComputeFile
-000132  4680              MOV      r8,r0
-;;;734    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.safe1,8);
-000134  2208              MOVS     r2,#8
-000136  494d              LDR      r1,|L4.620|
-000138  311a              ADDS     r1,r1,#0x1a
-00013a  4640              MOV      r0,r8
-00013c  f7fffffe          BL       CRC_ComputeFile
-000140  4680              MOV      r8,r0
-;;;735    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.safe2,8);
-000142  2208              MOVS     r2,#8
-000144  4949              LDR      r1,|L4.620|
-000146  3122              ADDS     r1,r1,#0x22
-000148  4640              MOV      r0,r8
-00014a  f7fffffe          BL       CRC_ComputeFile
-00014e  4680              MOV      r8,r0
-;;;736    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mode1,8);
-000150  2208              MOVS     r2,#8
-000152  4946              LDR      r1,|L4.620|
-000154  312a              ADDS     r1,r1,#0x2a
-000156  4640              MOV      r0,r8
-000158  f7fffffe          BL       CRC_ComputeFile
-00015c  4680              MOV      r8,r0
-;;;737    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mode2,8);
-00015e  2208              MOVS     r2,#8
-000160  4942              LDR      r1,|L4.620|
-000162  3132              ADDS     r1,r1,#0x32
-000164  4640              MOV      r0,r8
-000166  f7fffffe          BL       CRC_ComputeFile
-00016a  4680              MOV      r8,r0
-;;;738    	if(nowCRC == newCRC)
-00016c  45b8              CMP      r8,r7
-00016e  d101              BNE      |L4.372|
-;;;739    		return;
-;;;740    	ptrMode = Mem_malloc(80);
-;;;741    	offset = 0;
-;;;742    	
-;;;743    	memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);
-;;;744    	offset += 16;
-;;;745    	memcpy(&ptrMode[offset],strengthFuel.fuelAddr,5);
-;;;746    	offset += 5;
-;;;747    	memcpy(&ptrMode[offset],strengthFuel.mask,4);
-;;;748    	offset += 4;
-;;;749    	memcpy(&ptrMode[offset],strengthFuel.safe1,8);
+;;;687    	uint8_t* ptrMode = NULL;
+000008  2500              MOVS     r5,#0
+;;;688    	uint16_t newCRC  = 0,nowCRC = 0;
+00000a  2700              MOVS     r7,#0
+00000c  f04f0800          MOV      r8,#0
+;;;689    	
+;;;690    	
+;;;691    	memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16);  //版本号
+000010  1931              ADDS     r1,r6,r4
+000012  2210              MOVS     r2,#0x10
+000014  489f              LDR      r0,|L4.660|
+000016  f7fffffe          BL       __aeabi_memcpy
+;;;692    	offset += 16;
+00001a  3410              ADDS     r4,r4,#0x10
+;;;693    	memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5); //读取喷油量的地址
+00001c  1930              ADDS     r0,r6,r4
+00001e  499d              LDR      r1,|L4.660|
+000020  6802              LDR      r2,[r0,#0]
+000022  610a              STR      r2,[r1,#0x10]  ; strengthFuel
+000024  7900              LDRB     r0,[r0,#4]
+000026  7508              STRB     r0,[r1,#0x14]
+;;;694    	offset += 5;
+000028  1d64              ADDS     r4,r4,#5
+;;;695    	memcpy(strengthFuel.mask,&ptrDeal[offset],4);     //安全算法掩码
+00002a  1931              ADDS     r1,r6,r4
+00002c  4899              LDR      r0,|L4.660|
+00002e  6809              LDR      r1,[r1,#0]
+000030  f8c01015          STR      r1,[r0,#0x15]  ; strengthFuel
+;;;696    	offset += 4;
+000034  1d24              ADDS     r4,r4,#4
+;;;697    	strengthFuel.coe = ptrDeal[offset];               //提升动力的系数
+000036  5d30              LDRB     r0,[r6,r4]
+000038  b240              SXTB     r0,r0
+00003a  4996              LDR      r1,|L4.660|
+00003c  7648              STRB     r0,[r1,#0x19]
+;;;698    	offset ++;
+00003e  1c64              ADDS     r4,r4,#1
+;;;699    	memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
+000040  1930              ADDS     r0,r6,r4
+000042  311a              ADDS     r1,r1,#0x1a
+000044  6802              LDR      r2,[r0,#0]
+000046  600a              STR      r2,[r1,#0]  ; strengthFuel
+000048  6840              LDR      r0,[r0,#4]
+00004a  6048              STR      r0,[r1,#4]  ; strengthFuel
+;;;700    	offset += 8;
+00004c  3408              ADDS     r4,r4,#8
+;;;701    	memcpy(strengthFuel.safe2,&ptrDeal[offset],8);//安全算法cmd 2
+00004e  1930              ADDS     r0,r6,r4
+000050  3108              ADDS     r1,r1,#8
+000052  6802              LDR      r2,[r0,#0]
+000054  600a              STR      r2,[r1,#0]  ; strengthFuel
+000056  6840              LDR      r0,[r0,#4]
+000058  6048              STR      r0,[r1,#4]  ; strengthFuel
+;;;702    	offset += 8;
+00005a  3408              ADDS     r4,r4,#8
+;;;703    	memcpy(strengthFuel.mode1,&ptrDeal[offset],8);//模式 cmd 1
+00005c  1931              ADDS     r1,r6,r4
+00005e  488d              LDR      r0,|L4.660|
+000060  302a              ADDS     r0,r0,#0x2a
+000062  680a              LDR      r2,[r1,#0]
+000064  6002              STR      r2,[r0,#0]  ; strengthFuel
+000066  6849              LDR      r1,[r1,#4]
+000068  6041              STR      r1,[r0,#4]  ; strengthFuel
+;;;704    	offset += 8;
+00006a  3408              ADDS     r4,r4,#8
+;;;705    	memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
+00006c  1930              ADDS     r0,r6,r4
+00006e  4989              LDR      r1,|L4.660|
+000070  3132              ADDS     r1,r1,#0x32
+000072  6802              LDR      r2,[r0,#0]
+000074  600a              STR      r2,[r1,#0]  ; strengthFuel
+000076  6840              LDR      r0,[r0,#4]
+000078  6048              STR      r0,[r1,#4]  ; strengthFuel
+;;;706    	offset += 8;
+00007a  3408              ADDS     r4,r4,#8
+;;;707    	strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
+00007c  5d30              LDRB     r0,[r6,r4]
+00007e  3932              SUBS     r1,r1,#0x32
+000080  f881003a          STRB     r0,[r1,#0x3a]
+;;;708    	
+;;;709    	if(strengthFuel.coe == strengthFuelFlash.coe)
+000084  4608              MOV      r0,r1
+000086  f9900019          LDRSB    r0,[r0,#0x19]  ; strengthFuel
+00008a  4983              LDR      r1,|L4.664|
+00008c  f9911019          LDRSB    r1,[r1,#0x19]  ; strengthFuelFlash
+000090  4288              CMP      r0,r1
+000092  d10f              BNE      |L4.180|
+;;;710    	{
+;;;711    		ptrMode = Mem_malloc(5);  //
+000094  2005              MOVS     r0,#5
+000096  f7fffffe          BL       Mem_malloc
+00009a  4605              MOV      r5,r0
+;;;712    		ptrMode[0] = 4;           //长度
+00009c  2004              MOVS     r0,#4
+00009e  7028              STRB     r0,[r5,#0]
+;;;713    		ptrMode[1] = 0x50;
+0000a0  2050              MOVS     r0,#0x50
+0000a2  7068              STRB     r0,[r5,#1]
+;;;714    		ptrMode[2] = 0x15;
+0000a4  2015              MOVS     r0,#0x15
+0000a6  70a8              STRB     r0,[r5,#2]
+;;;715    		ptrMode[3] = strengthFuel.coe;
+0000a8  487a              LDR      r0,|L4.660|
+0000aa  7e40              LDRB     r0,[r0,#0x19]  ; strengthFuel
+0000ac  70e8              STRB     r0,[r5,#3]
+;;;716    		SendPidCmdData(ptrMode);
+0000ae  4628              MOV      r0,r5
+0000b0  f7fffffe          BL       SendPidCmdData
+                  |L4.180|
+;;;717    	}
+;;;718    	Mem_free(ptrMode);
+0000b4  4628              MOV      r0,r5
+0000b6  f7fffffe          BL       Mem_free
+;;;719    	Mem_free(ptrDeal);
+0000ba  4630              MOV      r0,r6
+0000bc  f7fffffe          BL       Mem_free
+;;;720    	
+;;;721    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.ecuVer,16);
+0000c0  2210              MOVS     r2,#0x10
+0000c2  4974              LDR      r1,|L4.660|
+0000c4  4638              MOV      r0,r7
+0000c6  f7fffffe          BL       CRC_ComputeFile
+0000ca  4607              MOV      r7,r0
+;;;722    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.fuelAddr,5);
+0000cc  2205              MOVS     r2,#5
+0000ce  4971              LDR      r1,|L4.660|
+0000d0  3110              ADDS     r1,r1,#0x10
+0000d2  4638              MOV      r0,r7
+0000d4  f7fffffe          BL       CRC_ComputeFile
+0000d8  4607              MOV      r7,r0
+;;;723    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mask,4);
+0000da  2204              MOVS     r2,#4
+0000dc  496d              LDR      r1,|L4.660|
+0000de  3115              ADDS     r1,r1,#0x15
+0000e0  4638              MOV      r0,r7
+0000e2  f7fffffe          BL       CRC_ComputeFile
+0000e6  4607              MOV      r7,r0
+;;;724    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.safe1,8);
+0000e8  2208              MOVS     r2,#8
+0000ea  496a              LDR      r1,|L4.660|
+0000ec  311a              ADDS     r1,r1,#0x1a
+0000ee  4638              MOV      r0,r7
+0000f0  f7fffffe          BL       CRC_ComputeFile
+0000f4  4607              MOV      r7,r0
+;;;725    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.safe2,8);
+0000f6  2208              MOVS     r2,#8
+0000f8  4966              LDR      r1,|L4.660|
+0000fa  3122              ADDS     r1,r1,#0x22
+0000fc  4638              MOV      r0,r7
+0000fe  f7fffffe          BL       CRC_ComputeFile
+000102  4607              MOV      r7,r0
+;;;726    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mode1,8);
+000104  2208              MOVS     r2,#8
+000106  4963              LDR      r1,|L4.660|
+000108  312a              ADDS     r1,r1,#0x2a
+00010a  4638              MOV      r0,r7
+00010c  f7fffffe          BL       CRC_ComputeFile
+000110  4607              MOV      r7,r0
+;;;727    	newCRC = CRC_ComputeFile(newCRC,strengthFuel.mode2,8);
+000112  2208              MOVS     r2,#8
+000114  495f              LDR      r1,|L4.660|
+000116  3132              ADDS     r1,r1,#0x32
+000118  4638              MOV      r0,r7
+00011a  f7fffffe          BL       CRC_ComputeFile
+00011e  4607              MOV      r7,r0
+;;;728    	
+;;;729    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.ecuVer,16);
+000120  2210              MOVS     r2,#0x10
+000122  495d              LDR      r1,|L4.664|
+000124  4640              MOV      r0,r8
+000126  f7fffffe          BL       CRC_ComputeFile
+00012a  4680              MOV      r8,r0
+;;;730    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.fuelAddr,5);
+00012c  2205              MOVS     r2,#5
+00012e  495a              LDR      r1,|L4.664|
+000130  3110              ADDS     r1,r1,#0x10
+000132  4640              MOV      r0,r8
+000134  f7fffffe          BL       CRC_ComputeFile
+000138  4680              MOV      r8,r0
+;;;731    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mask,4);
+00013a  2204              MOVS     r2,#4
+00013c  4956              LDR      r1,|L4.664|
+00013e  3115              ADDS     r1,r1,#0x15
+000140  4640              MOV      r0,r8
+000142  f7fffffe          BL       CRC_ComputeFile
+000146  4680              MOV      r8,r0
+;;;732    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.safe1,8);
+000148  2208              MOVS     r2,#8
+00014a  4953              LDR      r1,|L4.664|
+00014c  311a              ADDS     r1,r1,#0x1a
+00014e  4640              MOV      r0,r8
+000150  f7fffffe          BL       CRC_ComputeFile
+000154  4680              MOV      r8,r0
+;;;733    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.safe2,8);
+000156  2208              MOVS     r2,#8
+000158  494f              LDR      r1,|L4.664|
+00015a  3122              ADDS     r1,r1,#0x22
+00015c  4640              MOV      r0,r8
+00015e  f7fffffe          BL       CRC_ComputeFile
+000162  4680              MOV      r8,r0
+;;;734    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mode1,8);
+000164  2208              MOVS     r2,#8
+000166  494c              LDR      r1,|L4.664|
+000168  312a              ADDS     r1,r1,#0x2a
+00016a  4640              MOV      r0,r8
+00016c  f7fffffe          BL       CRC_ComputeFile
+000170  4680              MOV      r8,r0
+;;;735    	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mode2,8);
+000172  2208              MOVS     r2,#8
+000174  4948              LDR      r1,|L4.664|
+000176  3132              ADDS     r1,r1,#0x32
+000178  4640              MOV      r0,r8
+00017a  f7fffffe          BL       CRC_ComputeFile
+00017e  4680              MOV      r8,r0
+;;;736    	if(nowCRC == newCRC)
+000180  45b8              CMP      r8,r7
+000182  d101              BNE      |L4.392|
+;;;737    		return;
+;;;738    	ptrMode = Mem_malloc(80);
+;;;739    	offset = 0;
+;;;740    	
+;;;741    	memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);
+;;;742    	offset += 16;
+;;;743    	memcpy(&ptrMode[offset],strengthFuel.fuelAddr,5);
+;;;744    	offset += 5;
+;;;745    	memcpy(&ptrMode[offset],strengthFuel.mask,4);
+;;;746    	offset += 4;
+;;;747    	memcpy(&ptrMode[offset],strengthFuel.safe1,8);
+;;;748    	offset += 8;
+;;;749    	memcpy(&ptrMode[offset],strengthFuel.safe2,8);
 ;;;750    	offset += 8;
-;;;751    	memcpy(&ptrMode[offset],strengthFuel.safe2,8);
+;;;751    	memcpy(&ptrMode[offset],strengthFuel.mode1,8);
 ;;;752    	offset += 8;
-;;;753    	memcpy(&ptrMode[offset],strengthFuel.mode1,8);
+;;;753    	memcpy(&ptrMode[offset],strengthFuel.mode2,8);
 ;;;754    	offset += 8;
-;;;755    	memcpy(&ptrMode[offset],strengthFuel.mode2,8);
-;;;756    	offset += 8;
-;;;757    	ptrMode[offset++] = strengthFuel.modeOrder;
-;;;758    	Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);//将新的增强动力指令写入Flash
-;;;759    	
-;;;760    	Mem_free(ptrMode);
-;;;761    	memcpy(strengthFuelFlash.ecuVer,strengthFuel.ecuVer,16);   //版本号
-;;;762    	memcpy(strengthFuelFlash.fuelAddr,strengthFuel.fuelAddr,5);//读取喷油量的地址
-;;;763    	memcpy(strengthFuelFlash.mask,strengthFuel.mask,4);        //安全算法掩码
-;;;764    	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //安全算法cmd 1
-;;;765    	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //安全算法cmd 2
-;;;766    	memcpy(strengthFuelFlash.mode1,strengthFuel.mode1,8);      //模式 cmd 1
-;;;767    	memcpy(strengthFuelFlash.mode2,strengthFuel.mode2,8);      //模式 cmd 2
-;;;768    	strengthFuelFlash.modeOrder = strengthFuel.modeOrder;      //模式指令与安全算法执行的顺序
-;;;769    
-;;;770    //	strengPower[0] = 0x00;
-;;;771    //	SoftErasePage(STRENGE_Q);
-;;;772    //	Save2KDataToFlash(strengPower,STRENGE_Q,200);
-;;;773    	
-;;;774    	__disable_fault_irq();                    //重启
-;;;775    	NVIC_SystemReset();
-;;;776    }
-000170  e8bd81f0          POP      {r4-r8,pc}
-                  |L4.372|
-000174  2050              MOVS     r0,#0x50              ;740
-000176  f7fffffe          BL       Mem_malloc
-00017a  4605              MOV      r5,r0                 ;740
-00017c  2400              MOVS     r4,#0                 ;741
-00017e  1928              ADDS     r0,r5,r4              ;743
-000180  2210              MOVS     r2,#0x10              ;743
-000182  4939              LDR      r1,|L4.616|
-000184  f7fffffe          BL       __aeabi_memcpy
-000188  3410              ADDS     r4,r4,#0x10           ;744
-00018a  1928              ADDS     r0,r5,r4              ;745
-00018c  4936              LDR      r1,|L4.616|
-00018e  690a              LDR      r2,[r1,#0x10]         ;745  ; strengthFuel
-000190  6002              STR      r2,[r0,#0]            ;745
-000192  7d09              LDRB     r1,[r1,#0x14]         ;745  ; strengthFuel
-000194  7101              STRB     r1,[r0,#4]            ;745
-000196  1d64              ADDS     r4,r4,#5              ;746
-000198  1928              ADDS     r0,r5,r4              ;747
-00019a  4933              LDR      r1,|L4.616|
-00019c  f8d11015          LDR      r1,[r1,#0x15]         ;747  ; strengthFuel
-0001a0  6001              STR      r1,[r0,#0]            ;747
-0001a2  1d24              ADDS     r4,r4,#4              ;748
-0001a4  1928              ADDS     r0,r5,r4              ;749
-0001a6  4930              LDR      r1,|L4.616|
-0001a8  311a              ADDS     r1,r1,#0x1a           ;749
-0001aa  680a              LDR      r2,[r1,#0]            ;749  ; strengthFuel
-0001ac  6002              STR      r2,[r0,#0]            ;749
-0001ae  6849              LDR      r1,[r1,#4]            ;749  ; strengthFuel
-0001b0  6041              STR      r1,[r0,#4]            ;749
-0001b2  3408              ADDS     r4,r4,#8              ;750
-0001b4  1928              ADDS     r0,r5,r4              ;751
-0001b6  492c              LDR      r1,|L4.616|
-0001b8  3122              ADDS     r1,r1,#0x22           ;751
-0001ba  680a              LDR      r2,[r1,#0]            ;751  ; strengthFuel
-0001bc  6002              STR      r2,[r0,#0]            ;751
-0001be  6849              LDR      r1,[r1,#4]            ;751  ; strengthFuel
-0001c0  6041              STR      r1,[r0,#4]            ;751
-0001c2  3408              ADDS     r4,r4,#8              ;752
-0001c4  1928              ADDS     r0,r5,r4              ;753
-0001c6  4928              LDR      r1,|L4.616|
-0001c8  312a              ADDS     r1,r1,#0x2a           ;753
-0001ca  680a              LDR      r2,[r1,#0]            ;753  ; strengthFuel
-0001cc  6002              STR      r2,[r0,#0]            ;753
-0001ce  6849              LDR      r1,[r1,#4]            ;753  ; strengthFuel
-0001d0  6041              STR      r1,[r0,#4]            ;753
-0001d2  3408              ADDS     r4,r4,#8              ;754
-0001d4  1928              ADDS     r0,r5,r4              ;755
-0001d6  4924              LDR      r1,|L4.616|
-0001d8  3132              ADDS     r1,r1,#0x32           ;755
-0001da  680a              LDR      r2,[r1,#0]            ;755  ; strengthFuel
-0001dc  6002              STR      r2,[r0,#0]            ;755
-0001de  6849              LDR      r1,[r1,#4]            ;755  ; strengthFuel
-0001e0  6041              STR      r1,[r0,#4]            ;755
-0001e2  3408              ADDS     r4,r4,#8              ;756
-0001e4  4820              LDR      r0,|L4.616|
-0001e6  f890003a          LDRB     r0,[r0,#0x3a]         ;757  ; strengthFuel
-0001ea  5528              STRB     r0,[r5,r4]            ;757
-0001ec  2250              MOVS     r2,#0x50              ;758
-0001ee  4920              LDR      r1,|L4.624|
-0001f0  4628              MOV      r0,r5                 ;758
-0001f2  f7fffffe          BL       Save2KDataToFlash
-0001f6  4628              MOV      r0,r5                 ;760
-0001f8  f7fffffe          BL       Mem_free
-0001fc  2210              MOVS     r2,#0x10              ;761
-0001fe  491a              LDR      r1,|L4.616|
-000200  481a              LDR      r0,|L4.620|
-000202  f7fffffe          BL       __aeabi_memcpy
-000206  4819              LDR      r0,|L4.620|
-000208  4917              LDR      r1,|L4.616|
-00020a  690a              LDR      r2,[r1,#0x10]         ;762  ; strengthFuel
-00020c  6102              STR      r2,[r0,#0x10]         ;762  ; strengthFuelFlash
-00020e  7d09              LDRB     r1,[r1,#0x14]         ;762  ; strengthFuel
-000210  7501              STRB     r1,[r0,#0x14]         ;762
-000212  4915              LDR      r1,|L4.616|
-000214  f8d11015          LDR      r1,[r1,#0x15]         ;763  ; strengthFuel
-000218  f8c01015          STR      r1,[r0,#0x15]         ;763  ; strengthFuelFlash
-00021c  301a              ADDS     r0,r0,#0x1a           ;764
-00021e  4912              LDR      r1,|L4.616|
-000220  311a              ADDS     r1,r1,#0x1a           ;764
-000222  680a              LDR      r2,[r1,#0]            ;764  ; strengthFuel
-000224  6002              STR      r2,[r0,#0]            ;764  ; strengthFuelFlash
-000226  6849              LDR      r1,[r1,#4]            ;764  ; strengthFuel
-000228  6041              STR      r1,[r0,#4]            ;764  ; strengthFuelFlash
-00022a  3008              ADDS     r0,r0,#8              ;765
-00022c  490e              LDR      r1,|L4.616|
-00022e  3122              ADDS     r1,r1,#0x22           ;765
-000230  680a              LDR      r2,[r1,#0]            ;765  ; strengthFuel
-000232  6002              STR      r2,[r0,#0]            ;765  ; strengthFuelFlash
-000234  6849              LDR      r1,[r1,#4]            ;765  ; strengthFuel
-000236  6041              STR      r1,[r0,#4]            ;765  ; strengthFuelFlash
-000238  3008              ADDS     r0,r0,#8              ;766
-00023a  490b              LDR      r1,|L4.616|
-00023c  312a              ADDS     r1,r1,#0x2a           ;766
-00023e  680a              LDR      r2,[r1,#0]            ;766  ; strengthFuel
-000240  6002              STR      r2,[r0,#0]            ;766  ; strengthFuelFlash
-000242  6849              LDR      r1,[r1,#4]            ;766  ; strengthFuel
-000244  6041              STR      r1,[r0,#4]            ;766  ; strengthFuelFlash
-000246  3008              ADDS     r0,r0,#8              ;767
-000248  4907              LDR      r1,|L4.616|
-00024a  3132              ADDS     r1,r1,#0x32           ;767
-00024c  680a              LDR      r2,[r1,#0]            ;767  ; strengthFuel
-00024e  6002              STR      r2,[r0,#0]            ;767  ; strengthFuelFlash
-000250  6849              LDR      r1,[r1,#4]            ;767  ; strengthFuel
-000252  6041              STR      r1,[r0,#4]            ;767  ; strengthFuelFlash
-000254  4804              LDR      r0,|L4.616|
-000256  f890003a          LDRB     r0,[r0,#0x3a]         ;768  ; strengthFuel
-00025a  4904              LDR      r1,|L4.620|
-00025c  f881003a          STRB     r0,[r1,#0x3a]         ;768
-000260  b671              CPSID    f                     ;774
-000262  f7fffffe          BL       __NVIC_SystemReset
-;;;777    
+;;;755    	ptrMode[offset++] = strengthFuel.modeOrder;
+;;;756    	Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);//将新的增强动力指令写入Flash
+;;;757    	
+;;;758    	Mem_free(ptrMode);
+;;;759    	memcpy(strengthFuelFlash.ecuVer,strengthFuel.ecuVer,16);   //版本号
+;;;760    	memcpy(strengthFuelFlash.fuelAddr,strengthFuel.fuelAddr,5);//读取喷油量的地址
+;;;761    	memcpy(strengthFuelFlash.mask,strengthFuel.mask,4);        //安全算法掩码
+;;;762    	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //安全算法 cmd 1
+;;;763    	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //安全算法 cmd 2
+;;;764    	memcpy(strengthFuelFlash.mode1,strengthFuel.mode1,8);      //模式 cmd 1
+;;;765    	memcpy(strengthFuelFlash.mode2,strengthFuel.mode2,8);      //模式 cmd 2
+;;;766    	strengthFuelFlash.modeOrder = strengthFuel.modeOrder;      //模式指令与安全算法执行的顺序
+;;;767    	
+;;;768    	memset(strengPower,0,200);                    //清空Flash保存的喷油量的值
+;;;769    	SoftErasePage(STRENGE_Q);
+;;;770    	Save2KDataToFlash(strengPower,STRENGE_Q,200);
+;;;771    	
+;;;772    	__disable_fault_irq();                    //重启
+;;;773    	NVIC_SystemReset();
+;;;774    }
+000184  e8bd81f0          POP      {r4-r8,pc}
+                  |L4.392|
+000188  2050              MOVS     r0,#0x50              ;738
+00018a  f7fffffe          BL       Mem_malloc
+00018e  4605              MOV      r5,r0                 ;738
+000190  2400              MOVS     r4,#0                 ;739
+000192  1928              ADDS     r0,r5,r4              ;741
+000194  2210              MOVS     r2,#0x10              ;741
+000196  493f              LDR      r1,|L4.660|
+000198  f7fffffe          BL       __aeabi_memcpy
+00019c  3410              ADDS     r4,r4,#0x10           ;742
+00019e  1928              ADDS     r0,r5,r4              ;743
+0001a0  493c              LDR      r1,|L4.660|
+0001a2  690a              LDR      r2,[r1,#0x10]         ;743  ; strengthFuel
+0001a4  6002              STR      r2,[r0,#0]            ;743
+0001a6  7d09              LDRB     r1,[r1,#0x14]         ;743  ; strengthFuel
+0001a8  7101              STRB     r1,[r0,#4]            ;743
+0001aa  1d64              ADDS     r4,r4,#5              ;744
+0001ac  1928              ADDS     r0,r5,r4              ;745
+0001ae  4939              LDR      r1,|L4.660|
+0001b0  f8d11015          LDR      r1,[r1,#0x15]         ;745  ; strengthFuel
+0001b4  6001              STR      r1,[r0,#0]            ;745
+0001b6  1d24              ADDS     r4,r4,#4              ;746
+0001b8  1928              ADDS     r0,r5,r4              ;747
+0001ba  4936              LDR      r1,|L4.660|
+0001bc  311a              ADDS     r1,r1,#0x1a           ;747
+0001be  680a              LDR      r2,[r1,#0]            ;747  ; strengthFuel
+0001c0  6002              STR      r2,[r0,#0]            ;747
+0001c2  6849              LDR      r1,[r1,#4]            ;747  ; strengthFuel
+0001c4  6041              STR      r1,[r0,#4]            ;747
+0001c6  3408              ADDS     r4,r4,#8              ;748
+0001c8  1928              ADDS     r0,r5,r4              ;749
+0001ca  4932              LDR      r1,|L4.660|
+0001cc  3122              ADDS     r1,r1,#0x22           ;749
+0001ce  680a              LDR      r2,[r1,#0]            ;749  ; strengthFuel
+0001d0  6002              STR      r2,[r0,#0]            ;749
+0001d2  6849              LDR      r1,[r1,#4]            ;749  ; strengthFuel
+0001d4  6041              STR      r1,[r0,#4]            ;749
+0001d6  3408              ADDS     r4,r4,#8              ;750
+0001d8  1928              ADDS     r0,r5,r4              ;751
+0001da  492e              LDR      r1,|L4.660|
+0001dc  312a              ADDS     r1,r1,#0x2a           ;751
+0001de  680a              LDR      r2,[r1,#0]            ;751  ; strengthFuel
+0001e0  6002              STR      r2,[r0,#0]            ;751
+0001e2  6849              LDR      r1,[r1,#4]            ;751  ; strengthFuel
+0001e4  6041              STR      r1,[r0,#4]            ;751
+0001e6  3408              ADDS     r4,r4,#8              ;752
+0001e8  1928              ADDS     r0,r5,r4              ;753
+0001ea  492a              LDR      r1,|L4.660|
+0001ec  3132              ADDS     r1,r1,#0x32           ;753
+0001ee  680a              LDR      r2,[r1,#0]            ;753  ; strengthFuel
+0001f0  6002              STR      r2,[r0,#0]            ;753
+0001f2  6849              LDR      r1,[r1,#4]            ;753  ; strengthFuel
+0001f4  6041              STR      r1,[r0,#4]            ;753
+0001f6  3408              ADDS     r4,r4,#8              ;754
+0001f8  4826              LDR      r0,|L4.660|
+0001fa  f890003a          LDRB     r0,[r0,#0x3a]         ;755  ; strengthFuel
+0001fe  5528              STRB     r0,[r5,r4]            ;755
+000200  2250              MOVS     r2,#0x50              ;756
+000202  4926              LDR      r1,|L4.668|
+000204  4628              MOV      r0,r5                 ;756
+000206  f7fffffe          BL       Save2KDataToFlash
+00020a  4628              MOV      r0,r5                 ;758
+00020c  f7fffffe          BL       Mem_free
+000210  2210              MOVS     r2,#0x10              ;759
+000212  4920              LDR      r1,|L4.660|
+000214  4820              LDR      r0,|L4.664|
+000216  f7fffffe          BL       __aeabi_memcpy
+00021a  481f              LDR      r0,|L4.664|
+00021c  491d              LDR      r1,|L4.660|
+00021e  690a              LDR      r2,[r1,#0x10]         ;760  ; strengthFuel
+000220  6102              STR      r2,[r0,#0x10]         ;760  ; strengthFuelFlash
+000222  7d09              LDRB     r1,[r1,#0x14]         ;760  ; strengthFuel
+000224  7501              STRB     r1,[r0,#0x14]         ;760
+000226  491b              LDR      r1,|L4.660|
+000228  f8d11015          LDR      r1,[r1,#0x15]         ;761  ; strengthFuel
+00022c  f8c01015          STR      r1,[r0,#0x15]         ;761  ; strengthFuelFlash
+000230  301a              ADDS     r0,r0,#0x1a           ;762
+000232  4918              LDR      r1,|L4.660|
+000234  311a              ADDS     r1,r1,#0x1a           ;762
+000236  680a              LDR      r2,[r1,#0]            ;762  ; strengthFuel
+000238  6002              STR      r2,[r0,#0]            ;762  ; strengthFuelFlash
+00023a  6849              LDR      r1,[r1,#4]            ;762  ; strengthFuel
+00023c  6041              STR      r1,[r0,#4]            ;762  ; strengthFuelFlash
+00023e  3008              ADDS     r0,r0,#8              ;763
+000240  4914              LDR      r1,|L4.660|
+000242  3122              ADDS     r1,r1,#0x22           ;763
+000244  680a              LDR      r2,[r1,#0]            ;763  ; strengthFuel
+000246  6002              STR      r2,[r0,#0]            ;763  ; strengthFuelFlash
+000248  6849              LDR      r1,[r1,#4]            ;763  ; strengthFuel
+00024a  6041              STR      r1,[r0,#4]            ;763  ; strengthFuelFlash
+00024c  3008              ADDS     r0,r0,#8              ;764
+00024e  4911              LDR      r1,|L4.660|
+000250  312a              ADDS     r1,r1,#0x2a           ;764
+000252  680a              LDR      r2,[r1,#0]            ;764  ; strengthFuel
+000254  6002              STR      r2,[r0,#0]            ;764  ; strengthFuelFlash
+000256  6849              LDR      r1,[r1,#4]            ;764  ; strengthFuel
+000258  6041              STR      r1,[r0,#4]            ;764  ; strengthFuelFlash
+00025a  3008              ADDS     r0,r0,#8              ;765
+00025c  490d              LDR      r1,|L4.660|
+00025e  3132              ADDS     r1,r1,#0x32           ;765
+000260  680a              LDR      r2,[r1,#0]            ;765  ; strengthFuel
+000262  6002              STR      r2,[r0,#0]            ;765  ; strengthFuelFlash
+000264  6849              LDR      r1,[r1,#4]            ;765  ; strengthFuel
+000266  6041              STR      r1,[r0,#4]            ;765  ; strengthFuelFlash
+000268  480a              LDR      r0,|L4.660|
+00026a  f890003a          LDRB     r0,[r0,#0x3a]         ;766  ; strengthFuel
+00026e  490a              LDR      r1,|L4.664|
+000270  f881003a          STRB     r0,[r1,#0x3a]         ;766
+000274  21c8              MOVS     r1,#0xc8              ;768
+000276  480a              LDR      r0,|L4.672|
+000278  f7fffffe          BL       __aeabi_memclr
+00027c  4809              LDR      r0,|L4.676|
+00027e  f7fffffe          BL       SoftErasePage
+000282  22c8              MOVS     r2,#0xc8              ;770
+000284  4907              LDR      r1,|L4.676|
+000286  4806              LDR      r0,|L4.672|
+000288  f7fffffe          BL       Save2KDataToFlash
+00028c  b671              CPSID    f                     ;772
+00028e  f7fffffe          BL       __NVIC_SystemReset
+;;;775    
                           ENDP
 
-000266  0000              DCW      0x0000
-                  |L4.616|
+000292  0000              DCW      0x0000
+                  |L4.660|
                           DCD      strengthFuel
-                  |L4.620|
+                  |L4.664|
                           DCD      strengthFuelFlash
-                  |L4.624|
+                  |L4.668|
                           DCD      0x08065000
+                  |L4.672|
+                          DCD      strengPower
+                  |L4.676|
+                          DCD      0x08060000
 
                           AREA ||i.GetConfigInfo||, CODE, READONLY, ALIGN=2
 
@@ -2108,53 +2131,53 @@
                           AREA ||i.OTA_Updata||, CODE, READONLY, ALIGN=2
 
                   OTA_Updata PROC
-;;;216    uint8_t updateBuff[2048];       //升级用
-;;;217    static void OTA_Updata(uint8_t* ptrDeal)
+;;;215    uint8_t updateBuff[2048];       //升级用
+;;;216    static void OTA_Updata(uint8_t* ptrDeal)
 000000  e92d47f0          PUSH     {r4-r10,lr}
-;;;218    {
+;;;217    {
 000004  4604              MOV      r4,r0
-;;;219    	uint16_t cmdId;
-;;;220    	uint16_t datLength = 0;
+;;;218    	uint16_t cmdId;
+;;;219    	uint16_t datLength = 0;
 000006  f04f0800          MOV      r8,#0
-;;;221    	uint16_t i = 0;
+;;;220    	uint16_t i = 0;
 00000a  46c1              MOV      r9,r8
-;;;222    	uint8_t  frameNum;           //此次一共接收到128字节的包数
-;;;223    	uint8_t  frameLen;           //每一帧的每一小包到底有多少个字节
-;;;224    	uint16_t offset;
-;;;225    	
-;;;226    	static uint16_t currentNum = 0;      //发送下一个请求包
-;;;227    	static uint16_t fileCRC    = 0;      //文件CRC校验
-;;;228    	static uint32_t flashAddr  = 0;      //地址信息，写2K便自增0x800,向Flash一次写2K字节
-;;;229    	static uint8_t  frameIndex = 0;      //要保存的帧索引
+;;;221    	uint8_t  frameNum;           //此次一共接收到128字节的包数
+;;;222    	uint8_t  frameLen;           //每一帧的每一小包到底有多少个字节
+;;;223    	uint16_t offset;
+;;;224    	
+;;;225    	static uint16_t currentNum = 0;      //发送下一个请求包
+;;;226    	static uint16_t fileCRC    = 0;      //文件CRC校验
+;;;227    	static uint32_t flashAddr  = 0;      //地址信息，写2K便自增0x800,向Flash一次写2K字节
+;;;228    	static uint8_t  frameIndex = 0;      //要保存的帧索引
+;;;229    	
 ;;;230    	
-;;;231    	
-;;;232    	datLength = ptrDeal[0];
+;;;231    	datLength = ptrDeal[0];
 00000c  f8948000          LDRB     r8,[r4,#0]
-;;;233    	datLength = (datLength << 8) + ptrDeal[1];
+;;;232    	datLength = (datLength << 8) + ptrDeal[1];
 000010  7860              LDRB     r0,[r4,#1]
 000012  eb002008          ADD      r0,r0,r8,LSL #8
 000016  fa1ff880          UXTH     r8,r0
-;;;234    	
-;;;235    	cmdId     = ptrDeal[3];
+;;;233    	
+;;;234    	cmdId     = ptrDeal[3];
 00001a  78e6              LDRB     r6,[r4,#3]
-;;;236    	cmdId     = (cmdId << 8) + ptrDeal[4];
+;;;235    	cmdId     = (cmdId << 8) + ptrDeal[4];
 00001c  7920              LDRB     r0,[r4,#4]
 00001e  eb002006          ADD      r0,r0,r6,LSL #8
 000022  b286              UXTH     r6,r0
-;;;237    	if(cmdId == 0x8000)
+;;;236    	if(cmdId == 0x8000)
 000024  f5b64f00          CMP      r6,#0x8000
 000028  d132              BNE      |L7.144|
-;;;238    	{
-;;;239    		offset = 5;
+;;;237    	{
+;;;238    		offset = 5;
 00002a  2505              MOVS     r5,#5
-;;;240    		varOperation.frameNum = ptrDeal[offset++] + 0x80;//得到新程序的128字节的包数
+;;;239    		varOperation.frameNum = ptrDeal[offset++] + 0x80;//得到新程序的128字节的包数
 00002c  4629              MOV      r1,r5
 00002e  1c6d              ADDS     r5,r5,#1
 000030  5c60              LDRB     r0,[r4,r1]
 000032  3080              ADDS     r0,r0,#0x80
 000034  4981              LDR      r1,|L7.572|
 000036  80c8              STRH     r0,[r1,#6]
-;;;241    		varOperation.frameNum = (varOperation.frameNum << 8) + ptrDeal[offset++];
+;;;240    		varOperation.frameNum = (varOperation.frameNum << 8) + ptrDeal[offset++];
 000038  4629              MOV      r1,r5
 00003a  1c6d              ADDS     r5,r5,#1
 00003c  5c60              LDRB     r0,[r4,r1]
@@ -2163,13 +2186,13 @@
 000042  eb002001          ADD      r0,r0,r1,LSL #8
 000046  497d              LDR      r1,|L7.572|
 000048  80c8              STRH     r0,[r1,#6]
-;;;242    		varOperation.newSoftCRC = ptrDeal[offset++];//得到文件校验码
+;;;241    		varOperation.newSoftCRC = ptrDeal[offset++];//得到文件校验码
 00004a  4629              MOV      r1,r5
 00004c  1c6d              ADDS     r5,r5,#1
 00004e  5c60              LDRB     r0,[r4,r1]
 000050  497a              LDR      r1,|L7.572|
 000052  8088              STRH     r0,[r1,#4]
-;;;243    		varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrDeal[offset++];
+;;;242    		varOperation.newSoftCRC = (varOperation.newSoftCRC << 8) + ptrDeal[offset++];
 000054  4629              MOV      r1,r5
 000056  1c6d              ADDS     r5,r5,#1
 000058  5c60              LDRB     r0,[r4,r1]
@@ -2178,284 +2201,284 @@
 00005e  eb002001          ADD      r0,r0,r1,LSL #8
 000062  4976              LDR      r1,|L7.572|
 000064  8088              STRH     r0,[r1,#4]
-;;;244    		
-;;;245    		currentNum = 0x8001;
+;;;243    		
+;;;244    		currentNum = 0x8001;
 000066  f2480001          MOV      r0,#0x8001
 00006a  4975              LDR      r1,|L7.576|
 00006c  8008              STRH     r0,[r1,#0]
-;;;246    		fileCRC    = 0;
+;;;245    		fileCRC    = 0;
 00006e  2000              MOVS     r0,#0
 000070  4974              LDR      r1,|L7.580|
 000072  8008              STRH     r0,[r1,#0]
-;;;247    		flashAddr  = 0;
+;;;246    		flashAddr  = 0;
 000074  4974              LDR      r1,|L7.584|
 000076  6008              STR      r0,[r1,#0]  ; flashAddr
-;;;248    		frameIndex = 0;
+;;;247    		frameIndex = 0;
 000078  4974              LDR      r1,|L7.588|
 00007a  7008              STRB     r0,[r1,#0]
-;;;249    		SendFrameNum(currentNum);//发送第一包程序请求帧0x8001
+;;;248    		SendFrameNum(currentNum);//发送第一包程序请求帧0x8001
 00007c  4870              LDR      r0,|L7.576|
 00007e  8800              LDRH     r0,[r0,#0]  ; currentNum
 000080  f7fffffe          BL       SendFrameNum
-;;;250    		memset(updateBuff,0,2048);
+;;;249    		memset(updateBuff,0,2048);
 000084  f44f6100          MOV      r1,#0x800
 000088  4871              LDR      r0,|L7.592|
 00008a  f7fffffe          BL       __aeabi_memclr
                   |L7.142|
 00008e  e0d2              B        |L7.566|
                   |L7.144|
-;;;251    	}
-;;;252    	else if(cmdId>0x8000)        //程序代码
+;;;250    	}
+;;;251    	else if(cmdId>0x8000)        //程序代码
 000090  f5b64f00          CMP      r6,#0x8000
 000094  ddfb              BLE      |L7.142|
-;;;253    	{
-;;;254    		if(cmdId != currentNum)  //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
+;;;252    	{
+;;;253    		if(cmdId != currentNum)  //接收到的帧序号，与所申请的帧序号不同，则放弃数据并重新申请
 000096  486a              LDR      r0,|L7.576|
 000098  8800              LDRH     r0,[r0,#0]  ; currentNum
 00009a  4286              CMP      r6,r0
 00009c  d001              BEQ      |L7.162|
                   |L7.158|
-;;;255    		{
-;;;256    //			SendFrameNum(currentNum);//todo：重新接收数据？
-;;;257    			return;
-;;;258    		}
-;;;259    			
-;;;260    		frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//得到此帧数据一共有多少包128字节的程序代码
-;;;261    		
-;;;262    		offset = 2;
-;;;263    		for(i=0;i<frameNum;i++)//
-;;;264    		{
-;;;265    			frameLen = ptrDeal[offset++] - 3;//实际的小包程序的字节数
-;;;266    			cmdId    = ptrDeal[offset++];
-;;;267    			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
-;;;268    			memcpy(&updateBuff[frameIndex*128],&ptrDeal[offset],frameLen);
-;;;269    			offset += 128;
-;;;270    			frameIndex ++;
-;;;271    			if((frameIndex >= 16) && (cmdId != varOperation.frameNum))
-;;;272    			{
-;;;273    				frameIndex = 0;
-;;;274    				SoftErasePage(flashAddr);
-;;;275    				SoftProgramUpdate(flashAddr,updateBuff,2048);
-;;;276    				//计算CRC校验
-;;;277    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,2048);
-;;;278    				memset(updateBuff,0,2048);//清空数据区
-;;;279    				flashAddr += 0x800;
-;;;280    			}
-;;;281    			else if(cmdId == varOperation.frameNum)
-;;;282    			{
-;;;283    				SoftErasePage(flashAddr);
-;;;284    				SoftProgramUpdate(flashAddr,updateBuff,((frameIndex - 1)*128 + frameLen));
-;;;285    				//计算CRC校验
-;;;286    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,((frameIndex - 1)*128 + frameLen));
-;;;287    				memset(updateBuff,0,2048);
-;;;288    				flashAddr += ((frameIndex - 1)*128 + frameLen);
-;;;289    			}
-;;;290    		}
-;;;291    		if(cmdId == varOperation.frameNum)
-;;;292    		{
-;;;293    			if(fileCRC != varOperation.newSoftCRC)//CRC校验错误，程序升级失败
-;;;294    			{
-;;;295    				Mem_free(ptrDeal);
-;;;296    				varOperation.isDataFlow     = 0;
-;;;297    //				SendFrameNum(0x8000);      //todo:重新升级？
-;;;298    				return;	
-;;;299    			}
-;;;300    			Mem_free(ptrDeal);
-;;;301    			sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
-;;;302    			sysUpdateVar.pageNum      = flashAddr/0x800 + 1;
-;;;303    			sysUpdateVar.softByteSize = flashAddr;
-;;;304    			sysUpdateVar.newSoftCRC   = fileCRC;
-;;;305    			sysUpdateVar.newSoftVer   = varOperation.newSoftVersion;
-;;;306    			
-;;;307    			SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
-;;;308    			
-;;;309    			__disable_fault_irq();          //重启
-;;;310    			NVIC_SystemReset();
-;;;311    		}
-;;;312    		currentNum = cmdId + 1;
-;;;313    		SendFrameNum(currentNum);//请求下一帧数据；
-;;;314    	}
-;;;315    }
+;;;254    		{
+;;;255    //			SendFrameNum(currentNum);//todo：重新接收数据？
+;;;256    			return;
+;;;257    		}
+;;;258    			
+;;;259    		frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//得到此帧数据一共有多少包128字节的程序代码
+;;;260    		
+;;;261    		offset = 2;
+;;;262    		for(i=0;i<frameNum;i++)//
+;;;263    		{
+;;;264    			frameLen = ptrDeal[offset++] - 3;//实际的小包程序的字节数
+;;;265    			cmdId    = ptrDeal[offset++];
+;;;266    			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
+;;;267    			memcpy(&updateBuff[frameIndex*128],&ptrDeal[offset],frameLen);
+;;;268    			offset += 128;
+;;;269    			frameIndex ++;
+;;;270    			if((frameIndex >= 16) && (cmdId != varOperation.frameNum))
+;;;271    			{
+;;;272    				frameIndex = 0;
+;;;273    				SoftErasePage(flashAddr);
+;;;274    				SoftProgramUpdate(flashAddr,updateBuff,2048);
+;;;275    				//计算CRC校验
+;;;276    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,2048);
+;;;277    				memset(updateBuff,0,2048);//清空数据区
+;;;278    				flashAddr += 0x800;
+;;;279    			}
+;;;280    			else if(cmdId == varOperation.frameNum)
+;;;281    			{
+;;;282    				SoftErasePage(flashAddr);
+;;;283    				SoftProgramUpdate(flashAddr,updateBuff,((frameIndex - 1)*128 + frameLen));
+;;;284    				//计算CRC校验
+;;;285    				fileCRC = CRC_ComputeFile(fileCRC,updateBuff,((frameIndex - 1)*128 + frameLen));
+;;;286    				memset(updateBuff,0,2048);
+;;;287    				flashAddr += ((frameIndex - 1)*128 + frameLen);
+;;;288    			}
+;;;289    		}
+;;;290    		if(cmdId == varOperation.frameNum)
+;;;291    		{
+;;;292    			if(fileCRC != varOperation.newSoftCRC)//CRC校验错误，程序升级失败
+;;;293    			{
+;;;294    				Mem_free(ptrDeal);
+;;;295    				varOperation.isDataFlow     = 0;
+;;;296    //				SendFrameNum(0x8000);      //todo:重新升级？
+;;;297    				return;	
+;;;298    			}
+;;;299    			Mem_free(ptrDeal);
+;;;300    			sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
+;;;301    			sysUpdateVar.pageNum      = flashAddr / 0x800 + 1;
+;;;302    			sysUpdateVar.softByteSize = flashAddr;
+;;;303    			sysUpdateVar.newSoftCRC   = fileCRC;
+;;;304    			sysUpdateVar.newSoftVer   = varOperation.newSoftVersion;
+;;;305    			
+;;;306    			SbootParameterSaveToFlash(&sysUpdateVar);//将升级参数保存到Flash中
+;;;307    			
+;;;308    			__disable_fault_irq();          //重启
+;;;309    			NVIC_SystemReset();
+;;;310    		}
+;;;311    		currentNum = cmdId + 1;
+;;;312    		SendFrameNum(currentNum);//请求下一帧数据；
+;;;313    	}
+;;;314    }
 00009e  e8bd87f0          POP      {r4-r10,pc}
                   |L7.162|
-0000a2  2083              MOVS     r0,#0x83              ;260
-0000a4  fb98f1f0          SDIV     r1,r8,r0              ;260
-0000a8  fb008011          MLS      r0,r0,r1,r8           ;260
+0000a2  2083              MOVS     r0,#0x83              ;259
+0000a4  fb98f1f0          SDIV     r1,r8,r0              ;259
+0000a8  fb008011          MLS      r0,r0,r1,r8           ;259
 0000ac  b918              CBNZ     r0,|L7.182|
-0000ae  2083              MOVS     r0,#0x83              ;260
-0000b0  fb98f0f0          SDIV     r0,r8,r0              ;260
+0000ae  2083              MOVS     r0,#0x83              ;259
+0000b0  fb98f0f0          SDIV     r0,r8,r0              ;259
 0000b4  e003              B        |L7.190|
                   |L7.182|
-0000b6  2083              MOVS     r0,#0x83              ;260
-0000b8  fb98f0f0          SDIV     r0,r8,r0              ;260
-0000bc  1c40              ADDS     r0,r0,#1              ;260
+0000b6  2083              MOVS     r0,#0x83              ;259
+0000b8  fb98f0f0          SDIV     r0,r8,r0              ;259
+0000bc  1c40              ADDS     r0,r0,#1              ;259
                   |L7.190|
-0000be  f0000aff          AND      r10,r0,#0xff          ;260
-0000c2  2502              MOVS     r5,#2                 ;262
-0000c4  f04f0900          MOV      r9,#0                 ;263
+0000be  f0000aff          AND      r10,r0,#0xff          ;259
+0000c2  2502              MOVS     r5,#2                 ;261
+0000c4  f04f0900          MOV      r9,#0                 ;262
 0000c8  e07d              B        |L7.454|
                   |L7.202|
-0000ca  4628              MOV      r0,r5                 ;265
-0000cc  1c69              ADDS     r1,r5,#1              ;265
-0000ce  b28d              UXTH     r5,r1                 ;265
-0000d0  5c20              LDRB     r0,[r4,r0]            ;265
-0000d2  1ec0              SUBS     r0,r0,#3              ;265
-0000d4  b2c7              UXTB     r7,r0                 ;265
-0000d6  4628              MOV      r0,r5                 ;266
-0000d8  1c69              ADDS     r1,r5,#1              ;266
-0000da  b28d              UXTH     r5,r1                 ;266
-0000dc  5c26              LDRB     r6,[r4,r0]            ;266
-0000de  4628              MOV      r0,r5                 ;267
-0000e0  1c69              ADDS     r1,r5,#1              ;267
-0000e2  b28d              UXTH     r5,r1                 ;267
-0000e4  5c20              LDRB     r0,[r4,r0]            ;267
-0000e6  eb002006          ADD      r0,r0,r6,LSL #8       ;267
-0000ea  b286              UXTH     r6,r0                 ;267
-0000ec  1961              ADDS     r1,r4,r5              ;268
+0000ca  4628              MOV      r0,r5                 ;264
+0000cc  1c69              ADDS     r1,r5,#1              ;264
+0000ce  b28d              UXTH     r5,r1                 ;264
+0000d0  5c20              LDRB     r0,[r4,r0]            ;264
+0000d2  1ec0              SUBS     r0,r0,#3              ;264
+0000d4  b2c7              UXTB     r7,r0                 ;264
+0000d6  4628              MOV      r0,r5                 ;265
+0000d8  1c69              ADDS     r1,r5,#1              ;265
+0000da  b28d              UXTH     r5,r1                 ;265
+0000dc  5c26              LDRB     r6,[r4,r0]            ;265
+0000de  4628              MOV      r0,r5                 ;266
+0000e0  1c69              ADDS     r1,r5,#1              ;266
+0000e2  b28d              UXTH     r5,r1                 ;266
+0000e4  5c20              LDRB     r0,[r4,r0]            ;266
+0000e6  eb002006          ADD      r0,r0,r6,LSL #8       ;266
+0000ea  b286              UXTH     r6,r0                 ;266
+0000ec  1961              ADDS     r1,r4,r5              ;267
 0000ee  4a57              LDR      r2,|L7.588|
-0000f0  7812              LDRB     r2,[r2,#0]            ;268  ; frameIndex
+0000f0  7812              LDRB     r2,[r2,#0]            ;267  ; frameIndex
 0000f2  4b57              LDR      r3,|L7.592|
-0000f4  eb0310c2          ADD      r0,r3,r2,LSL #7       ;268
-0000f8  463a              MOV      r2,r7                 ;268
+0000f4  eb0310c2          ADD      r0,r3,r2,LSL #7       ;267
+0000f8  463a              MOV      r2,r7                 ;267
 0000fa  f7fffffe          BL       __aeabi_memcpy
-0000fe  f1050080          ADD      r0,r5,#0x80           ;269
-000102  b285              UXTH     r5,r0                 ;269
+0000fe  f1050080          ADD      r0,r5,#0x80           ;268
+000102  b285              UXTH     r5,r0                 ;268
 000104  4851              LDR      r0,|L7.588|
-000106  7800              LDRB     r0,[r0,#0]            ;270  ; frameIndex
-000108  1c40              ADDS     r0,r0,#1              ;270
+000106  7800              LDRB     r0,[r0,#0]            ;269  ; frameIndex
+000108  1c40              ADDS     r0,r0,#1              ;269
 00010a  4950              LDR      r1,|L7.588|
-00010c  7008              STRB     r0,[r1,#0]            ;270
-00010e  4608              MOV      r0,r1                 ;271
-000110  7800              LDRB     r0,[r0,#0]            ;271  ; frameIndex
-000112  2810              CMP      r0,#0x10              ;271
+00010c  7008              STRB     r0,[r1,#0]            ;269
+00010e  4608              MOV      r0,r1                 ;270
+000110  7800              LDRB     r0,[r0,#0]            ;270  ; frameIndex
+000112  2810              CMP      r0,#0x10              ;270
 000114  db25              BLT      |L7.354|
 000116  4849              LDR      r0,|L7.572|
-000118  88c0              LDRH     r0,[r0,#6]            ;271  ; varOperation
-00011a  42b0              CMP      r0,r6                 ;271
+000118  88c0              LDRH     r0,[r0,#6]            ;270  ; varOperation
+00011a  42b0              CMP      r0,r6                 ;270
 00011c  d021              BEQ      |L7.354|
-00011e  2000              MOVS     r0,#0                 ;273
-000120  7008              STRB     r0,[r1,#0]            ;273
+00011e  2000              MOVS     r0,#0                 ;272
+000120  7008              STRB     r0,[r1,#0]            ;272
 000122  4849              LDR      r0,|L7.584|
-000124  6800              LDR      r0,[r0,#0]            ;274  ; flashAddr
+000124  6800              LDR      r0,[r0,#0]            ;273  ; flashAddr
 000126  f7fffffe          BL       SoftErasePage
-00012a  f44f6200          MOV      r2,#0x800             ;275
+00012a  f44f6200          MOV      r2,#0x800             ;274
 00012e  4948              LDR      r1,|L7.592|
 000130  4845              LDR      r0,|L7.584|
-000132  6800              LDR      r0,[r0,#0]            ;275  ; flashAddr
+000132  6800              LDR      r0,[r0,#0]            ;274  ; flashAddr
 000134  f7fffffe          BL       SoftProgramUpdate
-000138  f44f6200          MOV      r2,#0x800             ;277
+000138  f44f6200          MOV      r2,#0x800             ;276
 00013c  4944              LDR      r1,|L7.592|
 00013e  4841              LDR      r0,|L7.580|
-000140  8800              LDRH     r0,[r0,#0]            ;277  ; fileCRC
+000140  8800              LDRH     r0,[r0,#0]            ;276  ; fileCRC
 000142  f7fffffe          BL       CRC_ComputeFile
 000146  493f              LDR      r1,|L7.580|
-000148  8008              STRH     r0,[r1,#0]            ;277
-00014a  f44f6100          MOV      r1,#0x800             ;278
+000148  8008              STRH     r0,[r1,#0]            ;276
+00014a  f44f6100          MOV      r1,#0x800             ;277
 00014e  4840              LDR      r0,|L7.592|
 000150  f7fffffe          BL       __aeabi_memclr
 000154  483c              LDR      r0,|L7.584|
-000156  6800              LDR      r0,[r0,#0]            ;279  ; flashAddr
-000158  f5006000          ADD      r0,r0,#0x800          ;279
+000156  6800              LDR      r0,[r0,#0]            ;278  ; flashAddr
+000158  f5006000          ADD      r0,r0,#0x800          ;278
 00015c  493a              LDR      r1,|L7.584|
-00015e  6008              STR      r0,[r1,#0]            ;279  ; flashAddr
+00015e  6008              STR      r0,[r1,#0]            ;278  ; flashAddr
 000160  e02d              B        |L7.446|
                   |L7.354|
 000162  4836              LDR      r0,|L7.572|
-000164  88c0              LDRH     r0,[r0,#6]            ;281  ; varOperation
-000166  42b0              CMP      r0,r6                 ;281
+000164  88c0              LDRH     r0,[r0,#6]            ;280  ; varOperation
+000166  42b0              CMP      r0,r6                 ;280
 000168  d129              BNE      |L7.446|
 00016a  4837              LDR      r0,|L7.584|
-00016c  6800              LDR      r0,[r0,#0]            ;283  ; flashAddr
+00016c  6800              LDR      r0,[r0,#0]            ;282  ; flashAddr
 00016e  f7fffffe          BL       SoftErasePage
 000172  4836              LDR      r0,|L7.588|
-000174  7800              LDRB     r0,[r0,#0]            ;284  ; frameIndex
-000176  1e40              SUBS     r0,r0,#1              ;284
-000178  eb0710c0          ADD      r0,r7,r0,LSL #7       ;284
-00017c  b282              UXTH     r2,r0                 ;284
+000174  7800              LDRB     r0,[r0,#0]            ;283  ; frameIndex
+000176  1e40              SUBS     r0,r0,#1              ;283
+000178  eb0710c0          ADD      r0,r7,r0,LSL #7       ;283
+00017c  b282              UXTH     r2,r0                 ;283
 00017e  4934              LDR      r1,|L7.592|
 000180  4831              LDR      r0,|L7.584|
-000182  6800              LDR      r0,[r0,#0]            ;284  ; flashAddr
+000182  6800              LDR      r0,[r0,#0]            ;283  ; flashAddr
 000184  f7fffffe          BL       SoftProgramUpdate
 000188  4830              LDR      r0,|L7.588|
-00018a  7800              LDRB     r0,[r0,#0]            ;286  ; frameIndex
-00018c  1e40              SUBS     r0,r0,#1              ;286
-00018e  eb0712c0          ADD      r2,r7,r0,LSL #7       ;286
+00018a  7800              LDRB     r0,[r0,#0]            ;285  ; frameIndex
+00018c  1e40              SUBS     r0,r0,#1              ;285
+00018e  eb0712c0          ADD      r2,r7,r0,LSL #7       ;285
 000192  492f              LDR      r1,|L7.592|
 000194  482b              LDR      r0,|L7.580|
-000196  8800              LDRH     r0,[r0,#0]            ;286  ; fileCRC
+000196  8800              LDRH     r0,[r0,#0]            ;285  ; fileCRC
 000198  f7fffffe          BL       CRC_ComputeFile
 00019c  4929              LDR      r1,|L7.580|
-00019e  8008              STRH     r0,[r1,#0]            ;286
-0001a0  f44f6100          MOV      r1,#0x800             ;287
+00019e  8008              STRH     r0,[r1,#0]            ;285
+0001a0  f44f6100          MOV      r1,#0x800             ;286
 0001a4  482a              LDR      r0,|L7.592|
 0001a6  f7fffffe          BL       __aeabi_memclr
 0001aa  4828              LDR      r0,|L7.588|
-0001ac  7800              LDRB     r0,[r0,#0]            ;288  ; frameIndex
-0001ae  1e40              SUBS     r0,r0,#1              ;288
-0001b0  eb0710c0          ADD      r0,r7,r0,LSL #7       ;288
+0001ac  7800              LDRB     r0,[r0,#0]            ;287  ; frameIndex
+0001ae  1e40              SUBS     r0,r0,#1              ;287
+0001b0  eb0710c0          ADD      r0,r7,r0,LSL #7       ;287
 0001b4  4924              LDR      r1,|L7.584|
-0001b6  6809              LDR      r1,[r1,#0]            ;288  ; flashAddr
-0001b8  4408              ADD      r0,r0,r1              ;288
+0001b6  6809              LDR      r1,[r1,#0]            ;287  ; flashAddr
+0001b8  4408              ADD      r0,r0,r1              ;287
 0001ba  4923              LDR      r1,|L7.584|
-0001bc  6008              STR      r0,[r1,#0]            ;288  ; flashAddr
+0001bc  6008              STR      r0,[r1,#0]            ;287  ; flashAddr
                   |L7.446|
-0001be  f1090001          ADD      r0,r9,#1              ;263
-0001c2  fa1ff980          UXTH     r9,r0                 ;263
+0001be  f1090001          ADD      r0,r9,#1              ;262
+0001c2  fa1ff980          UXTH     r9,r0                 ;262
                   |L7.454|
-0001c6  45d1              CMP      r9,r10                ;263
+0001c6  45d1              CMP      r9,r10                ;262
 0001c8  f6ffaf7f          BLT      |L7.202|
 0001cc  481b              LDR      r0,|L7.572|
-0001ce  88c0              LDRH     r0,[r0,#6]            ;291  ; varOperation
-0001d0  42b0              CMP      r0,r6                 ;291
+0001ce  88c0              LDRH     r0,[r0,#6]            ;290  ; varOperation
+0001d0  42b0              CMP      r0,r6                 ;290
 0001d2  d129              BNE      |L7.552|
 0001d4  4819              LDR      r0,|L7.572|
-0001d6  8880              LDRH     r0,[r0,#4]            ;293  ; varOperation
+0001d6  8880              LDRH     r0,[r0,#4]            ;292  ; varOperation
 0001d8  491a              LDR      r1,|L7.580|
-0001da  8809              LDRH     r1,[r1,#0]            ;293  ; fileCRC
-0001dc  4288              CMP      r0,r1                 ;293
+0001da  8809              LDRH     r1,[r1,#0]            ;292  ; fileCRC
+0001dc  4288              CMP      r0,r1                 ;292
 0001de  d007              BEQ      |L7.496|
-0001e0  4620              MOV      r0,r4                 ;295
+0001e0  4620              MOV      r0,r4                 ;294
 0001e2  f7fffffe          BL       Mem_free
-0001e6  2000              MOVS     r0,#0                 ;296
+0001e6  2000              MOVS     r0,#0                 ;295
 0001e8  4914              LDR      r1,|L7.572|
-0001ea  f881002d          STRB     r0,[r1,#0x2d]         ;296
+0001ea  f881002d          STRB     r0,[r1,#0x2d]         ;295
 0001ee  e756              B        |L7.158|
                   |L7.496|
-0001f0  4620              MOV      r0,r4                 ;300
+0001f0  4620              MOV      r0,r4                 ;299
 0001f2  f7fffffe          BL       Mem_free
-0001f6  2001              MOVS     r0,#1                 ;301
+0001f6  2001              MOVS     r0,#1                 ;300
 0001f8  4916              LDR      r1,|L7.596|
-0001fa  7008              STRB     r0,[r1,#0]            ;301
+0001fa  7008              STRB     r0,[r1,#0]            ;300
 0001fc  4812              LDR      r0,|L7.584|
-0001fe  6800              LDR      r0,[r0,#0]            ;302  ; flashAddr
-000200  2101              MOVS     r1,#1                 ;302
-000202  eb0120d0          ADD      r0,r1,r0,LSR #11      ;302
+0001fe  6800              LDR      r0,[r0,#0]            ;301  ; flashAddr
+000200  2101              MOVS     r1,#1                 ;301
+000202  eb0120d0          ADD      r0,r1,r0,LSR #11      ;301
 000206  4913              LDR      r1,|L7.596|
-000208  80c8              STRH     r0,[r1,#6]            ;302
+000208  80c8              STRH     r0,[r1,#6]            ;301
 00020a  480f              LDR      r0,|L7.584|
-00020c  6800              LDR      r0,[r0,#0]            ;303  ; flashAddr
-00020e  60c8              STR      r0,[r1,#0xc]          ;303  ; sysUpdateVar
+00020c  6800              LDR      r0,[r0,#0]            ;302  ; flashAddr
+00020e  60c8              STR      r0,[r1,#0xc]          ;302  ; sysUpdateVar
 000210  480c              LDR      r0,|L7.580|
-000212  8800              LDRH     r0,[r0,#0]            ;304  ; fileCRC
-000214  8108              STRH     r0,[r1,#8]            ;304
+000212  8800              LDRH     r0,[r0,#0]            ;303  ; fileCRC
+000214  8108              STRH     r0,[r1,#8]            ;303
 000216  4809              LDR      r0,|L7.572|
-000218  8800              LDRH     r0,[r0,#0]            ;305  ; varOperation
-00021a  8088              STRH     r0,[r1,#4]            ;305
-00021c  4608              MOV      r0,r1                 ;307
+000218  8800              LDRH     r0,[r0,#0]            ;304  ; varOperation
+00021a  8088              STRH     r0,[r1,#4]            ;304
+00021c  4608              MOV      r0,r1                 ;306
 00021e  f7fffffe          BL       SbootParameterSaveToFlash
-000222  b671              CPSID    f                     ;309
+000222  b671              CPSID    f                     ;308
 000224  f7fffffe          BL       __NVIC_SystemReset
                   |L7.552|
-000228  1c70              ADDS     r0,r6,#1              ;312
+000228  1c70              ADDS     r0,r6,#1              ;311
 00022a  4905              LDR      r1,|L7.576|
-00022c  8008              STRH     r0,[r1,#0]            ;312
-00022e  4608              MOV      r0,r1                 ;313
-000230  8800              LDRH     r0,[r0,#0]            ;313  ; currentNum
+00022c  8008              STRH     r0,[r1,#0]            ;311
+00022e  4608              MOV      r0,r1                 ;312
+000230  8800              LDRH     r0,[r0,#0]            ;312  ; currentNum
 000232  f7fffffe          BL       SendFrameNum
                   |L7.566|
 000236  bf00              NOP      
 000238  e731              B        |L7.158|
-;;;316    
+;;;315    static void SendConfigNum(uint16_t cmd)
                           ENDP
 
 00023a  0000              DCW      0x0000
@@ -2478,7 +2501,7 @@
 
                   RecvLoginDatDeal PROC
 ;;;122    
-;;;123    static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
+;;;123    static void RecvLoginDatDeal(uint8_t* ptr)      //对服务器回复的登录报文进行解析
 000000  e92d43f8          PUSH     {r3-r9,lr}
 ;;;124    {
 000004  4604              MOV      r4,r0
@@ -2722,22 +2745,21 @@
 0001a4  f7fffffe          BL       OSSemPost
                   |L8.424|
 ;;;189    	}
-;;;190    	
-;;;191    //todo:IP更改，后期会有需要
-;;;192    //	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
-;;;193    //	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
-;;;194    //	{
-;;;195    //		memset(varOperation.ipAddr,0,18);//将原始IP清零
-;;;196    //		memcpy(varOperation.ipAddr,varOperation.newIP_Addr,18);//新IP
-;;;197    //		varOperation.ipPotr = varOperation.newIP_Potr;         //新端口
-;;;198    //		varOperation.isDataFlow = 1; //停止数据流
-;;;199    //		OSSemPend(sendMsg,0,&ipLen);//等待CDMA发送空闲，不能在其发送数据的时候，重新TCP连接
-;;;200    //		
-;;;201    //		CDMASendCmd((const uint8_t*)"AT+ZIPCLOSE=0\r","ZIPCLOSE",sizeof("AT+ZIPCLOSE=0\r"));//关闭TCP连接
-;;;202    //	}
-;;;203    }
+;;;190    	//todo:IP更改，后期会有需要
+;;;191    //	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
+;;;192    //	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
+;;;193    //	{
+;;;194    //		memset(varOperation.ipAddr,0,18);//将原始IP清零
+;;;195    //		memcpy(varOperation.ipAddr,varOperation.newIP_Addr,18);//新IP
+;;;196    //		varOperation.ipPotr = varOperation.newIP_Potr;         //新端口
+;;;197    //		varOperation.isDataFlow = 1; //停止数据流
+;;;198    //		OSSemPend(sendMsg,0,&ipLen);//等待CDMA发送空闲，不能在其发送数据的时候，重新TCP连接
+;;;199    //		
+;;;200    //		CDMASendCmd((const uint8_t*)"AT+ZIPCLOSE=0\r","ZIPCLOSE",sizeof("AT+ZIPCLOSE=0\r"));//关闭TCP连接
+;;;201    //	}
+;;;202    }
 0001a8  e8bd83f8          POP      {r3-r9,pc}
-;;;204    static void SendFrameNum(uint16_t frameNum)
+;;;203    static void SendFrameNum(uint16_t frameNum)
                           ENDP
 
                   |L8.428|
@@ -2760,39 +2782,39 @@
                           AREA ||i.SendConfigNum||, CODE, READONLY, ALIGN=2
 
                   SendConfigNum PROC
-;;;317    
-;;;318    static void SendConfigNum(uint16_t cmd)
+;;;314    }
+;;;315    static void SendConfigNum(uint16_t cmd)
 000000  b570              PUSH     {r4-r6,lr}
-;;;319    {
+;;;316    {
 000002  4605              MOV      r5,r0
-;;;320    	_CDMADataToSend* otaUpdatSend;
-;;;321    	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
+;;;317    	_CDMADataToSend* otaUpdatSend;
+;;;318    	otaUpdatSend = CDMNSendInfoInit(60);//升级请求帧
 000004  203c              MOVS     r0,#0x3c
 000006  f7fffffe          BL       CDMNSendInfoInit
 00000a  4604              MOV      r4,r0
-;;;322    
-;;;323    	otaUpdatSend->data[otaUpdatSend->datLength++] = 7;   //长度
+;;;319    
+;;;320    	otaUpdatSend->data[otaUpdatSend->datLength++] = 7;   //长度
 00000c  2107              MOVS     r1,#7
 00000e  8822              LDRH     r2,[r4,#0]
 000010  1c50              ADDS     r0,r2,#1
 000012  8020              STRH     r0,[r4,#0]
 000014  6860              LDR      r0,[r4,#4]
 000016  5481              STRB     r1,[r0,r2]
-;;;324    	otaUpdatSend->data[otaUpdatSend->datLength++] = (cmd>>8) &0x00FF;
+;;;321    	otaUpdatSend->data[otaUpdatSend->datLength++] = (cmd>>8) &0x00FF;
 000018  0a29              LSRS     r1,r5,#8
 00001a  8822              LDRH     r2,[r4,#0]
 00001c  1c50              ADDS     r0,r2,#1
 00001e  8020              STRH     r0,[r4,#0]
 000020  6860              LDR      r0,[r4,#4]
 000022  5481              STRB     r1,[r0,r2]
-;;;325    	otaUpdatSend->data[otaUpdatSend->datLength++] = cmd &0x00FF;
+;;;322    	otaUpdatSend->data[otaUpdatSend->datLength++] = cmd &0x00FF;
 000024  8822              LDRH     r2,[r4,#0]
 000026  1c50              ADDS     r0,r2,#1
 000028  8020              STRH     r0,[r4,#0]
 00002a  6860              LDR      r0,[r4,#4]
 00002c  5485              STRB     r5,[r0,r2]
-;;;326    	//请求升级的版本
-;;;327    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 24) & 0x00FF;
+;;;323    	//请求升级的版本
+;;;324    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 24) & 0x00FF;
 00002e  4817              LDR      r0,|L9.140|
 000030  f8d0007e          LDR      r0,[r0,#0x7e]  ; varOperation
 000034  0e00              LSRS     r0,r0,#24
@@ -2801,7 +2823,7 @@
 00003a  8021              STRH     r1,[r4,#0]
 00003c  6861              LDR      r1,[r4,#4]
 00003e  5488              STRB     r0,[r1,r2]
-;;;328    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 16) & 0x00FF;
+;;;325    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 16) & 0x00FF;
 000040  4812              LDR      r0,|L9.140|
 000042  f8d0007e          LDR      r0,[r0,#0x7e]  ; varOperation
 000046  f3c04107          UBFX     r1,r0,#16,#8
@@ -2810,7 +2832,7 @@
 00004e  8020              STRH     r0,[r4,#0]
 000050  6860              LDR      r0,[r4,#4]
 000052  5481              STRB     r1,[r0,r2]
-;;;329    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 8) & 0x00FF;
+;;;326    	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 8) & 0x00FF;
 000054  480d              LDR      r0,|L9.140|
 000056  f8b0007e          LDRH     r0,[r0,#0x7e]  ; varOperation
 00005a  f3c02107          UBFX     r1,r0,#8,#8
@@ -2819,7 +2841,7 @@
 000062  8020              STRH     r0,[r4,#0]
 000064  6860              LDR      r0,[r4,#4]
 000066  5481              STRB     r1,[r0,r2]
-;;;330    	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newPIDVersion & 0x00FF;
+;;;327    	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newPIDVersion & 0x00FF;
 000068  4808              LDR      r0,|L9.140|
 00006a  f890107e          LDRB     r1,[r0,#0x7e]  ; varOperation
 00006e  8822              LDRH     r2,[r4,#0]
@@ -2827,19 +2849,19 @@
 000072  8020              STRH     r0,[r4,#0]
 000074  6860              LDR      r0,[r4,#4]
 000076  5481              STRB     r1,[r0,r2]
-;;;331    	
-;;;332    	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
+;;;328    	
+;;;329    	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
 000078  4620              MOV      r0,r4
 00007a  f7fffffe          BL       CDMASendDataPack
-;;;333    	
-;;;334    	OSQPost(CDMASendQ,otaUpdatSend);
+;;;330    	
+;;;331    	OSQPost(CDMASendQ,otaUpdatSend);
 00007e  4621              MOV      r1,r4
 000080  4803              LDR      r0,|L9.144|
 000082  6800              LDR      r0,[r0,#0]  ; CDMASendQ
 000084  f7fffffe          BL       OSQPost
-;;;335    }
+;;;332    }
 000088  bd70              POP      {r4-r6,pc}
-;;;336    static void ConfigUpdata(uint8_t* ptrDeal )
+;;;333    static void ConfigUpdata(uint8_t* ptrDeal )
                           ENDP
 
 00008a  0000              DCW      0x0000
@@ -2851,49 +2873,49 @@
                           AREA ||i.SendFrameNum||, CODE, READONLY, ALIGN=2
 
                   SendFrameNum PROC
-;;;203    }
-;;;204    static void SendFrameNum(uint16_t frameNum)
+;;;202    }
+;;;203    static void SendFrameNum(uint16_t frameNum)
 000000  b570              PUSH     {r4-r6,lr}
-;;;205    {
+;;;204    {
 000002  4605              MOV      r5,r0
-;;;206    	_CDMADataToSend* otaUpdatSend;
-;;;207    	otaUpdatSend = CDMNSendInfoInit(60);//
+;;;205    	_CDMADataToSend* otaUpdatSend;
+;;;206    	otaUpdatSend = CDMNSendInfoInit(60);//
 000004  203c              MOVS     r0,#0x3c
 000006  f7fffffe          BL       CDMNSendInfoInit
 00000a  4604              MOV      r4,r0
-;;;208    	otaUpdatSend->data[otaUpdatSend->datLength++] =  3;   //长度
+;;;207    	otaUpdatSend->data[otaUpdatSend->datLength++] =  3;     //长度
 00000c  2103              MOVS     r1,#3
 00000e  8822              LDRH     r2,[r4,#0]
 000010  1c50              ADDS     r0,r2,#1
 000012  8020              STRH     r0,[r4,#0]
 000014  6860              LDR      r0,[r4,#4]
 000016  5481              STRB     r1,[r0,r2]
-;;;209    	otaUpdatSend->data[otaUpdatSend->datLength++] = (frameNum >> 8) &0x00FF;
+;;;208    	otaUpdatSend->data[otaUpdatSend->datLength++] = (frameNum >> 8) &0x00FF;
 000018  0a29              LSRS     r1,r5,#8
 00001a  8822              LDRH     r2,[r4,#0]
 00001c  1c50              ADDS     r0,r2,#1
 00001e  8020              STRH     r0,[r4,#0]
 000020  6860              LDR      r0,[r4,#4]
 000022  5481              STRB     r1,[r0,r2]
-;;;210    	otaUpdatSend->data[otaUpdatSend->datLength++] = frameNum & 0x00FF;
+;;;209    	otaUpdatSend->data[otaUpdatSend->datLength++] = frameNum & 0x00FF;
 000024  8822              LDRH     r2,[r4,#0]
 000026  1c50              ADDS     r0,r2,#1
 000028  8020              STRH     r0,[r4,#0]
 00002a  6860              LDR      r0,[r4,#4]
 00002c  5485              STRB     r5,[r0,r2]
-;;;211    	
-;;;212    	CDMASendDataPack(otaUpdatSend);//将程序请求帧进行封包
+;;;210    	
+;;;211    	CDMASendDataPack(otaUpdatSend);//将程序请求帧进行封包
 00002e  4620              MOV      r0,r4
 000030  f7fffffe          BL       CDMASendDataPack
-;;;213    	
-;;;214    	OSQPost(CDMASendQ,otaUpdatSend);
+;;;212    	
+;;;213    	OSQPost(CDMASendQ,otaUpdatSend);
 000034  4621              MOV      r1,r4
 000036  4802              LDR      r0,|L10.64|
 000038  6800              LDR      r0,[r0,#0]  ; CDMASendQ
 00003a  f7fffffe          BL       OSQPost
-;;;215    }
+;;;214    }
 00003e  bd70              POP      {r4-r6,pc}
-;;;216    uint8_t updateBuff[2048];       //升级用
+;;;215    uint8_t updateBuff[2048];       //升级用
                           ENDP
 
                   |L10.64|
@@ -2903,43 +2925,43 @@
 
                   SendPidCmdData PROC
 ;;;110    
-;;;526    static void SendPidCmdData(uint8_t* cmdData)
+;;;523    void SendPidCmdData(uint8_t* cmdData)
 000000  b570              PUSH     {r4-r6,lr}
-;;;527    {
+;;;524    {
 000002  4605              MOV      r5,r0
-;;;528    	_CDMADataToSend* cmdPidSend;
-;;;529    	cmdPidSend = CDMNSendInfoInit(60);//
+;;;525    	_CDMADataToSend* cmdPidSend;
+;;;526    	cmdPidSend = CDMNSendInfoInit(60);//
 000004  203c              MOVS     r0,#0x3c
 000006  f7fffffe          BL       CDMNSendInfoInit
 00000a  4604              MOV      r4,r0
-;;;530    	memcpy(&cmdPidSend->data[cmdPidSend->datLength],cmdData,cmdData[0]);
+;;;527    	memcpy(&cmdPidSend->data[cmdPidSend->datLength],cmdData,cmdData[0]);
 00000c  6861              LDR      r1,[r4,#4]
 00000e  8823              LDRH     r3,[r4,#0]
 000010  18c8              ADDS     r0,r1,r3
 000012  782a              LDRB     r2,[r5,#0]
 000014  4629              MOV      r1,r5
 000016  f7fffffe          BL       __aeabi_memcpy
-;;;531    	cmdPidSend->datLength += cmdData[0];
+;;;528    	cmdPidSend->datLength += cmdData[0];
 00001a  8820              LDRH     r0,[r4,#0]
 00001c  7829              LDRB     r1,[r5,#0]
 00001e  4408              ADD      r0,r0,r1
 000020  8020              STRH     r0,[r4,#0]
-;;;532    
-;;;533    	CDMASendDataPack(cmdPidSend);//将程序请求帧进行封包
+;;;529    
+;;;530    	CDMASendDataPack(cmdPidSend);     //将程序请求帧进行封包
 000022  4620              MOV      r0,r4
 000024  f7fffffe          BL       CDMASendDataPack
-;;;534    	
-;;;535    	OSQPost(CDMASendQ,cmdPidSend);
+;;;531    	
+;;;532    	OSQPost(CDMASendQ,cmdPidSend);
 000028  4621              MOV      r1,r4
 00002a  4804              LDR      r0,|L11.60|
 00002c  6800              LDR      r0,[r0,#0]  ; CDMASendQ
 00002e  f7fffffe          BL       OSQPost
-;;;536    	Mem_free(cmdData);
+;;;533    	Mem_free(cmdData);
 000032  4628              MOV      r0,r5
 000034  f7fffffe          BL       Mem_free
-;;;537    }
+;;;534    }
 000038  bd70              POP      {r4-r6,pc}
-;;;538    extern uint8_t pidManyBag[8];
+;;;535    extern uint8_t pidManyBag[8];
                           ENDP
 
 00003a  0000              DCW      0x0000

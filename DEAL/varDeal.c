@@ -53,7 +53,7 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	varOperation.sendId++;
 	
 	memcpy(ptr->data,pHead,sizeof(_PROTOCOL_HEAD));
-	Mem_free(pHead);                                  //申请的内存块，用完一定要释放啊
+	Mem_free(pHead);                                 //申请的内存块，用完一定要释放啊
 	
 	crc = CRC_Compute16(&ptr->data[1],ptr->datLength-1);
 	
@@ -62,14 +62,13 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	ptr->data[ptr->datLength++] = 0x7E;
 }
 
-
 /***********************************************************************************/
-#if 1
-const uint8_t ipAddr[] = "116.228.88.101"; //本地：116.228.88.101  29999 
-#define IP_Port          29999            //端口号
+#if 1                //1 - 本地    0 - 外网
+const uint8_t ipAddr[] = "116.228.90.118"; //本地：116.228.88.101  29999 
+#define IP_Port          30020             //端口号
 #else
 const uint8_t ipAddr[] = "116.62.195.99";  //todo: 后期是域名解析 外网：116.62.195.99   9998
-#define IP_Port          9998             //端口号 9998 6556
+#define IP_Port          9998              //端口号 9998 6556
 #endif
 /***********************************************************************************/
 

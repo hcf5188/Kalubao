@@ -247,6 +247,7 @@ void CDMASendDataPack(_CDMADataToSend* ptr);       //对将要发送的数据进行打包
 uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal); //对接收到的数据包进行解析，并返回有效数据
 void GlobalVarInit(void );                         //全局变量初始化
 void LoginDataSend(void);                          //登录报文
+void SendPidCmdData(uint8_t* cmdData);
 void LogReport(char* fmt,...);                     //上传日志文件
 void MemLog(_CDMADataToSend* ptr);                 //内存使用的日志文件
 

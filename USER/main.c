@@ -32,7 +32,7 @@ OS_EVENT * USBRecieveQ;           //USB  接收消息队列的指针
 #define ZIPRECVBUF_SIZE   5         //RECV接收消息队列保存消息的最大量
 #define GPSRECBUF_SIZE    10        //接收GPS消息队列保存消息的最大量
 #define CANRECBUF_SIZE    20        //CAN接收消息队列保存消息的最大量
-#define CANSENDBUF_SIZE   390       //CAN发送消息队列保存消息的最大量
+#define CANSENDBUF_SIZE   350       //CAN发送消息队列保存消息的最大量
 #define CANJ1939BUF_SIZE  20        //CAN接收J1939消息队列保存消息的最大量
 #define USBRECBUF_SIZE    10        //接收消息队列保存消息的最大量
 #define USBSENDBUF_SIZE   5         //发送消息队列保存消息的最大量
@@ -121,8 +121,8 @@ int main(void )
 
 /****************************************************************
 *			void StartTask(void *pdata)
-* 描	述 : 起始初始化任务，负责创建任务、任务间通信、CAN PID扫描、向CDMA上报数据 		
-* 输入参数  : 无
+* 描    述 : 起始初始化任务，负责创建任务、任务间通信、CAN PID扫描、向CDMA上报数据 		
+* 输入参数 ： 无
 * 返 回 值 : int
 ****************************************************************/
 #define SEND_MAX_TIME  3000              //3000ms计时时间到，则发送数据
@@ -140,13 +140,13 @@ void StartTask(void *pdata)
 	
 	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
 	cdmaLogData    = Store_Init(1000);
-	if(varOperation.USB_NormalMode == 1)//USB 升级模式
+	if(varOperation.USB_NormalMode == 1)    //USB 升级模式
 	{
 		USBRecieveQ = OSQCreate(&usbRecBuf[0],USBRECBUF_SIZE);  //建立USB接收 消息队列
 		USBSendQ    = OSQCreate(&usbSendBuf[0],USBSENDBUF_SIZE);//建立USB发送 消息队列
 		
 		OSTaskCreate(USBUpdataTask,(void *)0,(OS_STK*)&USB_TASK_STK[USB_STK_SIZE-1],USB_TASK_PRIO);
-		OSTaskSuspend(OS_PRIO_SELF);//挂起起始任务
+		OSTaskSuspend(OS_PRIO_SELF);    //挂起起始任务
 	}else
 	{
 		OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
@@ -203,7 +203,7 @@ void StartTask(void *pdata)
 		{
 			LoginDataSend(); 
 		}
-		if(varOperation.canTest == 2 && varOperation.pidTset == 0 && varOperation.strengthRun == 0)   //CAN的波特率和ID均已确定
+		if(varOperation.canTest == 2 && varOperation.pidTset == 0 && varOperation.strengthRun == 0 && varOperation.pidNum != 0xFFFF)   //CAN的波特率和ID均已确定
 		{
 			for(i=0;i<varOperation.pidNum;i++)//PID指令的数目
 			{

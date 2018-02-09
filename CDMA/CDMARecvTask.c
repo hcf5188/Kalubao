@@ -120,7 +120,7 @@ static void GetConfigInfo(void)
 	OSQPost(CDMASendQ,otaUpdatSend);
 }
 
-static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
+static void RecvLoginDatDeal(uint8_t* ptr)      //对服务器回复的登录报文进行解析
 {
 	uint16_t cmdId = 0;
 	uint8_t  ipLen = 0;
@@ -187,8 +187,7 @@ static void RecvLoginDatDeal(uint8_t* ptr)//对服务器回复的登录报文进行解析
 		if(OSSemAccept(LoginMes) == 0)
 			OSSemPost(LoginMes);
 	}
-	
-//todo:IP更改，后期会有需要
+	//todo:IP更改，后期会有需要
 //	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
 //	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
 //	{
@@ -205,7 +204,7 @@ static void SendFrameNum(uint16_t frameNum)
 {
 	_CDMADataToSend* otaUpdatSend;
 	otaUpdatSend = CDMNSendInfoInit(60);//
-	otaUpdatSend->data[otaUpdatSend->datLength++] =  3;   //长度
+	otaUpdatSend->data[otaUpdatSend->datLength++] =  3;     //长度
 	otaUpdatSend->data[otaUpdatSend->datLength++] = (frameNum >> 8) &0x00FF;
 	otaUpdatSend->data[otaUpdatSend->datLength++] = frameNum & 0x00FF;
 	
@@ -299,7 +298,7 @@ static void OTA_Updata(uint8_t* ptrDeal)
 			}
 			Mem_free(ptrDeal);
 			sysUpdateVar.isSoftUpdate = 1;      //告诉Sboot,程序需要升级
-			sysUpdateVar.pageNum      = flashAddr/0x800 + 1;
+			sysUpdateVar.pageNum      = flashAddr / 0x800 + 1;
 			sysUpdateVar.softByteSize = flashAddr;
 			sysUpdateVar.newSoftCRC   = fileCRC;
 			sysUpdateVar.newSoftVer   = varOperation.newSoftVersion;
@@ -313,8 +312,6 @@ static void OTA_Updata(uint8_t* ptrDeal)
 		SendFrameNum(currentNum);//请求下一帧数据；
 	}
 }
-
-
 static void SendConfigNum(uint16_t cmd)
 {
 	_CDMADataToSend* otaUpdatSend;
@@ -523,14 +520,14 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 	}
 }
 #include "obd.h"
-static void SendPidCmdData(uint8_t* cmdData)
+void SendPidCmdData(uint8_t* cmdData)
 {
 	_CDMADataToSend* cmdPidSend;
 	cmdPidSend = CDMNSendInfoInit(60);//
 	memcpy(&cmdPidSend->data[cmdPidSend->datLength],cmdData,cmdData[0]);
 	cmdPidSend->datLength += cmdData[0];
 
-	CDMASendDataPack(cmdPidSend);//将程序请求帧进行封包
+	CDMASendDataPack(cmdPidSend);     //将程序请求帧进行封包
 	
 	OSQPost(CDMASendQ,cmdPidSend);
 	Mem_free(cmdData);
@@ -686,18 +683,18 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
 extern uint8_t strengPower[300];
 static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切换
 {
-	uint16_t offset = 5;
-	uint8_t* ptrMode;
-	uint16_t newCRC = 0,nowCRC = 0;
+	uint16_t offset  = 5;
+	uint8_t* ptrMode = NULL;
+	uint16_t newCRC  = 0,nowCRC = 0;
 	
 	
-	memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16); //版本号
+	memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16);  //版本号
 	offset += 16;
-	memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5);//读取喷油量的地址
+	memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5); //读取喷油量的地址
 	offset += 5;
-	memcpy(strengthFuel.mask,&ptrDeal[offset],4); //安全算法掩码
+	memcpy(strengthFuel.mask,&ptrDeal[offset],4);     //安全算法掩码
 	offset += 4;
-	strengthFuel.coe = ptrDeal[offset];           //提升动力的系数
+	strengthFuel.coe = ptrDeal[offset];               //提升动力的系数
 	offset ++;
 	memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
 	offset += 8;
@@ -709,14 +706,15 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	offset += 8;
 	strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
 	
-	
-	ptrMode = Mem_malloc(5);  //
-	ptrMode[0] = 4;           //长度
-	ptrMode[1] = 0x50;
-	ptrMode[2] = 0x15;
-	ptrMode[3] = strengthFuel.coe;
-	SendPidCmdData(ptrMode);
-	
+	if(strengthFuel.coe == strengthFuelFlash.coe)
+	{
+		ptrMode = Mem_malloc(5);  //
+		ptrMode[0] = 4;           //长度
+		ptrMode[1] = 0x50;
+		ptrMode[2] = 0x15;
+		ptrMode[3] = strengthFuel.coe;
+		SendPidCmdData(ptrMode);
+	}
 	Mem_free(ptrMode);
 	Mem_free(ptrDeal);
 	
@@ -761,15 +759,15 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	memcpy(strengthFuelFlash.ecuVer,strengthFuel.ecuVer,16);   //版本号
 	memcpy(strengthFuelFlash.fuelAddr,strengthFuel.fuelAddr,5);//读取喷油量的地址
 	memcpy(strengthFuelFlash.mask,strengthFuel.mask,4);        //安全算法掩码
-	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //安全算法cmd 1
-	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //安全算法cmd 2
+	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //安全算法 cmd 1
+	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //安全算法 cmd 2
 	memcpy(strengthFuelFlash.mode1,strengthFuel.mode1,8);      //模式 cmd 1
 	memcpy(strengthFuelFlash.mode2,strengthFuel.mode2,8);      //模式 cmd 2
 	strengthFuelFlash.modeOrder = strengthFuel.modeOrder;      //模式指令与安全算法执行的顺序
-
-//	strengPower[0] = 0x00;
-//	SoftErasePage(STRENGE_Q);
-//	Save2KDataToFlash(strengPower,STRENGE_Q,200);
+	
+	memset(strengPower,0,200);                    //清空Flash保存的喷油量的值
+	SoftErasePage(STRENGE_Q);
+	Save2KDataToFlash(strengPower,STRENGE_Q,200);
 	
 	__disable_fault_irq();                    //重启
 	NVIC_SystemReset();

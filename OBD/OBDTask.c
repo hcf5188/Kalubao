@@ -20,7 +20,6 @@ void OBDTask(void *pdata)
 	CanRxMsg* CAN1_RxMsg;        //指向接收到的OBD信息
 	uint8_t * can1_Txbuff;       //指向要发送的OBD信息
 	uint8_t * ptrSaveBuff;       //
-	varOperation.canTest = 2; 
 	CAN1Config();                //CAN 配置
 	OSTimeDlyHMSM(0,0,10,4);     
 	TestServer();                //测试服务器
@@ -53,6 +52,7 @@ void OBDTask(void *pdata)
 					ptrSaveBuff[0] = CAN1_RxMsg -> Data[1] + 3;
 					ptrSaveBuff[1] = 0x60;
 					ptrSaveBuff[2] = cmdNum;
+				
 					memcpy(&ptrSaveBuff[3],&CAN1_RxMsg->Data[2],6);
 					cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6) % 7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
 					Mem_free(CAN1_RxMsg);
@@ -292,6 +292,7 @@ void CANTestChannel(void)
 idOK:
 	varOperation.canTest = 0;//不再获取 PID 信息
 	varOperation.isStrenOilOK = 0;//一旦进入自识别，就不能再进行动力提升
+	
 	return;
 }
 extern VARConfig* ptrPIDVars;//指向第二配置区

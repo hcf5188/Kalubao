@@ -10,8 +10,8 @@
 
 //安全算法
 extern uint8_t strengPower[100];
-long ecuMask = 0;//需要知道 ECU 掩码
-void SeedToKey(uint8_t* seed, uint8_t* key)
+long   ecuMask = 0;//需要知道 ECU 掩码
+void   SeedToKey(uint8_t* seed, uint8_t* key)
 {
 	uint8_t i;
 	longToUchar seedlokal;
@@ -24,7 +24,7 @@ void SeedToKey(uint8_t* seed, uint8_t* key)
 	{
 		if(seedlokal.dword & 0x80000000)
 		{
-			seedlokal.dword = seedlokal.dword<<1;
+			seedlokal.dword = seedlokal.dword << 1;
 			seedlokal.dword = seedlokal.dword ^ mask;
 		}else
 			seedlokal.dword=seedlokal.dword<<1;
@@ -33,10 +33,6 @@ void SeedToKey(uint8_t* seed, uint8_t* key)
 		key[3 - i] = seedlokal.byte[i];
 	return;   
 }
-//uint8_t safe1[8] = {0x02,0x27,0x09,0x00,0x00,0x00,0x00,0x00};//安全算法指令1
-//uint8_t safe2[8] = {0x06,0x27,0x0A,0x00,0x00,0x00,0x00,0xAA};//安全算法指令2
-//uint8_t safe3[8] = {0x03,0x10,0x86,0xA7,0x00,0x00,0x00,0x00};//过模式指令
-//uint8_t safe4[8] = {0x03,0x80,0x90,0x01,0x00,0x00,0x00,0x00};//进入功能模式指令
 
 //安全算法测试
 extern CAN1DataToSend  dataToSend; 
@@ -135,7 +131,7 @@ void SafeALG(void)
 		for(i = 0;i < strengPower[1];i++)
 		{
 			datToWrite = strengPower[i*2+3];
-			datToWrite = (datToWrite<<8) + strengPower[i*2+2];
+			datToWrite = (datToWrite<<8) + strengPower[i * 2 + 2];
 			if(strengthFuel.coe >= 0)
 				datToWrite += datToWrite * coe / 100;
 			else
@@ -144,11 +140,11 @@ void SafeALG(void)
 				datToWrite -= datToWrite * coe/100;
 			}
 			if(offset % 8 == 0)
-				cmdToSend[offset++] = pNum++;
+				cmdToSend[offset++] = pNum ++;
 			cmdToSend[offset++]	= datToWrite & 0xFF;
 			if(offset % 8 == 0)
-				cmdToSend[offset++] = pNum++;
-			cmdToSend[offset++]	= (datToWrite>>8) & 0xFF;
+				cmdToSend[offset++] = pNum ++;
+			cmdToSend[offset++]	= (datToWrite >> 8) & 0xFF;
 		}
 	}else if(strengthFuelFlash.modeOrder == 2)
 	{
@@ -207,13 +203,20 @@ void SafeALG(void)
 	}else
 	{
 		LogReport("\r\n16-Strength Success.");//增强动力成功
+		
 		strengthFuelFlash.coe = strengthFuel.coe;
+		seed = Mem_malloc(5);  //
+		seed[0] = 4;           //长度
+		seed[1] = 0x50;
+		seed[2] = 0x15;
+		seed[3] = strengthFuel.coe;
+		SendPidCmdData(seed);
 		varOperation.oilMode = 1;
+		Mem_free(seed);
 	}
 	Mem_free(CAN1_RxMsg);
 	Mem_free(cmdToSend);
 }
-
 
 uint8_t verMany[8]  = {0x30,0x00,0x00,0x00,0x00,0x00,0x00,0x00};//多包
 
@@ -223,7 +226,7 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 	uint8_t* ptrVer;
 	uint8_t cmdLen = 0;
 	CanRxMsg* CAN1_RxMsg;
-	
+	uint8_t * carChange = NULL;
 	ptrVer = Mem_malloc(60);
 
 	dataToSend.pdat   = cmd;
@@ -286,55 +289,75 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 		return 0;
 	}else
 	{
-		varOperation.isStrenOilOK = 0;   //不可以进行动力提升
+		varOperation.isStrenOilOK = 0;   //配置文件的版本号与实际ECU的版本号不同，则不可以进行动力提升
+		memset(strengPower,0,200);       //清空Flash保存的喷油量的值
+		SoftErasePage(STRENGE_Q);
+		Save2KDataToFlash(strengPower,STRENGE_Q,200);
+		
+		carChange = Mem_malloc(5);  //
+		carChange[0] = 3;           //长度
+		carChange[1] = 0x50;
+		carChange[2] = 0x19;
+		SendPidCmdData(carChange);
+		Mem_free(carChange);
+		LogReport("\r\nCar changed!!!");                       //可能换车了
 		LogReport("\r\n21-ECUVer Mismatching;");
-		return 100;//版本号读取出来了，还没有匹配的提升动力版本号
+		return 100;                      //版本号读取出来了，还没有匹配的提升动力版本号
 	}
 }
 void Get_Q_FromECU(void)
 {
-	
 	CanRxMsg* CAN1_RxMsg;
-	uint8_t*  textEcu;
-	
+	uint8_t * textEcu;
+	uint8_t * qBuff;
 	uint8_t  i,err;
 	uint16_t dat1,dat2,datFlash;
 	uint8_t  qNum = 0;
 	uint32_t d_Value = 0;
-	
+	uint8_t bili1 = 0;
+	uint8_t bili2 = 0;
+	uint8_t fuhao1 = 0;
+	uint8_t fuhao2 = 0;
+	uint8_t * carChange = NULL;
+	qBuff = Mem_malloc(100);
 	textEcu = Mem_malloc(8);
+	
 	memset(textEcu,0,8);
-
 	if(strengthFuelFlash.modeOrder == 1)
 	{
 		textEcu[0] = 0x05;textEcu[1] = 0x23;
 		memcpy(&textEcu[2],&strengthFuelFlash.fuelAddr[1],strengthFuelFlash.fuelAddr[0]);
-		textEcu[5] = 0x02;                  //02 代表的是数据长度是2个字节
+		textEcu[5] = 0x02;                       //02 代表的是数据长度是2个字节
 	}else if(strengthFuelFlash.modeOrder == 2)
 	{
 		textEcu[0] = 0x07;textEcu[1] = 0x23;
 		memcpy(&textEcu[2],&strengthFuelFlash.fuelAddr[1],strengthFuelFlash.fuelAddr[0]);
-		textEcu[6] = 0x00;textEcu[7] = 0x02;//02 代表的是数据长度是2个字节
+		textEcu[6] = 0x00;textEcu[7] = 0x02;     //02 代表的是数据长度是2个字节
 	}else
 	{
 		LogReport("Service mode Error!");
 		return;
 	}
-	
 	dataToSend.pdat  = textEcu;
 	OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat); 
 	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);
 	if(err == OS_ERR_NONE)
 	{
-		qNum = CAN1_RxMsg -> Data[2];                               //得到喷油量的个数
-		if(strengPower[1] != qNum)
+		qNum = CAN1_RxMsg -> Data[2];               //得到喷油量的个数
+		if(strengPower[1] != qNum)//如果保存的ECU 喷油量的个数
 		{
 			strengPower[0] = 0;
 			strengPower[1] = qNum;
+			carChange = Mem_malloc(5);  //
+			carChange[0] = 3;           //长度
+			carChange[1] = 0x50;
+			carChange[2] = 0x19;
+			SendPidCmdData(carChange);
+			Mem_free(carChange);
 		}
 		if(strengthFuelFlash.modeOrder == 1)
 		{
-			dat1 = textEcu[3];                                        //用于辨别地址是否累加>0xFF,若是，则高地址自增
+			dat1 = textEcu[3];                      //用于辨别地址是否累加>0xFF,若是，则高地址自增
 			dat2 = textEcu[4] + qNum * 2;
 			if(dat2 >= 256)
 				dat1 ++;
@@ -342,7 +365,7 @@ void Get_Q_FromECU(void)
 			textEcu[4] += (qNum * 2 + 2);
 		}else if(strengthFuelFlash.modeOrder == 2)
 		{
-			dat1 = textEcu[4];                                        //用于辨别地址是否累加>0xFF,若是，则高地址自增
+			dat1 = textEcu[4];                      //用于辨别地址是否累加>0xFF,若是，则高地址自增
 			dat2 = textEcu[5] + qNum * 2;
 			if(dat2 >= 256)
 				dat1 ++;
@@ -361,35 +384,12 @@ void Get_Q_FromECU(void)
 				dat1 = CAN1_RxMsg -> Data[3];
 				dat1 = (dat1 << 8) + CAN1_RxMsg->Data[2];
 				Mem_free(CAN1_RxMsg);
-				if(strengPower[0] != 0xAF)        //Flash 中有没有保存第一次值
-				{
-					strengPower[i*2 + 2] = dat1 & 0xFF;
-					strengPower[i*2 + 3] = (dat1 >> 8) & 0xFF;
-				}else                             //得到当前喷油量的系数
-				{
-					datFlash = strengPower[i * 2 + 3];
-					datFlash = (datFlash << 8) + strengPower[i*2 + 2];
-					d_Value = datFlash > dat1 ? datFlash - dat1:dat1 - datFlash;
-					d_Value = d_Value * 100 / datFlash;
-					strengthFuelFlash.coe = d_Value;   //得到当前喷油量的百分比
-					strengthFuelFlash.coe = datFlash > dat1? -strengthFuelFlash.coe:strengthFuelFlash.coe;
-					strengthFuel.coe = strengthFuelFlash.coe;
-					varOperation.isStrenOilOK = 1;     //可以进行动力提升
-					break;
-				}
+				qBuff[i*2] = dat1 & 0xFF;
+				qBuff[i*2 + 1] = (dat1 >> 8) & 0xFF;
 			}else{
 				LogReport("PenYou Read Wrong!!!");
 				break;
 			}	
-			if(strengPower[0] != 0xAF && i == (qNum - 1))
-			{
-				strengPower[0] = 0xAF;
-				SoftErasePage(STRENGE_Q);
-				Save2KDataToFlash(strengPower,STRENGE_Q,200);      //将原始值保存到Flash
-				LogReport("PenYou Write to Flash OK!!!");
-				varOperation.isStrenOilOK = 1;                     //可以进行动力提升
-				strengthFuelFlash.coe = 0;
-			}
 			if(strengthFuelFlash.modeOrder == 1)
 			{
 				textEcu[4]     += 2;      //读取地址管理
@@ -402,12 +402,73 @@ void Get_Q_FromECU(void)
 					textEcu[4] ++;
 			}
 		}
+		if(strengPower[0] != 0xAF && i == qNum)
+		{
+			strengPower[0] = 0xAF;
+			strengPower[1] = qNum;
+			memcpy(&strengPower[2],qBuff,qNum*2);
+			Save2KDataToFlash(strengPower,STRENGE_Q,200);      //将原始值保存到Flash
+			LogReport("PenYou Write to Flash OK!!!");
+			varOperation.isStrenOilOK = 1;                     //可以进行动力提升
+			strengthFuelFlash.coe = 0;
+		}else if(i != qNum)
+		{
+			LogReport("PenYou not read all!!!");
+		}
+		else
+		{
+			dat1 = qBuff[1];
+			dat1 = (dat1 << 8) + qBuff[0];
+			datFlash = strengPower[3];
+			datFlash = (datFlash << 8) + strengPower[2];
+			d_Value = datFlash > dat1 ? datFlash - dat1:dat1 - datFlash;
+			d_Value = d_Value * 100 / datFlash;
+			bili1 = d_Value;
+			fuhao1 = datFlash > dat1 ? 1:2;
+			for(i = 1;i < qNum;i ++)
+			{
+				dat1 = qBuff[i * 2 + 1];
+				dat1 = (dat1 << 8) + qBuff[i * 2];
+				datFlash = strengPower[i * 2 + 3];
+				datFlash = (datFlash << 8) + strengPower[i*2 + 2];
+				d_Value = datFlash > dat1 ? datFlash - dat1 : dat1 - datFlash;
+				d_Value = d_Value * 100 / datFlash;
+				
+				bili2 = d_Value;
+				fuhao2 = datFlash > dat1 ? 1:2;
+				if((bili1 != bili2 || fuhao1 != fuhao2)&&(dat1 != 0))		
+				{
+					strengPower[0] = 0xAF;
+					strengPower[1] = qNum;
+					memcpy(&strengPower[2],qBuff,qNum * 2);
+					Save2KDataToFlash(strengPower,STRENGE_Q,200);      //将原始值保存到   Flash
+					
+					carChange = Mem_malloc(5);  //
+					carChange[0] = 3;           //长度
+					carChange[1] = 0x50;
+					carChange[2] = 0x19;
+					SendPidCmdData(carChange);
+					Mem_free(carChange);
+					
+					LogReport("Car changed!!!");                       //可能换车了
+					varOperation.isStrenOilOK = 1;                     //可以进行动力提升
+					strengthFuelFlash.coe = 0;
+					break;
+				}
+			}
+			if(i == qNum)
+			{
+				varOperation.isStrenOilOK = 1; 
+				strengthFuelFlash.coe = bili1;
+				if(fuhao1 == 1)
+					strengthFuelFlash.coe = 0 - strengthFuelFlash.coe;
+			}
+		}
 	}else
 	{
 		varOperation.isStrenOilOK = 0;
 		LogReport("PenYou can't read!");
 	}
-
 	Mem_free(textEcu);
 }
 
@@ -416,16 +477,16 @@ void StrengthFuel(void)
 	static uint16_t time = 0;
 	if(strengthFuelFlash.coe == strengthFuel.coe)//系数相等，不进行提升动力
 		return;
-	if(varOperation.isStrenOilOK == 0)//
+	if(varOperation.isStrenOilOK == 0)           //
 	{
-		if(time%10000 == 0)//防止不停地打印信息
+		if(time % 10000 == 0)                    //防止不停地打印信息
 			LogReport("ECU can't be discerned!");
-		time ++;
-		return ;
+		time++;
+		return;
 	}
 	if(varOperation.pidTset == 1)//如果正在测试，也不可以进行增强动力
 		return;
-	varOperation.strengthRun = 1;
+	varOperation.strengthRun = 1;//进入提升动力状态
 	//停止CAN报文的发送
 	//过安全算法、过模式、将新的标定值写入ECU
 	//延时20秒，进入正常的CAN报文收发
@@ -433,38 +494,6 @@ void StrengthFuel(void)
 	OSTimeDlyHMSM(0,0,20,0);
 	varOperation.strengthRun = 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

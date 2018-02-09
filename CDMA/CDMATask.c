@@ -67,9 +67,9 @@ receCDMA:
 				Mem_free(pCDMARece);            //释放占用的内存块
 				Mem_free(pCDMASend->data);
 				Mem_free(pCDMASend);
-			
+				
 				varOperation.isDataFlow = 1;    //数据流未流动
-				freCDMALed = LEDFAST;               //CDMA小灯快闪
+				freCDMALed = LEDFAST;           //CDMA小灯快闪
 				CDMAPowerOpen_Close(CDMA_CLOSE);//关闭CDMA电源
 				
 				CDMAConfigInit();               //重新启动CDMA
