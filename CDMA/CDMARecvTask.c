@@ -115,7 +115,7 @@ static void GetConfigInfo(void)
 	otaUpdatSend->data[otaUpdatSend->datLength++] = (varOperation.newPIDVersion >> 8) & 0x00FF;
 	otaUpdatSend->data[otaUpdatSend->datLength++] = varOperation.newPIDVersion & 0x00FF;
 	
-	CDMASendDataPack(otaUpdatSend);//将请求包进行封包
+	CDMASendDataPack(otaUpdatSend);             //将请求包进行封包
 	
 	OSQPost(CDMASendQ,otaUpdatSend);
 }
@@ -132,14 +132,14 @@ static void RecvLoginDatDeal(uint8_t* ptr)      //对服务器回复的登录报文进行解析
 	cmdId = ptr[offset++];
 	cmdId = (cmdId<<8) + ptr[offset++];
 
-	serverTime = ptr[offset++];     //得到服务器时间
+	serverTime = ptr[offset++];                //得到服务器时间
 	serverTime = (serverTime << 8) + ptr[offset++];
 	serverTime = (serverTime << 8) + ptr[offset++];
 	serverTime = (serverTime << 8) + ptr[offset++];
 	
 	if(timetemp == 0)
 	{
-		carAllRecord.startTime = serverTime; //行程起始时间
+		carAllRecord.startTime = serverTime;   //行程起始时间
 		timetemp = 1;
 	}
 	
@@ -176,19 +176,19 @@ static void RecvLoginDatDeal(uint8_t* ptr)      //对服务器回复的登录报文进行解析
 	else if(ecuId != canDataConfig.pidVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
 	{
 		varOperation.newPIDVersion = ecuId;
-		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
+		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保 CDMA 当前没有发送数据
 		varOperation.isDataFlow     = 1;  //配置文件升级，停止数据流，一心只为配置
 		
-		GetConfigInfo();                  //请求配置文件 - 发送0x4000及版本信息
+		GetConfigInfo();                  //请求配置文件 - 发送 0x4000 及版本信息
 	}
 	else 
 	{
-		varOperation.isLoginDeal = 1;  //没有登录报文需要处理
+		varOperation.isLoginDeal = 1;     //没有登录报文需要处理
 		if(OSSemAccept(LoginMes) == 0)
 			OSSemPost(LoginMes);
 	}
-	//todo:IP更改，后期会有需要
-//	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  =0 - 相等
+//	todo:IP更改，后期会有需要
+//	isIpEqual = strcmp(varOperation.ipAddr,varOperation.newIP_Addr);//比较IP是否相等  = 0 - 相等
 //	if((varOperation.newIP_Potr != varOperation.ipPotr) || (isIpEqual != 0))//端口号不相等或者IP地址不相等
 //	{
 //		memset(varOperation.ipAddr,0,18);//将原始IP清零
@@ -259,9 +259,9 @@ static void OTA_Updata(uint8_t* ptrDeal)
 		frameNum = (datLength%131) == 0? (datLength/131) : (datLength/131) + 1;//得到此帧数据一共有多少包128字节的程序代码
 		
 		offset = 2;
-		for(i=0;i<frameNum;i++)//
+		for(i=0;i<frameNum;i++)                //
 		{
-			frameLen = ptrDeal[offset++] - 3;//实际的小包程序的字节数
+			frameLen = ptrDeal[offset++] - 3;  //实际的小包程序的字节数
 			cmdId    = ptrDeal[offset++];
 			cmdId    = (cmdId << 8) + ptrDeal[offset++]; 
 			memcpy(&updateBuff[frameIndex*128],&ptrDeal[offset],frameLen);
@@ -415,7 +415,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 				updateBuff[i]   = updateBuff[i+3];
 				updateBuff[i+3] = temp;
 				temp            = updateBuff[i+1];
-				updateBuff[i+1]   = updateBuff[i+2];
+				updateBuff[i+1] = updateBuff[i+2];
 				updateBuff[i+2] = temp;
 			}
 			Save2KDataToFlash(updateBuff,addrSavePid,2048);
@@ -687,7 +687,6 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	uint8_t* ptrMode = NULL;
 	uint16_t newCRC  = 0,nowCRC = 0;
 	
-	
 	memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16);  //版本号
 	offset += 16;
 	memcpy(strengthFuel.fuelAddr,&ptrDeal[offset],5); //读取喷油量的地址
@@ -696,15 +695,15 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	offset += 4;
 	strengthFuel.coe = ptrDeal[offset];               //提升动力的系数
 	offset ++;
-	memcpy(strengthFuel.safe1,&ptrDeal[offset],8);//安全算法cmd 1
+	memcpy(strengthFuel.safe1,&ptrDeal[offset],8);    //安全算法cmd 1
 	offset += 8;
-	memcpy(strengthFuel.safe2,&ptrDeal[offset],8);//安全算法cmd 2
+	memcpy(strengthFuel.safe2,&ptrDeal[offset],8);    //安全算法cmd 2
 	offset += 8;
-	memcpy(strengthFuel.mode1,&ptrDeal[offset],8);//模式 cmd 1
+	memcpy(strengthFuel.mode1,&ptrDeal[offset],8);    //模式 cmd 1
 	offset += 8;
-	memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
+	memcpy(strengthFuel.mode2,&ptrDeal[offset],8);    //模式 cmd 2
 	offset += 8;
-	strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
+	strengthFuel.modeOrder = ptrDeal[offset];         //模式指令与安全算法执行的顺序
 	
 	if(strengthFuel.coe == strengthFuelFlash.coe)
 	{

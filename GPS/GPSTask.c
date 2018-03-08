@@ -3,6 +3,7 @@
 
 
 extern uint16_t freGPSLed;
+extern uint8_t * pPid[52];
 /************************      GPS任务    ***********************/
 
 void GPSTask(void *pdata)
@@ -49,7 +50,7 @@ void GPSTask(void *pdata)
 		ptrGPSPack = Mem_malloc(50);
 		if(ptrGPSPack != NULL)
 		{
-			ptrGPSPack[0] = 19;
+			ptrGPSPack[0] = 17;
 			ptrGPSPack[1] = 0x50;
 			ptrGPSPack[2] = 0x02;
 			timeStamp = t_htonl(timeStamp);	
@@ -64,28 +65,28 @@ void GPSTask(void *pdata)
 			speed = t_htons(gpsMC.direction);
 			memcpy(&ptrGPSPack[15],&speed,2);        //GPS方向
 			
-			speed = t_htons(gpsMC.speed);
-			memcpy(&ptrGPSPack[17],&speed,2);        //GPS 车速 
+//			speed = t_htons(gpsMC.speed);
+//			memcpy(&ptrGPSPack[17],&speed,2);        //GPS 车速 
 			
 			if((varOperation.isDataFlow == 0)&&(sendNum != osTime))     //数据流已经流动起来了  确保1秒发送一次
 			{	
 				sendNum = osTime;
 				
 				OSMutexPend(CDMASendMutex,0,&err);
-			
-				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrGPSPack,ptrGPSPack[0]);
-				cdmaDataToSend->datLength += ptrGPSPack[0];
+				
+				memcpy(&pPid[51][pPid[51][0]],&ptrGPSPack[3],ptrGPSPack[0] - 3);//合并 GPS 位置信息
+				pPid[51][0] += ptrGPSPack[0] - 3;
+				cdmaDataToSend->datLength += ptrGPSPack[0] - 3;
 				
 				OSMutexPost(CDMASendMutex);
 			}
-			
 			Mem_free(ptrGPSPack);
 		}
 		osTime = RTC_GetCounter();
 		timeStamp = varOperation.currentTime > osTime? (varOperation.currentTime - osTime):(osTime - varOperation.currentTime);
 		if(timeStamp > 300)//时间相差5分钟后，校时（以GPS时间为准）
 			RTC_Time_Adjust(varOperation.currentTime);
-		freGPSLed = LEDSLOW; ;          //LED  指示，GPS定位正常
+		freGPSLed = LEDSLOW;           //LED  指示，GPS定位正常
 	}
 }
 
@@ -94,7 +95,7 @@ void GPSTask(void *pdata)
 const uint32_t Month_Days_Accu_C[13] = {0,31,59,90,120,151,181,212,243,273,304,334,365};
 const uint32_t Month_Days_Accu_L[13] = {0,31,60,91,121,152,182,213,244,274,305,335,366};
 uint32_t TimeCompare(uint32_t TYY,uint32_t TMO,uint32_t TDD,
-					uint32_t THH,uint32_t TMM,uint32_t TSS)
+					 uint32_t THH,uint32_t TMM,uint32_t TSS)
 {
 	uint32_t LeapY, ComY, TotSeconds, TotDays;
 	if(TYY==1970)

@@ -74,17 +74,17 @@ void DealJ1939Date(void *pdata)
 			
 //			case 0x0CF00400: break;
 			
-			case 0x0CF00300: memcpy(RCVData1,CAN1_RxMsg->Data,8);CANr2=1;break;
+			case 0x0CF00300: memcpy(RCVData1,CAN1_RxMsg->Data,8);CANr2=1;break;  // EEC2
 			
-			case 0x18FF0004: memcpy(RCVData2,CAN1_RxMsg->Data,8);CANr3=1;break;
+			case 0x18FF0004: memcpy(RCVData2,CAN1_RxMsg->Data,8);CANr3=1;break;  // 
 			
-			case 0x18FF0006: memcpy(RCVData3,CAN1_RxMsg->Data,8);CANr4=1;break;
+			case 0x18FF0006: memcpy(RCVData3,CAN1_RxMsg->Data,8);CANr4=1;break;  // 
 			
-			case 0x18FEDF00: memcpy(RCVData4,CAN1_RxMsg->Data,8);CANr5=1;break;
+			case 0x18FEDF00: memcpy(RCVData4,CAN1_RxMsg->Data,8);CANr5=1;break;  //
 			
-			case 0x18EBFF00: memcpy(RCVData5,CAN1_RxMsg->Data,8);CANr6=1;break;
+			case 0x18EBFF00: memcpy(RCVData5,CAN1_RxMsg->Data,8);CANr6=1;break;  //
 			
-			case 0x18ECFF00: memcpy(RCVData6,CAN1_RxMsg->Data,8);CANr7=1;break;
+			case 0x18ECFF00: memcpy(RCVData6,CAN1_RxMsg->Data,8);CANr7=1;break;  //
 			
 			default: break;
 		}

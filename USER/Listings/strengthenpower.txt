@@ -9,7 +9,7 @@
 ;;;308    void Get_Q_FromECU(void)
 000000  e92d4ff0          PUSH     {r4-r11,lr}
 ;;;309    {
-000004  b087              SUB      sp,sp,#0x1c
+000004  b08f              SUB      sp,sp,#0x3c
 ;;;310    	CanRxMsg* CAN1_RxMsg;
 ;;;311    	uint8_t * textEcu;
 ;;;312    	uint8_t * qBuff;
@@ -17,628 +17,711 @@
 ;;;314    	uint16_t dat1,dat2,datFlash;
 ;;;315    	uint8_t  qNum = 0;
 000006  2700              MOVS     r7,#0
-;;;316    	uint32_t d_Value = 0;
-000008  2000              MOVS     r0,#0
-00000a  9004              STR      r0,[sp,#0x10]
-;;;317    	uint8_t bili1 = 0;
-00000c  9003              STR      r0,[sp,#0xc]
-;;;318    	uint8_t bili2 = 0;
-00000e  9002              STR      r0,[sp,#8]
-;;;319    	uint8_t fuhao1 = 0;
-000010  9001              STR      r0,[sp,#4]
-;;;320    	uint8_t fuhao2 = 0;
-000012  9000              STR      r0,[sp,#0]
-;;;321    	uint8_t * carChange = NULL;
-000014  4682              MOV      r10,r0
-;;;322    	qBuff = Mem_malloc(100);
-000016  2064              MOVS     r0,#0x64
-000018  f7fffffe          BL       Mem_malloc
-00001c  4681              MOV      r9,r0
-;;;323    	textEcu = Mem_malloc(8);
-00001e  2008              MOVS     r0,#8
-000020  f7fffffe          BL       Mem_malloc
-000024  4604              MOV      r4,r0
-;;;324    	
-;;;325    	memset(textEcu,0,8);
-000026  2000              MOVS     r0,#0
-000028  6020              STR      r0,[r4,#0]
-00002a  6060              STR      r0,[r4,#4]
-;;;326    	if(strengthFuelFlash.modeOrder == 1)
-00002c  48d8              LDR      r0,|L1.912|
-00002e  f890003a          LDRB     r0,[r0,#0x3a]  ; strengthFuelFlash
-000032  2801              CMP      r0,#1
-000034  d10d              BNE      |L1.82|
-;;;327    	{
-;;;328    		textEcu[0] = 0x05;textEcu[1] = 0x23;
-000036  2005              MOVS     r0,#5
-000038  7020              STRB     r0,[r4,#0]
-00003a  2023              MOVS     r0,#0x23
-00003c  7060              STRB     r0,[r4,#1]
-;;;329    		memcpy(&textEcu[2],&strengthFuelFlash.fuelAddr[1],strengthFuelFlash.fuelAddr[0]);
-00003e  48d4              LDR      r0,|L1.912|
-000040  7c02              LDRB     r2,[r0,#0x10]  ; strengthFuelFlash
-000042  f1000111          ADD      r1,r0,#0x11
-000046  1ca0              ADDS     r0,r4,#2
-000048  f7fffffe          BL       __aeabi_memcpy
-;;;330    		textEcu[5] = 0x02;                       //02 代表的是数据长度是2个字节
-00004c  2002              MOVS     r0,#2
-00004e  7160              STRB     r0,[r4,#5]
-000050  e01a              B        |L1.136|
-                  |L1.82|
-;;;331    	}else if(strengthFuelFlash.modeOrder == 2)
-000052  48cf              LDR      r0,|L1.912|
-000054  f890003a          LDRB     r0,[r0,#0x3a]  ; strengthFuelFlash
-000058  2802              CMP      r0,#2
-00005a  d10f              BNE      |L1.124|
-;;;332    	{
-;;;333    		textEcu[0] = 0x07;textEcu[1] = 0x23;
-00005c  2007              MOVS     r0,#7
-00005e  7020              STRB     r0,[r4,#0]
-000060  2023              MOVS     r0,#0x23
-000062  7060              STRB     r0,[r4,#1]
-;;;334    		memcpy(&textEcu[2],&strengthFuelFlash.fuelAddr[1],strengthFuelFlash.fuelAddr[0]);
-000064  48ca              LDR      r0,|L1.912|
-000066  7c02              LDRB     r2,[r0,#0x10]  ; strengthFuelFlash
-000068  f1000111          ADD      r1,r0,#0x11
-00006c  1ca0              ADDS     r0,r4,#2
-00006e  f7fffffe          BL       __aeabi_memcpy
-;;;335    		textEcu[6] = 0x00;textEcu[7] = 0x02;     //02 代表的是数据长度是2个字节
-000072  2000              MOVS     r0,#0
-000074  71a0              STRB     r0,[r4,#6]
-000076  2002              MOVS     r0,#2
-000078  71e0              STRB     r0,[r4,#7]
-00007a  e005              B        |L1.136|
-                  |L1.124|
-;;;336    	}else
-;;;337    	{
-;;;338    		LogReport("Service mode Error!");
-00007c  a0c5              ADR      r0,|L1.916|
-00007e  f7fffffe          BL       LogReport
-                  |L1.130|
-;;;339    		return;
-;;;340    	}
-;;;341    	dataToSend.pdat  = textEcu;
-;;;342    	OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat); 
-;;;343    	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);
-;;;344    	if(err == OS_ERR_NONE)
-;;;345    	{
-;;;346    		qNum = CAN1_RxMsg -> Data[2];               //得到喷油量的个数
-;;;347    		if(strengPower[1] != qNum)//如果保存的ECU 喷油量的个数
-;;;348    		{
-;;;349    			strengPower[0] = 0;
-;;;350    			strengPower[1] = qNum;
-;;;351    			carChange = Mem_malloc(5);  //
-;;;352    			carChange[0] = 3;           //长度
-;;;353    			carChange[1] = 0x50;
-;;;354    			carChange[2] = 0x19;
-;;;355    			SendPidCmdData(carChange);
-;;;356    			Mem_free(carChange);
-;;;357    		}
-;;;358    		if(strengthFuelFlash.modeOrder == 1)
-;;;359    		{
-;;;360    			dat1 = textEcu[3];                      //用于辨别地址是否累加>0xFF,若是，则高地址自增
-;;;361    			dat2 = textEcu[4] + qNum * 2;
-;;;362    			if(dat2 >= 256)
-;;;363    				dat1 ++;
-;;;364    			textEcu[3] = dat1;
-;;;365    			textEcu[4] += (qNum * 2 + 2);
-;;;366    		}else if(strengthFuelFlash.modeOrder == 2)
-;;;367    		{
-;;;368    			dat1 = textEcu[4];                      //用于辨别地址是否累加>0xFF,若是，则高地址自增
-;;;369    			dat2 = textEcu[5] + qNum * 2;
-;;;370    			if(dat2 >= 256)
-;;;371    				dat1 ++;
-;;;372    			textEcu[4] = dat1;
-;;;373    			textEcu[5] += (qNum * 2 + 2);
-;;;374    		}
-;;;375    		Mem_free(CAN1_RxMsg);
-;;;376    		
-;;;377    		for(i = 0;i < qNum;i ++)
-;;;378    		{
-;;;379    			dataToSend.pdat  = textEcu;
-;;;380    			OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat); 
-;;;381    			CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);
-;;;382    			if(err == OS_ERR_NONE)
-;;;383    			{	
-;;;384    				dat1 = CAN1_RxMsg -> Data[3];
-;;;385    				dat1 = (dat1 << 8) + CAN1_RxMsg->Data[2];
-;;;386    				Mem_free(CAN1_RxMsg);
-;;;387    				qBuff[i*2] = dat1 & 0xFF;
-;;;388    				qBuff[i*2 + 1] = (dat1 >> 8) & 0xFF;
-;;;389    			}else{
-;;;390    				LogReport("PenYou Read Wrong!!!");
-;;;391    				break;
-;;;392    			}	
-;;;393    			if(strengthFuelFlash.modeOrder == 1)
-;;;394    			{
-;;;395    				textEcu[4]     += 2;      //读取地址管理
-;;;396    				if(textEcu[4]  == 0x00)
-;;;397    					textEcu[3] ++;
-;;;398    			}else if(strengthFuelFlash.modeOrder == 2)
-;;;399    			{
-;;;400    				textEcu[5]     += 2;      //读取地址管理
-;;;401    				if(textEcu[5]  == 0x00)
-;;;402    					textEcu[4] ++;
-;;;403    			}
-;;;404    		}
-;;;405    		if(strengPower[0] != 0xAF && i == qNum)
-;;;406    		{
-;;;407    			strengPower[0] = 0xAF;
-;;;408    			strengPower[1] = qNum;
-;;;409    			memcpy(&strengPower[2],qBuff,qNum*2);
-;;;410    			Save2KDataToFlash(strengPower,STRENGE_Q,200);      //将原始值保存到Flash
-;;;411    			LogReport("PenYou Write to Flash OK!!!");
-;;;412    			varOperation.isStrenOilOK = 1;                     //可以进行动力提升
-;;;413    			strengthFuelFlash.coe = 0;
-;;;414    		}else if(i != qNum)
-;;;415    		{
-;;;416    			LogReport("PenYou not read all!!!");
-;;;417    		}
-;;;418    		else
-;;;419    		{
-;;;420    			dat1 = qBuff[1];
-;;;421    			dat1 = (dat1 << 8) + qBuff[0];
-;;;422    			datFlash = strengPower[3];
-;;;423    			datFlash = (datFlash << 8) + strengPower[2];
-;;;424    			d_Value = datFlash > dat1 ? datFlash - dat1:dat1 - datFlash;
-;;;425    			d_Value = d_Value * 100 / datFlash;
-;;;426    			bili1 = d_Value;
-;;;427    			fuhao1 = datFlash > dat1 ? 1:2;
-;;;428    			for(i = 1;i < qNum;i ++)
-;;;429    			{
-;;;430    				dat1 = qBuff[i * 2 + 1];
-;;;431    				dat1 = (dat1 << 8) + qBuff[i * 2];
-;;;432    				datFlash = strengPower[i * 2 + 3];
-;;;433    				datFlash = (datFlash << 8) + strengPower[i*2 + 2];
-;;;434    				d_Value = datFlash > dat1 ? datFlash - dat1 : dat1 - datFlash;
-;;;435    				d_Value = d_Value * 100 / datFlash;
-;;;436    				
-;;;437    				bili2 = d_Value;
-;;;438    				fuhao2 = datFlash > dat1 ? 1:2;
-;;;439    				if((bili1 != bili2 || fuhao1 != fuhao2)&&(dat1 != 0))		
-;;;440    				{
-;;;441    					strengPower[0] = 0xAF;
-;;;442    					strengPower[1] = qNum;
-;;;443    					memcpy(&strengPower[2],qBuff,qNum * 2);
-;;;444    					Save2KDataToFlash(strengPower,STRENGE_Q,200);      //将原始值保存到   Flash
-;;;445    					
-;;;446    					carChange = Mem_malloc(5);  //
-;;;447    					carChange[0] = 3;           //长度
-;;;448    					carChange[1] = 0x50;
-;;;449    					carChange[2] = 0x19;
-;;;450    					SendPidCmdData(carChange);
-;;;451    					Mem_free(carChange);
-;;;452    					
-;;;453    					LogReport("Car changed!!!");                       //可能换车了
-;;;454    					varOperation.isStrenOilOK = 1;                     //可以进行动力提升
-;;;455    					strengthFuelFlash.coe = 0;
-;;;456    					break;
-;;;457    				}
-;;;458    			}
-;;;459    			if(i == qNum)
-;;;460    			{
-;;;461    				varOperation.isStrenOilOK = 1; 
-;;;462    				strengthFuelFlash.coe = bili1;
-;;;463    				if(fuhao1 == 1)
-;;;464    					strengthFuelFlash.coe = 0 - strengthFuelFlash.coe;
-;;;465    			}
-;;;466    		}
-;;;467    	}else
-;;;468    	{
-;;;469    		varOperation.isStrenOilOK = 0;
-;;;470    		LogReport("PenYou can't read!");
-;;;471    	}
-;;;472    	Mem_free(textEcu);
-;;;473    }
-000082  b007              ADD      sp,sp,#0x1c
-000084  e8bd8ff0          POP      {r4-r11,pc}
-                  |L1.136|
-000088  48c7              LDR      r0,|L1.936|
-00008a  6084              STR      r4,[r0,#8]            ;341  ; dataToSend
-00008c  4603              MOV      r3,r0                 ;342
-00008e  689a              LDR      r2,[r3,#8]            ;342  ; dataToSend
-000090  6859              LDR      r1,[r3,#4]            ;342  ; dataToSend
-000092  6818              LDR      r0,[r3,#0]            ;342  ; dataToSend
-000094  f7fffffe          BL       OBD_CAN_SendData
-000098  aa06              ADD      r2,sp,#0x18           ;343
-00009a  2132              MOVS     r1,#0x32              ;343
-00009c  48c3              LDR      r0,|L1.940|
-00009e  6800              LDR      r0,[r0,#0]            ;343  ; canRecieveQ
-0000a0  f7fffffe          BL       OSQPend
-0000a4  4683              MOV      r11,r0                ;343
-0000a6  f89d0018          LDRB     r0,[sp,#0x18]         ;344
-0000aa  2800              CMP      r0,#0                 ;344
-0000ac  d174              BNE      |L1.408|
-0000ae  f89b700d          LDRB     r7,[r11,#0xd]         ;346
-0000b2  48bf              LDR      r0,|L1.944|
-0000b4  7840              LDRB     r0,[r0,#1]            ;347  ; strengPower
-0000b6  42b8              CMP      r0,r7                 ;347
-0000b8  d017              BEQ      |L1.234|
-0000ba  2000              MOVS     r0,#0                 ;349
-0000bc  49bc              LDR      r1,|L1.944|
-0000be  7008              STRB     r0,[r1,#0]            ;349
-0000c0  4608              MOV      r0,r1                 ;350
-0000c2  7047              STRB     r7,[r0,#1]            ;350
-0000c4  2005              MOVS     r0,#5                 ;351
-0000c6  f7fffffe          BL       Mem_malloc
-0000ca  4682              MOV      r10,r0                ;351
-0000cc  2003              MOVS     r0,#3                 ;352
-0000ce  f88a0000          STRB     r0,[r10,#0]           ;352
-0000d2  2050              MOVS     r0,#0x50              ;353
-0000d4  f88a0001          STRB     r0,[r10,#1]           ;353
-0000d8  2019              MOVS     r0,#0x19              ;354
-0000da  f88a0002          STRB     r0,[r10,#2]           ;354
-0000de  4650              MOV      r0,r10                ;355
-0000e0  f7fffffe          BL       SendPidCmdData
-0000e4  4650              MOV      r0,r10                ;356
-0000e6  f7fffffe          BL       Mem_free
-                  |L1.234|
-0000ea  48a9              LDR      r0,|L1.912|
-0000ec  f890003a          LDRB     r0,[r0,#0x3a]         ;358  ; strengthFuelFlash
-0000f0  2801              CMP      r0,#1                 ;358
-0000f2  d111              BNE      |L1.280|
-0000f4  78e6              LDRB     r6,[r4,#3]            ;360
-0000f6  7920              LDRB     r0,[r4,#4]            ;361
-0000f8  eb000047          ADD      r0,r0,r7,LSL #1       ;361
-0000fc  9005              STR      r0,[sp,#0x14]         ;361
-0000fe  9805              LDR      r0,[sp,#0x14]         ;362
-000100  28ff              CMP      r0,#0xff              ;362
-000102  dd01              BLE      |L1.264|
-000104  1c70              ADDS     r0,r6,#1              ;363
-000106  b286              UXTH     r6,r0                 ;363
-                  |L1.264|
-000108  70e6              STRB     r6,[r4,#3]            ;364
-00010a  7920              LDRB     r0,[r4,#4]            ;365
-00010c  2102              MOVS     r1,#2                 ;365
-00010e  eb010147          ADD      r1,r1,r7,LSL #1       ;365
-000112  4408              ADD      r0,r0,r1              ;365
-000114  7120              STRB     r0,[r4,#4]            ;365
-000116  e015              B        |L1.324|
-                  |L1.280|
-000118  489d              LDR      r0,|L1.912|
-00011a  f890003a          LDRB     r0,[r0,#0x3a]         ;366  ; strengthFuelFlash
-00011e  2802              CMP      r0,#2                 ;366
-000120  d110              BNE      |L1.324|
-000122  7926              LDRB     r6,[r4,#4]            ;368
-000124  7960              LDRB     r0,[r4,#5]            ;369
-000126  eb000047          ADD      r0,r0,r7,LSL #1       ;369
-00012a  9005              STR      r0,[sp,#0x14]         ;369
-00012c  9805              LDR      r0,[sp,#0x14]         ;370
-00012e  28ff              CMP      r0,#0xff              ;370
-000130  dd01              BLE      |L1.310|
-000132  1c70              ADDS     r0,r6,#1              ;371
-000134  b286              UXTH     r6,r0                 ;371
-                  |L1.310|
-000136  7126              STRB     r6,[r4,#4]            ;372
-000138  7960              LDRB     r0,[r4,#5]            ;373
-00013a  2102              MOVS     r1,#2                 ;373
-00013c  eb010147          ADD      r1,r1,r7,LSL #1       ;373
-000140  4408              ADD      r0,r0,r1              ;373
-000142  7160              STRB     r0,[r4,#5]            ;373
-                  |L1.324|
-000144  4658              MOV      r0,r11                ;375
-000146  f7fffffe          BL       Mem_free
-00014a  2500              MOVS     r5,#0                 ;377
-00014c  e046              B        |L1.476|
-                  |L1.334|
-00014e  4896              LDR      r0,|L1.936|
-000150  6084              STR      r4,[r0,#8]            ;379  ; dataToSend
-000152  4603              MOV      r3,r0                 ;380
-000154  689a              LDR      r2,[r3,#8]            ;380  ; dataToSend
-000156  6859              LDR      r1,[r3,#4]            ;380  ; dataToSend
-000158  6818              LDR      r0,[r3,#0]            ;380  ; dataToSend
-00015a  f7fffffe          BL       OBD_CAN_SendData
-00015e  aa06              ADD      r2,sp,#0x18           ;381
-000160  2132              MOVS     r1,#0x32              ;381
-000162  4892              LDR      r0,|L1.940|
-000164  6800              LDR      r0,[r0,#0]            ;381  ; canRecieveQ
-000166  f7fffffe          BL       OSQPend
-00016a  4683              MOV      r11,r0                ;381
-00016c  f89d0018          LDRB     r0,[sp,#0x18]         ;382
-000170  b998              CBNZ     r0,|L1.410|
-000172  f89b600e          LDRB     r6,[r11,#0xe]         ;384
-000176  f89b000d          LDRB     r0,[r11,#0xd]         ;385
-00017a  eb002006          ADD      r0,r0,r6,LSL #8       ;385
-00017e  b286              UXTH     r6,r0                 ;385
-000180  4658              MOV      r0,r11                ;386
-000182  f7fffffe          BL       Mem_free
-000186  f8096015          STRB     r6,[r9,r5,LSL #1]     ;387
-00018a  0a30              LSRS     r0,r6,#8              ;388
-00018c  2101              MOVS     r1,#1                 ;388
-00018e  eb010145          ADD      r1,r1,r5,LSL #1       ;388
-000192  f8090001          STRB     r0,[r9,r1]            ;388
-000196  e004              B        |L1.418|
-                  |L1.408|
-000198  e0ee              B        |L1.888|
+;;;316    	double  d_Value = 0.0;
+000008  bf00              NOP      
+;;;317    	uint16_t d_Value1 = 0;
+00000a  2000              MOVS     r0,#0
+00000c  9009              STR      r0,[sp,#0x24]
+;;;318    	uint8_t bili1 = 0;
+00000e  9008              STR      r0,[sp,#0x20]
+;;;319    	uint8_t bili2 = 0;
+000010  9007              STR      r0,[sp,#0x1c]
+;;;320    	uint8_t fuhao1 = 0;
+000012  9006              STR      r0,[sp,#0x18]
+;;;321    	uint8_t fuhao2 = 0;
+000014  9005              STR      r0,[sp,#0x14]
+;;;322    	uint8_t * carChange = NULL;
+000016  4682              MOV      r10,r0
+;;;323    	qBuff = Mem_malloc(100);
+000018  2064              MOVS     r0,#0x64
+00001a  f7fffffe          BL       Mem_malloc
+00001e  4681              MOV      r9,r0
+;;;324    	textEcu = Mem_malloc(8);
+000020  2008              MOVS     r0,#8
+000022  f7fffffe          BL       Mem_malloc
+000026  4604              MOV      r4,r0
+;;;325    	
+;;;326    	memset(textEcu,0,8);
+000028  2000              MOVS     r0,#0
+00002a  6020              STR      r0,[r4,#0]
+00002c  6060              STR      r0,[r4,#4]
+;;;327    	if(strengthFuelFlash.modeOrder == 1)
+00002e  48fe              LDR      r0,|L1.1064|
+000030  f890003a          LDRB     r0,[r0,#0x3a]  ; strengthFuelFlash
+000034  2801              CMP      r0,#1
+000036  d10d              BNE      |L1.84|
+;;;328    	{
+;;;329    		textEcu[0] = 0x05;textEcu[1] = 0x23;
+000038  2005              MOVS     r0,#5
+00003a  7020              STRB     r0,[r4,#0]
+00003c  2023              MOVS     r0,#0x23
+00003e  7060              STRB     r0,[r4,#1]
+;;;330    		memcpy(&textEcu[2],&strengthFuelFlash.fuelAddr[1],strengthFuelFlash.fuelAddr[0]);
+000040  48f9              LDR      r0,|L1.1064|
+000042  7c02              LDRB     r2,[r0,#0x10]  ; strengthFuelFlash
+000044  f1000111          ADD      r1,r0,#0x11
+000048  1ca0              ADDS     r0,r4,#2
+00004a  f7fffffe          BL       __aeabi_memcpy
+;;;331    		textEcu[5] = 0x02;                       //02 代表的是数据长度是2个字节
+00004e  2002              MOVS     r0,#2
+000050  7160              STRB     r0,[r4,#5]
+000052  e01a              B        |L1.138|
+                  |L1.84|
+;;;332    	}else if(strengthFuelFlash.modeOrder == 2)
+000054  48f4              LDR      r0,|L1.1064|
+000056  f890003a          LDRB     r0,[r0,#0x3a]  ; strengthFuelFlash
+00005a  2802              CMP      r0,#2
+00005c  d10f              BNE      |L1.126|
+;;;333    	{
+;;;334    		textEcu[0] = 0x07;textEcu[1] = 0x23;
+00005e  2007              MOVS     r0,#7
+000060  7020              STRB     r0,[r4,#0]
+000062  2023              MOVS     r0,#0x23
+000064  7060              STRB     r0,[r4,#1]
+;;;335    		memcpy(&textEcu[2],&strengthFuelFlash.fuelAddr[1],strengthFuelFlash.fuelAddr[0]);
+000066  48f0              LDR      r0,|L1.1064|
+000068  7c02              LDRB     r2,[r0,#0x10]  ; strengthFuelFlash
+00006a  f1000111          ADD      r1,r0,#0x11
+00006e  1ca0              ADDS     r0,r4,#2
+000070  f7fffffe          BL       __aeabi_memcpy
+;;;336    		textEcu[6] = 0x00;textEcu[7] = 0x02;     //02 代表的是数据长度是2个字节
+000074  2000              MOVS     r0,#0
+000076  71a0              STRB     r0,[r4,#6]
+000078  2002              MOVS     r0,#2
+00007a  71e0              STRB     r0,[r4,#7]
+00007c  e005              B        |L1.138|
+                  |L1.126|
+;;;337    	}else
+;;;338    	{
+;;;339    		LogReport("Service mode Error!");
+00007e  a0eb              ADR      r0,|L1.1068|
+000080  f7fffffe          BL       LogReport
+                  |L1.132|
+;;;340    		return;
+;;;341    	}
+;;;342    	dataToSend.pdat  = textEcu;
+;;;343    	OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat); 
+;;;344    	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);
+;;;345    	if(err == OS_ERR_NONE)
+;;;346    	{
+;;;347    		qNum = CAN1_RxMsg -> Data[2];       //得到喷油量的个数        
+;;;348    		if(strengPower[1] != qNum)          //如果保存的ECU 喷油量的个数 不相等
+;;;349    		{
+;;;350    			strengPower[0] = 0;
+;;;351    			strengPower[1] = qNum;
+;;;352    			carChange = Mem_malloc(5);      //
+;;;353    			carChange[0] = 3;               //长度
+;;;354    			carChange[1] = 0x50;
+;;;355    			carChange[2] = 0x19;
+;;;356    			SendPidCmdData(carChange);
+;;;357    			Mem_free(carChange);
+;;;358    		}
+;;;359    		if(strengthFuelFlash.modeOrder == 1)
+;;;360    		{
+;;;361    			dat1 = textEcu[3];              //用于辨别地址是否累加 > 0xFF,若是，则高地址自增
+;;;362    			dat2 = textEcu[4] + qNum * 2;
+;;;363    			if(dat2 >= 256)
+;;;364    				dat1 ++;
+;;;365    			textEcu[3] = dat1;
+;;;366    			textEcu[4] += (qNum * 2 + 2);
+;;;367    		}else if(strengthFuelFlash.modeOrder == 2)
+;;;368    		{
+;;;369    			dat1 = textEcu[4];              //用于辨别地址是否累加 > 0xFF,若是，则高地址自增
+;;;370    			dat2 = textEcu[5] + qNum * 2;
+;;;371    			if(dat2 >= 256)
+;;;372    				dat1 ++;
+;;;373    			textEcu[4] = dat1;
+;;;374    			textEcu[5] += (qNum * 2 + 2);
+;;;375    		}
+;;;376    		Mem_free(CAN1_RxMsg);
+;;;377    		
+;;;378    		for(i = 0;i < qNum;i ++)
+;;;379    		{
+;;;380    			dataToSend.pdat  = textEcu;
+;;;381    			OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat); 
+;;;382    			CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);
+;;;383    			if(err == OS_ERR_NONE)
+;;;384    			{	
+;;;385    				dat1 = CAN1_RxMsg -> Data[3];
+;;;386    				dat1 = (dat1 << 8) + CAN1_RxMsg->Data[2];
+;;;387    				Mem_free(CAN1_RxMsg);
+;;;388    				qBuff[i*2] = dat1 & 0xFF;
+;;;389    				qBuff[i*2 + 1] = (dat1 >> 8) & 0xFF;
+;;;390    			}else{
+;;;391    				LogReport("PenYou Read Wrong!!!");
+;;;392    				break;
+;;;393    			}	
+;;;394    			if(strengthFuelFlash.modeOrder == 1)
+;;;395    			{
+;;;396    				textEcu[4]     += 2;      //读取地址管理
+;;;397    				if(textEcu[4]  == 0x00)
+;;;398    					textEcu[3] ++;
+;;;399    			}else if(strengthFuelFlash.modeOrder == 2)
+;;;400    			{
+;;;401    				textEcu[5]     += 2;      //读取地址管理
+;;;402    				if(textEcu[5]  == 0x00)
+;;;403    					textEcu[4] ++;
+;;;404    			}
+;;;405    		}
+;;;406    		if(strengPower[0] != 0xAF && i == qNum)
+;;;407    		{
+;;;408    			strengPower[0] = 0xAF;
+;;;409    			strengPower[1] = qNum;
+;;;410    			memcpy(&strengPower[2],qBuff,qNum*2);
+;;;411    			Save2KDataToFlash(strengPower,STRENGE_Q,200);      //将原始值保存到Flash
+;;;412    			LogReport("PenYou Write to Flash OK!!!");
+;;;413    			varOperation.isStrenOilOK = 1;                     //可以进行动力提升
+;;;414    			strengthFuelFlash.coe = 0;
+;;;415    		}else if(i != qNum)
+;;;416    		{
+;;;417    			LogReport("PenYou not read all!!!");
+;;;418    		}
+;;;419    		else
+;;;420    		{
+;;;421    			dat1 = qBuff[1];
+;;;422    			dat1 = (dat1 << 8) + qBuff[0];
+;;;423    			datFlash = strengPower[3];
+;;;424    			datFlash = (datFlash << 8) + strengPower[2];
+;;;425    			d_Value = datFlash > dat1 ? datFlash - dat1:dat1 - datFlash;
+;;;426    			d_Value = d_Value * 100.0 / datFlash;
+;;;427    			d_Value1 = (uint16_t)d_Value;
+;;;428    			if(d_Value>((double)d_Value1+0.5))
+;;;429    				d_Value1 += 1;
+;;;430    			bili1 = d_Value1;
+;;;431    			fuhao1 = datFlash > dat1 ? 1:2;
+;;;432    			for(i = 1;i < qNum;i ++)
+;;;433    			{
+;;;434    				dat1 = qBuff[i * 2 + 1];
+;;;435    				dat1 = (dat1 << 8) + qBuff[i * 2];
+;;;436    				datFlash = strengPower[i * 2 + 3];
+;;;437    				datFlash = (datFlash << 8) + strengPower[i*2 + 2];
+;;;438    				
+;;;439    				if(dat1 == datFlash && dat1 < 100)    //读到的喷油量的值为0，比例就不相等啦
+;;;440    					continue;
+;;;441    				
+;;;442    				d_Value = datFlash > dat1 ? datFlash - dat1 : dat1 - datFlash;
+;;;443    				d_Value = d_Value * 100.0 / datFlash;
+;;;444    				d_Value1 = (uint16_t)d_Value;
+;;;445    				if(d_Value>((double)d_Value1+0.5))
+;;;446    					d_Value1 += 1;
+;;;447    				
+;;;448    				bili2 = d_Value1;
+;;;449    				fuhao2 = datFlash > dat1 ? 1:2;
+;;;450    				if((bili1 != bili2 || fuhao1 != fuhao2)&&(dat1 != 0))		
+;;;451    				{
+;;;452    					strengPower[0] = 0xAF;
+;;;453    					strengPower[1] = qNum;
+;;;454    					memcpy(&strengPower[2],qBuff,qNum * 2);
+;;;455    					Save2KDataToFlash(strengPower,STRENGE_Q,200);      //将原始值保存到   Flash
+;;;456    					
+;;;457    					carChange = Mem_malloc(5);  //
+;;;458    					carChange[0] = 3;           //长度
+;;;459    					carChange[1] = 0x50;
+;;;460    					carChange[2] = 0x19;
+;;;461    					SendPidCmdData(carChange);
+;;;462    					Mem_free(carChange);
+;;;463    					
+;;;464    					LogReport("Car changed!!!");                       //可能换车了
+;;;465    					varOperation.isStrenOilOK = 1;                     //可以进行动力提升
+;;;466    					strengthFuelFlash.coe = 0;
+;;;467    					break;
+;;;468    				}
+;;;469    			}
+;;;470    			if(i == qNum)
+;;;471    			{
+;;;472    				varOperation.isStrenOilOK = 1; 
+;;;473    				strengthFuelFlash.coe = bili1;
+;;;474    				if(fuhao1 == 1)
+;;;475    					strengthFuelFlash.coe = 0 - strengthFuelFlash.coe;
+;;;476    			}
+;;;477    		}
+;;;478    	}else
+;;;479    	{
+;;;480    		varOperation.isStrenOilOK = 0;
+;;;481    		LogReport("PenYou can't read!");
+;;;482    	}
+;;;483    	Mem_free(textEcu);
+;;;484    }
+000084  b00f              ADD      sp,sp,#0x3c
+000086  e8bd8ff0          POP      {r4-r11,pc}
+                  |L1.138|
+00008a  48ed              LDR      r0,|L1.1088|
+00008c  6084              STR      r4,[r0,#8]            ;342  ; dataToSend
+00008e  4603              MOV      r3,r0                 ;343
+000090  689a              LDR      r2,[r3,#8]            ;343  ; dataToSend
+000092  6859              LDR      r1,[r3,#4]            ;343  ; dataToSend
+000094  6818              LDR      r0,[r3,#0]            ;343  ; dataToSend
+000096  f7fffffe          BL       OBD_CAN_SendData
+00009a  aa0d              ADD      r2,sp,#0x34           ;344
+00009c  2132              MOVS     r1,#0x32              ;344
+00009e  48e9              LDR      r0,|L1.1092|
+0000a0  6800              LDR      r0,[r0,#0]            ;344  ; canRecieveQ
+0000a2  f7fffffe          BL       OSQPend
+0000a6  4683              MOV      r11,r0                ;344
+0000a8  f89d0034          LDRB     r0,[sp,#0x34]         ;345
+0000ac  2800              CMP      r0,#0                 ;345
+0000ae  d174              BNE      |L1.410|
+0000b0  f89b700d          LDRB     r7,[r11,#0xd]         ;347
+0000b4  48e4              LDR      r0,|L1.1096|
+0000b6  7840              LDRB     r0,[r0,#1]            ;348  ; strengPower
+0000b8  42b8              CMP      r0,r7                 ;348
+0000ba  d017              BEQ      |L1.236|
+0000bc  2000              MOVS     r0,#0                 ;350
+0000be  49e2              LDR      r1,|L1.1096|
+0000c0  7008              STRB     r0,[r1,#0]            ;350
+0000c2  4608              MOV      r0,r1                 ;351
+0000c4  7047              STRB     r7,[r0,#1]            ;351
+0000c6  2005              MOVS     r0,#5                 ;352
+0000c8  f7fffffe          BL       Mem_malloc
+0000cc  4682              MOV      r10,r0                ;352
+0000ce  2003              MOVS     r0,#3                 ;353
+0000d0  f88a0000          STRB     r0,[r10,#0]           ;353
+0000d4  2050              MOVS     r0,#0x50              ;354
+0000d6  f88a0001          STRB     r0,[r10,#1]           ;354
+0000da  2019              MOVS     r0,#0x19              ;355
+0000dc  f88a0002          STRB     r0,[r10,#2]           ;355
+0000e0  4650              MOV      r0,r10                ;356
+0000e2  f7fffffe          BL       SendPidCmdData
+0000e6  4650              MOV      r0,r10                ;357
+0000e8  f7fffffe          BL       Mem_free
+                  |L1.236|
+0000ec  48ce              LDR      r0,|L1.1064|
+0000ee  f890003a          LDRB     r0,[r0,#0x3a]         ;359  ; strengthFuelFlash
+0000f2  2801              CMP      r0,#1                 ;359
+0000f4  d111              BNE      |L1.282|
+0000f6  78e5              LDRB     r5,[r4,#3]            ;361
+0000f8  7920              LDRB     r0,[r4,#4]            ;362
+0000fa  eb000047          ADD      r0,r0,r7,LSL #1       ;362
+0000fe  900c              STR      r0,[sp,#0x30]         ;362
+000100  980c              LDR      r0,[sp,#0x30]         ;363
+000102  28ff              CMP      r0,#0xff              ;363
+000104  dd01              BLE      |L1.266|
+000106  1c68              ADDS     r0,r5,#1              ;364
+000108  b285              UXTH     r5,r0                 ;364
+                  |L1.266|
+00010a  70e5              STRB     r5,[r4,#3]            ;365
+00010c  7920              LDRB     r0,[r4,#4]            ;366
+00010e  2102              MOVS     r1,#2                 ;366
+000110  eb010147          ADD      r1,r1,r7,LSL #1       ;366
+000114  4408              ADD      r0,r0,r1              ;366
+000116  7120              STRB     r0,[r4,#4]            ;366
+000118  e015              B        |L1.326|
+                  |L1.282|
+00011a  48c3              LDR      r0,|L1.1064|
+00011c  f890003a          LDRB     r0,[r0,#0x3a]         ;367  ; strengthFuelFlash
+000120  2802              CMP      r0,#2                 ;367
+000122  d110              BNE      |L1.326|
+000124  7925              LDRB     r5,[r4,#4]            ;369
+000126  7960              LDRB     r0,[r4,#5]            ;370
+000128  eb000047          ADD      r0,r0,r7,LSL #1       ;370
+00012c  900c              STR      r0,[sp,#0x30]         ;370
+00012e  980c              LDR      r0,[sp,#0x30]         ;371
+000130  28ff              CMP      r0,#0xff              ;371
+000132  dd01              BLE      |L1.312|
+000134  1c68              ADDS     r0,r5,#1              ;372
+000136  b285              UXTH     r5,r0                 ;372
+                  |L1.312|
+000138  7125              STRB     r5,[r4,#4]            ;373
+00013a  7960              LDRB     r0,[r4,#5]            ;374
+00013c  2102              MOVS     r1,#2                 ;374
+00013e  eb010147          ADD      r1,r1,r7,LSL #1       ;374
+000142  4408              ADD      r0,r0,r1              ;374
+000144  7160              STRB     r0,[r4,#5]            ;374
+                  |L1.326|
+000146  4658              MOV      r0,r11                ;376
+000148  f7fffffe          BL       Mem_free
+00014c  2600              MOVS     r6,#0                 ;378
+00014e  e046              B        |L1.478|
+                  |L1.336|
+000150  48bb              LDR      r0,|L1.1088|
+000152  6084              STR      r4,[r0,#8]            ;380  ; dataToSend
+000154  4603              MOV      r3,r0                 ;381
+000156  689a              LDR      r2,[r3,#8]            ;381  ; dataToSend
+000158  6859              LDR      r1,[r3,#4]            ;381  ; dataToSend
+00015a  6818              LDR      r0,[r3,#0]            ;381  ; dataToSend
+00015c  f7fffffe          BL       OBD_CAN_SendData
+000160  aa0d              ADD      r2,sp,#0x34           ;382
+000162  2132              MOVS     r1,#0x32              ;382
+000164  48b7              LDR      r0,|L1.1092|
+000166  6800              LDR      r0,[r0,#0]            ;382  ; canRecieveQ
+000168  f7fffffe          BL       OSQPend
+00016c  4683              MOV      r11,r0                ;382
+00016e  f89d0034          LDRB     r0,[sp,#0x34]         ;383
+000172  b998              CBNZ     r0,|L1.412|
+000174  f89b500e          LDRB     r5,[r11,#0xe]         ;385
+000178  f89b000d          LDRB     r0,[r11,#0xd]         ;386
+00017c  eb002005          ADD      r0,r0,r5,LSL #8       ;386
+000180  b285              UXTH     r5,r0                 ;386
+000182  4658              MOV      r0,r11                ;387
+000184  f7fffffe          BL       Mem_free
+000188  f8095016          STRB     r5,[r9,r6,LSL #1]     ;388
+00018c  0a28              LSRS     r0,r5,#8              ;389
+00018e  2101              MOVS     r1,#1                 ;389
+000190  eb010146          ADD      r1,r1,r6,LSL #1       ;389
+000194  f8090001          STRB     r0,[r9,r1]            ;389
+000198  e004              B        |L1.420|
                   |L1.410|
-00019a  a086              ADR      r0,|L1.948|
-00019c  f7fffffe          BL       LogReport
-0001a0  e01e              B        |L1.480|
-                  |L1.418|
-0001a2  487b              LDR      r0,|L1.912|
-0001a4  f890003a          LDRB     r0,[r0,#0x3a]         ;393  ; strengthFuelFlash
-0001a8  2801              CMP      r0,#1                 ;393
-0001aa  d108              BNE      |L1.446|
-0001ac  7920              LDRB     r0,[r4,#4]            ;395
-0001ae  1c80              ADDS     r0,r0,#2              ;395
-0001b0  7120              STRB     r0,[r4,#4]            ;395
-0001b2  7920              LDRB     r0,[r4,#4]            ;396
-0001b4  b980              CBNZ     r0,|L1.472|
-0001b6  78e0              LDRB     r0,[r4,#3]            ;397
-0001b8  1c40              ADDS     r0,r0,#1              ;397
-0001ba  70e0              STRB     r0,[r4,#3]            ;397
-0001bc  e00c              B        |L1.472|
-                  |L1.446|
-0001be  4874              LDR      r0,|L1.912|
-0001c0  f890003a          LDRB     r0,[r0,#0x3a]         ;398  ; strengthFuelFlash
-0001c4  2802              CMP      r0,#2                 ;398
-0001c6  d107              BNE      |L1.472|
-0001c8  7960              LDRB     r0,[r4,#5]            ;400
-0001ca  1c80              ADDS     r0,r0,#2              ;400
-0001cc  7160              STRB     r0,[r4,#5]            ;400
-0001ce  7960              LDRB     r0,[r4,#5]            ;401
-0001d0  b910              CBNZ     r0,|L1.472|
-0001d2  7920              LDRB     r0,[r4,#4]            ;402
-0001d4  1c40              ADDS     r0,r0,#1              ;402
-0001d6  7120              STRB     r0,[r4,#4]            ;402
-                  |L1.472|
-0001d8  1c68              ADDS     r0,r5,#1              ;377
-0001da  b2c5              UXTB     r5,r0                 ;377
-                  |L1.476|
-0001dc  42bd              CMP      r5,r7                 ;377
-0001de  dbb6              BLT      |L1.334|
-                  |L1.480|
-0001e0  bf00              NOP                            ;391
-0001e2  4873              LDR      r0,|L1.944|
-0001e4  7800              LDRB     r0,[r0,#0]            ;405  ; strengPower
-0001e6  28af              CMP      r0,#0xaf              ;405
-0001e8  d01b              BEQ      |L1.546|
-0001ea  42bd              CMP      r5,r7                 ;405
-0001ec  d119              BNE      |L1.546|
-0001ee  20af              MOVS     r0,#0xaf              ;407
-0001f0  496f              LDR      r1,|L1.944|
-0001f2  7008              STRB     r0,[r1,#0]            ;407
-0001f4  4608              MOV      r0,r1                 ;408
-0001f6  7047              STRB     r7,[r0,#1]            ;408
-0001f8  007a              LSLS     r2,r7,#1              ;409
-0001fa  4649              MOV      r1,r9                 ;409
-0001fc  1c80              ADDS     r0,r0,#2              ;409
-0001fe  f7fffffe          BL       __aeabi_memcpy
-000202  22c8              MOVS     r2,#0xc8              ;410
-000204  4971              LDR      r1,|L1.972|
-000206  486a              LDR      r0,|L1.944|
-000208  f7fffffe          BL       Save2KDataToFlash
-00020c  a070              ADR      r0,|L1.976|
-00020e  f7fffffe          BL       LogReport
-000212  2001              MOVS     r0,#1                 ;412
-000214  4975              LDR      r1,|L1.1004|
-000216  f8810096          STRB     r0,[r1,#0x96]         ;412
-00021a  2000              MOVS     r0,#0                 ;413
-00021c  495c              LDR      r1,|L1.912|
-00021e  7648              STRB     r0,[r1,#0x19]         ;413
-000220  e0b1              B        |L1.902|
-                  |L1.546|
-000222  42bd              CMP      r5,r7                 ;414
-000224  d003              BEQ      |L1.558|
-000226  a072              ADR      r0,|L1.1008|
-000228  f7fffffe          BL       LogReport
-00022c  e0ab              B        |L1.902|
-                  |L1.558|
-00022e  f8996001          LDRB     r6,[r9,#1]            ;420
-000232  f8990000          LDRB     r0,[r9,#0]            ;421
-000236  eb002006          ADD      r0,r0,r6,LSL #8       ;421
-00023a  b286              UXTH     r6,r0                 ;421
-00023c  485c              LDR      r0,|L1.944|
-00023e  f8908003          LDRB     r8,[r0,#3]            ;422  ; strengPower
-000242  7880              LDRB     r0,[r0,#2]            ;423  ; strengPower
-000244  eb002008          ADD      r0,r0,r8,LSL #8       ;423
-000248  fa1ff880          UXTH     r8,r0                 ;423
-00024c  45b0              CMP      r8,r6                 ;424
-00024e  dd02              BLE      |L1.598|
-000250  eba80006          SUB      r0,r8,r6              ;424
-000254  e001              B        |L1.602|
-                  |L1.598|
-000256  eba60008          SUB      r0,r6,r8              ;424
-                  |L1.602|
-00025a  9004              STR      r0,[sp,#0x10]         ;424
-00025c  2164              MOVS     r1,#0x64              ;425
-00025e  9804              LDR      r0,[sp,#0x10]         ;425
-000260  4348              MULS     r0,r1,r0              ;425
-000262  fbb0f0f8          UDIV     r0,r0,r8              ;425
-000266  9004              STR      r0,[sp,#0x10]         ;425
-000268  9804              LDR      r0,[sp,#0x10]         ;426
-00026a  b2c0              UXTB     r0,r0                 ;426
-00026c  9003              STR      r0,[sp,#0xc]          ;426
-00026e  45b0              CMP      r8,r6                 ;427
-000270  dd01              BLE      |L1.630|
-000272  2001              MOVS     r0,#1                 ;427
-000274  e000              B        |L1.632|
-                  |L1.630|
-000276  2002              MOVS     r0,#2                 ;427
-                  |L1.632|
-000278  9001              STR      r0,[sp,#4]            ;427
-00027a  2501              MOVS     r5,#1                 ;428
-00027c  e066              B        |L1.844|
-                  |L1.638|
-00027e  2001              MOVS     r0,#1                 ;430
-000280  eb000045          ADD      r0,r0,r5,LSL #1       ;430
-000284  f8196000          LDRB     r6,[r9,r0]            ;430
-000288  f8190015          LDRB     r0,[r9,r5,LSL #1]     ;431
-00028c  eb002006          ADD      r0,r0,r6,LSL #8       ;431
-000290  b286              UXTH     r6,r0                 ;431
-000292  2003              MOVS     r0,#3                 ;432
-000294  eb000045          ADD      r0,r0,r5,LSL #1       ;432
-000298  4945              LDR      r1,|L1.944|
-00029a  f8118000          LDRB     r8,[r1,r0]            ;432
-00029e  2002              MOVS     r0,#2                 ;433
-0002a0  eb000045          ADD      r0,r0,r5,LSL #1       ;433
-0002a4  5c08              LDRB     r0,[r1,r0]            ;433
-0002a6  eb002008          ADD      r0,r0,r8,LSL #8       ;433
-0002aa  fa1ff880          UXTH     r8,r0                 ;433
-0002ae  45b0              CMP      r8,r6                 ;434
-0002b0  dd02              BLE      |L1.696|
-0002b2  eba80006          SUB      r0,r8,r6              ;434
-0002b6  e001              B        |L1.700|
-                  |L1.696|
-0002b8  eba60008          SUB      r0,r6,r8              ;434
-                  |L1.700|
-0002bc  9004              STR      r0,[sp,#0x10]         ;434
-0002be  2164              MOVS     r1,#0x64              ;435
-0002c0  9804              LDR      r0,[sp,#0x10]         ;435
-0002c2  4348              MULS     r0,r1,r0              ;435
-0002c4  fbb0f0f8          UDIV     r0,r0,r8              ;435
-0002c8  9004              STR      r0,[sp,#0x10]         ;435
-0002ca  9804              LDR      r0,[sp,#0x10]         ;437
-0002cc  b2c0              UXTB     r0,r0                 ;437
-0002ce  9002              STR      r0,[sp,#8]            ;437
-0002d0  45b0              CMP      r8,r6                 ;438
-0002d2  dd01              BLE      |L1.728|
-0002d4  2001              MOVS     r0,#1                 ;438
-0002d6  e000              B        |L1.730|
-                  |L1.728|
-0002d8  2002              MOVS     r0,#2                 ;438
-                  |L1.730|
-0002da  9000              STR      r0,[sp,#0]            ;438
-0002dc  e9dd1002          LDRD     r1,r0,[sp,#8]         ;439
-0002e0  4288              CMP      r0,r1                 ;439
-0002e2  d103              BNE      |L1.748|
-0002e4  e9dd1000          LDRD     r1,r0,[sp,#0]         ;439
-0002e8  4288              CMP      r0,r1                 ;439
-0002ea  d02d              BEQ      |L1.840|
-                  |L1.748|
-0002ec  b366              CBZ      r6,|L1.840|
-0002ee  20af              MOVS     r0,#0xaf              ;441
-0002f0  492f              LDR      r1,|L1.944|
-0002f2  7008              STRB     r0,[r1,#0]            ;441
-0002f4  4608              MOV      r0,r1                 ;442
-0002f6  7047              STRB     r7,[r0,#1]            ;442
-0002f8  007a              LSLS     r2,r7,#1              ;443
-0002fa  4649              MOV      r1,r9                 ;443
-0002fc  1c80              ADDS     r0,r0,#2              ;443
-0002fe  f7fffffe          BL       __aeabi_memcpy
-000302  22c8              MOVS     r2,#0xc8              ;444
-000304  4931              LDR      r1,|L1.972|
-000306  482a              LDR      r0,|L1.944|
-000308  f7fffffe          BL       Save2KDataToFlash
-00030c  2005              MOVS     r0,#5                 ;446
-00030e  f7fffffe          BL       Mem_malloc
-000312  4682              MOV      r10,r0                ;446
-000314  2003              MOVS     r0,#3                 ;447
-000316  f88a0000          STRB     r0,[r10,#0]           ;447
-00031a  2050              MOVS     r0,#0x50              ;448
-00031c  f88a0001          STRB     r0,[r10,#1]           ;448
-000320  2019              MOVS     r0,#0x19              ;449
-000322  f88a0002          STRB     r0,[r10,#2]           ;449
-000326  4650              MOV      r0,r10                ;450
-000328  f7fffffe          BL       SendPidCmdData
-00032c  4650              MOV      r0,r10                ;451
-00032e  f7fffffe          BL       Mem_free
-000332  a035              ADR      r0,|L1.1032|
-000334  f7fffffe          BL       LogReport
-000338  2001              MOVS     r0,#1                 ;454
-00033a  492c              LDR      r1,|L1.1004|
-00033c  f8810096          STRB     r0,[r1,#0x96]         ;454
-000340  2000              MOVS     r0,#0                 ;455
-000342  4913              LDR      r1,|L1.912|
-000344  7648              STRB     r0,[r1,#0x19]         ;455
-000346  e003              B        |L1.848|
-                  |L1.840|
-000348  1c68              ADDS     r0,r5,#1              ;428
-00034a  b2c5              UXTB     r5,r0                 ;428
-                  |L1.844|
-00034c  42bd              CMP      r5,r7                 ;428
-00034e  db96              BLT      |L1.638|
-                  |L1.848|
-000350  bf00              NOP                            ;456
-000352  42bd              CMP      r5,r7                 ;459
-000354  d117              BNE      |L1.902|
-000356  2001              MOVS     r0,#1                 ;461
-000358  4924              LDR      r1,|L1.1004|
-00035a  f8810096          STRB     r0,[r1,#0x96]         ;461
-00035e  9803              LDR      r0,[sp,#0xc]          ;462
-000360  b240              SXTB     r0,r0                 ;462
-000362  490b              LDR      r1,|L1.912|
-000364  7648              STRB     r0,[r1,#0x19]         ;462
-000366  9801              LDR      r0,[sp,#4]            ;463
-000368  2801              CMP      r0,#1                 ;463
-00036a  d10c              BNE      |L1.902|
-00036c  4608              MOV      r0,r1                 ;464
-00036e  7e40              LDRB     r0,[r0,#0x19]         ;464  ; strengthFuelFlash
-000370  4240              RSBS     r0,r0,#0              ;464
-000372  b240              SXTB     r0,r0                 ;464
-000374  7648              STRB     r0,[r1,#0x19]         ;464
-000376  e006              B        |L1.902|
-                  |L1.888|
-000378  2000              MOVS     r0,#0                 ;469
-00037a  491c              LDR      r1,|L1.1004|
-00037c  f8810096          STRB     r0,[r1,#0x96]         ;469
-000380  a025              ADR      r0,|L1.1048|
-000382  f7fffffe          BL       LogReport
-                  |L1.902|
-000386  4620              MOV      r0,r4                 ;472
-000388  f7fffffe          BL       Mem_free
-00038c  bf00              NOP      
-00038e  e678              B        |L1.130|
-;;;474    
+00019a  e194              B        |L1.1222|
+                  |L1.412|
+00019c  a0ab              ADR      r0,|L1.1100|
+00019e  f7fffffe          BL       LogReport
+0001a2  e01e              B        |L1.482|
+                  |L1.420|
+0001a4  48a0              LDR      r0,|L1.1064|
+0001a6  f890003a          LDRB     r0,[r0,#0x3a]         ;394  ; strengthFuelFlash
+0001aa  2801              CMP      r0,#1                 ;394
+0001ac  d108              BNE      |L1.448|
+0001ae  7920              LDRB     r0,[r4,#4]            ;396
+0001b0  1c80              ADDS     r0,r0,#2              ;396
+0001b2  7120              STRB     r0,[r4,#4]            ;396
+0001b4  7920              LDRB     r0,[r4,#4]            ;397
+0001b6  b980              CBNZ     r0,|L1.474|
+0001b8  78e0              LDRB     r0,[r4,#3]            ;398
+0001ba  1c40              ADDS     r0,r0,#1              ;398
+0001bc  70e0              STRB     r0,[r4,#3]            ;398
+0001be  e00c              B        |L1.474|
+                  |L1.448|
+0001c0  4899              LDR      r0,|L1.1064|
+0001c2  f890003a          LDRB     r0,[r0,#0x3a]         ;399  ; strengthFuelFlash
+0001c6  2802              CMP      r0,#2                 ;399
+0001c8  d107              BNE      |L1.474|
+0001ca  7960              LDRB     r0,[r4,#5]            ;401
+0001cc  1c80              ADDS     r0,r0,#2              ;401
+0001ce  7160              STRB     r0,[r4,#5]            ;401
+0001d0  7960              LDRB     r0,[r4,#5]            ;402
+0001d2  b910              CBNZ     r0,|L1.474|
+0001d4  7920              LDRB     r0,[r4,#4]            ;403
+0001d6  1c40              ADDS     r0,r0,#1              ;403
+0001d8  7120              STRB     r0,[r4,#4]            ;403
+                  |L1.474|
+0001da  1c70              ADDS     r0,r6,#1              ;378
+0001dc  b2c6              UXTB     r6,r0                 ;378
+                  |L1.478|
+0001de  42be              CMP      r6,r7                 ;378
+0001e0  dbb6              BLT      |L1.336|
+                  |L1.482|
+0001e2  bf00              NOP                            ;392
+0001e4  4898              LDR      r0,|L1.1096|
+0001e6  7800              LDRB     r0,[r0,#0]            ;406  ; strengPower
+0001e8  28af              CMP      r0,#0xaf              ;406
+0001ea  d01b              BEQ      |L1.548|
+0001ec  42be              CMP      r6,r7                 ;406
+0001ee  d119              BNE      |L1.548|
+0001f0  20af              MOVS     r0,#0xaf              ;408
+0001f2  4995              LDR      r1,|L1.1096|
+0001f4  7008              STRB     r0,[r1,#0]            ;408
+0001f6  4608              MOV      r0,r1                 ;409
+0001f8  7047              STRB     r7,[r0,#1]            ;409
+0001fa  007a              LSLS     r2,r7,#1              ;410
+0001fc  4649              MOV      r1,r9                 ;410
+0001fe  1c80              ADDS     r0,r0,#2              ;410
+000200  f7fffffe          BL       __aeabi_memcpy
+000204  22c8              MOVS     r2,#0xc8              ;411
+000206  4997              LDR      r1,|L1.1124|
+000208  488f              LDR      r0,|L1.1096|
+00020a  f7fffffe          BL       Save2KDataToFlash
+00020e  a096              ADR      r0,|L1.1128|
+000210  f7fffffe          BL       LogReport
+000214  2001              MOVS     r0,#1                 ;413
+000216  499b              LDR      r1,|L1.1156|
+000218  f8810099          STRB     r0,[r1,#0x99]         ;413
+00021c  2000              MOVS     r0,#0                 ;414
+00021e  4982              LDR      r1,|L1.1064|
+000220  7648              STRB     r0,[r1,#0x19]         ;414
+000222  e157              B        |L1.1236|
+                  |L1.548|
+000224  42be              CMP      r6,r7                 ;415
+000226  d003              BEQ      |L1.560|
+000228  a097              ADR      r0,|L1.1160|
+00022a  f7fffffe          BL       LogReport
+00022e  e151              B        |L1.1236|
+                  |L1.560|
+000230  f8995001          LDRB     r5,[r9,#1]            ;421
+000234  f8990000          LDRB     r0,[r9,#0]            ;422
+000238  eb002005          ADD      r0,r0,r5,LSL #8       ;422
+00023c  b285              UXTH     r5,r0                 ;422
+00023e  4882              LDR      r0,|L1.1096|
+000240  f8908003          LDRB     r8,[r0,#3]            ;423  ; strengPower
+000244  7880              LDRB     r0,[r0,#2]            ;424  ; strengPower
+000246  eb002008          ADD      r0,r0,r8,LSL #8       ;424
+00024a  fa1ff880          UXTH     r8,r0                 ;424
+00024e  45a8              CMP      r8,r5                 ;425
+000250  dd02              BLE      |L1.600|
+000252  eba80105          SUB      r1,r8,r5              ;425
+000256  e001              B        |L1.604|
+                  |L1.600|
+000258  eba50108          SUB      r1,r5,r8              ;425
+                  |L1.604|
+00025c  4608              MOV      r0,r1                 ;425
+00025e  f7fffffe          BL       __aeabi_i2d
+000262  e9cd010a          STRD     r0,r1,[sp,#0x28]      ;425
+000266  4640              MOV      r0,r8                 ;426
+000268  f7fffffe          BL       __aeabi_ui2d
+00026c  2200              MOVS     r2,#0                 ;426
+00026e  4b8c              LDR      r3,|L1.1184|
+000270  e9cd0102          STRD     r0,r1,[sp,#8]         ;426
+000274  e9dd010a          LDRD     r0,r1,[sp,#0x28]      ;426
+000278  f7fffffe          BL       __aeabi_dmul
+00027c  e9cd0100          STRD     r0,r1,[sp,#0]         ;426
+000280  e9dd2302          LDRD     r2,r3,[sp,#8]         ;426
+000284  f7fffffe          BL       __aeabi_ddiv
+000288  e9cd010a          STRD     r0,r1,[sp,#0x28]      ;426
+00028c  e9dd010a          LDRD     r0,r1,[sp,#0x28]      ;427
+000290  f7fffffe          BL       __aeabi_d2uiz
+000294  b280              UXTH     r0,r0                 ;427
+000296  9009              STR      r0,[sp,#0x24]         ;427
+000298  9809              LDR      r0,[sp,#0x24]         ;428
+00029a  f7fffffe          BL       __aeabi_ui2d
+00029e  2200              MOVS     r2,#0                 ;428
+0002a0  4b80              LDR      r3,|L1.1188|
+0002a2  e9cd0100          STRD     r0,r1,[sp,#0]         ;428
+0002a6  f7fffffe          BL       __aeabi_dadd
+0002aa  e9cd0102          STRD     r0,r1,[sp,#8]         ;428
+0002ae  e9dd230a          LDRD     r2,r3,[sp,#0x28]      ;428
+0002b2  f7fffffe          BL       __aeabi_cdcmple
+0002b6  d203              BCS      |L1.704|
+0002b8  9809              LDR      r0,[sp,#0x24]         ;429
+0002ba  1c40              ADDS     r0,r0,#1              ;429
+0002bc  b280              UXTH     r0,r0                 ;429
+0002be  9009              STR      r0,[sp,#0x24]         ;429
+                  |L1.704|
+0002c0  9809              LDR      r0,[sp,#0x24]         ;430
+0002c2  b2c0              UXTB     r0,r0                 ;430
+0002c4  9008              STR      r0,[sp,#0x20]         ;430
+0002c6  45a8              CMP      r8,r5                 ;431
+0002c8  dd01              BLE      |L1.718|
+0002ca  2001              MOVS     r0,#1                 ;431
+0002cc  e000              B        |L1.720|
+                  |L1.718|
+0002ce  2002              MOVS     r0,#2                 ;431
+                  |L1.720|
+0002d0  9006              STR      r0,[sp,#0x18]         ;431
+0002d2  2601              MOVS     r6,#1                 ;432
+0002d4  e097              B        |L1.1030|
+                  |L1.726|
+0002d6  2001              MOVS     r0,#1                 ;434
+0002d8  eb000046          ADD      r0,r0,r6,LSL #1       ;434
+0002dc  f8195000          LDRB     r5,[r9,r0]            ;434
+0002e0  f8190016          LDRB     r0,[r9,r6,LSL #1]     ;435
+0002e4  eb002005          ADD      r0,r0,r5,LSL #8       ;435
+0002e8  b285              UXTH     r5,r0                 ;435
+0002ea  2003              MOVS     r0,#3                 ;436
+0002ec  eb000046          ADD      r0,r0,r6,LSL #1       ;436
+0002f0  4955              LDR      r1,|L1.1096|
+0002f2  f8118000          LDRB     r8,[r1,r0]            ;436
+0002f6  2002              MOVS     r0,#2                 ;437
+0002f8  eb000046          ADD      r0,r0,r6,LSL #1       ;437
+0002fc  5c08              LDRB     r0,[r1,r0]            ;437
+0002fe  eb002008          ADD      r0,r0,r8,LSL #8       ;437
+000302  fa1ff880          UXTH     r8,r0                 ;437
+000306  4545              CMP      r5,r8                 ;439
+000308  d102              BNE      |L1.784|
+00030a  2d64              CMP      r5,#0x64              ;439
+00030c  da00              BGE      |L1.784|
+00030e  e078              B        |L1.1026|
+                  |L1.784|
+000310  45a8              CMP      r8,r5                 ;442
+000312  dd02              BLE      |L1.794|
+000314  eba80105          SUB      r1,r8,r5              ;442
+000318  e001              B        |L1.798|
+                  |L1.794|
+00031a  eba50108          SUB      r1,r5,r8              ;442
+                  |L1.798|
+00031e  4608              MOV      r0,r1                 ;442
+000320  f7fffffe          BL       __aeabi_i2d
+000324  e9cd010a          STRD     r0,r1,[sp,#0x28]      ;442
+000328  4640              MOV      r0,r8                 ;443
+00032a  f7fffffe          BL       __aeabi_ui2d
+00032e  2200              MOVS     r2,#0                 ;443
+000330  4b5b              LDR      r3,|L1.1184|
+000332  e9cd0102          STRD     r0,r1,[sp,#8]         ;443
+000336  e9dd010a          LDRD     r0,r1,[sp,#0x28]      ;443
+00033a  f7fffffe          BL       __aeabi_dmul
+00033e  e9cd0100          STRD     r0,r1,[sp,#0]         ;443
+000342  e9dd2302          LDRD     r2,r3,[sp,#8]         ;443
+000346  f7fffffe          BL       __aeabi_ddiv
+00034a  e9cd010a          STRD     r0,r1,[sp,#0x28]      ;443
+00034e  e9dd010a          LDRD     r0,r1,[sp,#0x28]      ;444
+000352  f7fffffe          BL       __aeabi_d2uiz
+000356  b280              UXTH     r0,r0                 ;444
+000358  9009              STR      r0,[sp,#0x24]         ;444
+00035a  9809              LDR      r0,[sp,#0x24]         ;445
+00035c  f7fffffe          BL       __aeabi_ui2d
+000360  2200              MOVS     r2,#0                 ;445
+000362  4b50              LDR      r3,|L1.1188|
+000364  e9cd0100          STRD     r0,r1,[sp,#0]         ;445
+000368  f7fffffe          BL       __aeabi_dadd
+00036c  e9cd0102          STRD     r0,r1,[sp,#8]         ;445
+000370  e9dd230a          LDRD     r2,r3,[sp,#0x28]      ;445
+000374  f7fffffe          BL       __aeabi_cdcmple
+000378  d203              BCS      |L1.898|
+00037a  9809              LDR      r0,[sp,#0x24]         ;446
+00037c  1c40              ADDS     r0,r0,#1              ;446
+00037e  b280              UXTH     r0,r0                 ;446
+000380  9009              STR      r0,[sp,#0x24]         ;446
+                  |L1.898|
+000382  9809              LDR      r0,[sp,#0x24]         ;448
+000384  b2c0              UXTB     r0,r0                 ;448
+000386  9007              STR      r0,[sp,#0x1c]         ;448
+000388  45a8              CMP      r8,r5                 ;449
+00038a  dd01              BLE      |L1.912|
+00038c  2001              MOVS     r0,#1                 ;449
+00038e  e000              B        |L1.914|
+                  |L1.912|
+000390  2002              MOVS     r0,#2                 ;449
+                  |L1.914|
+000392  9005              STR      r0,[sp,#0x14]         ;449
+000394  e9dd1007          LDRD     r1,r0,[sp,#0x1c]      ;450
+000398  4288              CMP      r0,r1                 ;450
+00039a  d103              BNE      |L1.932|
+00039c  e9dd1005          LDRD     r1,r0,[sp,#0x14]      ;450
+0003a0  4288              CMP      r0,r1                 ;450
+0003a2  d02d              BEQ      |L1.1024|
+                  |L1.932|
+0003a4  b365              CBZ      r5,|L1.1024|
+0003a6  20af              MOVS     r0,#0xaf              ;452
+0003a8  4927              LDR      r1,|L1.1096|
+0003aa  7008              STRB     r0,[r1,#0]            ;452
+0003ac  4608              MOV      r0,r1                 ;453
+0003ae  7047              STRB     r7,[r0,#1]            ;453
+0003b0  007a              LSLS     r2,r7,#1              ;454
+0003b2  4649              MOV      r1,r9                 ;454
+0003b4  1c80              ADDS     r0,r0,#2              ;454
+0003b6  f7fffffe          BL       __aeabi_memcpy
+0003ba  22c8              MOVS     r2,#0xc8              ;455
+0003bc  4929              LDR      r1,|L1.1124|
+0003be  4822              LDR      r0,|L1.1096|
+0003c0  f7fffffe          BL       Save2KDataToFlash
+0003c4  2005              MOVS     r0,#5                 ;457
+0003c6  f7fffffe          BL       Mem_malloc
+0003ca  4682              MOV      r10,r0                ;457
+0003cc  2003              MOVS     r0,#3                 ;458
+0003ce  f88a0000          STRB     r0,[r10,#0]           ;458
+0003d2  2050              MOVS     r0,#0x50              ;459
+0003d4  f88a0001          STRB     r0,[r10,#1]           ;459
+0003d8  2019              MOVS     r0,#0x19              ;460
+0003da  f88a0002          STRB     r0,[r10,#2]           ;460
+0003de  4650              MOV      r0,r10                ;461
+0003e0  f7fffffe          BL       SendPidCmdData
+0003e4  4650              MOV      r0,r10                ;462
+0003e6  f7fffffe          BL       Mem_free
+0003ea  a02f              ADR      r0,|L1.1192|
+0003ec  f7fffffe          BL       LogReport
+0003f0  2001              MOVS     r0,#1                 ;465
+0003f2  4924              LDR      r1,|L1.1156|
+0003f4  f8810099          STRB     r0,[r1,#0x99]         ;465
+0003f8  2000              MOVS     r0,#0                 ;466
+0003fa  490b              LDR      r1,|L1.1064|
+0003fc  7648              STRB     r0,[r1,#0x19]         ;466
+0003fe  e005              B        |L1.1036|
+                  |L1.1024|
+000400  bf00              NOP                            ;440
+                  |L1.1026|
+000402  1c70              ADDS     r0,r6,#1              ;432
+000404  b2c6              UXTB     r6,r0                 ;432
+                  |L1.1030|
+000406  42be              CMP      r6,r7                 ;432
+000408  f6ffaf65          BLT      |L1.726|
+                  |L1.1036|
+00040c  bf00              NOP                            ;467
+00040e  42be              CMP      r6,r7                 ;470
+000410  d160              BNE      |L1.1236|
+000412  2001              MOVS     r0,#1                 ;472
+000414  491b              LDR      r1,|L1.1156|
+000416  f8810099          STRB     r0,[r1,#0x99]         ;472
+00041a  9808              LDR      r0,[sp,#0x20]         ;473
+00041c  b240              SXTB     r0,r0                 ;473
+00041e  4902              LDR      r1,|L1.1064|
+000420  7648              STRB     r0,[r1,#0x19]         ;473
+000422  9806              LDR      r0,[sp,#0x18]         ;474
+000424  2801              CMP      r0,#1                 ;474
+000426  e047              B        |L1.1208|
+                  |L1.1064|
+                          DCD      strengthFuelFlash
+                  |L1.1068|
+00042c  53657276          DCB      "Service mode Error!",0
+000430  69636520
+000434  6d6f6465
+000438  20457272
+00043c  6f722100
+                  |L1.1088|
+                          DCD      dataToSend
+                  |L1.1092|
+                          DCD      canRecieveQ
+                  |L1.1096|
+                          DCD      strengPower
+                  |L1.1100|
+00044c  50656e59          DCB      "PenYou Read Wrong!!!",0
+000450  6f752052
+000454  65616420
+000458  57726f6e
+00045c  67212121
+000460  00      
+000461  00                DCB      0
+000462  00                DCB      0
+000463  00                DCB      0
+                  |L1.1124|
+                          DCD      0x08060000
+                  |L1.1128|
+000468  50656e59          DCB      "PenYou Write to Flash OK!!!",0
+00046c  6f752057
+000470  72697465
+000474  20746f20
+000478  466c6173
+00047c  68204f4b
+000480  21212100
+                  |L1.1156|
+                          DCD      varOperation
+                  |L1.1160|
+000488  50656e59          DCB      "PenYou not read all!!!",0
+00048c  6f75206e
+000490  6f742072
+000494  65616420
+000498  616c6c21
+00049c  212100  
+00049f  00                DCB      0
+                  |L1.1184|
+                          DCD      0x40590000
+                  |L1.1188|
+                          DCD      0x3fe00000
+                  |L1.1192|
+0004a8  43617220          DCB      "Car changed!!!",0
+0004ac  6368616e
+0004b0  67656421
+0004b4  212100  
+0004b7  00                DCB      0
+                  |L1.1208|
+0004b8  d10c              BNE      |L1.1236|
+0004ba  4608              MOV      r0,r1                 ;475
+0004bc  7e40              LDRB     r0,[r0,#0x19]         ;475  ; strengthFuelFlash
+0004be  4240              RSBS     r0,r0,#0              ;475
+0004c0  b240              SXTB     r0,r0                 ;475
+0004c2  7648              STRB     r0,[r1,#0x19]         ;475
+0004c4  e006              B        |L1.1236|
+                  |L1.1222|
+0004c6  2000              MOVS     r0,#0                 ;480
+0004c8  4905              LDR      r1,|L1.1248|
+0004ca  f8810099          STRB     r0,[r1,#0x99]         ;480
+0004ce  a005              ADR      r0,|L1.1252|
+0004d0  f7fffffe          BL       LogReport
+                  |L1.1236|
+0004d4  4620              MOV      r0,r4                 ;483
+0004d6  f7fffffe          BL       Mem_free
+0004da  bf00              NOP      
+0004dc  e5d2              B        |L1.132|
+;;;485    
                           ENDP
 
-                  |L1.912|
-                          DCD      strengthFuelFlash
-                  |L1.916|
-000394  53657276          DCB      "Service mode Error!",0
-000398  69636520
-00039c  6d6f6465
-0003a0  20457272
-0003a4  6f722100
-                  |L1.936|
-                          DCD      dataToSend
-                  |L1.940|
-                          DCD      canRecieveQ
-                  |L1.944|
-                          DCD      strengPower
-                  |L1.948|
-0003b4  50656e59          DCB      "PenYou Read Wrong!!!",0
-0003b8  6f752052
-0003bc  65616420
-0003c0  57726f6e
-0003c4  67212121
-0003c8  00      
-0003c9  00                DCB      0
-0003ca  00                DCB      0
-0003cb  00                DCB      0
-                  |L1.972|
-                          DCD      0x08060000
-                  |L1.976|
-0003d0  50656e59          DCB      "PenYou Write to Flash OK!!!",0
-0003d4  6f752057
-0003d8  72697465
-0003dc  20746f20
-0003e0  466c6173
-0003e4  68204f4b
-0003e8  21212100
-                  |L1.1004|
+0004de  0000              DCW      0x0000
+                  |L1.1248|
                           DCD      varOperation
-                  |L1.1008|
-0003f0  50656e59          DCB      "PenYou not read all!!!",0
-0003f4  6f75206e
-0003f8  6f742072
-0003fc  65616420
-000400  616c6c21
-000404  212100  
-000407  00                DCB      0
-                  |L1.1032|
-000408  43617220          DCB      "Car changed!!!",0
-00040c  6368616e
-000410  67656421
-000414  212100  
-000417  00                DCB      0
-                  |L1.1048|
-000418  50656e59          DCB      "PenYou can't read!",0
-00041c  6f752063
-000420  616e2774
-000424  20726561
-000428  642100  
-00042b  00                DCB      0
+                  |L1.1252|
+0004e4  50656e59          DCB      "PenYou can't read!",0
+0004e8  6f752063
+0004ec  616e2774
+0004f0  20726561
+0004f4  642100  
+0004f7  00                DCB      0
 
                           AREA ||i.ReadECUVersion||, CODE, READONLY, ALIGN=2
 
@@ -706,7 +789,7 @@
 000060  f7fffffe          BL       LogReport
 000064  2000              MOVS     r0,#0
 000066  4963              LDR      r1,|L2.500|
-000068  f8810096          STRB     r0,[r1,#0x96]
+000068  f8810099          STRB     r0,[r1,#0x99]
 ;;;244    		return 200;
 00006c  20c8              MOVS     r0,#0xc8
                   |L2.110|
@@ -817,7 +900,7 @@
 0000cc  f7fffffe          BL       LogReport
 0000d0  2000              MOVS     r0,#0                 ;260
 0000d2  4948              LDR      r1,|L2.500|
-0000d4  f8810096          STRB     r0,[r1,#0x96]         ;260
+0000d4  f8810099          STRB     r0,[r1,#0x99]         ;260
 0000d8  20c8              MOVS     r0,#0xc8              ;261
 0000da  e7c8              B        |L2.110|
                   |L2.220|
@@ -848,7 +931,7 @@
 00010c  f7fffffe          BL       LogReport
 000110  2000              MOVS     r0,#0                 ;272
 000112  4938              LDR      r1,|L2.500|
-000114  f8810096          STRB     r0,[r1,#0x96]         ;272
+000114  f8810099          STRB     r0,[r1,#0x99]         ;272
 000118  20c8              MOVS     r0,#0xc8              ;273
 00011a  e7a8              B        |L2.110|
                   |L2.284|
@@ -903,7 +986,7 @@
                   |L2.386|
 000182  2000              MOVS     r0,#0                 ;292
 000184  491b              LDR      r1,|L2.500|
-000186  f8810096          STRB     r0,[r1,#0x96]         ;292
+000186  f8810099          STRB     r0,[r1,#0x99]         ;292
 00018a  21c8              MOVS     r1,#0xc8              ;293
 00018c  482d              LDR      r0,|L2.580|
 00018e  f7fffffe          BL       __aeabi_memclr
@@ -1315,7 +1398,7 @@
 000140  f7fffffe          BL       LogReport
 000144  2000              MOVS     r0,#0                 ;92
 000146  49c8              LDR      r1,|L3.1128|
-000148  f8810095          STRB     r0,[r1,#0x95]         ;92
+000148  f8810098          STRB     r0,[r1,#0x98]         ;92
 00014c  4650              MOV      r0,r10                ;93
 00014e  f7fffffe          BL       Mem_free
 000152  e78a              B        |L3.106|
@@ -1780,7 +1863,7 @@
 000558  f7fffffe          BL       LogReport
 00055c  2000              MOVS     r0,#0                 ;202
 00055e  491f              LDR      r1,|L3.1500|
-000560  f8810095          STRB     r0,[r1,#0x95]         ;202
+000560  f8810098          STRB     r0,[r1,#0x98]         ;202
 000564  e021              B        |L3.1450|
                   |L3.1382|
 000566  a01e              ADR      r0,|L3.1504|
@@ -1805,7 +1888,7 @@
 000598  f7fffffe          BL       SendPidCmdData
 00059c  2001              MOVS     r0,#1                 ;214
 00059e  490f              LDR      r1,|L3.1500|
-0005a0  f8810095          STRB     r0,[r1,#0x95]         ;214
+0005a0  f8810098          STRB     r0,[r1,#0x98]         ;214
 0005a4  4648              MOV      r0,r9                 ;215
 0005a6  f7fffffe          BL       Mem_free
                   |L3.1450|
@@ -1938,96 +2021,102 @@
                           AREA ||i.StrengthFuel||, CODE, READONLY, ALIGN=2
 
                   StrengthFuel PROC
-;;;474    
-;;;475    void StrengthFuel(void)
+;;;485    
+;;;486    void StrengthFuel(void)
 000000  b510              PUSH     {r4,lr}
-;;;476    {
-;;;477    	static uint16_t time = 0;
-;;;478    	if(strengthFuelFlash.coe == strengthFuel.coe)//系数相等，不进行提升动力
-000002  481b              LDR      r0,|L5.112|
+;;;487    {
+;;;488    	static uint16_t time = 0;
+;;;489    	if(strengthFuelFlash.coe == strengthFuel.coe)//系数相等，不进行提升动力
+000002  481e              LDR      r0,|L5.124|
 000004  f9900019          LDRSB    r0,[r0,#0x19]  ; strengthFuelFlash
-000008  491a              LDR      r1,|L5.116|
+000008  491d              LDR      r1,|L5.128|
 00000a  f9911019          LDRSB    r1,[r1,#0x19]  ; strengthFuel
 00000e  4288              CMP      r0,r1
 000010  d100              BNE      |L5.20|
                   |L5.18|
-;;;479    		return;
-;;;480    	if(varOperation.isStrenOilOK == 0)           //
-;;;481    	{
-;;;482    		if(time % 10000 == 0)                    //防止不停地打印信息
-;;;483    			LogReport("ECU can't be discerned!");
-;;;484    		time++;
-;;;485    		return;
-;;;486    	}
-;;;487    	if(varOperation.pidTset == 1)//如果正在测试，也不可以进行增强动力
-;;;488    		return;
-;;;489    	varOperation.strengthRun = 1;//进入提升动力状态
-;;;490    	//停止CAN报文的发送
-;;;491    	//过安全算法、过模式、将新的标定值写入ECU
-;;;492    	//延时20秒，进入正常的CAN报文收发
-;;;493    	SafeALG();
-;;;494    	OSTimeDlyHMSM(0,0,20,0);
-;;;495    	varOperation.strengthRun = 0;
-;;;496    }
+;;;490    		return;
+;;;491    	if(varOperation.isStrenOilOK == 0)           //
+;;;492    	{
+;;;493    		if(time % 10000 == 0)                    //防止不停地打印信息
+;;;494    			LogReport("ECU can't be discerned!");
+;;;495    		time++;
+;;;496    		return;
+;;;497    	}
+;;;498    	if(varOperation.pidTset == 1)//如果正在测试，也不可以进行增强动力
+;;;499    		return;
+;;;500    	varOperation.strengthRun = 1;//进入提升动力状态
+;;;501    	varOperation.pidRun = 0;
+;;;502    	//停止CAN报文的发送
+;;;503    	//过安全算法、过模式、将新的标定值写入ECU
+;;;504    	//延时20秒，进入正常的CAN报文收发
+;;;505    	SafeALG();
+;;;506    	OSTimeDlyHMSM(0,0,20,0);
+;;;507    	varOperation.strengthRun = 0;
+;;;508    	varOperation.pidRun = 1;
+;;;509    }
 000012  bd10              POP      {r4,pc}
                   |L5.20|
-000014  4818              LDR      r0,|L5.120|
-000016  f8900096          LDRB     r0,[r0,#0x96]         ;480  ; varOperation
+000014  481b              LDR      r0,|L5.132|
+000016  f8900099          LDRB     r0,[r0,#0x99]         ;491  ; varOperation
 00001a  b988              CBNZ     r0,|L5.64|
-00001c  4817              LDR      r0,|L5.124|
-00001e  8800              LDRH     r0,[r0,#0]            ;482  ; time
-000020  f2427110          MOV      r1,#0x2710            ;482
-000024  fb90f2f1          SDIV     r2,r0,r1              ;482
-000028  fb010012          MLS      r0,r1,r2,r0           ;482
+00001c  481a              LDR      r0,|L5.136|
+00001e  8800              LDRH     r0,[r0,#0]            ;493  ; time
+000020  f2427110          MOV      r1,#0x2710            ;493
+000024  fb90f2f1          SDIV     r2,r0,r1              ;493
+000028  fb010012          MLS      r0,r1,r2,r0           ;493
 00002c  b910              CBNZ     r0,|L5.52|
-00002e  a014              ADR      r0,|L5.128|
+00002e  a017              ADR      r0,|L5.140|
 000030  f7fffffe          BL       LogReport
                   |L5.52|
-000034  4811              LDR      r0,|L5.124|
-000036  8800              LDRH     r0,[r0,#0]            ;484  ; time
-000038  1c40              ADDS     r0,r0,#1              ;484
-00003a  4910              LDR      r1,|L5.124|
-00003c  8008              STRH     r0,[r1,#0]            ;484
+000034  4814              LDR      r0,|L5.136|
+000036  8800              LDRH     r0,[r0,#0]            ;495  ; time
+000038  1c40              ADDS     r0,r0,#1              ;495
+00003a  4913              LDR      r1,|L5.136|
+00003c  8008              STRH     r0,[r1,#0]            ;495
 00003e  e7e8              B        |L5.18|
                   |L5.64|
-000040  480d              LDR      r0,|L5.120|
-000042  f8900093          LDRB     r0,[r0,#0x93]         ;487  ; varOperation
-000046  2801              CMP      r0,#1                 ;487
+000040  4810              LDR      r0,|L5.132|
+000042  f8900093          LDRB     r0,[r0,#0x93]         ;498  ; varOperation
+000046  2801              CMP      r0,#1                 ;498
 000048  d100              BNE      |L5.76|
 00004a  e7e2              B        |L5.18|
                   |L5.76|
-00004c  2001              MOVS     r0,#1                 ;489
-00004e  490a              LDR      r1,|L5.120|
-000050  f8810094          STRB     r0,[r1,#0x94]         ;489
-000054  f7fffffe          BL       SafeALG
-000058  2300              MOVS     r3,#0                 ;494
-00005a  2214              MOVS     r2,#0x14              ;494
-00005c  4619              MOV      r1,r3                 ;494
-00005e  4618              MOV      r0,r3                 ;494
-000060  f7fffffe          BL       OSTimeDlyHMSM
-000064  2000              MOVS     r0,#0                 ;495
-000066  4904              LDR      r1,|L5.120|
-000068  f8810094          STRB     r0,[r1,#0x94]         ;495
-00006c  bf00              NOP      
-00006e  e7d0              B        |L5.18|
-;;;497    
+00004c  2001              MOVS     r0,#1                 ;500
+00004e  490d              LDR      r1,|L5.132|
+000050  f8810094          STRB     r0,[r1,#0x94]         ;500
+000054  2000              MOVS     r0,#0                 ;501
+000056  f8810095          STRB     r0,[r1,#0x95]         ;501
+00005a  f7fffffe          BL       SafeALG
+00005e  2300              MOVS     r3,#0                 ;506
+000060  2214              MOVS     r2,#0x14              ;506
+000062  4619              MOV      r1,r3                 ;506
+000064  4618              MOV      r0,r3                 ;506
+000066  f7fffffe          BL       OSTimeDlyHMSM
+00006a  2000              MOVS     r0,#0                 ;507
+00006c  4905              LDR      r1,|L5.132|
+00006e  f8810094          STRB     r0,[r1,#0x94]         ;507
+000072  2001              MOVS     r0,#1                 ;508
+000074  f8810095          STRB     r0,[r1,#0x95]         ;508
+000078  bf00              NOP      
+00007a  e7ca              B        |L5.18|
+;;;510    
                           ENDP
 
-                  |L5.112|
-                          DCD      strengthFuelFlash
-                  |L5.116|
-                          DCD      strengthFuel
-                  |L5.120|
-                          DCD      varOperation
                   |L5.124|
-                          DCD      time
+                          DCD      strengthFuelFlash
                   |L5.128|
-000080  45435520          DCB      "ECU can't be discerned!",0
-000084  63616e27
-000088  74206265
-00008c  20646973
-000090  6365726e
-000094  65642100
+                          DCD      strengthFuel
+                  |L5.132|
+                          DCD      varOperation
+                  |L5.136|
+                          DCD      time
+                  |L5.140|
+00008c  45435520          DCB      "ECU can't be discerned!",0
+000090  63616e27
+000094  74206265
+000098  20646973
+00009c  6365726e
+0000a0  65642100
 
                           AREA ||.data||, DATA, ALIGN=2
 

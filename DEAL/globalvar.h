@@ -112,6 +112,8 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint16_t canTest;       //CAN 测试波特率、ID
 	uint8_t  pidTset;       //测试服务器下发的PID指令
 	uint8_t  strengthRun;   //正在提升动力
+	uint8_t  pidRun;        //要不要发送PID指令
+	uint16_t datOKLeng;
 	
 	signed char  oilMode;   //0 - 正常模式    1 - 强动力模式   2 - 节油模式
 	uint8_t  isStrenOilOK;  //是否可以进行提升动力

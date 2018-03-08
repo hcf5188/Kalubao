@@ -7,6 +7,8 @@
 #include "gps.h"
 #include "stm32f10x_wwdg.h"
 
+#define  FRAME_HEAD_LEN    27 
+
 #define GPIO_LED		GPIOB
 #define LED_GPIO_OBD 	GPIO_Pin_5
 #define LED_GPIO_MOD 	GPIO_Pin_4
@@ -27,14 +29,16 @@ extern pSTORE             cdmaLogData ;  //发送日志缓冲区
 extern STRENFUEL_Struct   strengthFuel;  //增强动力、节油
 extern STRENFUEL_Struct   strengthFuelFlash;  //Flash保存的增强动力
 
-#define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB,GPIO_Pin_15)
+
+
+#define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB  ,GPIO_Pin_15)
 #define CDMA_POWER_LOW   GPIO_ResetBits(GPIOB,GPIO_Pin_15)
 
-#define CDMA_MOS_HIGH    GPIO_SetBits(GPIOB,GPIO_Pin_12)
+#define CDMA_MOS_HIGH    GPIO_SetBits(GPIOB  ,GPIO_Pin_12)
 #define CDMA_MOS_LOW     GPIO_ResetBits(GPIOB,GPIO_Pin_12)
 
 #define GPS_POWER_ON     GPIO_ResetBits(GPIOC,GPIO_Pin_8);  //打开GPS电源
-#define GPS_POWER_OFF    GPIO_SetBits(GPIOC,GPIO_Pin_8);    //关闭GPS电源
+#define GPS_POWER_OFF    GPIO_SetBits(GPIOC  ,GPIO_Pin_8);  //关闭GPS电源
 
 void SystemBspInit(void );
 
@@ -43,8 +47,8 @@ void BspClockInit(void);   //外设时钟初始化
 void GPIOLEDInit(void);    //LED IO 口初始化
 void ADC1Init(void);
 void GPIO_ALL_IN(void);
-void RTCConfigureInit(void);//RTC实时时钟初始化
-void RTC_Time_Adjust(uint32_t value);//RTC实时时钟校正
+void RTCConfigureInit(void);                 //RTC实时时钟初始化
+void RTC_Time_Adjust(uint32_t value);        //RTC实时时钟校正
 void WatchDogInit(uint8_t prer,uint16_t rlr);//独立看门狗初始化
 
 void CARVarInit(void); //与车辆行驶相关结构体的初始化
@@ -60,7 +64,9 @@ void TIM4ConfigInit(void );//定时器3 用来判断CDMA接收超时
 void TIM2ConfigInit(void );//定时器2 用来处理GPRS接收逻辑
 void TIM5ConfigInit(void );//定时器5 用来处理USB接收
 
-void CDMASendByte(uint8_t dat);
+void PIDPtrInit(void);     //多包合一包，内存块分配初始化
+
+void    CDMASendByte(uint8_t dat);
 uint8_t CDMASendDatas(const uint8_t* s,uint16_t length);//CDMA 发送字符串
 uint8_t GPSSendDatas(const uint8_t* s,uint8_t length);  //GPS  发送字符串
 

@@ -313,7 +313,8 @@ void Get_Q_FromECU(void)
 	uint8_t  i,err;
 	uint16_t dat1,dat2,datFlash;
 	uint8_t  qNum = 0;
-	uint32_t d_Value = 0;
+	double  d_Value = 0.0;
+	uint16_t d_Value1 = 0;
 	uint8_t bili1 = 0;
 	uint8_t bili2 = 0;
 	uint8_t fuhao1 = 0;
@@ -343,13 +344,13 @@ void Get_Q_FromECU(void)
 	CAN1_RxMsg = OSQPend(canRecieveQ,50,&err);
 	if(err == OS_ERR_NONE)
 	{
-		qNum = CAN1_RxMsg -> Data[2];               //得到喷油量的个数
-		if(strengPower[1] != qNum)//如果保存的ECU 喷油量的个数
+		qNum = CAN1_RxMsg -> Data[2];       //得到喷油量的个数        
+		if(strengPower[1] != qNum)          //如果保存的ECU 喷油量的个数 不相等
 		{
 			strengPower[0] = 0;
 			strengPower[1] = qNum;
-			carChange = Mem_malloc(5);  //
-			carChange[0] = 3;           //长度
+			carChange = Mem_malloc(5);      //
+			carChange[0] = 3;               //长度
 			carChange[1] = 0x50;
 			carChange[2] = 0x19;
 			SendPidCmdData(carChange);
@@ -357,7 +358,7 @@ void Get_Q_FromECU(void)
 		}
 		if(strengthFuelFlash.modeOrder == 1)
 		{
-			dat1 = textEcu[3];                      //用于辨别地址是否累加>0xFF,若是，则高地址自增
+			dat1 = textEcu[3];              //用于辨别地址是否累加 > 0xFF,若是，则高地址自增
 			dat2 = textEcu[4] + qNum * 2;
 			if(dat2 >= 256)
 				dat1 ++;
@@ -365,7 +366,7 @@ void Get_Q_FromECU(void)
 			textEcu[4] += (qNum * 2 + 2);
 		}else if(strengthFuelFlash.modeOrder == 2)
 		{
-			dat1 = textEcu[4];                      //用于辨别地址是否累加>0xFF,若是，则高地址自增
+			dat1 = textEcu[4];              //用于辨别地址是否累加 > 0xFF,若是，则高地址自增
 			dat2 = textEcu[5] + qNum * 2;
 			if(dat2 >= 256)
 				dat1 ++;
@@ -422,8 +423,11 @@ void Get_Q_FromECU(void)
 			datFlash = strengPower[3];
 			datFlash = (datFlash << 8) + strengPower[2];
 			d_Value = datFlash > dat1 ? datFlash - dat1:dat1 - datFlash;
-			d_Value = d_Value * 100 / datFlash;
-			bili1 = d_Value;
+			d_Value = d_Value * 100.0 / datFlash;
+			d_Value1 = (uint16_t)d_Value;
+			if(d_Value>((double)d_Value1+0.5))
+				d_Value1 += 1;
+			bili1 = d_Value1;
 			fuhao1 = datFlash > dat1 ? 1:2;
 			for(i = 1;i < qNum;i ++)
 			{
@@ -431,10 +435,17 @@ void Get_Q_FromECU(void)
 				dat1 = (dat1 << 8) + qBuff[i * 2];
 				datFlash = strengPower[i * 2 + 3];
 				datFlash = (datFlash << 8) + strengPower[i*2 + 2];
-				d_Value = datFlash > dat1 ? datFlash - dat1 : dat1 - datFlash;
-				d_Value = d_Value * 100 / datFlash;
 				
-				bili2 = d_Value;
+				if(dat1 == datFlash && dat1 < 100)    //读到的喷油量的值为0，比例就不相等啦
+					continue;
+				
+				d_Value = datFlash > dat1 ? datFlash - dat1 : dat1 - datFlash;
+				d_Value = d_Value * 100.0 / datFlash;
+				d_Value1 = (uint16_t)d_Value;
+				if(d_Value>((double)d_Value1+0.5))
+					d_Value1 += 1;
+				
+				bili2 = d_Value1;
 				fuhao2 = datFlash > dat1 ? 1:2;
 				if((bili1 != bili2 || fuhao1 != fuhao2)&&(dat1 != 0))		
 				{
@@ -487,12 +498,14 @@ void StrengthFuel(void)
 	if(varOperation.pidTset == 1)//如果正在测试，也不可以进行增强动力
 		return;
 	varOperation.strengthRun = 1;//进入提升动力状态
+	varOperation.pidRun = 0;
 	//停止CAN报文的发送
 	//过安全算法、过模式、将新的标定值写入ECU
 	//延时20秒，进入正常的CAN报文收发
 	SafeALG();
 	OSTimeDlyHMSM(0,0,20,0);
 	varOperation.strengthRun = 0;
+	varOperation.pidRun = 1;
 }
 
 

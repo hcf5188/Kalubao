@@ -302,7 +302,7 @@
 ;;;74     			
 ;;;75     //			case 0x0CF00400: break;
 ;;;76     			
-;;;77     			case 0x0CF00300: memcpy(RCVData1,CAN1_RxMsg->Data,8);CANr2=1;break;
+;;;77     			case 0x0CF00300: memcpy(RCVData1,CAN1_RxMsg->Data,8);CANr2=1;break;  // EEC2
 0001fa  483c              LDR      r0,|L1.748|
 0001fc  f8d4100b          LDR      r1,[r4,#0xb]
 000200  6001              STR      r1,[r0,#0]  ; RCVData1
@@ -314,7 +314,7 @@
 00020e  e037              B        |L1.640|
                   |L1.528|
 ;;;78     			
-;;;79     			case 0x18FF0004: memcpy(RCVData2,CAN1_RxMsg->Data,8);CANr3=1;break;
+;;;79     			case 0x18FF0004: memcpy(RCVData2,CAN1_RxMsg->Data,8);CANr3=1;break;  // 
 000210  4838              LDR      r0,|L1.756|
 000212  f8d4100b          LDR      r1,[r4,#0xb]
 000216  6001              STR      r1,[r0,#0]  ; RCVData2
@@ -326,7 +326,7 @@
 000224  e02c              B        |L1.640|
                   |L1.550|
 ;;;80     			
-;;;81     			case 0x18FF0006: memcpy(RCVData3,CAN1_RxMsg->Data,8);CANr4=1;break;
+;;;81     			case 0x18FF0006: memcpy(RCVData3,CAN1_RxMsg->Data,8);CANr4=1;break;  // 
 000226  4835              LDR      r0,|L1.764|
 000228  f8d4100b          LDR      r1,[r4,#0xb]
 00022c  6001              STR      r1,[r0,#0]  ; RCVData3
@@ -338,7 +338,7 @@
 00023a  e021              B        |L1.640|
                   |L1.572|
 ;;;82     			
-;;;83     			case 0x18FEDF00: memcpy(RCVData4,CAN1_RxMsg->Data,8);CANr5=1;break;
+;;;83     			case 0x18FEDF00: memcpy(RCVData4,CAN1_RxMsg->Data,8);CANr5=1;break;  //
 00023c  4831              LDR      r0,|L1.772|
 00023e  f8d4100b          LDR      r1,[r4,#0xb]
 000242  6001              STR      r1,[r0,#0]  ; RCVData4
@@ -350,7 +350,7 @@
 000250  e016              B        |L1.640|
                   |L1.594|
 ;;;84     			
-;;;85     			case 0x18EBFF00: memcpy(RCVData5,CAN1_RxMsg->Data,8);CANr6=1;break;
+;;;85     			case 0x18EBFF00: memcpy(RCVData5,CAN1_RxMsg->Data,8);CANr6=1;break;  //
 000252  482e              LDR      r0,|L1.780|
 000254  f8d4100b          LDR      r1,[r4,#0xb]
 000258  6001              STR      r1,[r0,#0]  ; RCVData5
@@ -362,7 +362,7 @@
 000266  e00b              B        |L1.640|
                   |L1.616|
 ;;;86     			
-;;;87     			case 0x18ECFF00: memcpy(RCVData6,CAN1_RxMsg->Data,8);CANr7=1;break;
+;;;87     			case 0x18ECFF00: memcpy(RCVData6,CAN1_RxMsg->Data,8);CANr7=1;break;  //
 000268  482a              LDR      r0,|L1.788|
 00026a  f8d4100b          LDR      r1,[r4,#0xb]
 00026e  6001              STR      r1,[r0,#0]  ; RCVData6

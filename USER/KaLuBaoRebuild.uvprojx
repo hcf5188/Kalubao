@@ -391,6 +391,11 @@
               <FilePath>.\powerDeal.c</FilePath>
             </File>
             <File>
+              <FileName>InitDeal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\InitDeal.c</FilePath>
+            </File>
+            <File>
               <FileName>normalTask.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\normalTask.c</FilePath>

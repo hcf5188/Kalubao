@@ -81,7 +81,7 @@
 ;;;74     	{
 ;;;75     		LogReport("MEM Error! %d not enough!",sizeof(CARRunRecord) + 10);
 00000e  2166              MOVS     r1,#0x66
-000010  a06c              ADR      r0,|L2.452|
+000010  a071              ADR      r0,|L2.472|
 000012  f7fffffe          BL       LogReport
                   |L2.22|
 ;;;76     		return;
@@ -121,13 +121,16 @@
 ;;;110    	ptrCarState[offset++] = (carAllRecord.netFlow >> 8)  & 0x000000FF;
 ;;;111    	ptrCarState[offset++] = (carAllRecord.netFlow >> 0)  & 0x000000FF;
 ;;;112    	
-;;;113    	OSMutexPend(CDMASendMutex,0,&err);					
-;;;114    	memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrCarState,ptrCarState[0]);
-;;;115    	cdmaDataToSend->datLength += ptrCarState[0];
-;;;116    	OSMutexPost(CDMASendMutex);
-;;;117    	
-;;;118    	Mem_free(ptrCarState);	//释放内存块
-;;;119    }
+;;;113    	OSMutexPend(CDMASendMutex,0,&err);
+;;;114    	
+;;;115    	memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrCarState,ptrCarState[0]);
+;;;116    	cdmaDataToSend->datLength += ptrCarState[0];
+;;;117    	varOperation.datOKLeng += ptrCarState[0];    //记录不可拆卸的包长度
+;;;118    	
+;;;119    	OSMutexPost(CDMASendMutex);
+;;;120    	
+;;;121    	Mem_free(ptrCarState);	//释放内存块
+;;;122    }
 000016  bd38              POP      {r3-r5,pc}
                   |L2.24|
 000018  2219              MOVS     r2,#0x19              ;78
@@ -145,147 +148,147 @@
 000030  1c69              ADDS     r1,r5,#1              ;80
 000032  b2cd              UXTB     r5,r1                 ;80
 000034  5422              STRB     r2,[r4,r0]            ;80
-000036  486a              LDR      r0,|L2.480|
+000036  486f              LDR      r0,|L2.500|
 000038  f8900020          LDRB     r0,[r0,#0x20]         ;83  ; carAllRecord
 00003c  4629              MOV      r1,r5                 ;83
 00003e  1c6a              ADDS     r2,r5,#1              ;83
 000040  b2d5              UXTB     r5,r2                 ;83
 000042  5460              STRB     r0,[r4,r1]            ;83
-000044  4866              LDR      r0,|L2.480|
+000044  486b              LDR      r0,|L2.500|
 000046  f8900021          LDRB     r0,[r0,#0x21]         ;85  ; carAllRecord
 00004a  4629              MOV      r1,r5                 ;85
 00004c  1c6a              ADDS     r2,r5,#1              ;85
 00004e  b2d5              UXTB     r5,r2                 ;85
 000050  5460              STRB     r0,[r4,r1]            ;85
-000052  4863              LDR      r0,|L2.480|
+000052  4868              LDR      r0,|L2.500|
 000054  8c40              LDRH     r0,[r0,#0x22]         ;87  ; carAllRecord
 000056  0a02              LSRS     r2,r0,#8              ;87
 000058  4628              MOV      r0,r5                 ;87
 00005a  1c69              ADDS     r1,r5,#1              ;87
 00005c  b2cd              UXTB     r5,r1                 ;87
 00005e  5422              STRB     r2,[r4,r0]            ;87
-000060  485f              LDR      r0,|L2.480|
+000060  4864              LDR      r0,|L2.500|
 000062  f8902022          LDRB     r2,[r0,#0x22]         ;88  ; carAllRecord
 000066  4628              MOV      r0,r5                 ;88
 000068  1c69              ADDS     r1,r5,#1              ;88
 00006a  b2cd              UXTB     r5,r1                 ;88
 00006c  5422              STRB     r2,[r4,r0]            ;88
-00006e  485c              LDR      r0,|L2.480|
+00006e  4861              LDR      r0,|L2.500|
 000070  8c80              LDRH     r0,[r0,#0x24]         ;90  ; carAllRecord
 000072  0a02              LSRS     r2,r0,#8              ;90
-000074  4628              MOV      r0,r5                 ;90
-000076  1c69              ADDS     r1,r5,#1              ;90
-000078  b2cd              UXTB     r5,r1                 ;90
-00007a  5422              STRB     r2,[r4,r0]            ;90
-00007c  4858              LDR      r0,|L2.480|
+000074  4629              MOV      r1,r5                 ;90
+000076  1c68              ADDS     r0,r5,#1              ;90
+000078  b2c5              UXTB     r5,r0                 ;90
+00007a  5462              STRB     r2,[r4,r1]            ;90
+00007c  485d              LDR      r0,|L2.500|
 00007e  f8902024          LDRB     r2,[r0,#0x24]         ;91  ; carAllRecord
 000082  4628              MOV      r0,r5                 ;91
 000084  1c69              ADDS     r1,r5,#1              ;91
 000086  b2cd              UXTB     r5,r1                 ;91
 000088  5422              STRB     r2,[r4,r0]            ;91
-00008a  4855              LDR      r0,|L2.480|
+00008a  485a              LDR      r0,|L2.500|
 00008c  6880              LDR      r0,[r0,#8]            ;93  ; carAllRecord
-00008e  0e01              LSRS     r1,r0,#24             ;93
-000090  4628              MOV      r0,r5                 ;93
+00008e  0e00              LSRS     r0,r0,#24             ;93
+000090  4629              MOV      r1,r5                 ;93
 000092  1c6a              ADDS     r2,r5,#1              ;93
 000094  b2d5              UXTB     r5,r2                 ;93
-000096  5421              STRB     r1,[r4,r0]            ;93
-000098  4851              LDR      r0,|L2.480|
+000096  5460              STRB     r0,[r4,r1]            ;93
+000098  4856              LDR      r0,|L2.500|
 00009a  6880              LDR      r0,[r0,#8]            ;94  ; carAllRecord
 00009c  f3c04207          UBFX     r2,r0,#16,#8          ;94
 0000a0  4628              MOV      r0,r5                 ;94
 0000a2  1c69              ADDS     r1,r5,#1              ;94
 0000a4  b2cd              UXTB     r5,r1                 ;94
 0000a6  5422              STRB     r2,[r4,r0]            ;94
-0000a8  484d              LDR      r0,|L2.480|
+0000a8  4852              LDR      r0,|L2.500|
 0000aa  8900              LDRH     r0,[r0,#8]            ;95  ; carAllRecord
 0000ac  f3c02207          UBFX     r2,r0,#8,#8           ;95
 0000b0  4628              MOV      r0,r5                 ;95
 0000b2  1c69              ADDS     r1,r5,#1              ;95
 0000b4  b2cd              UXTB     r5,r1                 ;95
 0000b6  5422              STRB     r2,[r4,r0]            ;95
-0000b8  4849              LDR      r0,|L2.480|
+0000b8  484e              LDR      r0,|L2.500|
 0000ba  7a02              LDRB     r2,[r0,#8]            ;96  ; carAllRecord
 0000bc  4628              MOV      r0,r5                 ;96
 0000be  1c69              ADDS     r1,r5,#1              ;96
 0000c0  b2cd              UXTB     r5,r1                 ;96
 0000c2  5422              STRB     r2,[r4,r0]            ;96
-0000c4  4846              LDR      r0,|L2.480|
+0000c4  484b              LDR      r0,|L2.500|
 0000c6  68c0              LDR      r0,[r0,#0xc]          ;98  ; carAllRecord
 0000c8  0e00              LSRS     r0,r0,#24             ;98
 0000ca  4629              MOV      r1,r5                 ;98
 0000cc  1c6a              ADDS     r2,r5,#1              ;98
 0000ce  b2d5              UXTB     r5,r2                 ;98
 0000d0  5460              STRB     r0,[r4,r1]            ;98
-0000d2  4843              LDR      r0,|L2.480|
+0000d2  4848              LDR      r0,|L2.500|
 0000d4  68c0              LDR      r0,[r0,#0xc]          ;99  ; carAllRecord
 0000d6  f3c04207          UBFX     r2,r0,#16,#8          ;99
-0000da  4628              MOV      r0,r5                 ;99
-0000dc  1c69              ADDS     r1,r5,#1              ;99
-0000de  b2cd              UXTB     r5,r1                 ;99
-0000e0  5422              STRB     r2,[r4,r0]            ;99
-0000e2  483f              LDR      r0,|L2.480|
+0000da  4629              MOV      r1,r5                 ;99
+0000dc  1c68              ADDS     r0,r5,#1              ;99
+0000de  b2c5              UXTB     r5,r0                 ;99
+0000e0  5462              STRB     r2,[r4,r1]            ;99
+0000e2  4844              LDR      r0,|L2.500|
 0000e4  8980              LDRH     r0,[r0,#0xc]          ;100  ; carAllRecord
 0000e6  f3c02207          UBFX     r2,r0,#8,#8           ;100
 0000ea  4628              MOV      r0,r5                 ;100
 0000ec  1c69              ADDS     r1,r5,#1              ;100
 0000ee  b2cd              UXTB     r5,r1                 ;100
 0000f0  5422              STRB     r2,[r4,r0]            ;100
-0000f2  483b              LDR      r0,|L2.480|
+0000f2  4840              LDR      r0,|L2.500|
 0000f4  7b02              LDRB     r2,[r0,#0xc]          ;101  ; carAllRecord
 0000f6  4628              MOV      r0,r5                 ;101
 0000f8  1c69              ADDS     r1,r5,#1              ;101
 0000fa  b2cd              UXTB     r5,r1                 ;101
 0000fc  5422              STRB     r2,[r4,r0]            ;101
-0000fe  4838              LDR      r0,|L2.480|
+0000fe  483d              LDR      r0,|L2.500|
 000100  f8d00026          LDR      r0,[r0,#0x26]         ;103  ; carAllRecord
-000104  0e01              LSRS     r1,r0,#24             ;103
-000106  4628              MOV      r0,r5                 ;103
+000104  0e00              LSRS     r0,r0,#24             ;103
+000106  4629              MOV      r1,r5                 ;103
 000108  1c6a              ADDS     r2,r5,#1              ;103
 00010a  b2d5              UXTB     r5,r2                 ;103
-00010c  5421              STRB     r1,[r4,r0]            ;103
-00010e  4834              LDR      r0,|L2.480|
+00010c  5460              STRB     r0,[r4,r1]            ;103
+00010e  4839              LDR      r0,|L2.500|
 000110  f8d00026          LDR      r0,[r0,#0x26]         ;104  ; carAllRecord
 000114  f3c04207          UBFX     r2,r0,#16,#8          ;104
 000118  4628              MOV      r0,r5                 ;104
 00011a  1c69              ADDS     r1,r5,#1              ;104
 00011c  b2cd              UXTB     r5,r1                 ;104
 00011e  5422              STRB     r2,[r4,r0]            ;104
-000120  482f              LDR      r0,|L2.480|
+000120  4834              LDR      r0,|L2.500|
 000122  8cc0              LDRH     r0,[r0,#0x26]         ;105  ; carAllRecord
 000124  f3c02207          UBFX     r2,r0,#8,#8           ;105
 000128  4628              MOV      r0,r5                 ;105
 00012a  1c69              ADDS     r1,r5,#1              ;105
 00012c  b2cd              UXTB     r5,r1                 ;105
 00012e  5422              STRB     r2,[r4,r0]            ;105
-000130  482b              LDR      r0,|L2.480|
+000130  4830              LDR      r0,|L2.500|
 000132  f8902026          LDRB     r2,[r0,#0x26]         ;106  ; carAllRecord
 000136  4628              MOV      r0,r5                 ;106
 000138  1c69              ADDS     r1,r5,#1              ;106
 00013a  b2cd              UXTB     r5,r1                 ;106
 00013c  5422              STRB     r2,[r4,r0]            ;106
-00013e  4828              LDR      r0,|L2.480|
+00013e  482d              LDR      r0,|L2.500|
 000140  f8d0002b          LDR      r0,[r0,#0x2b]         ;108  ; carAllRecord
 000144  0e00              LSRS     r0,r0,#24             ;108
 000146  4629              MOV      r1,r5                 ;108
 000148  1c6a              ADDS     r2,r5,#1              ;108
 00014a  b2d5              UXTB     r5,r2                 ;108
 00014c  5460              STRB     r0,[r4,r1]            ;108
-00014e  4824              LDR      r0,|L2.480|
+00014e  4829              LDR      r0,|L2.500|
 000150  f8d0002b          LDR      r0,[r0,#0x2b]         ;109  ; carAllRecord
 000154  f3c04207          UBFX     r2,r0,#16,#8          ;109
 000158  4628              MOV      r0,r5                 ;109
 00015a  1c69              ADDS     r1,r5,#1              ;109
 00015c  b2cd              UXTB     r5,r1                 ;109
 00015e  5422              STRB     r2,[r4,r0]            ;109
-000160  481f              LDR      r0,|L2.480|
+000160  4824              LDR      r0,|L2.500|
 000162  f8b0002b          LDRH     r0,[r0,#0x2b]         ;110  ; carAllRecord
 000166  f3c02207          UBFX     r2,r0,#8,#8           ;110
-00016a  4629              MOV      r1,r5                 ;110
-00016c  1c68              ADDS     r0,r5,#1              ;110
-00016e  b2c5              UXTB     r5,r0                 ;110
-000170  5462              STRB     r2,[r4,r1]            ;110
-000172  481b              LDR      r0,|L2.480|
+00016a  4628              MOV      r0,r5                 ;110
+00016c  1c69              ADDS     r1,r5,#1              ;110
+00016e  b2cd              UXTB     r5,r1                 ;110
+000170  5422              STRB     r2,[r4,r0]            ;110
+000172  4820              LDR      r0,|L2.500|
 000174  f890202b          LDRB     r2,[r0,#0x2b]         ;111  ; carAllRecord
 000178  4628              MOV      r0,r5                 ;111
 00017a  1c69              ADDS     r1,r5,#1              ;111
@@ -293,53 +296,62 @@
 00017e  5422              STRB     r2,[r4,r0]            ;111
 000180  466a              MOV      r2,sp                 ;113
 000182  2100              MOVS     r1,#0                 ;113
-000184  4817              LDR      r0,|L2.484|
+000184  481c              LDR      r0,|L2.504|
 000186  6800              LDR      r0,[r0,#0]            ;113  ; CDMASendMutex
 000188  f7fffffe          BL       OSMutexPend
-00018c  4916              LDR      r1,|L2.488|
-00018e  6809              LDR      r1,[r1,#0]            ;114  ; cdmaDataToSend
-000190  6849              LDR      r1,[r1,#4]            ;114
-000192  4b15              LDR      r3,|L2.488|
-000194  681b              LDR      r3,[r3,#0]            ;114  ; cdmaDataToSend
-000196  881b              LDRH     r3,[r3,#0]            ;114
-000198  18c8              ADDS     r0,r1,r3              ;114
-00019a  7822              LDRB     r2,[r4,#0]            ;114
-00019c  4621              MOV      r1,r4                 ;114
-00019e  f7fffffe          BL       __aeabi_memcpy
-0001a2  4811              LDR      r0,|L2.488|
-0001a4  6800              LDR      r0,[r0,#0]            ;115  ; cdmaDataToSend
-0001a6  8800              LDRH     r0,[r0,#0]            ;115
-0001a8  7821              LDRB     r1,[r4,#0]            ;115
-0001aa  4408              ADD      r0,r0,r1              ;115
-0001ac  490e              LDR      r1,|L2.488|
-0001ae  6809              LDR      r1,[r1,#0]            ;115  ; cdmaDataToSend
-0001b0  8008              STRH     r0,[r1,#0]            ;115
-0001b2  480c              LDR      r0,|L2.484|
-0001b4  6800              LDR      r0,[r0,#0]            ;116  ; CDMASendMutex
-0001b6  f7fffffe          BL       OSMutexPost
-0001ba  4620              MOV      r0,r4                 ;118
-0001bc  f7fffffe          BL       Mem_free
-0001c0  bf00              NOP      
-0001c2  e728              B        |L2.22|
-;;;120    
+00018c  491b              LDR      r1,|L2.508|
+00018e  6809              LDR      r1,[r1,#0]            ;115  ; cdmaDataToSend
+000190  684b              LDR      r3,[r1,#4]            ;115
+000192  491b              LDR      r1,|L2.512|
+000194  f8b11096          LDRH     r1,[r1,#0x96]         ;115  ; varOperation
+000198  311b              ADDS     r1,r1,#0x1b           ;115
+00019a  1858              ADDS     r0,r3,r1              ;115
+00019c  7822              LDRB     r2,[r4,#0]            ;115
+00019e  4621              MOV      r1,r4                 ;115
+0001a0  f7fffffe          BL       __aeabi_memcpy
+0001a4  4815              LDR      r0,|L2.508|
+0001a6  6800              LDR      r0,[r0,#0]            ;116  ; cdmaDataToSend
+0001a8  8800              LDRH     r0,[r0,#0]            ;116
+0001aa  7821              LDRB     r1,[r4,#0]            ;116
+0001ac  4408              ADD      r0,r0,r1              ;116
+0001ae  4913              LDR      r1,|L2.508|
+0001b0  6809              LDR      r1,[r1,#0]            ;116  ; cdmaDataToSend
+0001b2  8008              STRH     r0,[r1,#0]            ;116
+0001b4  4812              LDR      r0,|L2.512|
+0001b6  f8b00096          LDRH     r0,[r0,#0x96]         ;117  ; varOperation
+0001ba  7821              LDRB     r1,[r4,#0]            ;117
+0001bc  4408              ADD      r0,r0,r1              ;117
+0001be  4910              LDR      r1,|L2.512|
+0001c0  f8a10096          STRH     r0,[r1,#0x96]         ;117
+0001c4  480c              LDR      r0,|L2.504|
+0001c6  6800              LDR      r0,[r0,#0]            ;119  ; CDMASendMutex
+0001c8  f7fffffe          BL       OSMutexPost
+0001cc  4620              MOV      r0,r4                 ;121
+0001ce  f7fffffe          BL       Mem_free
+0001d2  bf00              NOP      
+0001d4  e71f              B        |L2.22|
+;;;123    
                           ENDP
 
-                  |L2.452|
-0001c4  4d454d20          DCB      "MEM Error! %d not enough!",0
-0001c8  4572726f
-0001cc  72212025
-0001d0  64206e6f
-0001d4  7420656e
-0001d8  6f756768
-0001dc  2100    
-0001de  00                DCB      0
-0001df  00                DCB      0
-                  |L2.480|
+0001d6  0000              DCW      0x0000
+                  |L2.472|
+0001d8  4d454d20          DCB      "MEM Error! %d not enough!",0
+0001dc  4572726f
+0001e0  72212025
+0001e4  64206e6f
+0001e8  7420656e
+0001ec  6f756768
+0001f0  2100    
+0001f2  00                DCB      0
+0001f3  00                DCB      0
+                  |L2.500|
                           DCD      carAllRecord
-                  |L2.484|
+                  |L2.504|
                           DCD      CDMASendMutex
-                  |L2.488|
+                  |L2.508|
                           DCD      cdmaDataToSend
+                  |L2.512|
+                          DCD      varOperation
 
                           AREA ||i.SpeedPlusSubCompute||, CODE, READONLY, ALIGN=2
 

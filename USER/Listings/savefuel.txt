@@ -5,13 +5,13 @@
                           AREA ||i.CanErrDetec||, CODE, READONLY, ALIGN=2
 
                   CanErrDetec PROC
-;;;107    ========================================================================*/
-;;;108    u8 CanErrDetec(u16 ErrDebT,u8 Signal)
+;;;106    ========================================================================*/
+;;;107    u8 CanErrDetec(u16 ErrDebT,u8 Signal)
 000000  4602              MOV      r2,r0
-;;;109    {
-;;;110       static u16 CanErrCnt = 150;
-;;;111        
-;;;112       if(CanErrCnt<65530)CanErrCnt++;
+;;;108    {
+;;;109       static u16 CanErrCnt = 150;
+;;;110        
+;;;111       if(CanErrCnt < 65530)CanErrCnt++;
 000002  4818              LDR      r0,|L1.100|
 000004  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000006  f64f73fa          MOV      r3,#0xfffa
@@ -23,7 +23,7 @@
 000014  4b13              LDR      r3,|L1.100|
 000016  8018              STRH     r0,[r3,#0]
                   |L1.24|
-;;;113       if(Signal==1&&CANr1==1&&CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 &&CANr6==1){
+;;;112       if(Signal==1 && CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1){
 000018  2901              CMP      r1,#1
 00001a  d11a              BNE      |L1.82|
 00001c  4812              LDR      r0,|L1.104|
@@ -50,29 +50,29 @@
 000046  7800              LDRB     r0,[r0,#0]  ; CANr6
 000048  2801              CMP      r0,#1
 00004a  d102              BNE      |L1.82|
-;;;114         CanErrCnt = 0; 
+;;;113         CanErrCnt = 0; 
 00004c  2000              MOVS     r0,#0
 00004e  4b05              LDR      r3,|L1.100|
 000050  8018              STRH     r0,[r3,#0]
                   |L1.82|
-;;;115       }
-;;;116       if(CanErrCnt>=ErrDebT)
+;;;114       }
+;;;115       if(CanErrCnt >= ErrDebT)
 000052  4804              LDR      r0,|L1.100|
 000054  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000056  4290              CMP      r0,r2
 000058  db01              BLT      |L1.94|
-;;;117    	   return 0;
+;;;116    	   return 0;
 00005a  2000              MOVS     r0,#0
                   |L1.92|
-;;;118       else 
-;;;119    	   return 1;
-;;;120    
-;;;121    }
+;;;117       else 
+;;;118    	   return 1;
+;;;119    
+;;;120    }
 00005c  4770              BX       lr
                   |L1.94|
-00005e  2001              MOVS     r0,#1                 ;119
+00005e  2001              MOVS     r0,#1                 ;118
 000060  e7fc              B        |L1.92|
-;;;122    u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
+;;;121    u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
                           ENDP
 
 000062  0000              DCW      0x0000
@@ -94,25 +94,26 @@
                           AREA ||i.CanErrDetec17||, CODE, READONLY, ALIGN=2
 
                   CanErrDetec17 PROC
-;;;133    }
-;;;134    u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
+;;;134    }
+;;;135    u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
 000000  4602              MOV      r2,r0
-;;;135    {
-;;;136    	static u16 CanErrCnt = 150;
-;;;137    
-;;;138    	if(CanErrCnt<65530)CanErrCnt++;
+;;;136    {
+;;;137    	static u16 CanErrCnt = 150;
+;;;138    
+;;;139    	if(CanErrCnt < 65530)
 000002  4818              LDR      r0,|L2.100|
 000004  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000006  f64f73fa          MOV      r3,#0xfffa
 00000a  4298              CMP      r0,r3
 00000c  da04              BGE      |L2.24|
+;;;140    		CanErrCnt ++;
 00000e  4815              LDR      r0,|L2.100|
 000010  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000012  1c40              ADDS     r0,r0,#1
 000014  4b13              LDR      r3,|L2.100|
 000016  8018              STRH     r0,[r3,#0]
                   |L2.24|
-;;;139    	if(Signal == 1 && CANr1 == 1&&CANr2 == 1 && CANr3 == 1 && CANr4 == 1 && CANr5==1 && CANr6 == 1){
+;;;141    	if(Signal == 1 && CANr1 == 1&&CANr2 == 1 && CANr3 == 1 && CANr4 == 1 && CANr5==1 && CANr6 == 1){
 000018  2901              CMP      r1,#1
 00001a  d11a              BNE      |L2.82|
 00001c  4812              LDR      r0,|L2.104|
@@ -139,26 +140,28 @@
 000046  7800              LDRB     r0,[r0,#0]  ; CANr6
 000048  2801              CMP      r0,#1
 00004a  d102              BNE      |L2.82|
-;;;140    	 CanErrCnt = 0; 
+;;;142    		CanErrCnt = 0; 
 00004c  2000              MOVS     r0,#0
 00004e  4b05              LDR      r3,|L2.100|
 000050  8018              STRH     r0,[r3,#0]
                   |L2.82|
-;;;141    	}     
-;;;142    	if(CanErrCnt >= ErrDebT)return 0;
+;;;143    	}     
+;;;144    	if(CanErrCnt >= ErrDebT)
 000052  4804              LDR      r0,|L2.100|
 000054  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000056  4290              CMP      r0,r2
 000058  db01              BLT      |L2.94|
+;;;145    		return 0;
 00005a  2000              MOVS     r0,#0
                   |L2.92|
-;;;143    	else return 1;
-;;;144    }
+;;;146    	else 
+;;;147    		return 1;
+;;;148    }
 00005c  4770              BX       lr
                   |L2.94|
-00005e  2001              MOVS     r0,#1                 ;143
+00005e  2001              MOVS     r0,#1                 ;147
 000060  e7fc              B        |L2.92|
-;;;145    
+;;;149    
                           ENDP
 
 000062  0000              DCW      0x0000
@@ -180,25 +183,26 @@
                           AREA ||i.CanErrDetec7||, CODE, READONLY, ALIGN=2
 
                   CanErrDetec7 PROC
-;;;121    }
-;;;122    u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
+;;;120    }
+;;;121    u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
 000000  4602              MOV      r2,r0
-;;;123    {
-;;;124    	static u16 CanErrCnt = 150;
-;;;125    
-;;;126    	if(CanErrCnt<65530)CanErrCnt++;
+;;;122    {
+;;;123    	static u16 CanErrCnt = 150;
+;;;124    
+;;;125    	if(CanErrCnt < 65530)
 000002  4818              LDR      r0,|L3.100|
 000004  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000006  f64f73fa          MOV      r3,#0xfffa
 00000a  4298              CMP      r0,r3
 00000c  da04              BGE      |L3.24|
+;;;126    		CanErrCnt++;
 00000e  4815              LDR      r0,|L3.100|
 000010  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000012  1c40              ADDS     r0,r0,#1
 000014  4b13              LDR      r3,|L3.100|
 000016  8018              STRH     r0,[r3,#0]
                   |L3.24|
-;;;127    	if(Signal==1&&CANr1==1&&CANr2==1&&CANr3==1&&CANr4==1&&CANr5==1&&CANr6==1){
+;;;127    	if(Signal==1 && CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1)
 000018  2901              CMP      r1,#1
 00001a  d11a              BNE      |L3.82|
 00001c  4812              LDR      r0,|L3.104|
@@ -225,27 +229,28 @@
 000046  7800              LDRB     r0,[r0,#0]  ; CANr6
 000048  2801              CMP      r0,#1
 00004a  d102              BNE      |L3.82|
-;;;128    	 CanErrCnt = 0; 
+;;;128    		CanErrCnt = 0; 
 00004c  2000              MOVS     r0,#0
 00004e  4b05              LDR      r3,|L3.100|
 000050  8018              STRH     r0,[r3,#0]
                   |L3.82|
-;;;129    	}     
-;;;130    	if(CanErrCnt>=ErrDebT)return 0;
+;;;129    	     
+;;;130    	if(CanErrCnt >= ErrDebT)
 000052  4804              LDR      r0,|L3.100|
 000054  8800              LDRH     r0,[r0,#0]  ; CanErrCnt
 000056  4290              CMP      r0,r2
 000058  db01              BLT      |L3.94|
+;;;131    		return 0;
 00005a  2000              MOVS     r0,#0
                   |L3.92|
-;;;131    	else return 1;
-;;;132    
-;;;133    }
+;;;132    	else 
+;;;133    		return 1;
+;;;134    }
 00005c  4770              BX       lr
                   |L3.94|
-00005e  2001              MOVS     r0,#1                 ;131
+00005e  2001              MOVS     r0,#1                 ;133
 000060  e7fc              B        |L3.92|
-;;;134    u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
+;;;135    u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
                           ENDP
 
 000062  0000              DCW      0x0000
@@ -267,20 +272,20 @@
                           AREA ||i.CoEng_rloadCal||, CODE, READONLY, ALIGN=2
 
                   CoEng_rloadCal PROC
-;;;401    
-;;;402    void CoEng_rloadCal(void)  //100ms   平均负荷率计算, 平均转速计算, 平均油门计算, 100ms *200 = 20s
+;;;408    
+;;;409    void CoEng_rloadCal(void)  //100ms   平均负荷率计算, 平均转速计算, 平均油门计算, 100ms * 200 = 20s
 000000  b510              PUSH     {r4,lr}
-;;;403    {
-;;;404         static u8  i, j;  
-;;;405    //----------------------------------------------------------------------------------------   
-;;;406    	for(i=0;i<199;i++)
+;;;410    {
+;;;411        static u8  i, j;  
+;;;412    //----------------------------------------------------------------------------------------   
+;;;413    	for(i=0;i<199;i++)
 000002  2000              MOVS     r0,#0
 000004  4977              LDR      r1,|L4.484|
 000006  7008              STRB     r0,[r1,#0]
 000008  e00c              B        |L4.36|
                   |L4.10|
-;;;407    	{
-;;;408    		CoEng_rtrqInr100ms[i]=CoEng_rtrqInr100ms[i+1];
+;;;414    	{
+;;;415    		CoEng_rtrqInr100ms[i]=CoEng_rtrqInr100ms[i+1];
 00000a  4977              LDR      r1,|L4.488|
 00000c  4875              LDR      r0,|L4.484|
 00000e  7800              LDRB     r0,[r0,#0]  ; i
@@ -290,32 +295,32 @@
 000016  7812              LDRB     r2,[r2,#0]  ; i
 000018  5488              STRB     r0,[r1,r2]
 00001a  4872              LDR      r0,|L4.484|
-00001c  7800              LDRB     r0,[r0,#0]            ;406  ; i
-00001e  1c40              ADDS     r0,r0,#1              ;406
+00001c  7800              LDRB     r0,[r0,#0]            ;413  ; i
+00001e  1c40              ADDS     r0,r0,#1              ;413
 000020  4970              LDR      r1,|L4.484|
-000022  7008              STRB     r0,[r1,#0]            ;406
+000022  7008              STRB     r0,[r1,#0]            ;413
                   |L4.36|
 000024  486f              LDR      r0,|L4.484|
-000026  7800              LDRB     r0,[r0,#0]            ;406  ; i
-000028  28c7              CMP      r0,#0xc7              ;406
+000026  7800              LDRB     r0,[r0,#0]            ;413  ; i
+000028  28c7              CMP      r0,#0xc7              ;413
 00002a  dbee              BLT      |L4.10|
-;;;409    	}
-;;;410    	CoEng_rtrqInr100ms[199]=Curr_trq;    //当前扭矩            
+;;;416    	}
+;;;417    	CoEng_rtrqInr100ms[199] = Curr_trq;    //当前扭矩            
 00002c  486f              LDR      r0,|L4.492|
 00002e  7800              LDRB     r0,[r0,#0]  ; Curr_trq
 000030  496d              LDR      r1,|L4.488|
 000032  f88100c7          STRB     r0,[r1,#0xc7]
-;;;411    	Coeng_rtrqInrSum=0;
+;;;418    	Coeng_rtrqInrSum = 0;
 000036  2000              MOVS     r0,#0
 000038  496d              LDR      r1,|L4.496|
 00003a  6008              STR      r0,[r1,#0]  ; Coeng_rtrqInrSum
-;;;412    	for(j=0;j<200;j++)
+;;;419    	for(j=0;j<200;j++)
 00003c  496d              LDR      r1,|L4.500|
 00003e  7008              STRB     r0,[r1,#0]
 000040  e00d              B        |L4.94|
                   |L4.66|
-;;;413    	{
-;;;414    		Coeng_rtrqInrSum=Coeng_rtrqInrSum+CoEng_rtrqInr100ms[j];
+;;;420    	{
+;;;421    		Coeng_rtrqInrSum = Coeng_rtrqInrSum+CoEng_rtrqInr100ms[j];
 000042  4869              LDR      r0,|L4.488|
 000044  496b              LDR      r1,|L4.500|
 000046  7809              LDRB     r1,[r1,#0]  ; j
@@ -326,34 +331,33 @@
 000050  4967              LDR      r1,|L4.496|
 000052  6008              STR      r0,[r1,#0]  ; Coeng_rtrqInrSum
 000054  4867              LDR      r0,|L4.500|
-000056  7800              LDRB     r0,[r0,#0]            ;412  ; j
-000058  1c40              ADDS     r0,r0,#1              ;412
+000056  7800              LDRB     r0,[r0,#0]            ;419  ; j
+000058  1c40              ADDS     r0,r0,#1              ;419
 00005a  4966              LDR      r1,|L4.500|
-00005c  7008              STRB     r0,[r1,#0]            ;412
+00005c  7008              STRB     r0,[r1,#0]            ;419
                   |L4.94|
 00005e  4865              LDR      r0,|L4.500|
-000060  7800              LDRB     r0,[r0,#0]            ;412  ; j
-000062  28c8              CMP      r0,#0xc8              ;412
+000060  7800              LDRB     r0,[r0,#0]            ;419  ; j
+000062  28c8              CMP      r0,#0xc8              ;419
 000064  dbed              BLT      |L4.66|
-;;;415    	}
-;;;416    	CoEng_rtrqInrAvg=Coeng_rtrqInrSum/200;  //20s平均负荷计算%
+;;;422    	}
+;;;423    	CoEng_rtrqInrAvg = Coeng_rtrqInrSum / 200;  // 20s 平均负荷计算%
 000066  4862              LDR      r0,|L4.496|
 000068  6800              LDR      r0,[r0,#0]  ; Coeng_rtrqInrSum
 00006a  21c8              MOVS     r1,#0xc8
 00006c  fb90f0f1          SDIV     r0,r0,r1
 000070  4961              LDR      r1,|L4.504|
 000072  6008              STR      r0,[r1,#0]  ; CoEng_rtrqInrAvg
-;;;417    	
-;;;418    //-----------------------------------------------------------------------------------------	
-;;;419    	
-;;;420    	for(i=0;i<100;i++)
+;;;424    	
+;;;425    //-----------------------------------------------------------------------------------------	
+;;;426    	for(i=0;i<100;i++)
 000074  2000              MOVS     r0,#0
 000076  495b              LDR      r1,|L4.484|
 000078  7008              STRB     r0,[r1,#0]
 00007a  e00c              B        |L4.150|
                   |L4.124|
-;;;421    	{
-;;;422    		CoEng_rDrvLoad100ms[i] =CoEng_rDrvLoad100ms[i+1];
+;;;427    	{
+;;;428    		CoEng_rDrvLoad100ms[i] = CoEng_rDrvLoad100ms[i+1];
 00007c  495f              LDR      r1,|L4.508|
 00007e  4859              LDR      r0,|L4.484|
 000080  7800              LDRB     r0,[r0,#0]  ; i
@@ -363,32 +367,32 @@
 000088  7812              LDRB     r2,[r2,#0]  ; i
 00008a  5488              STRB     r0,[r1,r2]
 00008c  4855              LDR      r0,|L4.484|
-00008e  7800              LDRB     r0,[r0,#0]            ;420  ; i
-000090  1c40              ADDS     r0,r0,#1              ;420
+00008e  7800              LDRB     r0,[r0,#0]            ;426  ; i
+000090  1c40              ADDS     r0,r0,#1              ;426
 000092  4954              LDR      r1,|L4.484|
-000094  7008              STRB     r0,[r1,#0]            ;420
+000094  7008              STRB     r0,[r1,#0]            ;426
                   |L4.150|
 000096  4853              LDR      r0,|L4.484|
-000098  7800              LDRB     r0,[r0,#0]            ;420  ; i
-00009a  2864              CMP      r0,#0x64              ;420
+000098  7800              LDRB     r0,[r0,#0]            ;426  ; i
+00009a  2864              CMP      r0,#0x64              ;426
 00009c  dbee              BLT      |L4.124|
-;;;423    	}
-;;;424    	CoEng_rDrvLoad100ms[99] = CoEng_rDrvLoad;
+;;;429    	}
+;;;430    	CoEng_rDrvLoad100ms[99] = CoEng_rDrvLoad;
 00009e  4858              LDR      r0,|L4.512|
 0000a0  7800              LDRB     r0,[r0,#0]  ; CoEng_rDrvLoad
 0000a2  4956              LDR      r1,|L4.508|
 0000a4  f8810063          STRB     r0,[r1,#0x63]
-;;;425    	Coeng_rDrvLoadSum=0;                                           //10s驾驶员平均需求扭矩%
+;;;431    	Coeng_rDrvLoadSum = 0;                                           // 10s 驾驶员平均需求扭矩  %
 0000a8  2000              MOVS     r0,#0
 0000aa  4956              LDR      r1,|L4.516|
 0000ac  6008              STR      r0,[r1,#0]  ; Coeng_rDrvLoadSum
-;;;426    	for(j=0;j<100;j++)
+;;;432    	for(j = 0;j < 100;j++)
 0000ae  4951              LDR      r1,|L4.500|
 0000b0  7008              STRB     r0,[r1,#0]
 0000b2  e00d              B        |L4.208|
                   |L4.180|
-;;;427    	{
-;;;428    		Coeng_rDrvLoadSum = Coeng_rDrvLoadSum + CoEng_rDrvLoad100ms[j];
+;;;433    	{
+;;;434    		Coeng_rDrvLoadSum = Coeng_rDrvLoadSum + CoEng_rDrvLoad100ms[j];
 0000b4  4851              LDR      r0,|L4.508|
 0000b6  494f              LDR      r1,|L4.500|
 0000b8  7809              LDRB     r1,[r1,#0]  ; j
@@ -399,17 +403,17 @@
 0000c2  4950              LDR      r1,|L4.516|
 0000c4  6008              STR      r0,[r1,#0]  ; Coeng_rDrvLoadSum
 0000c6  484b              LDR      r0,|L4.500|
-0000c8  7800              LDRB     r0,[r0,#0]            ;426  ; j
-0000ca  1c40              ADDS     r0,r0,#1              ;426
+0000c8  7800              LDRB     r0,[r0,#0]            ;432  ; j
+0000ca  1c40              ADDS     r0,r0,#1              ;432
 0000cc  4949              LDR      r1,|L4.500|
-0000ce  7008              STRB     r0,[r1,#0]            ;426
+0000ce  7008              STRB     r0,[r1,#0]            ;432
                   |L4.208|
 0000d0  4848              LDR      r0,|L4.500|
-0000d2  7800              LDRB     r0,[r0,#0]            ;426  ; j
-0000d4  2864              CMP      r0,#0x64              ;426
+0000d2  7800              LDRB     r0,[r0,#0]            ;432  ; j
+0000d4  2864              CMP      r0,#0x64              ;432
 0000d6  dbed              BLT      |L4.180|
-;;;429    	}
-;;;430      CoEng_rDrv10Load = Coeng_rDrvLoadSum/100;	
+;;;435    	}
+;;;436    	CoEng_rDrv10Load = Coeng_rDrvLoadSum / 100;	
 0000d8  484a              LDR      r0,|L4.516|
 0000da  6800              LDR      r0,[r0,#0]  ; Coeng_rDrvLoadSum
 0000dc  2164              MOVS     r1,#0x64
@@ -418,16 +422,16 @@
 0000e4  f7fffffe          BL       __aeabi_i2f
 0000e8  4947              LDR      r1,|L4.520|
 0000ea  6008              STR      r0,[r1,#0]  ; CoEng_rDrv10Load
-;;;431    	
-;;;432    //------------------------------------------------------------------------------------------	
-;;;433    	for(i=0;i<199;i++)
+;;;437    	
+;;;438    //------------------------------------------------------------------------------------------	
+;;;439    	for(i=0;i<199;i++)
 0000ec  2000              MOVS     r0,#0
 0000ee  493d              LDR      r1,|L4.484|
 0000f0  7008              STRB     r0,[r1,#0]
 0000f2  e00e              B        |L4.274|
                   |L4.244|
-;;;434    	{
-;;;435    		Eng_nAvg100ms[i]=Eng_nAvg100ms[i+1];
+;;;440    	{
+;;;441    		Eng_nAvg100ms[i]=Eng_nAvg100ms[i+1];
 0000f4  4945              LDR      r1,|L4.524|
 0000f6  483b              LDR      r0,|L4.484|
 0000f8  7800              LDRB     r0,[r0,#0]  ; i
@@ -437,33 +441,33 @@
 000102  7812              LDRB     r2,[r2,#0]  ; i
 000104  f8410022          STR      r0,[r1,r2,LSL #2]
 000108  4836              LDR      r0,|L4.484|
-00010a  7800              LDRB     r0,[r0,#0]            ;433  ; i
-00010c  1c40              ADDS     r0,r0,#1              ;433
+00010a  7800              LDRB     r0,[r0,#0]            ;439  ; i
+00010c  1c40              ADDS     r0,r0,#1              ;439
 00010e  4935              LDR      r1,|L4.484|
-000110  7008              STRB     r0,[r1,#0]            ;433
+000110  7008              STRB     r0,[r1,#0]            ;439
                   |L4.274|
 000112  4834              LDR      r0,|L4.484|
-000114  7800              LDRB     r0,[r0,#0]            ;433  ; i
-000116  28c7              CMP      r0,#0xc7              ;433
+000114  7800              LDRB     r0,[r0,#0]            ;439  ; i
+000116  28c7              CMP      r0,#0xc7              ;439
 000118  dbec              BLT      |L4.244|
-;;;436    	}
-;;;437    	Eng_nAvg100ms[199]=Eng_nAvg;
+;;;442    	}
+;;;443    	Eng_nAvg100ms[199]=Eng_nAvg;
 00011a  483d              LDR      r0,|L4.528|
 00011c  6800              LDR      r0,[r0,#0]  ; Eng_nAvg
 00011e  f7fffffe          BL       __aeabi_f2iz
 000122  493a              LDR      r1,|L4.524|
 000124  f8c1031c          STR      r0,[r1,#0x31c]  ; Eng_nAvg100ms
-;;;438    	Eng_nAvgSum=0;
+;;;444    	Eng_nAvgSum=0;
 000128  2000              MOVS     r0,#0
 00012a  493a              LDR      r1,|L4.532|
 00012c  6008              STR      r0,[r1,#0]  ; Eng_nAvgSum
-;;;439    	for(j=0;j<200;j++)                                            //20s发动机平均转速
+;;;445    	for(j=0;j<200;j++)                                            // 20s 发动机平均转速
 00012e  4931              LDR      r1,|L4.500|
 000130  7008              STRB     r0,[r1,#0]
 000132  e00e              B        |L4.338|
                   |L4.308|
-;;;440    	{
-;;;441    		Eng_nAvgSum = Eng_nAvgSum+Eng_nAvg100ms[j];
+;;;446    	{
+;;;447    		Eng_nAvgSum = Eng_nAvgSum+Eng_nAvg100ms[j];
 000134  4835              LDR      r0,|L4.524|
 000136  492f              LDR      r1,|L4.500|
 000138  7809              LDRB     r1,[r1,#0]  ; j
@@ -474,32 +478,32 @@
 000144  4933              LDR      r1,|L4.532|
 000146  6008              STR      r0,[r1,#0]  ; Eng_nAvgSum
 000148  482a              LDR      r0,|L4.500|
-00014a  7800              LDRB     r0,[r0,#0]            ;439  ; j
-00014c  1c40              ADDS     r0,r0,#1              ;439
+00014a  7800              LDRB     r0,[r0,#0]            ;445  ; j
+00014c  1c40              ADDS     r0,r0,#1              ;445
 00014e  4929              LDR      r1,|L4.500|
-000150  7008              STRB     r0,[r1,#0]            ;439
+000150  7008              STRB     r0,[r1,#0]            ;445
                   |L4.338|
 000152  4828              LDR      r0,|L4.500|
-000154  7800              LDRB     r0,[r0,#0]            ;439  ; j
-000156  28c8              CMP      r0,#0xc8              ;439
+000154  7800              LDRB     r0,[r0,#0]            ;445  ; j
+000156  28c8              CMP      r0,#0xc8              ;445
 000158  dbec              BLT      |L4.308|
-;;;442    	}
-;;;443    	Eng_nAvg20=Eng_nAvgSum/200;
+;;;448    	}
+;;;449    	Eng_nAvg20=Eng_nAvgSum/200;
 00015a  482e              LDR      r0,|L4.532|
 00015c  6800              LDR      r0,[r0,#0]  ; Eng_nAvgSum
 00015e  21c8              MOVS     r1,#0xc8
 000160  fb90f0f1          SDIV     r0,r0,r1
 000164  492c              LDR      r1,|L4.536|
 000166  6008              STR      r0,[r1,#0]  ; Eng_nAvg20
-;;;444    //------------------------------------------------------------------------------------------	
-;;;445    	for(i=0;i<29;i++)
+;;;450    //------------------------------------------------------------------------------------------	
+;;;451    	for(i=0;i<29;i++)
 000168  2000              MOVS     r0,#0
 00016a  491e              LDR      r1,|L4.484|
 00016c  7008              STRB     r0,[r1,#0]
 00016e  e00f              B        |L4.400|
                   |L4.368|
-;;;446    	{
-;;;447    		Accped_r100ms[i]=Accped_r100ms[i+1];
+;;;452    	{
+;;;453    		Accped_r100ms[i] = Accped_r100ms[i+1];
 000170  492a              LDR      r1,|L4.540|
 000172  481c              LDR      r0,|L4.484|
 000174  7800              LDRB     r0,[r0,#0]  ; i
@@ -510,32 +514,32 @@
 000180  7812              LDRB     r2,[r2,#0]  ; i
 000182  f8401022          STR      r1,[r0,r2,LSL #2]
 000186  4817              LDR      r0,|L4.484|
-000188  7800              LDRB     r0,[r0,#0]            ;445  ; i
-00018a  1c40              ADDS     r0,r0,#1              ;445
+000188  7800              LDRB     r0,[r0,#0]            ;451  ; i
+00018a  1c40              ADDS     r0,r0,#1              ;451
 00018c  4915              LDR      r1,|L4.484|
-00018e  7008              STRB     r0,[r1,#0]            ;445
+00018e  7008              STRB     r0,[r1,#0]            ;451
                   |L4.400|
 000190  4814              LDR      r0,|L4.484|
-000192  7800              LDRB     r0,[r0,#0]            ;445  ; i
-000194  281d              CMP      r0,#0x1d              ;445
+000192  7800              LDRB     r0,[r0,#0]            ;451  ; i
+000194  281d              CMP      r0,#0x1d              ;451
 000196  dbeb              BLT      |L4.368|
-;;;448    	}
-;;;449    	Accped_r100ms[29]=Accped_rint;
+;;;454    	}
+;;;455    	Accped_r100ms[29] = Accped_rint;
 000198  4821              LDR      r0,|L4.544|
 00019a  6800              LDR      r0,[r0,#0]  ; Accped_rint
 00019c  491f              LDR      r1,|L4.540|
 00019e  6748              STR      r0,[r1,#0x74]  ; Accped_r100ms
-;;;450    	Accped_rSum=0;                                                //3s平均油门踏板
+;;;456    	Accped_rSum=0;                                                //3s平均油门踏板
 0001a0  2000              MOVS     r0,#0
 0001a2  4920              LDR      r1,|L4.548|
 0001a4  6008              STR      r0,[r1,#0]  ; Accped_rSum
-;;;451    	for(j=0;j<30;j++)
+;;;457    	for(j = 0;j < 30;j ++)
 0001a6  4913              LDR      r1,|L4.500|
 0001a8  7008              STRB     r0,[r1,#0]
 0001aa  e00e              B        |L4.458|
                   |L4.428|
-;;;452    	{
-;;;453    		Accped_rSum=Accped_rSum+Accped_r100ms[j];
+;;;458    	{
+;;;459    		Accped_rSum=Accped_rSum+Accped_r100ms[j];
 0001ac  481b              LDR      r0,|L4.540|
 0001ae  4911              LDR      r1,|L4.500|
 0001b0  7809              LDRB     r1,[r1,#0]  ; j
@@ -546,27 +550,27 @@
 0001bc  4919              LDR      r1,|L4.548|
 0001be  6008              STR      r0,[r1,#0]  ; Accped_rSum
 0001c0  480c              LDR      r0,|L4.500|
-0001c2  7800              LDRB     r0,[r0,#0]            ;451  ; j
-0001c4  1c40              ADDS     r0,r0,#1              ;451
+0001c2  7800              LDRB     r0,[r0,#0]            ;457  ; j
+0001c4  1c40              ADDS     r0,r0,#1              ;457
 0001c6  490b              LDR      r1,|L4.500|
-0001c8  7008              STRB     r0,[r1,#0]            ;451
+0001c8  7008              STRB     r0,[r1,#0]            ;457
                   |L4.458|
 0001ca  480a              LDR      r0,|L4.500|
-0001cc  7800              LDRB     r0,[r0,#0]            ;451  ; j
-0001ce  281e              CMP      r0,#0x1e              ;451
+0001cc  7800              LDRB     r0,[r0,#0]            ;457  ; j
+0001ce  281e              CMP      r0,#0x1e              ;457
 0001d0  dbec              BLT      |L4.428|
-;;;454    	}
-;;;455    	Accped_r3s = Accped_rSum/30;
+;;;460    	}
+;;;461    	Accped_r3s = Accped_rSum/30;
 0001d2  4814              LDR      r0,|L4.548|
 0001d4  6800              LDR      r0,[r0,#0]  ; Accped_rSum
 0001d6  211e              MOVS     r1,#0x1e
 0001d8  fb90f0f1          SDIV     r0,r0,r1
 0001dc  4912              LDR      r1,|L4.552|
 0001de  6008              STR      r0,[r1,#0]  ; Accped_r3s
-;;;456    //------------------------------------------------------------------------------------------		
-;;;457    }
+;;;462    //------------------------------------------------------------------------------------------		
+;;;463    }
 0001e0  bd10              POP      {r4,pc}
-;;;458    extern const uint16_t  TrqlimM[2][15];
+;;;464    extern const uint16_t  TrqlimM[2][15];
                           ENDP
 
 0001e2  0000              DCW      0x0000
@@ -610,46 +614,46 @@
                           AREA ||i.ConstLimitation||, CODE, READONLY, ALIGN=2
 
                   ConstLimitation PROC
-;;;482    //稳油功能
-;;;483    void ConstLimitation(void)
+;;;488    //稳油功能
+;;;489    void ConstLimitation(void)
 000000  b510              PUSH     {r4,lr}
-;;;484    {
-;;;485    	static u16 TimerAPPCnt0;
-;;;486    	static u8  APP_T0;
-;;;487    
-;;;488    	if(TimerAPPCnt0 < 65530)
+;;;490    {
+;;;491    	static u16 TimerAPPCnt0 ;
+;;;492    	static u8  APP_T0;
+;;;493    
+;;;494    	if(TimerAPPCnt0 < 65530)
 000002  4854              LDR      r0,|L5.340|
 000004  8800              LDRH     r0,[r0,#0]  ; TimerAPPCnt0
 000006  f64f71fa          MOV      r1,#0xfffa
 00000a  4288              CMP      r0,r1
 00000c  da04              BGE      |L5.24|
-;;;489    		TimerAPPCnt0 ++;
+;;;495    		TimerAPPCnt0 ++;
 00000e  4851              LDR      r0,|L5.340|
 000010  8800              LDRH     r0,[r0,#0]  ; TimerAPPCnt0
 000012  1c40              ADDS     r0,r0,#1
 000014  494f              LDR      r1,|L5.340|
 000016  8008              STRH     r0,[r1,#0]
                   |L5.24|
-;;;490    	if(TimerAPPCnt0 >= 500) 
+;;;496    	if(TimerAPPCnt0 >= 500) 
 000018  484e              LDR      r0,|L5.340|
 00001a  8800              LDRH     r0,[r0,#0]  ; TimerAPPCnt0
 00001c  f5b07ffa          CMP      r0,#0x1f4
 000020  db02              BLT      |L5.40|
-;;;491    		APP_T0 = 1; 
+;;;497    		APP_T0 = 1; 
 000022  2001              MOVS     r0,#1
 000024  494c              LDR      r1,|L5.344|
 000026  7008              STRB     r0,[r1,#0]
                   |L5.40|
-;;;492    
-;;;493    	rdev = 20;mrdev = -20;
+;;;498    
+;;;499    	rdev = 20;mrdev = -20;
 000028  2014              MOVS     r0,#0x14
 00002a  494c              LDR      r1,|L5.348|
 00002c  7008              STRB     r0,[r1,#0]
 00002e  20ec              MOVS     r0,#0xec
 000030  494b              LDR      r1,|L5.352|
 000032  7008              STRB     r0,[r1,#0]
-;;;494    
-;;;495    	App_dev = Accped_rint - Accped_r3s;  //油门开度  - 3s的平均油门开度
+;;;500    
+;;;501    	App_dev = Accped_rint - Accped_r3s;  //油门开度 - 3s 的平均油门开度
 000034  484b              LDR      r0,|L5.356|
 000036  6800              LDR      r0,[r0,#0]  ; Accped_rint
 000038  494b              LDR      r1,|L5.360|
@@ -657,14 +661,14 @@
 00003c  1a40              SUBS     r0,r0,r1
 00003e  494b              LDR      r1,|L5.364|
 000040  6008              STR      r0,[r1,#0]  ; App_dev
-;;;496    
-;;;497    	if(App_rFreeze == 0) //油门开度值冻结   在冻结状态 - !0  不在冻结状态 = 0
+;;;502    
+;;;503    	if(App_rFreeze == 0) //油门开度值冻结   在冻结状态 - !0  不在冻结状态 = 0
 000042  484b              LDR      r0,|L5.368|
 000044  6800              LDR      r0,[r0,#0]  ; App_rFreeze
 000046  2800              CMP      r0,#0
 000048  d144              BNE      |L5.212|
-;;;498    	{ 	
-;;;499    		if((Load_stCurr == Midload || Load_stCurr == Lowload) && //设置在 中载 或者 轻载 模式下
+;;;504    	{ 	
+;;;505    		if((Load_stCurr == Midload || Load_stCurr == Lowload) && //设置在 中载 或者 轻载 模式下
 00004a  484a              LDR      r0,|L5.372|
 00004c  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 00004e  2802              CMP      r0,#2
@@ -674,7 +678,7 @@
 000056  2801              CMP      r0,#1
 000058  d136              BNE      |L5.200|
                   |L5.90|
-;;;500    			App_dev >= mrdev && App_dev <= rdev &&   //油门的波动范围  正负 20%
+;;;506    			App_dev >= mrdev && App_dev <= rdev &&   //油门的波动范围  正负 20%
 00005a  4844              LDR      r0,|L5.364|
 00005c  6800              LDR      r0,[r0,#0]  ; App_dev
 00005e  4940              LDR      r1,|L5.352|
@@ -687,13 +691,13 @@
 00006e  f9911000          LDRSB    r1,[r1,#0]  ; rdev
 000072  4288              CMP      r0,r1
 000074  dc28              BGT      |L5.200|
-;;;501    			Eng_nAvg > 1000 && 				         //发动机转速 > 1000
+;;;507    			Eng_nAvg > 1000 && 				         //发动机转速 > 1000
 000076  4940              LDR      r1,|L5.376|
 000078  4840              LDR      r0,|L5.380|
 00007a  6800              LDR      r0,[r0,#0]  ; Eng_nAvg
 00007c  f7fffffe          BL       __aeabi_cfrcmple
 000080  d222              BCS      |L5.200|
-;;;502    			Accped_rint > 10 && Accped_rint < 85 &&  //油门开度   >10%   <85%
+;;;508    			Accped_rint > 10 && Accped_rint < 85 &&  //油门开度   > 10%  < 85%
 000082  4838              LDR      r0,|L5.356|
 000084  6800              LDR      r0,[r0,#0]  ; Accped_rint
 000086  280a              CMP      r0,#0xa
@@ -702,13 +706,13 @@
 00008c  6800              LDR      r0,[r0,#0]  ; Accped_rint
 00008e  2855              CMP      r0,#0x55
 000090  da1a              BGE      |L5.200|
-;;;503    		    Accped_r3s > 10)                         //3 秒的平均开度 >10%
+;;;509    		    Accped_r3s > 10)                         //3 秒的平均开度 > 10%
 000092  4835              LDR      r0,|L5.360|
 000094  6800              LDR      r0,[r0,#0]  ; Accped_r3s
 000096  280a              CMP      r0,#0xa
 000098  dd16              BLE      |L5.200|
-;;;504    		{
-;;;505    			if((APP_T0 == 1)&&(CL_stOutflag == 0))   //计时保持 5 秒
+;;;510    		{
+;;;511    			if((APP_T0 == 1)&&(CL_stOutflag == 0))   //计时保持 5 秒
 00009a  482f              LDR      r0,|L5.344|
 00009c  7800              LDRB     r0,[r0,#0]  ; APP_T0
 00009e  2801              CMP      r0,#1
@@ -717,30 +721,30 @@
 0000a4  7800              LDRB     r0,[r0,#0]  ; CL_stOutflag
 0000a6  2800              CMP      r0,#0
 0000a8  d153              BNE      |L5.338|
-;;;506    			{
-;;;507    				trqmax = CoEng_rtrqInrAvg + 1; // trqmax - 稳油的扭矩限制
+;;;512    			{
+;;;513    				trqmax = CoEng_rtrqInrAvg + 1; // trqmax - 稳油的扭矩限制   20s 平均负荷计算
 0000aa  4836              LDR      r0,|L5.388|
 0000ac  8800              LDRH     r0,[r0,#0]  ; CoEng_rtrqInrAvg
 0000ae  1c40              ADDS     r0,r0,#1
 0000b0  4935              LDR      r1,|L5.392|
 0000b2  8008              STRH     r0,[r1,#0]
-;;;508    				TimerAPP0Reset();              // 定时器复位就是清  APP_T0
+;;;514    				TimerAPP0Reset();              // 定时器复位就是清  APP_T0
 0000b4  2000              MOVS     r0,#0
 0000b6  4927              LDR      r1,|L5.340|
 0000b8  8008              STRH     r0,[r1,#0]
 0000ba  4927              LDR      r1,|L5.344|
 0000bc  7008              STRB     r0,[r1,#0]
-;;;509    				App_rFreeze = Accped_rint;     // 记住当前的油门开度
+;;;515    				App_rFreeze = Accped_rint;     // 记住当前的油门开度
 0000be  4829              LDR      r0,|L5.356|
 0000c0  6800              LDR      r0,[r0,#0]  ; Accped_rint
 0000c2  492b              LDR      r1,|L5.368|
 0000c4  6008              STR      r0,[r1,#0]  ; App_rFreeze
 0000c6  e044              B        |L5.338|
                   |L5.200|
-;;;510    			}
-;;;511    		}
-;;;512    		else 
-;;;513    			TimerAPP0Reset();                  //退出稳油
+;;;516    			}
+;;;517    		}
+;;;518    		else 
+;;;519    			TimerAPP0Reset();                  //退出稳油
 0000c8  2000              MOVS     r0,#0
 0000ca  4922              LDR      r1,|L5.340|
 0000cc  8008              STRH     r0,[r1,#0]
@@ -748,13 +752,13 @@
 0000d0  7008              STRB     r0,[r1,#0]
 0000d2  e03e              B        |L5.338|
                   |L5.212|
-;;;514    	}
-;;;515    	else if(Load_stCurr == Highload            //当前在重载
+;;;520    	}
+;;;521    	else if(Load_stCurr == Highload            //当前在重载
 0000d4  4827              LDR      r0,|L5.372|
 0000d6  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 0000d8  2803              CMP      r0,#3
 0000da  d02a              BEQ      |L5.306|
-;;;516    		||Accped_r <= 10||Accped_r >= 85       //松掉油门 或者 踩到底
+;;;522    		||Accped_r <= 10||Accped_r >= 85       //松掉油门 或者 踩到底
 0000dc  492b              LDR      r1,|L5.396|
 0000de  482c              LDR      r0,|L5.400|
 0000e0  6800              LDR      r0,[r0,#0]  ; Accped_r
@@ -765,7 +769,7 @@
 0000ec  6800              LDR      r0,[r0,#0]  ; Accped_r
 0000ee  f7fffffe          BL       __aeabi_cfrcmple
 0000f2  d91e              BLS      |L5.306|
-;;;517    		||App_dev <- 25 ||App_dev  >  15       //当前油门开度 - 3s平均开度
+;;;523    		||App_dev <- 25 ||App_dev  >  15       //当前油门开度 - 3s平均开度
 0000f4  481d              LDR      r0,|L5.364|
 0000f6  6800              LDR      r0,[r0,#0]  ; App_dev
 0000f8  f1100f19          CMN      r0,#0x19
@@ -774,7 +778,7 @@
 000100  6800              LDR      r0,[r0,#0]  ; App_dev
 000102  280f              CMP      r0,#0xf
 000104  dc15              BGT      |L5.306|
-;;;518    		|| (Accped_rint - App_rFreeze) > 20 ||(Accped_rint - App_rFreeze) <- 25//当前踏板开度与冻结值进行比较
+;;;524    		||(Accped_rint - App_rFreeze) > 20 || (Accped_rint - App_rFreeze) <- 25    //当前踏板开度与冻结值进行比较
 000106  4817              LDR      r0,|L5.356|
 000108  6800              LDR      r0,[r0,#0]  ; Accped_rint
 00010a  4919              LDR      r1,|L5.368|
@@ -789,7 +793,7 @@
 00011c  1a40              SUBS     r0,r0,r1
 00011e  f1100f19          CMN      r0,#0x19
 000122  db06              BLT      |L5.306|
-;;;519    		||(Accped_r3s - App_rFreeze)>15)       //3秒踏板平均开度与冻结值比较 
+;;;525    		||(Accped_r3s - App_rFreeze) > 15)     //3秒踏板平均开度与冻结值比较 
 000124  4810              LDR      r0,|L5.360|
 000126  6800              LDR      r0,[r0,#0]  ; Accped_r3s
 000128  4911              LDR      r1,|L5.368|
@@ -798,34 +802,34 @@
 00012e  280f              CMP      r0,#0xf
 000130  dd0a              BLE      |L5.328|
                   |L5.306|
-;;;520    	{
-;;;521    		CL_stOutflag = 1; //取消扭矩限制
+;;;526    	{
+;;;527    		CL_stOutflag = 1; 					   //取消扭矩限制
 000132  2001              MOVS     r0,#1
 000134  4912              LDR      r1,|L5.384|
 000136  7008              STRB     r0,[r1,#0]
-;;;522    		App_rFreeze  = 0; //等待
+;;;528    		App_rFreeze  = 0;                      //等待
 000138  2000              MOVS     r0,#0
 00013a  490d              LDR      r1,|L5.368|
 00013c  6008              STR      r0,[r1,#0]  ; App_rFreeze
-;;;523    		TimerAPP0Reset(); //重新计时 
+;;;529    		TimerAPP0Reset();                      //重新计时 
 00013e  4905              LDR      r1,|L5.340|
 000140  8008              STRH     r0,[r1,#0]
 000142  4905              LDR      r1,|L5.344|
 000144  7008              STRB     r0,[r1,#0]
 000146  e004              B        |L5.338|
                   |L5.328|
-;;;524    	}
-;;;525    	else 
-;;;526    		TimerAPP0Reset();	 
+;;;530    	}
+;;;531    	else 
+;;;532    		TimerAPP0Reset();	 
 000148  2000              MOVS     r0,#0
 00014a  4902              LDR      r1,|L5.340|
 00014c  8008              STRH     r0,[r1,#0]
 00014e  4902              LDR      r1,|L5.344|
 000150  7008              STRB     r0,[r1,#0]
                   |L5.338|
-;;;527    }
+;;;533    }
 000152  bd10              POP      {r4,pc}
-;;;528    
+;;;534    
                           ENDP
 
                   |L5.340|
@@ -866,11 +870,11 @@
                           AREA ||i.GearDetect||, CODE, READONLY, ALIGN=2
 
                   GearDetect PROC
-;;;366    
-;;;367    void GearDetect(void)  //10ms     输入信号的获取 
+;;;373    
+;;;374    void GearDetect(void)  //10ms     输入信号的获取 
 000000  e92d41f0          PUSH     {r4-r8,lr}
-;;;368    {
-;;;369    	Eng_nAvg       = Eng_nRaw / 8;                     //发动机转速 / 8
+;;;375    {
+;;;376    	Eng_nAvg       = Eng_nRaw / 8;                     //发动机转速 / 8
 000004  4874              LDR      r0,|L6.472|
 000006  78c1              LDRB     r1,[r0,#3]  ; RCVData0
 000008  7900              LDRB     r0,[r0,#4]  ; RCVData0
@@ -881,7 +885,7 @@
 000016  f7fffffe          BL       __aeabi_i2f
 00001a  4970              LDR      r1,|L6.476|
 00001c  6008              STR      r0,[r1,#0]  ; Eng_nAvg
-;;;370    	Eng_nAvgFlt    = SignalFlter(Eng_nAvg,Eng_nAvgFltOld,0.5);//
+;;;377    	Eng_nAvgFlt    = SignalFlter(Eng_nAvg,Eng_nAvgFltOld,0.5);//
 00001e  f04f527c          MOV      r2,#0x3f000000
 000022  486f              LDR      r0,|L6.480|
 000024  6801              LDR      r1,[r0,#0]  ; Eng_nAvgFltOld
@@ -890,23 +894,23 @@
 00002a  f7fffffe          BL       SignalFlter
 00002e  496d              LDR      r1,|L6.484|
 000030  6008              STR      r0,[r1,#0]  ; Eng_nAvgFlt
-;;;371    	Eng_nAvgFltOld = Eng_nAvgFlt;
+;;;378    	Eng_nAvgFltOld = Eng_nAvgFlt;
 000032  4608              MOV      r0,r1
 000034  6800              LDR      r0,[r0,#0]  ; Eng_nAvgFlt
 000036  496a              LDR      r1,|L6.480|
 000038  6008              STR      r0,[r1,#0]  ; Eng_nAvgFltOld
-;;;372    	Eng_nAvgFltInt = (int)Eng_nAvgFlt;
+;;;379    	Eng_nAvgFltInt = (int)Eng_nAvgFlt;
 00003a  486a              LDR      r0,|L6.484|
 00003c  6800              LDR      r0,[r0,#0]  ; Eng_nAvgFlt
 00003e  f7fffffe          BL       __aeabi_f2iz
 000042  4969              LDR      r1,|L6.488|
 000044  8008              STRH     r0,[r1,#0]
-;;;373    	Curr_trq       = Curr_trqRaw;         //内部扭拒 当前扭矩
+;;;380    	Curr_trq       = Curr_trqRaw;         //内部扭拒 当前扭矩
 000046  4864              LDR      r0,|L6.472|
 000048  7880              LDRB     r0,[r0,#2]  ; RCVData0
 00004a  4968              LDR      r1,|L6.492|
 00004c  7008              STRB     r0,[r1,#0]
-;;;374    	if(BAM_EC1[0]==0x20 && BAM_EC1[1] == 0x27 && BAM_EC1[2] == 0x00)
+;;;381    	if(BAM_EC1[0]==0x20 && BAM_EC1[1] == 0x27 && BAM_EC1[2] == 0x00)
 00004e  4868              LDR      r0,|L6.496|
 000050  7800              LDRB     r0,[r0,#0]  ; RCVData6
 000052  2820              CMP      r0,#0x20
@@ -918,14 +922,14 @@
 00005e  4864              LDR      r0,|L6.496|
 000060  7880              LDRB     r0,[r0,#2]  ; RCVData6
 000062  b9f0              CBNZ     r0,|L6.162|
-;;;375    	{	  
-;;;376    		if(EC1_PackNum == 3)//这个变量没找到赋值的地方啊
+;;;382    	{	  
+;;;383    		if(EC1_PackNum == 3)//这个变量没找到赋值的地方啊
 000064  4863              LDR      r0,|L6.500|
 000066  7800              LDRB     r0,[r0,#0]  ; RCVData5
 000068  2803              CMP      r0,#3
 00006a  d109              BNE      |L6.128|
-;;;377    		{
-;;;378    			Moffrm_trqMax = Moffrm_trqMaxRaw;   //最大扭矩
+;;;384    		{
+;;;385    			Moffrm_trqMax = Moffrm_trqMaxRaw;   //最大扭矩
 00006c  4961              LDR      r1,|L6.500|
 00006e  798a              LDRB     r2,[r1,#6]  ; RCVData5
 000070  79c9              LDRB     r1,[r1,#7]  ; RCVData5
@@ -935,14 +939,14 @@
 00007c  6008              STR      r0,[r1,#0]  ; Moffrm_trqMax
 00007e  e010              B        |L6.162|
                   |L6.128|
-;;;379    		} 
-;;;380    		else if(EC1_PackNum == 1)
+;;;386    		} 
+;;;387    		else if(EC1_PackNum == 1)
 000080  485c              LDR      r0,|L6.500|
 000082  7800              LDRB     r0,[r0,#0]  ; RCVData5
 000084  2801              CMP      r0,#1
 000086  d10c              BNE      |L6.162|
-;;;381    		{
-;;;382    			RateSpeed = RateSpeedRaw/8;
+;;;388    		{
+;;;389    			RateSpeed = RateSpeedRaw/8;
 000088  485a              LDR      r0,|L6.500|
 00008a  7901              LDRB     r1,[r0,#4]  ; RCVData5
 00008c  7940              LDRB     r0,[r0,#5]  ; RCVData5
@@ -954,9 +958,9 @@
 00009e  4957              LDR      r1,|L6.508|
 0000a0  6008              STR      r0,[r1,#0]  ; RateSpeed
                   |L6.162|
-;;;383    		}
-;;;384    	}    
-;;;385    	Coeng_trqInrCurr = Curr_trq*Moffrm_trqMax/100;   //赋值之后怎么没有后续的操作呢？没用
+;;;390    		}
+;;;391    	}    
+;;;392    	Coeng_trqInrCurr = Curr_trq*Moffrm_trqMax/100;   //赋值之后怎么没有后续的操作呢？没用
 0000a2  4852              LDR      r0,|L6.492|
 0000a4  7800              LDRB     r0,[r0,#0]  ; Curr_trq
 0000a6  f7fffffe          BL       __aeabi_ui2f
@@ -972,7 +976,7 @@
 0000c0  f7fffffe          BL       __aeabi_f2iz
 0000c4  494f              LDR      r1,|L6.516|
 0000c6  6008              STR      r0,[r1,#0]  ; Coeng_trqInrCurr
-;;;386    	EngPrt_trqLim  = EngPrt_trqLimRaw / 10;          //外特性 / 10
+;;;393    	EngPrt_trqLim  = EngPrt_trqLimRaw / 10;          //外特性 / 10
 0000c8  484f              LDR      r0,|L6.520|
 0000ca  7801              LDRB     r1,[r0,#0]  ; RCVData3
 0000cc  7840              LDRB     r0,[r0,#1]  ; RCVData3
@@ -983,7 +987,7 @@
 0000da  f7fffffe          BL       __aeabi_i2f
 0000de  494b              LDR      r1,|L6.524|
 0000e0  6008              STR      r0,[r1,#0]  ; EngPrt_trqLim
-;;;387    	CoEng_trq      = CoEng_trqRaw/10;                //发动机的输出扭矩 / 10
+;;;394    	CoEng_trq      = CoEng_trqRaw/10;                //发动机的输出扭矩 / 10
 0000e2  484b              LDR      r0,|L6.528|
 0000e4  7901              LDRB     r1,[r0,#4]  ; RCVData2
 0000e6  7940              LDRB     r0,[r0,#5]  ; RCVData2
@@ -994,13 +998,13 @@
 0000f4  f7fffffe          BL       __aeabi_i2f
 0000f8  4946              LDR      r1,|L6.532|
 0000fa  6008              STR      r0,[r1,#0]  ; CoEng_trq
-;;;388    	CoEng_trqint   = (signed int)CoEng_trq;		     //取整
+;;;395    	CoEng_trqint   = (signed int)CoEng_trq;		     //取整
 0000fc  4608              MOV      r0,r1
 0000fe  6800              LDR      r0,[r0,#0]  ; CoEng_trq
 000100  f7fffffe          BL       __aeabi_f2iz
 000104  4944              LDR      r1,|L6.536|
 000106  6008              STR      r0,[r1,#0]  ; CoEng_trqint
-;;;389    	Accped_r       = Accped_rRaw*0.4;                //踏板 * 0.4
+;;;396    	Accped_r       = Accped_rRaw*0.4;                //踏板 * 0.4
 000108  4944              LDR      r1,|L6.540|
 00010a  7848              LDRB     r0,[r1,#1]  ; RCVData1
 00010c  f7fffffe          BL       __aeabi_ui2d
@@ -1012,13 +1016,13 @@
 00011c  f7fffffe          BL       __aeabi_d2f
 000120  4941              LDR      r1,|L6.552|
 000122  6008              STR      r0,[r1,#0]  ; Accped_r
-;;;390    	Accped_rint    = (int)Accped_r;	                 //对踏板运算结果取整
+;;;397    	Accped_rint    = (int)Accped_r;	                 //对踏板运算结果取整
 000124  4608              MOV      r0,r1
 000126  6800              LDR      r0,[r0,#0]  ; Accped_r
 000128  f7fffffe          BL       __aeabi_f2iz
 00012c  493f              LDR      r1,|L6.556|
 00012e  6008              STR      r0,[r1,#0]  ; Accped_rint
-;;;391    	Accped_rFlt    = SignalFlter(Accped_r,Accped_rFltOld,Accpet_tiPT1);//（踏板运算，上次踏板，0.9）
+;;;398    	Accped_rFlt    = SignalFlter(Accped_r,Accped_rFltOld,Accpet_tiPT1);//（踏板运算，上次踏板，0.9）
 000130  4a3f              LDR      r2,|L6.560|
 000132  4840              LDR      r0,|L6.564|
 000134  6801              LDR      r1,[r0,#0]  ; Accped_rFltOld
@@ -1027,31 +1031,31 @@
 00013a  f7fffffe          BL       SignalFlter
 00013e  493e              LDR      r1,|L6.568|
 000140  6008              STR      r0,[r1,#0]  ; Accped_rFlt
-;;;392    	Accped_rFltOld = Accped_rFlt;                    //将旧值覆盖，（踏板）
+;;;399    	Accped_rFltOld = Accped_rFlt;                    //将旧值覆盖，（踏板）
 000142  4608              MOV      r0,r1
 000144  6800              LDR      r0,[r0,#0]  ; Accped_rFlt
 000146  493b              LDR      r1,|L6.564|
 000148  6008              STR      r0,[r1,#0]  ; Accped_rFltOld
-;;;393    	Accped_rFltint = (int)Accped_rFlt;               //取整
+;;;400    	Accped_rFltint = (int)Accped_rFlt;               //取整
 00014a  483b              LDR      r0,|L6.568|
 00014c  6800              LDR      r0,[r0,#0]  ; Accped_rFlt
 00014e  f7fffffe          BL       __aeabi_f2iz
 000152  493a              LDR      r1,|L6.572|
 000154  6008              STR      r0,[r1,#0]  ; Accped_rFltint
-;;;394    	CoEng_TrqFrc   = CoEng_TrqFrcRaw - 125;	         //摩擦扭矩  运算
+;;;401    	CoEng_TrqFrc   = CoEng_TrqFrcRaw - 125;	         //摩擦扭矩  运算
 000156  493a              LDR      r1,|L6.576|
 000158  7809              LDRB     r1,[r1,#0]  ; RCVData4
 00015a  f1a1007d          SUB      r0,r1,#0x7d
 00015e  f7fffffe          BL       __aeabi_i2f
 000162  4938              LDR      r1,|L6.580|
 000164  6008              STR      r0,[r1,#0]  ; CoEng_TrqFrc
-;;;395    	CoEng_rDrvLoad = DrvDem_trqRaw   - 125;          //驾驶员需求扭矩 运算
+;;;402    	CoEng_rDrvLoad = DrvDem_trqRaw   - 125;          //驾驶员需求扭矩 运算
 000166  481c              LDR      r0,|L6.472|
 000168  7840              LDRB     r0,[r0,#1]  ; RCVData0
 00016a  387d              SUBS     r0,r0,#0x7d
 00016c  4936              LDR      r1,|L6.584|
 00016e  7008              STRB     r0,[r1,#0]
-;;;396    	CoEng_rDrvLoadFlt    = SignalFlter((float)CoEng_rDrvLoad,CoEng_rDrvLoadFltOld,CoEng_tiPT1rDrvLoad);//（需求扭矩，上次需求，0.7）
+;;;403    	CoEng_rDrvLoadFlt    = SignalFlter((float)CoEng_rDrvLoad,CoEng_rDrvLoadFltOld,CoEng_tiPT1rDrvLoad);//（需求扭矩，上次需求，0.7）
 000170  4608              MOV      r0,r1
 000172  7800              LDRB     r0,[r0,#0]  ; CoEng_rDrvLoad
 000174  f7fffffe          BL       __aeabi_ui2f
@@ -1063,12 +1067,12 @@
 000182  f7fffffe          BL       SignalFlter
 000186  4933              LDR      r1,|L6.596|
 000188  6008              STR      r0,[r1,#0]  ; CoEng_rDrvLoadFlt
-;;;397    	CoEng_rDrvLoadFltOld = CoEng_rDrvLoadFlt;                               //旧的覆盖新的
+;;;404    	CoEng_rDrvLoadFltOld = CoEng_rDrvLoadFlt;                                   //旧的覆盖新的
 00018a  4608              MOV      r0,r1
 00018c  6800              LDR      r0,[r0,#0]  ; CoEng_rDrvLoadFlt
 00018e  4930              LDR      r1,|L6.592|
 000190  6008              STR      r0,[r1,#0]  ; CoEng_rDrvLoadFltOld
-;;;398    	CoEng_trqDrv10Load   = CoEng_rDrv10Load*Moffrm_trqMax / 100;            //需求扭矩、最大扭矩、100
+;;;405    	CoEng_trqDrv10Load   = CoEng_rDrv10Load*Moffrm_trqMax / 100;            	//需求扭矩、最大扭矩、100
 000192  4819              LDR      r0,|L6.504|
 000194  6801              LDR      r1,[r0,#0]  ; Moffrm_trqMax
 000196  4830              LDR      r0,|L6.600|
@@ -1081,7 +1085,7 @@
 0001a8  f7fffffe          BL       __aeabi_f2iz
 0001ac  492b              LDR      r1,|L6.604|
 0001ae  6008              STR      r0,[r1,#0]  ; CoEng_trqDrv10Load
-;;;399    	EngPrt_trqNet        = EngPrt_trqLim-CoEng_TrqFrc * Moffrm_trqMax / 100;	//赋值之后无操作啊  外特性 - 摩擦扭矩计算*最大扭矩运算/100
+;;;406    	EngPrt_trqNet        = EngPrt_trqLim - CoEng_TrqFrc * Moffrm_trqMax / 100;	//赋值之后无操作啊  外特性 - 摩擦扭矩计算*最大扭矩运算/100
 0001b0  4811              LDR      r0,|L6.504|
 0001b2  6801              LDR      r1,[r0,#0]  ; Moffrm_trqMax
 0001b4  4823              LDR      r0,|L6.580|
@@ -1097,9 +1101,9 @@
 0001cc  f7fffffe          BL       __aeabi_frsub
 0001d0  4923              LDR      r1,|L6.608|
 0001d2  6008              STR      r0,[r1,#0]  ; EngPrt_trqNet
-;;;400    }
+;;;407    }
 0001d4  e8bd81f0          POP      {r4-r8,pc}
-;;;401    
+;;;408    
                           ENDP
 
                   |L6.472|
@@ -1176,98 +1180,98 @@
                           AREA ||i.SaveFuleTask||, CODE, READONLY, ALIGN=2
 
                   SaveFuleTask PROC
-;;;195    //节油任务
-;;;196     void SaveFuleTask(void *pdata)
+;;;199    //节油任务
+;;;200     void SaveFuleTask(void *pdata)
 000000  2003              MOVS     r0,#3
-;;;197    {
-;;;198    	Load_stCurr   = Highload;      // 默认当前油门最大
+;;;201    {
+;;;202    	Load_stCurr   = Highload;      // 默认当前油门最大
 000002  49c2              LDR      r1,|L7.780|
 000004  7008              STRB     r0,[r1,#0]
-;;;199    	Load_stTarget = Highload;      // 默认计算的油门也是最大
+;;;203    	Load_stTarget = Highload;      // 默认计算的油门也是最大
 000006  49c2              LDR      r1,|L7.784|
 000008  7008              STRB     r0,[r1,#0]
-;;;200    	trqmax        = 225;
+;;;204    	trqmax        = 225;
 00000a  20e1              MOVS     r0,#0xe1
 00000c  49c1              LDR      r1,|L7.788|
 00000e  8008              STRH     r0,[r1,#0]
-;;;201    	while(1)
+;;;205    	while(1)
 000010  e17b              B        |L7.778|
                   |L7.18|
-;;;202    	{
-;;;203    		OSTimeDlyHMSM(0,0,0,1);	
+;;;206    	{
+;;;207    		OSTimeDlyHMSM(0,0,0,1);	
 000012  2301              MOVS     r3,#1
 000014  2200              MOVS     r2,#0
 000016  4611              MOV      r1,r2
 000018  4610              MOV      r0,r2
 00001a  f7fffffe          BL       OSTimeDlyHMSM
-;;;204    		SystemTime10ms  ++;
+;;;208    		SystemTime10ms  ++;
 00001e  48be              LDR      r0,|L7.792|
 000020  8800              LDRH     r0,[r0,#0]  ; SystemTime10ms
 000022  1c40              ADDS     r0,r0,#1
 000024  49bc              LDR      r1,|L7.792|
 000026  8008              STRH     r0,[r1,#0]
-;;;205    		SystemTime50ms  ++;
+;;;209    		SystemTime50ms  ++;
 000028  48bc              LDR      r0,|L7.796|
 00002a  8800              LDRH     r0,[r0,#0]  ; SystemTime50ms
 00002c  1c40              ADDS     r0,r0,#1
 00002e  49bb              LDR      r1,|L7.796|
 000030  8008              STRH     r0,[r1,#0]
-;;;206    		SystemTime100ms ++;
+;;;210    		SystemTime100ms ++;
 000032  48bb              LDR      r0,|L7.800|
 000034  8800              LDRH     r0,[r0,#0]  ; SystemTime100ms
 000036  1c40              ADDS     r0,r0,#1
 000038  49b9              LDR      r1,|L7.800|
 00003a  8008              STRH     r0,[r1,#0]
-;;;207    		SystemTime500ms ++;
+;;;211    		SystemTime500ms ++;
 00003c  48b9              LDR      r0,|L7.804|
 00003e  8800              LDRH     r0,[r0,#0]  ; SystemTime500ms
 000040  1c40              ADDS     r0,r0,#1
 000042  49b8              LDR      r1,|L7.804|
 000044  8008              STRH     r0,[r1,#0]
-;;;208    		SystemTime1s ++;
+;;;212    		SystemTime1s ++;
 000046  48b8              LDR      r0,|L7.808|
 000048  8800              LDRH     r0,[r0,#0]  ; SystemTime1s
 00004a  1c40              ADDS     r0,r0,#1
 00004c  49b6              LDR      r1,|L7.808|
 00004e  8008              STRH     r0,[r1,#0]
-;;;209    
-;;;210    //每毫秒都会进行数据检查
-;;;211    		if(SystemTime10ms >= 10)
+;;;213    
+;;;214    		//每毫秒都会进行数据检查
+;;;215    		if(SystemTime10ms >= 10)
 000050  48b1              LDR      r0,|L7.792|
 000052  8800              LDRH     r0,[r0,#0]  ; SystemTime10ms
 000054  280a              CMP      r0,#0xa
 000056  db7d              BLT      |L7.340|
-;;;212    		{
-;;;213    			SystemTime10ms = 0;
+;;;216    		{
+;;;217    			SystemTime10ms = 0;
 000058  2000              MOVS     r0,#0
 00005a  49af              LDR      r1,|L7.792|
 00005c  8008              STRH     r0,[r1,#0]
-;;;214    			if(fCanOK) 
+;;;218    			if(fCanOK) 
 00005e  48b3              LDR      r0,|L7.812|
 000060  7800              LDRB     r0,[r0,#0]  ; fCanOK
 000062  2800              CMP      r0,#0
 000064  d076              BEQ      |L7.340|
-;;;215    			{
-;;;216    				GearDetect();  // 输入信号的获取
+;;;219    			{
+;;;220    				GearDetect();  // 输入信号的获取
 000066  f7fffffe          BL       GearDetect
-;;;217    				TrqLim();      // 扭拒限制计算
+;;;221    				TrqLim();      // 根据发动机转速，得出中载、轻载状态下额定限制值
 00006a  f7fffffe          BL       TrqLim
-;;;218    /*############################################################################### 
-;;;219    						载荷状态变化时, 扭拒限制的斜率变化
-;;;220    ################################################################################*/           
-;;;221    				if(Load_stCurr == Highload)//当前是重载模式  此处是标志
+;;;222    /*############################################################################### 
+;;;223    						载荷状态变化时, 扭拒限制的斜率变化
+;;;224    ################################################################################*/           
+;;;225    				if(Load_stCurr == Highload)              //当前是重载模式  此处是标志
 00006e  48a7              LDR      r0,|L7.780|
 000070  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 000072  2803              CMP      r0,#3
 000074  d155              BNE      |L7.290|
-;;;222    				{
-;;;223    					if(Load_stTarget == Midload)//手机设定是中档模式   此处是模式标志
+;;;226    				{
+;;;227    					if(Load_stTarget == Midload)         //手机设定是中档模式   此处是模式标志
 000076  48a6              LDR      r0,|L7.784|
 000078  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00007a  2802              CMP      r0,#2
 00007c  d124              BNE      |L7.200|
-;;;224    					{
-;;;225    						if(TrqLoad>TrqlimMid)                 //这个就是拿真实值进行比较了
+;;;228    					{
+;;;229    						if(TrqLoad > TrqlimMid)          //这个就是拿真实值进行比较了
 00007e  48ac              LDR      r0,|L7.816|
 000080  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 000082  f7fffffe          BL       __aeabi_i2f
@@ -1277,7 +1281,7 @@
 00008c  4620              MOV      r0,r4
 00008e  f7fffffe          BL       __aeabi_cfcmple
 000092  d20e              BCS      |L7.178|
-;;;226    							TrqLoad = TrqLoad - 0.08; //8/s
+;;;230    							TrqLoad = TrqLoad - 0.08;    // 8/s
 000094  48a7              LDR      r0,|L7.820|
 000096  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000098  f7fffffe          BL       __aeabi_f2d
@@ -1291,14 +1295,14 @@
 0000ae  6008              STR      r0,[r1,#0]  ; TrqLoad
 0000b0  e0e2              B        |L7.632|
                   |L7.178|
-;;;227    						else 
-;;;228    						{
-;;;229    							Load_stCurr = Load_stTarget; //达到预期状态了，赋值、相应标志
+;;;231    						else 
+;;;232    						{
+;;;233    							Load_stCurr = Load_stTarget; //达到预期状态了，赋值、相应标志
 0000b2  4897              LDR      r0,|L7.784|
 0000b4  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 0000b6  4995              LDR      r1,|L7.780|
 0000b8  7008              STRB     r0,[r1,#0]
-;;;230    							TrqLoad = TrqlimMid;
+;;;234    							TrqLoad = TrqlimMid;
 0000ba  489d              LDR      r0,|L7.816|
 0000bc  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 0000be  f7fffffe          BL       __aeabi_i2f
@@ -1306,15 +1310,15 @@
 0000c4  6008              STR      r0,[r1,#0]  ; TrqLoad
 0000c6  e0d7              B        |L7.632|
                   |L7.200|
-;;;231    						}
-;;;232    					} 
-;;;233    					else if(Load_stTarget == Lowload)    //应该是低档模式
+;;;235    						}
+;;;236    					} 
+;;;237    					else if(Load_stTarget == Lowload)    //应该是轻载模式
 0000c8  4891              LDR      r0,|L7.784|
 0000ca  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 0000cc  2801              CMP      r0,#1
 0000ce  d124              BNE      |L7.282|
-;;;234    					{
-;;;235    						if(TrqLoad > TrqlimLow) TrqLoad = TrqLoad - 0.08; //8/s
+;;;238    					{
+;;;239    						if(TrqLoad > TrqlimLow) TrqLoad = TrqLoad - 0.08; //8/s
 0000d0  489b              LDR      r0,|L7.832|
 0000d2  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 0000d4  f7fffffe          BL       __aeabi_i2f
@@ -1337,14 +1341,14 @@
 000100  6008              STR      r0,[r1,#0]  ; TrqLoad
 000102  e0b9              B        |L7.632|
                   |L7.260|
-;;;236    						else 
-;;;237    						{
-;;;238    							Load_stCurr = Load_stTarget;
+;;;240    						else 
+;;;241    						{
+;;;242    							Load_stCurr = Load_stTarget;
 000104  4882              LDR      r0,|L7.784|
 000106  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 000108  4980              LDR      r1,|L7.780|
 00010a  7008              STRB     r0,[r1,#0]
-;;;239    							TrqLoad = TrqlimLow;
+;;;243    							TrqLoad = TrqlimLow;
 00010c  488c              LDR      r0,|L7.832|
 00010e  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 000110  f7fffffe          BL       __aeabi_i2f
@@ -1352,34 +1356,34 @@
 000116  6008              STR      r0,[r1,#0]  ; TrqLoad
 000118  e0ae              B        |L7.632|
                   |L7.282|
-;;;240    						}
-;;;241    					} 
-;;;242    					else TrqLoad = 225;     
+;;;244    						}
+;;;245    					} 
+;;;246    					else TrqLoad = 225;     
 00011a  488a              LDR      r0,|L7.836|
 00011c  4985              LDR      r1,|L7.820|
 00011e  6008              STR      r0,[r1,#0]  ; TrqLoad
 000120  e0aa              B        |L7.632|
                   |L7.290|
-;;;243    				} 
-;;;244    				else if(Load_stCurr == Midload)
+;;;247    				} 
+;;;248    				else if(Load_stCurr == Midload)
 000122  487a              LDR      r0,|L7.780|
 000124  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 000126  2802              CMP      r0,#2
 000128  d152              BNE      |L7.464|
-;;;245    				{
-;;;246    					if(Load_stTarget == Highload)
+;;;249    				{
+;;;250    					if(Load_stTarget == Highload)
 00012a  4879              LDR      r0,|L7.784|
 00012c  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00012e  2803              CMP      r0,#3
 000130  d11e              BNE      |L7.368|
-;;;247    					{
-;;;248    						if(TrqLoad < 225) 
+;;;251    					{
+;;;252    						if(TrqLoad < 225) 
 000132  4984              LDR      r1,|L7.836|
 000134  487f              LDR      r0,|L7.820|
 000136  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000138  f7fffffe          BL       __aeabi_cfcmple
 00013c  d210              BCS      |L7.352|
-;;;249    							TrqLoad = TrqLoad + 0.08; //8/s
+;;;253    							TrqLoad = TrqLoad + 0.08; //8/s
 00013e  487d              LDR      r0,|L7.820|
 000140  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000142  f7fffffe          BL       __aeabi_f2d
@@ -1397,28 +1401,28 @@
 00015c  6008              STR      r0,[r1,#0]  ; TrqLoad
 00015e  e08b              B        |L7.632|
                   |L7.352|
-;;;250    						else 
-;;;251    						{
-;;;252    							Load_stCurr = Load_stTarget;
+;;;254    						else 
+;;;255    						{
+;;;256    							Load_stCurr = Load_stTarget;
 000160  486b              LDR      r0,|L7.784|
 000162  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 000164  4969              LDR      r1,|L7.780|
 000166  7008              STRB     r0,[r1,#0]
-;;;253    							TrqLoad = 225;
+;;;257    							TrqLoad = 225;
 000168  4876              LDR      r0,|L7.836|
 00016a  4972              LDR      r1,|L7.820|
 00016c  6008              STR      r0,[r1,#0]  ; TrqLoad
 00016e  e083              B        |L7.632|
                   |L7.368|
-;;;254    						}
-;;;255    					} 
-;;;256    					else if(Load_stTarget == Lowload)
+;;;258    						}
+;;;259    					} 
+;;;260    					else if(Load_stTarget == Lowload)
 000170  4867              LDR      r0,|L7.784|
 000172  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 000174  2801              CMP      r0,#1
 000176  d124              BNE      |L7.450|
-;;;257    					{
-;;;258    						if(TrqLoad > TrqlimLow) 
+;;;261    					{
+;;;262    						if(TrqLoad > TrqlimLow) 
 000178  4871              LDR      r0,|L7.832|
 00017a  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 00017c  f7fffffe          BL       __aeabi_i2f
@@ -1428,7 +1432,7 @@
 000186  4620              MOV      r0,r4
 000188  f7fffffe          BL       __aeabi_cfcmple
 00018c  d20e              BCS      |L7.428|
-;;;259    							TrqLoad = TrqLoad-0.08; //8/s
+;;;263    							TrqLoad = TrqLoad - 0.08; //8/s
 00018e  4869              LDR      r0,|L7.820|
 000190  6800              LDR      r0,[r0,#0]  ; TrqLoad
 000192  f7fffffe          BL       __aeabi_f2d
@@ -1442,14 +1446,14 @@
 0001a8  6008              STR      r0,[r1,#0]  ; TrqLoad
 0001aa  e065              B        |L7.632|
                   |L7.428|
-;;;260    						else 
-;;;261    						{
-;;;262    							Load_stCurr = Load_stTarget;
+;;;264    						else 
+;;;265    						{
+;;;266    							Load_stCurr = Load_stTarget;
 0001ac  4858              LDR      r0,|L7.784|
 0001ae  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 0001b0  4956              LDR      r1,|L7.780|
 0001b2  7008              STRB     r0,[r1,#0]
-;;;263    							TrqLoad = TrqlimLow;
+;;;267    							TrqLoad = TrqlimLow;
 0001b4  4862              LDR      r0,|L7.832|
 0001b6  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 0001b8  f7fffffe          BL       __aeabi_i2f
@@ -1457,9 +1461,9 @@
 0001be  6008              STR      r0,[r1,#0]  ; TrqLoad
 0001c0  e05a              B        |L7.632|
                   |L7.450|
-;;;264    						}
-;;;265    					} 
-;;;266    					else TrqLoad = TrqlimMid; 
+;;;268    						}
+;;;269    					} 
+;;;270    					else TrqLoad = TrqlimMid; 
 0001c2  485b              LDR      r0,|L7.816|
 0001c4  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 0001c6  f7fffffe          BL       __aeabi_i2f
@@ -1467,20 +1471,20 @@
 0001cc  6008              STR      r0,[r1,#0]  ; TrqLoad
 0001ce  e053              B        |L7.632|
                   |L7.464|
-;;;267    				}
-;;;268    				else if(Load_stCurr == Lowload)
+;;;271    				}
+;;;272    				else if(Load_stCurr == Lowload)
 0001d0  484e              LDR      r0,|L7.780|
 0001d2  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 0001d4  2801              CMP      r0,#1
 0001d6  d14f              BNE      |L7.632|
-;;;269    				{
-;;;270    					if(Load_stTarget == Highload)
+;;;273    				{
+;;;274    					if(Load_stTarget == Highload)
 0001d8  484d              LDR      r0,|L7.784|
 0001da  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 0001dc  2803              CMP      r0,#3
 0001de  d11c              BNE      |L7.538|
-;;;271    					{
-;;;272    						if(TrqLoad < 225) TrqLoad = TrqLoad + 0.08; //8/s
+;;;275    					{
+;;;276    						if(TrqLoad < 225) TrqLoad = TrqLoad + 0.08; //8/s
 0001e0  4958              LDR      r1,|L7.836|
 0001e2  4854              LDR      r0,|L7.820|
 0001e4  6800              LDR      r0,[r0,#0]  ; TrqLoad
@@ -1499,28 +1503,28 @@
 000206  6008              STR      r0,[r1,#0]  ; TrqLoad
 000208  e036              B        |L7.632|
                   |L7.522|
-;;;273    						else
-;;;274    						{
-;;;275    							Load_stCurr = Load_stTarget;
+;;;277    						else
+;;;278    						{
+;;;279    							Load_stCurr = Load_stTarget;
 00020a  4841              LDR      r0,|L7.784|
 00020c  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00020e  493f              LDR      r1,|L7.780|
 000210  7008              STRB     r0,[r1,#0]
-;;;276    							TrqLoad=225;
+;;;280    							TrqLoad     = 225;
 000212  484c              LDR      r0,|L7.836|
 000214  4947              LDR      r1,|L7.820|
 000216  6008              STR      r0,[r1,#0]  ; TrqLoad
 000218  e02e              B        |L7.632|
                   |L7.538|
-;;;277    						}
-;;;278    					} 
-;;;279    					else if(Load_stTarget == Midload)
+;;;281    						}
+;;;282    					} 
+;;;283    					else if(Load_stTarget == Midload)
 00021a  483d              LDR      r0,|L7.784|
 00021c  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00021e  2802              CMP      r0,#2
 000220  d124              BNE      |L7.620|
-;;;280    					{
-;;;281    						if(TrqLoad<TrqlimMid) TrqLoad = TrqLoad + 0.08; //  8/s
+;;;284    					{
+;;;285    						if(TrqLoad<TrqlimMid) 
 000222  4843              LDR      r0,|L7.816|
 000224  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 000226  f7fffffe          BL       __aeabi_i2f
@@ -1530,6 +1534,7 @@
 000230  4620              MOV      r0,r4
 000232  f7fffffe          BL       __aeabi_cfrcmple
 000236  d20e              BCS      |L7.598|
+;;;286    							TrqLoad = TrqLoad + 0.08; //  8/s
 000238  483e              LDR      r0,|L7.820|
 00023a  6800              LDR      r0,[r0,#0]  ; TrqLoad
 00023c  f7fffffe          BL       __aeabi_f2d
@@ -1543,14 +1548,14 @@
 000252  6008              STR      r0,[r1,#0]  ; TrqLoad
 000254  e010              B        |L7.632|
                   |L7.598|
-;;;282    						else 
-;;;283    						{
-;;;284    							Load_stCurr = Load_stTarget;
+;;;287    						else 
+;;;288    						{
+;;;289    							Load_stCurr = Load_stTarget;
 000256  482e              LDR      r0,|L7.784|
 000258  7800              LDRB     r0,[r0,#0]  ; Load_stTarget
 00025a  492c              LDR      r1,|L7.780|
 00025c  7008              STRB     r0,[r1,#0]
-;;;285    							TrqLoad = TrqlimMid;
+;;;290    							TrqLoad = TrqlimMid;
 00025e  4834              LDR      r0,|L7.816|
 000260  6800              LDR      r0,[r0,#0]  ; TrqlimMid
 000262  f7fffffe          BL       __aeabi_i2f
@@ -1558,62 +1563,61 @@
 000268  6008              STR      r0,[r1,#0]  ; TrqLoad
 00026a  e005              B        |L7.632|
                   |L7.620|
-;;;286    						}
-;;;287    					} 
-;;;288    					else TrqLoad = TrqlimLow; 
+;;;291    						}
+;;;292    					} 
+;;;293    					else TrqLoad = TrqlimLow; 
 00026c  4834              LDR      r0,|L7.832|
 00026e  6800              LDR      r0,[r0,#0]  ; TrqlimLow
 000270  f7fffffe          BL       __aeabi_i2f
 000274  492f              LDR      r1,|L7.820|
 000276  6008              STR      r0,[r1,#0]  ; TrqLoad
                   |L7.632|
-;;;289    				}            
-;;;290    				
-;;;291    //				if(varOperation.oilMode == 2)//节油功能
-;;;292    //				{
-;;;293    					ConstLimitation();    //稳油功能
+;;;294    				}            
+;;;295    				
+;;;296    //				if(varOperation.oilMode == 2)//节油功能
+;;;297    //				{
+;;;298    					ConstLimitation();       //稳油功能
 000278  f7fffffe          BL       ConstLimitation
-;;;294    					UpdateTxDataAMT();    //限制按照最小的值来   需求扭矩 跟 设定扭矩
+;;;299    					UpdateTxDataAMT();       //限制按照最小的值来   需求扭矩 跟 设定扭矩
 00027c  f7fffffe          BL       UpdateTxDataAMT
                   |L7.640|
-;;;295    //					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
-;;;296    //				}
-;;;297    //				else if(trq[3]<225)//当前模式非节油
-;;;298    //				{
-;;;299    //					trq[3]++;
-;;;300    //					trq[0] = 35;
-;;;301    //					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq);
-;;;302    //				}
-;;;303    //					
-;;;304    			}
-;;;305    		}
-;;;306    		if(SystemTime50ms)            //稳油退出 斜率   50ms + 1
+;;;300    //					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
+;;;301    //				}
+;;;302    //				else if(trq[3]<225)          //当前模式非节油
+;;;303    //				{
+;;;304    //					trq[3]++;
+;;;305    //					trq[0] = 35;
+;;;306    //					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq);
+;;;307    //				}
+;;;308    			}
+;;;309    		}
+;;;310    		if(SystemTime50ms)            //稳油退出 斜率   50ms + 1
 000280  4826              LDR      r0,|L7.796|
 000282  8800              LDRH     r0,[r0,#0]  ; SystemTime50ms
 000284  b1b0              CBZ      r0,|L7.692|
-;;;307    		{
-;;;308    			SystemTime50ms = 0;
+;;;311    		{
+;;;312    			SystemTime50ms = 0;
 000286  2000              MOVS     r0,#0
 000288  4924              LDR      r1,|L7.796|
 00028a  8008              STRH     r0,[r1,#0]
-;;;309    			if(fCanOK) 
+;;;313    			if(fCanOK) 
 00028c  4827              LDR      r0,|L7.812|
 00028e  7800              LDRB     r0,[r0,#0]  ; fCanOK
 000290  b180              CBZ      r0,|L7.692|
-;;;310    			{
-;;;311    				if(CL_stOutflag == 1) 
+;;;314    			{
+;;;315    				if(CL_stOutflag == 1) 
 000292  482d              LDR      r0,|L7.840|
 000294  7800              LDRB     r0,[r0,#0]  ; CL_stOutflag
 000296  2801              CMP      r0,#1
 000298  d10c              BNE      |L7.692|
-;;;312    				{
-;;;313    					if(trqmax < 225)    //退出节油模式 最大值要自增
+;;;316    				{
+;;;317    					if(trqmax < 225)    //退出节油模式 最大值要自增
 00029a  481e              LDR      r0,|L7.788|
 00029c  8800              LDRH     r0,[r0,#0]  ; trqmax
 00029e  28e1              CMP      r0,#0xe1
 0002a0  da05              BGE      |L7.686|
-;;;314    					{
-;;;315    						trqmax++;
+;;;318    					{
+;;;319    						trqmax++;
 0002a2  481c              LDR      r0,|L7.788|
 0002a4  8800              LDRH     r0,[r0,#0]  ; trqmax
 0002a6  1c40              ADDS     r0,r0,#1
@@ -1621,64 +1625,66 @@
 0002aa  8008              STRH     r0,[r1,#0]
 0002ac  e002              B        |L7.692|
                   |L7.686|
-;;;316    					} 
-;;;317    					else
-;;;318    					{
-;;;319    						CL_stOutflag = 0;
+;;;320    					} 
+;;;321    					else
+;;;322    					{
+;;;323    						CL_stOutflag = 0;
 0002ae  2000              MOVS     r0,#0
 0002b0  4925              LDR      r1,|L7.840|
 0002b2  7008              STRB     r0,[r1,#0]
                   |L7.692|
-;;;320    					}
-;;;321    				}
-;;;322    			}
-;;;323    		}
-;;;324    		if(SystemTime100ms >= 100)//计算20秒的平均扭矩，3秒的平均油门
+;;;324    					}
+;;;325    				}
+;;;326    			}
+;;;327    		}
+;;;328    		if(SystemTime100ms >= 100)//计算20秒的平均扭矩，3秒的平均油门
 0002b4  481a              LDR      r0,|L7.800|
 0002b6  8800              LDRH     r0,[r0,#0]  ; SystemTime100ms
 0002b8  2864              CMP      r0,#0x64
 0002ba  db10              BLT      |L7.734|
-;;;325    		{
-;;;326    			SystemTime100ms = 0;
+;;;329    		{
+;;;330    			SystemTime100ms = 0;
 0002bc  2000              MOVS     r0,#0
 0002be  4918              LDR      r1,|L7.800|
 0002c0  8008              STRH     r0,[r1,#0]
-;;;327    			numCAN=0;
+;;;331    			numCAN=0;
 0002c2  4922              LDR      r1,|L7.844|
 0002c4  6008              STR      r0,[r1,#0]  ; numCAN
-;;;328    			if(fCanOK)
+;;;332    			if(fCanOK)
 0002c6  4819              LDR      r0,|L7.812|
 0002c8  7800              LDRB     r0,[r0,#0]  ; fCanOK
 0002ca  b128              CBZ      r0,|L7.728|
-;;;329    			{
-;;;330    				CoEng_rloadCal();    //平均负荷率计算, 平均转速计算, 平均油门计算
+;;;333    			{
+;;;334    				CoEng_rloadCal();    //平均负荷率计算, 平均转速计算, 平均油门计算
 0002cc  f7fffffe          BL       CoEng_rloadCal
-;;;331    //##############################################################
-;;;332    				CANerr_flg = 1;  
+;;;335    //##############################################################
+;;;336    				CANerr_flg = 1;  
 0002d0  2001              MOVS     r0,#1
 0002d2  491f              LDR      r1,|L7.848|
 0002d4  7008              STRB     r0,[r1,#0]
 0002d6  e002              B        |L7.734|
                   |L7.728|
-;;;333    			}
-;;;334    			else 
-;;;335    				CANerr_flg = 0; 
+;;;337    			}
+;;;338    			else 
+;;;339    				CANerr_flg = 0; 
 0002d8  2000              MOVS     r0,#0
 0002da  491d              LDR      r1,|L7.848|
 0002dc  7008              STRB     r0,[r1,#0]
                   |L7.734|
-;;;336    		} 
-;;;337    		if(SystemTime500ms >= 500)
+;;;340    		} 
+;;;341    		if(SystemTime500ms >= 500)
 0002de  4811              LDR      r0,|L7.804|
 0002e0  8800              LDRH     r0,[r0,#0]  ; SystemTime500ms
 0002e2  f5b07ffa          CMP      r0,#0x1f4
 0002e6  db10              BLT      |L7.778|
-;;;338    		{
-;;;339    			SystemTime500ms = 0;
+;;;342    		{
+;;;343    			SystemTime500ms = 0;
 0002e8  2000              MOVS     r0,#0
 0002ea  490e              LDR      r1,|L7.804|
 0002ec  8008              STRH     r0,[r1,#0]
-;;;340    			CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;
+;;;344    //			if(fCanOK)
+;;;345    //			{
+;;;346    				CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;//fCanOK = 0;
 0002ee  4919              LDR      r1,|L7.852|
 0002f0  7008              STRB     r0,[r1,#0]
 0002f2  4919              LDR      r1,|L7.856|
@@ -1695,10 +1701,12 @@
 000308  7008              STRB     r0,[r1,#0]
                   |L7.778|
 00030a  e682              B        |L7.18|
-;;;341    		}
-;;;342    	}
-;;;343    }
-;;;344     
+;;;347    //			}
+;;;348    			
+;;;349    		}
+;;;350    	}
+;;;351    }
+;;;352    
                           ENDP
 
                   |L7.780|
@@ -1755,34 +1763,34 @@
                           AREA ||i.SaveJieYouData||, CODE, READONLY, ALIGN=1
 
                   SaveJieYouData PROC
-;;;345     
-;;;346    void SaveJieYouData(CanRxMsg* CAN1_RxMsg)
+;;;352    
+;;;353    void SaveJieYouData(CanRxMsg* CAN1_RxMsg)
 000000  bf00              NOP      
-;;;347    {
-;;;348    	switch(CAN1_RxMsg->ExtId)
-;;;349    	{
-;;;350    		default:break;
+;;;354    {
+;;;355    	switch(CAN1_RxMsg->ExtId)
+;;;356    	{
+;;;357    		default:break;
 000002  bf00              NOP      
 000004  bf00              NOP      
-;;;351    	} 
-;;;352    }
+;;;358    	} 
+;;;359    }
 000006  4770              BX       lr
-;;;353    
+;;;360    
                           ENDP
 
 
                           AREA ||i.SignalFlter||, CODE, READONLY, ALIGN=2
 
                   SignalFlter PROC
-;;;359    }
-;;;360    float SignalFlter(float x1, float yold, float ti) 
+;;;366    }
+;;;367    float SignalFlter(float x1, float yold, float ti) 
 000000  e92d4ff7          PUSH     {r0-r2,r4-r11,lr}
-;;;361    {
+;;;368    {
 000004  b088              SUB      sp,sp,#0x20
 000006  468a              MOV      r10,r1
 000008  4693              MOV      r11,r2
-;;;362        float y;
-;;;363        y=(x1-yold)*(0.01/ti)+yold;
+;;;369        float y;
+;;;370        y=(x1 - yold)*(0.01 / ti) + yold;
 00000a  4650              MOV      r0,r10
 00000c  f7fffffe          BL       __aeabi_f2d
 000010  e9cd0104          STRD     r0,r1,[sp,#0x10]
@@ -1809,12 +1817,12 @@
 000050  4604              MOV      r4,r0
 000052  f7fffffe          BL       __aeabi_d2f
 000056  9006              STR      r0,[sp,#0x18]
-;;;364        return(y);
+;;;371        return( y );
 000058  9806              LDR      r0,[sp,#0x18]
-;;;365    }
+;;;372    }
 00005a  b00b              ADD      sp,sp,#0x2c
 00005c  e8bd8ff0          POP      {r4-r11,pc}
-;;;366    
+;;;373    
                           ENDP
 
                   |L9.96|
@@ -1825,20 +1833,20 @@
                           AREA ||i.TrqLim||, CODE, READONLY, ALIGN=2
 
                   TrqLim PROC
-;;;460    
-;;;461    void TrqLim(void)          //扭矩限制计算
+;;;466    //根据发动机转速，查表得出轻载、中载的扭矩限制值，
+;;;467    void TrqLim(void)          //扭矩限制计算
 000000  b538              PUSH     {r3-r5,lr}
-;;;462    {   
-;;;463    	static u8  i,inow; 
-;;;464    
-;;;465    	for(i=0;i<14;i++)
+;;;468    {   
+;;;469    	static u8  i,inow; 
+;;;470    
+;;;471    	for(i=0;i<14;i++)
 000002  2000              MOVS     r0,#0
 000004  4940              LDR      r1,|L10.264|
 000006  7008              STRB     r0,[r1,#0]
 000008  e01b              B        |L10.66|
                   |L10.10|
-;;;466    	{
-;;;467    		if(Eng_nAvgFltInt>=TrqlimM[0][i] && Eng_nAvgFltInt<TrqlimM[0][i+1]) //根据发动机转速来判断
+;;;472    	{
+;;;473    		if(Eng_nAvgFltInt >= TrqlimM[0][i] && Eng_nAvgFltInt < TrqlimM[0][i+1]) //根据发动机转速来判断
 00000a  4840              LDR      r0,|L10.268|
 00000c  493e              LDR      r1,|L10.264|
 00000e  7809              LDRB     r1,[r1,#0]  ; i
@@ -1856,24 +1864,24 @@
 00002a  8809              LDRH     r1,[r1,#0]  ; Eng_nAvgFltInt
 00002c  4288              CMP      r0,r1
 00002e  dd03              BLE      |L10.56|
-;;;468    			inow = i;
+;;;474    			inow = i;
 000030  4835              LDR      r0,|L10.264|
 000032  7800              LDRB     r0,[r0,#0]  ; i
 000034  4937              LDR      r1,|L10.276|
 000036  7008              STRB     r0,[r1,#0]
                   |L10.56|
 000038  4833              LDR      r0,|L10.264|
-00003a  7800              LDRB     r0,[r0,#0]            ;465  ; i
-00003c  1c40              ADDS     r0,r0,#1              ;465
+00003a  7800              LDRB     r0,[r0,#0]            ;471  ; i
+00003c  1c40              ADDS     r0,r0,#1              ;471
 00003e  4932              LDR      r1,|L10.264|
-000040  7008              STRB     r0,[r1,#0]            ;465
+000040  7008              STRB     r0,[r1,#0]            ;471
                   |L10.66|
 000042  4831              LDR      r0,|L10.264|
-000044  7800              LDRB     r0,[r0,#0]            ;465  ; i
-000046  280e              CMP      r0,#0xe               ;465
+000044  7800              LDRB     r0,[r0,#0]            ;471  ; i
+000046  280e              CMP      r0,#0xe               ;471
 000048  dbdf              BLT      |L10.10|
-;;;469    	}
-;;;470    	TrqlimMid = calu(TrqlimM[0][inow],TrqlimM[0][inow+1],TrqlimM[1][inow],TrqlimM[1][inow+1],Eng_nAvgFltInt);
+;;;475    	}
+;;;476    	TrqlimMid = calu(TrqlimM[0][inow],TrqlimM[0][inow+1],TrqlimM[1][inow],TrqlimM[1][inow+1],Eng_nAvgFltInt);
 00004a  4831              LDR      r0,|L10.272|
 00004c  8800              LDRH     r0,[r0,#0]  ; Eng_nAvgFltInt
 00004e  4c2f              LDR      r4,|L10.268|
@@ -1898,15 +1906,15 @@
 00007c  f7fffffe          BL       calu
 000080  4925              LDR      r1,|L10.280|
 000082  6008              STR      r0,[r1,#0]  ; TrqlimMid
-;;;471           //限制值  中载
-;;;472    	for(i=0;i<14;i++)
+;;;477           //限制值  中载
+;;;478    	for(i=0;i<14;i++)
 000084  2000              MOVS     r0,#0
 000086  4920              LDR      r1,|L10.264|
 000088  7008              STRB     r0,[r1,#0]
 00008a  e01b              B        |L10.196|
                   |L10.140|
-;;;473    	{
-;;;474    		if(Eng_nAvgFltInt >= TrqlimL[0][i] && Eng_nAvgFltInt < TrqlimL[0][i+1])
+;;;479    	{
+;;;480    		if(Eng_nAvgFltInt >= TrqlimL[0][i] && Eng_nAvgFltInt < TrqlimL[0][i+1])
 00008c  4823              LDR      r0,|L10.284|
 00008e  491e              LDR      r1,|L10.264|
 000090  7809              LDRB     r1,[r1,#0]  ; i
@@ -1924,24 +1932,24 @@
 0000ac  8809              LDRH     r1,[r1,#0]  ; Eng_nAvgFltInt
 0000ae  4288              CMP      r0,r1
 0000b0  dd03              BLE      |L10.186|
-;;;475    			inow = i;
+;;;481    			inow = i;
 0000b2  4815              LDR      r0,|L10.264|
 0000b4  7800              LDRB     r0,[r0,#0]  ; i
 0000b6  4917              LDR      r1,|L10.276|
 0000b8  7008              STRB     r0,[r1,#0]
                   |L10.186|
 0000ba  4813              LDR      r0,|L10.264|
-0000bc  7800              LDRB     r0,[r0,#0]            ;472  ; i
-0000be  1c40              ADDS     r0,r0,#1              ;472
+0000bc  7800              LDRB     r0,[r0,#0]            ;478  ; i
+0000be  1c40              ADDS     r0,r0,#1              ;478
 0000c0  4911              LDR      r1,|L10.264|
-0000c2  7008              STRB     r0,[r1,#0]            ;472
+0000c2  7008              STRB     r0,[r1,#0]            ;478
                   |L10.196|
 0000c4  4810              LDR      r0,|L10.264|
-0000c6  7800              LDRB     r0,[r0,#0]            ;472  ; i
-0000c8  280e              CMP      r0,#0xe               ;472
+0000c6  7800              LDRB     r0,[r0,#0]            ;478  ; i
+0000c8  280e              CMP      r0,#0xe               ;478
 0000ca  dbdf              BLT      |L10.140|
-;;;476    	}//轻载 如果是225   ECU会减掉125，意思是ECU只在  125 - 225 之间浮动运行
-;;;477    	TrqlimLow = calu(TrqlimL[0][inow],TrqlimL[0][inow+1],TrqlimL[1][inow],TrqlimL[1][inow+1],Eng_nAvgFltInt);  	
+;;;482    	}//轻载 如果是 225   ECU 会减掉 125 ，意思是 ECU 只在  125 - 225 之间浮动运行
+;;;483    	TrqlimLow = calu(TrqlimL[0][inow],TrqlimL[0][inow+1],TrqlimL[1][inow],TrqlimL[1][inow+1],Eng_nAvgFltInt);  	
 0000cc  4810              LDR      r0,|L10.272|
 0000ce  8800              LDRH     r0,[r0,#0]  ; Eng_nAvgFltInt
 0000d0  4c12              LDR      r4,|L10.284|
@@ -1966,9 +1974,9 @@
 0000fe  f7fffffe          BL       calu
 000102  4907              LDR      r1,|L10.288|
 000104  6008              STR      r0,[r1,#0]  ; TrqlimLow
-;;;478    }
+;;;484    }
 000106  bd38              POP      {r3-r5,pc}
-;;;479    
+;;;485    
                           ENDP
 
                   |L10.264|
@@ -1989,29 +1997,29 @@
                           AREA ||i.UpdateTxDataAMT||, CODE, READONLY, ALIGN=2
 
                   UpdateTxDataAMT PROC
-;;;159    //按照低的来限制
-;;;160    void UpdateTxDataAMT(void)
+;;;163    //按照低的来限制
+;;;164    void UpdateTxDataAMT(void)
 000000  b510              PUSH     {r4,lr}
-;;;161    {
-;;;162    	//todo：详细讲讲这个代码
-;;;163        if(Acc_st==1)     //温油的会算出扭矩限制，查表一个扭矩限制，最终要取消输送给ECU
+;;;165    {
+;;;166    	//todo：详细讲讲这个代码
+;;;167        if(Acc_st==1)     //稳油的会算出扭矩限制，查表一个扭矩限制，最终要取小输送给ECU
 000002  4829              LDR      r0,|L11.168|
 000004  7981              LDRB     r1,[r0,#6]  ; RCVData2
 000006  79c0              LDRB     r0,[r0,#7]  ; RCVData2
 000008  eb012000          ADD      r0,r1,r0,LSL #8
 00000c  2801              CMP      r0,#1
 00000e  d103              BNE      |L11.24|
-;;;164    		trq[3]=225;
+;;;168    		trq[3] = 225;
 000010  20e1              MOVS     r0,#0xe1
 000012  4926              LDR      r1,|L11.172|
 000014  70c8              STRB     r0,[r1,#3]
 000016  e046              B        |L11.166|
                   |L11.24|
-;;;165        else
-;;;166        {
-;;;167             if(DRVDEM_TRQFLT_ENABLE)    //始终是使能的
-;;;168             {
-;;;169                if(Load_stCurr == Midload || Load_stCurr == Lowload)
+;;;169        else
+;;;170        {
+;;;171             if(DRVDEM_TRQFLT_ENABLE)    //始终是使能的
+;;;172             {
+;;;173                if(Load_stCurr == Midload || Load_stCurr == Lowload)//中载或者轻载
 000018  4825              LDR      r0,|L11.176|
 00001a  7800              LDRB     r0,[r0,#0]  ; Load_stCurr
 00001c  2802              CMP      r0,#2
@@ -2021,8 +2029,8 @@
 000024  2801              CMP      r0,#1
 000026  d107              BNE      |L11.56|
                   |L11.40|
-;;;170                {
-;;;171                   TrqDrvFlt=(u8)CoEng_rDrvLoadFlt + 125; //需求扭矩
+;;;174                {
+;;;175                   TrqDrvFlt=(u8)CoEng_rDrvLoadFlt + 125; //需求扭矩
 000028  4822              LDR      r0,|L11.180|
 00002a  6800              LDR      r0,[r0,#0]  ; CoEng_rDrvLoadFlt
 00002c  f7fffffe          BL       __aeabi_f2uiz
@@ -2031,16 +2039,16 @@
 000034  7008              STRB     r0,[r1,#0]
 000036  e002              B        |L11.62|
                   |L11.56|
-;;;172                } 
-;;;173    			else TrqDrvFlt = 255;
+;;;176                } 
+;;;177    			else TrqDrvFlt = 255;
 000038  20ff              MOVS     r0,#0xff
 00003a  491f              LDR      r1,|L11.184|
 00003c  7008              STRB     r0,[r1,#0]
                   |L11.62|
-;;;174             } 
-;;;175    		 else 
-;;;176    			 TrqDrvFlt = 255;  //此举没有任何意义，永远也执行不到。
-;;;177             if(TrqLoad < trqmax)  //限制小于最大值。
+;;;178             } 
+;;;179    		 else 
+;;;180    			 TrqDrvFlt = 255;  		//此举没有任何意义，永远也执行不到。
+;;;181             if(TrqLoad < trqmax)  		//限制小于最大值。
 00003e  481f              LDR      r0,|L11.188|
 000040  8800              LDRH     r0,[r0,#0]  ; trqmax
 000042  f7fffffe          BL       __aeabi_ui2f
@@ -2050,8 +2058,8 @@
 00004c  4620              MOV      r0,r4
 00004e  f7fffffe          BL       __aeabi_cfrcmple
 000052  d216              BCS      |L11.130|
-;;;178             {
-;;;179                if(TrqLoad < TrqDrvFlt) 
+;;;182             {
+;;;183                if(TrqLoad < TrqDrvFlt) 
 000054  4818              LDR      r0,|L11.184|
 000056  7800              LDRB     r0,[r0,#0]  ; TrqDrvFlt
 000058  f7fffffe          BL       __aeabi_ui2f
@@ -2061,7 +2069,7 @@
 000062  4620              MOV      r0,r4
 000064  f7fffffe          BL       __aeabi_cfrcmple
 000068  d206              BCS      |L11.120|
-;;;180    				trq[3] = TrqLoad;
+;;;184    				trq[3] = TrqLoad;
 00006a  4815              LDR      r0,|L11.192|
 00006c  6800              LDR      r0,[r0,#0]  ; TrqLoad
 00006e  f7fffffe          BL       __aeabi_f2uiz
@@ -2069,48 +2077,48 @@
 000074  70c8              STRB     r0,[r1,#3]
 000076  e013              B        |L11.160|
                   |L11.120|
-;;;181                else 
-;;;182    				trq[3] = TrqDrvFlt;
+;;;185                else 
+;;;186    				trq[3] = TrqDrvFlt;
 000078  480f              LDR      r0,|L11.184|
 00007a  7800              LDRB     r0,[r0,#0]  ; TrqDrvFlt
 00007c  490b              LDR      r1,|L11.172|
 00007e  70c8              STRB     r0,[r1,#3]
 000080  e00e              B        |L11.160|
                   |L11.130|
-;;;183             }
-;;;184             else
-;;;185             {
-;;;186                if(trqmax < TrqDrvFlt) 
+;;;187             }
+;;;188             else
+;;;189             {
+;;;190                if(trqmax < TrqDrvFlt) 
 000082  480e              LDR      r0,|L11.188|
 000084  8800              LDRH     r0,[r0,#0]  ; trqmax
 000086  490c              LDR      r1,|L11.184|
 000088  7809              LDRB     r1,[r1,#0]  ; TrqDrvFlt
 00008a  4288              CMP      r0,r1
 00008c  da04              BGE      |L11.152|
-;;;187    				trq[3] = trqmax;
+;;;191    				trq[3] = trqmax;
 00008e  480b              LDR      r0,|L11.188|
 000090  7800              LDRB     r0,[r0,#0]  ; trqmax
 000092  4906              LDR      r1,|L11.172|
 000094  70c8              STRB     r0,[r1,#3]
 000096  e003              B        |L11.160|
                   |L11.152|
-;;;188                else 
-;;;189    				trq[3] = TrqDrvFlt;
+;;;192                else 
+;;;193    				trq[3] = TrqDrvFlt;
 000098  4807              LDR      r0,|L11.184|
 00009a  7800              LDRB     r0,[r0,#0]  ; TrqDrvFlt
 00009c  4903              LDR      r1,|L11.172|
 00009e  70c8              STRB     r0,[r1,#3]
                   |L11.160|
-;;;190             }
-;;;191    		 trq[0] = 35;
+;;;194             }
+;;;195    		 trq[0] = 35;
 0000a0  2023              MOVS     r0,#0x23
 0000a2  4902              LDR      r1,|L11.172|
 0000a4  7008              STRB     r0,[r1,#0]
                   |L11.166|
-;;;192        }
-;;;193    }
+;;;196        }
+;;;197    }
 0000a6  bd10              POP      {r4,pc}
-;;;194    
+;;;198    
                           ENDP
 
                   |L11.168|
@@ -2131,24 +2139,24 @@
                           AREA ||i.calu||, CODE, READONLY, ALIGN=1
 
                   calu PROC
-;;;353    
-;;;354    long int calu(int x1, int x2, int y1, int y2, int x)
+;;;360    
+;;;361    long int calu(int x1, int x2, int y1, int y2, int x)
 000000  b5f0              PUSH     {r4-r7,lr}
-;;;355    {
+;;;362    {
 000002  4604              MOV      r4,r0
 000004  9d05              LDR      r5,[sp,#0x14]
-;;;356    	long int y;
-;;;357    	y = ((long)(y2-y1)*x+(long)y1*x2-(long)x1*y2)/(x2-x1);
+;;;363    	long int y;
+;;;364    	y = ((long)(y2-y1)*x+(long)y1*x2-(long)x1*y2)/(x2-x1);
 000006  1a9e              SUBS     r6,r3,r2
 000008  436e              MULS     r6,r5,r6
 00000a  fb026601          MLA      r6,r2,r1,r6
 00000e  fb046613          MLS      r6,r4,r3,r6
 000012  1b0f              SUBS     r7,r1,r4
 000014  fb96f0f7          SDIV     r0,r6,r7
-;;;358    	return(y);
-;;;359    }
+;;;365    	return(y);
+;;;366    }
 000018  bdf0              POP      {r4-r7,pc}
-;;;360    float SignalFlter(float x1, float yold, float ti) 
+;;;367    float SignalFlter(float x1, float yold, float ti) 
                           ENDP
 
 

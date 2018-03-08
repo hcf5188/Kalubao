@@ -10,6 +10,7 @@ void SystemBspInit(void )
 	SysTickInit();
 	
 	GlobalVarInit();//全局变量初始化
+	PIDPtrInit();
 	CARVarInit();   //与车辆行驶相关结构体的初始化
 	
 	GPIO_ALL_IN();  //IO口设置为输入
@@ -23,7 +24,6 @@ void SystemBspInit(void )
 	TIM4ConfigInit();
 	TIM2ConfigInit();
 	RTCConfigureInit();
-	
 	
 	bitValue = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0);
 	if(bitValue == 1)//USB升级模式
@@ -40,11 +40,7 @@ void SystemBspInit(void )
 //	
 //	TIM4ConfigInit();
 //	TIM2ConfigInit();
-//	RTCConfigureInit();
-	
-	
-	
-	
+//	RTCConfigureInit();	
 }
 //系统时钟滴答初始化
 void SysTickInit(void)

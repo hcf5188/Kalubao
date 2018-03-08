@@ -44,7 +44,7 @@
 ;;;34     	varOperation.isUSBSendDat = 0;
 00002c  2000              MOVS     r0,#0
 00002e  49a2              LDR      r1,|L1.696|
-000030  f8810097          STRB     r0,[r1,#0x97]
+000030  f881009a          STRB     r0,[r1,#0x9a]
 ;;;35     	
 ;;;36     	OSTimeDlyHMSM(0,0,1,800);
 000034  f44f7348          MOV      r3,#0x320

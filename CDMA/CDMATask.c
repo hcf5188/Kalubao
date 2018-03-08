@@ -26,7 +26,9 @@ const uint8_t at_Check[]    = "AT+ZIPPSTATUS=0\r";  //查询当前TCP连接状态
 const uint8_t at_TCPClose[] = "AT+ZIPCLOSE=0\r";    //关闭通道号为0的TCP连接
 const char at_TCPSend[]     = "AT+ZIPSEND=0,%d\r";  //向连接号为0的地址发送%d个数据   返回>  输入数据，成功后返回 +ZIPSEND：OK OK
 											  
-const uint8_t at_GetIP[]    = "AT+ZIPGETIP\r";      //获取本地IP										  
+const uint8_t at_GetIP[]    = "AT+ZIPGETIP\r";      //获取本地IP		
+
+const uint8_t at_ZDNS[]     = "AT+ZDNSGETIP=\"tcp.51gonggui.com\"\r";//域名解析，获取IP地址
 
 extern uint16_t  freCDMALed;
 static uint8_t CDMAReceDeal(uint8_t* ptrRece,char* ptr2);
@@ -175,7 +177,7 @@ void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLength)
 	Mem_free(ptrCDMACfg);
 }
 
-static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t datSave[],uint8_t datLength )
+static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t datSave[],uint8_t datLength)
 {
 	uint8_t err;
 	uint8_t i = 0,j=0;
@@ -196,7 +198,7 @@ static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t 
 			}
 			for(j=0;j<datLength;j++)
 			{
-				if((ptrCDMACfg[i+j]>=0x30)&&(ptrCDMACfg[i+j]<=0x39))
+				if((ptrCDMACfg[i+j] >= 0x30)&&(ptrCDMACfg[i+j] <= 0x39))
 					continue;
 				else 
 					break;
@@ -209,13 +211,45 @@ static void CDMAReadIMEI_ICCID(const uint8_t at_Get[],uint8_t cmdLength,uint8_t 
 	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
 	Mem_free(ptrCDMACfg);
 }
-
+void GetIpAddr(const uint8_t at_Get[],uint8_t cmdLength,uint8_t datSave[],uint8_t datLength )//域名解析，根据域名获得IP地址
+{
+	uint8_t err;
+	uint8_t i = 0,j = 0;
+	uint8_t *ptrCDMACfg;
+	do{
+		CDMASendDatas(at_Get,cmdLength);
+		ptrCDMACfg = OSQPend(CDMARecieveQ,500,&err);//todo:添加 +CPIN  判断
+		if(err == OS_ERR_NONE)
+		{
+			while( (ptrCDMACfg[i] < 0x30)|| (ptrCDMACfg[i] > 0x39))
+			{
+				i++;
+				if(i>15)
+				{
+					err = 2;
+					break;
+				}
+			}
+			for(j=0;j<datLength;j++)
+			{
+				if(((ptrCDMACfg[i+j]>=0x30)&&(ptrCDMACfg[i+j]<=0x39))||(ptrCDMACfg[i+j] == '.'))
+					continue;
+				else 
+					break;
+			}
+			memcpy(datSave,&ptrCDMACfg[i],j);
+			Mem_free(ptrCDMACfg);
+		}
+	}while(err != OS_ERR_NONE);
+	ptrCDMACfg = OSQPend(CDMARecieveQ,2,&err);//用以消耗模块自动回复的“+CPIN:READY”
+	Mem_free(ptrCDMACfg);
+}
 void CDMAConfigInit(void )
 {
 	char sendCmd[45];
 	uint8_t sendlen = 0;
 	static uint8_t tt = 0; 
-	CDMAPowerOpen_Close(CDMA_OPEN);  //启动MG2639模块
+	CDMAPowerOpen_Close(CDMA_OPEN);  //启动 MG2639 模块
 	
 	CDMASendCmd(atCmd,"OK",sizeof(atCmd));
 	CDMASendCmd(ate0Cmd,"OK",sizeof(ate0Cmd));
@@ -223,7 +257,7 @@ void CDMAConfigInit(void )
 	CDMASendCmd(at_CSQ,"+CSQ:",sizeof(at_CSQ));
 
 	CDMASendCmd(at_CNMI,"OK",sizeof(at_CNMI));
-	if(tt == 0)
+	if(tt == 0)                                                             //不会重复读取 IMEI 号
 	{
 		CDMAReadIMEI_ICCID(at_GSN,sizeof(at_GSN),varOperation.imei,15);     //读取IMEI号
 		tt = 1;
@@ -232,12 +266,20 @@ void CDMAConfigInit(void )
 	
 	CDMASendCmd(at_SetZpNum,"OK",sizeof(at_SetZpNum));
 	CDMASendCmd(at_ZPPPSTATUS,"+ZPPPSTATUS:",sizeof(at_ZPPPSTATUS));
+	
 	CDMASendCmd(at_ZPPPOPEN,"+ZPPPOPEN:CONNECTED",sizeof(at_ZPPPOPEN));
+//	GetIpAddr(at_ZDNS,sizeof(at_ZDNS),varOperation.ipAddr,15);//域名解析，获取生产环境 IP 地址
 	
 	sendlen = sprintf(sendCmd,(const char*)at_ZIPSETUP,varOperation.ipAddr,varOperation.ipPotr);//TCP连接
 	CDMASendCmd((uint8_t *)sendCmd,"+ZIPSETUP:CONNECTED",sendlen);
 
 	freCDMALed = LEDSLOW;           //网络连接成功
 }
+
+
+
+
+
+
 
 

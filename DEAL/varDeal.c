@@ -1,7 +1,7 @@
 #include "bsp.h"
 #include "apptask.h"
 
-#define  FRAME_HEAD_LEN    27     //与指令数据无关的属于帧头的数据长度
+    //与指令数据无关的属于帧头的数据长度
 
 _CDMADataToSend* CDMNSendDataInit(uint16_t length)//要发送的数据，进行初始化
 {
@@ -12,13 +12,13 @@ _CDMADataToSend* CDMNSendDataInit(uint16_t length)//要发送的数据，进行初始化
 	ptr->datLength = FRAME_HEAD_LEN;
 	ptr->data = Mem_malloc(length);
 	
-	ptr->data[ptr->datLength ++] = 7;     //ECU 配置文件版本号
+	ptr->data[ptr->datLength ++] = 7;             //ECU 配置文件版本号
 	ptr->data[ptr->datLength ++] = 0x60;
 	ptr->data[ptr->datLength ++] = 0x00;
 	
-	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >> 24) &0x000000FF;
-	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >> 16) &0x000000FF;
-	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >>  8) &0x000000FF;
+	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >> 24) & 0x000000FF;
+	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >> 16) & 0x000000FF;
+	ptr->data[ptr->datLength ++] = (canDataConfig.pidVersion >>  8) & 0x000000FF;
 	ptr->data[ptr->datLength ++] =  canDataConfig.pidVersion & 0x000000FF;
 
 	return ptr;
@@ -31,7 +31,6 @@ _CDMADataToSend* CDMNSendInfoInit(uint16_t length)//要发送的数据，进行初始化
 	ptr->timeCount = 0;
 	ptr->datLength = FRAME_HEAD_LEN;
 	ptr->data = Mem_malloc(length);
-
 	return ptr;
 }
 uint32_t realTime = 0;
@@ -50,26 +49,30 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	pHead->msgid    = t_htonl(varOperation.sendId);  //发送帧流水号 
 	pHead->time_cli = t_htonl(realTime);             //记录当前包要发送的时间 
 	
-	varOperation.sendId++;
+	varOperation.sendId ++;
 	
 	memcpy(ptr->data,pHead,sizeof(_PROTOCOL_HEAD));
 	Mem_free(pHead);                                 //申请的内存块，用完一定要释放啊
 	
-	crc = CRC_Compute16(&ptr->data[1],ptr->datLength-1);
+	crc = CRC_Compute16(&ptr->data[1],ptr -> datLength-1);
 	
-	ptr->data[ptr->datLength++] = (crc>>8)&0xff;
-	ptr->data[ptr->datLength++] = crc&0xff;
+	ptr->data[ptr->datLength++] = (crc>>8) & 0xff;
+	ptr->data[ptr->datLength++] = crc & 0xff;
 	ptr->data[ptr->datLength++] = 0x7E;
 }
 
 /***********************************************************************************/
-#if 1                //1 - 本地    0 - 外网
-const uint8_t ipAddr[] = "116.228.90.118"; //本地：116.228.88.101  29999 
+
+#if 0                //1 - 本地    0 - 外网
+const uint8_t ipAddr[] = "116.228.90.118"; //本地：116.228.88.101          29999 
 #define IP_Port          30020             //端口号
 #else
 const uint8_t ipAddr[] = "116.62.195.99";  //todo: 后期是域名解析 外网：116.62.195.99   9998
-#define IP_Port          9998              //端口号 9998 6556
+#define IP_Port           9998             //端口号 9998 6556
 #endif
+const uint8_t proIPAddr[] = "tcp.51gonggui.com";// "47.96.8.114"; //生产环境：tcp.51gonggui.com
+
+#define ProIP_Port        9998             //生产环境端口
 /***********************************************************************************/
 
 
@@ -93,7 +96,7 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	PIDConfig2DataRead(configData,PID1CONFIGADDR,6000);
 	ptrPIDAllDat = (_OBD_PID_Cmd *)configData;
 	
-	Flash_ReadDat(pid2Config,PID2CONFIGADDR,300);//读取第二配置文件数据
+	Flash_ReadDat(pid2Config,PID2CONFIGADDR,300); //读取第二配置文件数据
 	ptrPIDVars   = (VARConfig*)pid2Config;
 	
 	Flash_ReadDat(strengPower,STRENGE_Q,300);  //读出喷油量的原始值
@@ -105,7 +108,7 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	offset += 16;
 	memcpy(strengthFuelFlash.fuelAddr,&ptrMode[offset],5);
 	offset += 5;
-	memcpy(strengthFuelFlash.mask,&ptrMode[offset],4);
+	memcpy(strengthFuelFlash.mask ,&ptrMode[offset],4);
 	offset += 4;
 	memcpy(strengthFuelFlash.safe1,&ptrMode[offset],8);
 	offset += 8;
@@ -130,18 +133,19 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	varOperation.canTxId    = canDataConfig.canTxId;
 	varOperation.canRxId    = canDataConfig.canRxId;
 	varOperation.canBaud    = canDataConfig.canBaud;
-	varOperation.oilMode    = 0;//默认正常模式
+	varOperation.oilMode    = 0;  //默认正常模式
 	varOperation.isStrenOilOK = 0;//默认不可以进行动力提升
 	varOperation.strengthRun = 0;
+	varOperation.datOKLeng   = 0;
+	varOperation.pidRun      = 1;
 	memset(varOperation.ecuVersion,0,20);
 	
 	varOperation.pidVarNum  = canDataConfig.pidVarNum;
 	
 	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
 	memset(varOperation.ipAddr,0,18);
-	memcpy(varOperation.ipAddr,ipAddr,sizeof(ipAddr));//todo：IP地址，程序升级后用flash中的IP及端口号	
+	memcpy(varOperation.ipAddr,ipAddr,sizeof(ipAddr));//todo：IP地址，程序升级后用flash中的IP及端口号	//采用域名解析了
 }
-
  uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
 {
 	uint16_t i = 0;

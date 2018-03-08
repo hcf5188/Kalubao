@@ -110,9 +110,12 @@ void RunDataReport(void)
 	ptrCarState[offset++] = (carAllRecord.netFlow >> 8)  & 0x000000FF;
 	ptrCarState[offset++] = (carAllRecord.netFlow >> 0)  & 0x000000FF;
 	
-	OSMutexPend(CDMASendMutex,0,&err);					
-	memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrCarState,ptrCarState[0]);
+	OSMutexPend(CDMASendMutex,0,&err);
+	
+	memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrCarState,ptrCarState[0]);
 	cdmaDataToSend->datLength += ptrCarState[0];
+	varOperation.datOKLeng += ptrCarState[0];    //记录不可拆卸的包长度
+	
 	OSMutexPost(CDMASendMutex);
 	
 	Mem_free(ptrCarState);	//释放内存块
