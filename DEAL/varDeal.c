@@ -35,14 +35,11 @@ _CDMADataToSend* CDMNSendInfoInit(uint16_t length)//要发送的数据，进行初始化
 }
 uint32_t realTime = 0;
 uint16_t crc      = 0;
-void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验等
+void CDMASendDataPack(_CDMADataToSend* ptr)		//对上传的数据包进行帧头封装、CRC校验等
 {
 	_PROTOCOL_HEAD *pHead = NULL;
-	
-	realTime = RTC_GetCounter();//得到系统运行的RTC时间
-	
+	realTime = RTC_GetCounter();				//得到系统运行的RTC时间
 	pHead = Mem_malloc(sizeof(_PROTOCOL_HEAD));
-	
 	pHead->magic    = 0x7E;
 	pHead->len      = t_htons(ptr->datLength - 3);   //MAP层数据长度
 	memcpy(pHead->device,varOperation.imei,16);      //拷贝设备唯一标识码 IMEI
@@ -50,7 +47,6 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 	pHead->time_cli = t_htonl(realTime);             //记录当前包要发送的时间 
 	
 	varOperation.sendId ++;
-	
 	memcpy(ptr->data,pHead,sizeof(_PROTOCOL_HEAD));
 	Mem_free(pHead);                                 //申请的内存块，用完一定要释放啊
 	
@@ -62,13 +58,15 @@ void CDMASendDataPack(_CDMADataToSend* ptr)//对上传的数据包进行帧头封装、CRC校验
 }
 
 /***********************************************************************************/
-
-#if 0                //1 - 本地    0 - 外网
-const uint8_t ipAddr[] = "116.228.90.118"; //本地：116.228.88.101          29999 
-#define IP_Port          30020             //端口号
-#else
-const uint8_t ipAddr[] = "116.62.195.99";  //todo: 后期是域名解析 外网：116.62.195.99   9998
+  
+#if (BEN_S_C == 0)                
+const uint8_t ipAddr[] = "116.228.90.118"; //本地IP
+#define IP_Port          30020             //本地端口号
+#elif (BEN_S_C == 1)
+const uint8_t ipAddr[] = "116.62.195.99";  //todo: 后期是域名解析 外网：116.62.195.99    9998
 #define IP_Port           9998             //端口号 9998 6556
+#elif (BEN_S_C == 2)
+#define IP_Port           9998
 #endif
 const uint8_t proIPAddr[] = "tcp.51gonggui.com";// "47.96.8.114"; //生产环境：tcp.51gonggui.com
 
@@ -144,7 +142,9 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	
 	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
 	memset(varOperation.ipAddr,0,18);
+#if (BEN_S_C < 2)
 	memcpy(varOperation.ipAddr,ipAddr,sizeof(ipAddr));//todo：IP地址，程序升级后用flash中的IP及端口号	//采用域名解析了
+#endif
 }
  uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
 {
@@ -274,14 +274,18 @@ void LogReport(char* fmt,...)          //上传日志文件
 	
 	datLen=strlen((const char*)ptrSaveLog);//此次发送数据的长度
 	
-	OSMutexPend(CDMASendMutex,0,&err);
-	
-	if((datLen + cdmaLogData->top) < 900)				
+	if(varOperation.isDataFlow != 1)
 	{
-		memcpy(&cdmaLogData->base[cdmaLogData->top],ptrSaveLog,datLen);
-		cdmaLogData->top += datLen;
+		OSMutexPend(CDMASendMutex,0,&err);
+		
+		if((datLen + cdmaLogData->top) < 900)				
+		{
+			memcpy(&cdmaLogData->base[cdmaLogData->top],ptrSaveLog,datLen);
+			cdmaLogData->top += datLen;
+		}
+		OSMutexPost(CDMASendMutex);
 	}
-	OSMutexPost(CDMASendMutex);
+	
 	Mem_free(ptrSaveLog);
 }
 

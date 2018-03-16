@@ -5,52 +5,52 @@
                           AREA ||i.GPSStartInit||, CODE, READONLY, ALIGN=2
 
                   GPSStartInit PROC
-;;;116    //初始化配置GPS
-;;;117    void GPSStartInit(void )
+;;;119    //初始化配置GPS
+;;;120    void GPSStartInit(void )
 000000  b510              PUSH     {r4,lr}
-;;;118    {
-;;;119    	u8 key=0XFF;
+;;;121    {
+;;;122    	u8 key=0XFF;
 000002  24ff              MOVS     r4,#0xff
-;;;120    //	OSTimeDlyHMSM(0,0,8,0);          
-;;;121    	if(Ublox_Cfg_Rate(1000,1)!=0)          //1s采集一次 MC数据
+;;;123    //	OSTimeDlyHMSM(0,0,8,0);          
+;;;124    	if(Ublox_Cfg_Rate(1000,1)!=0)          //1s采集一次 MC数据
 000004  2101              MOVS     r1,#1
 000006  f44f707a          MOV      r0,#0x3e8
 00000a  f7fffffe          BL       Ublox_Cfg_Rate
 00000e  b1c0              CBZ      r0,|L1.66|
-;;;122    	{
-;;;123    		while((Ublox_Cfg_Rate(1000,1)!=0)&&key)	//持续判断,直到可以检查到NEO-6M,且数据保存成功
+;;;125    	{
+;;;126    		while((Ublox_Cfg_Rate(1000,1)!=0)&&key)	//持续判断,直到可以检查到NEO-6M,且数据保存成功
 000010  e00f              B        |L1.50|
                   |L1.18|
-;;;124    		{
-;;;125    	  		Ublox_Cfg_Prt(9600);	        //重新设置模块的波特率为9600
+;;;127    		{
+;;;128    	  		Ublox_Cfg_Prt(9600);	        //重新设置模块的波特率为9600
 000012  f44f5016          MOV      r0,#0x2580
 000016  f7fffffe          BL       Ublox_Cfg_Prt
-;;;126    			Ublox_Cfg_Tp(1000000,100000,1);	//设置PPS为1秒钟输出1次,脉冲宽度为100ms	
+;;;129    			Ublox_Cfg_Tp(1000000,100000,1);	//设置PPS为1秒钟输出1次,脉冲宽度为100ms	
 00001a  2201              MOVS     r2,#1
 00001c  4909              LDR      r1,|L1.68|
 00001e  480a              LDR      r0,|L1.72|
 000020  f7fffffe          BL       Ublox_Cfg_Tp
-;;;127    			Ublox_Cfg_Msg(4,1);		        //MC
+;;;130    			Ublox_Cfg_Msg(4,1);		        //MC
 000024  2101              MOVS     r1,#1
 000026  2004              MOVS     r0,#4
 000028  f7fffffe          BL       Ublox_Cfg_Msg
-;;;128    //			Ublox_Cfg_Msg(2,1);		        //SA
-;;;129    			key=Ublox_Cfg_Cfg_Save();		//保存配置  
+;;;131    //			Ublox_Cfg_Msg(2,1);		        //SA
+;;;132    			key=Ublox_Cfg_Cfg_Save();		//保存配置  
 00002c  f7fffffe          BL       Ublox_Cfg_Cfg_Save
 000030  4604              MOV      r4,r0
                   |L1.50|
-000032  2101              MOVS     r1,#1                 ;123
-000034  f44f707a          MOV      r0,#0x3e8             ;123
+000032  2101              MOVS     r1,#1                 ;126
+000034  f44f707a          MOV      r0,#0x3e8             ;126
 000038  f7fffffe          BL       Ublox_Cfg_Rate
 00003c  b108              CBZ      r0,|L1.66|
-00003e  2c00              CMP      r4,#0                 ;123
+00003e  2c00              CMP      r4,#0                 ;126
 000040  d1e7              BNE      |L1.18|
                   |L1.66|
-;;;130    		}
-;;;131    	}
-;;;132    }
+;;;133    		}
+;;;134    	}
+;;;135    }
 000042  bd10              POP      {r4,pc}
-;;;133    //从buf里面得到第cx个逗号所在的位置
+;;;136    //从buf里面得到第cx个逗号所在的位置
                           ENDP
 
                   |L1.68|
@@ -82,20 +82,20 @@
 000006  f7fffffe          BL       GPSStartInit
 ;;;23     	
 ;;;24     	while(1)
-00000a  e0c2              B        |L2.402|
+00000a  e0c7              B        |L2.412|
                   |L2.12|
 ;;;25     	{
 ;;;26     		ptrGPSRece = OSQPend(receGPSQ,0,&err);//等待接收到应答
 00000c  aa03              ADD      r2,sp,#0xc
 00000e  2100              MOVS     r1,#0
-000010  4860              LDR      r0,|L2.404|
+000010  4863              LDR      r0,|L2.416|
 000012  6800              LDR      r0,[r0,#0]  ; receGPSQ
 000014  f7fffffe          BL       OSQPend
 000018  4607              MOV      r7,r0
 ;;;27     			
 ;;;28     		GPS_Analysis(&gpsMC,&ptrGPSRece[2]);
 00001a  1cb9              ADDS     r1,r7,#2
-00001c  485e              LDR      r0,|L2.408|
+00001c  4861              LDR      r0,|L2.420|
 00001e  f7fffffe          BL       GPS_Analysis
 ;;;29     		Mem_free(ptrGPSRece);
 000022  4638              MOV      r0,r7
@@ -103,25 +103,25 @@
 ;;;30     		
 ;;;31     		//todo：要根据有效无效判断位来解析， 此时若解析的经度为0  视为无效定位
 ;;;32     		if(gpsMC.longitude == 0) 
-000028  485b              LDR      r0,|L2.408|
+000028  485e              LDR      r0,|L2.420|
 00002a  f8d00049          LDR      r0,[r0,#0x49]  ; gpsMC
 00002e  b918              CBNZ     r0,|L2.56|
 ;;;33     		{
 ;;;34     			freGPSLed =  LEDFAST; ;//GPS 绿灯快闪，GPS定位不成功
 000030  20c8              MOVS     r0,#0xc8
-000032  495a              LDR      r1,|L2.412|
+000032  495d              LDR      r1,|L2.424|
 000034  8008              STRH     r0,[r1,#0]
 ;;;35     			continue;
-000036  e0ac              B        |L2.402|
+000036  e0b1              B        |L2.412|
                   |L2.56|
 ;;;36     		}	
 ;;;37     		
 ;;;38     		timeStamp = TimeCompare(gpsMC.utc.year,gpsMC.utc.month,gpsMC.utc.date,gpsMC.utc.hour,gpsMC.utc.min,gpsMC.utc.sec);
-000038  4857              LDR      r0,|L2.408|
+000038  485a              LDR      r0,|L2.420|
 00003a  f8900043          LDRB     r0,[r0,#0x43]
-00003e  4956              LDR      r1,|L2.408|
+00003e  4959              LDR      r1,|L2.420|
 000040  f8911042          LDRB     r1,[r1,#0x42]
-000044  f8dfc150          LDR      r12,|L2.408|
+000044  f8dfc15c          LDR      r12,|L2.420|
 000048  e9cd1000          STRD     r1,r0,[sp,#0]
 00004c  f89c3041          LDRB     r3,[r12,#0x41]
 000050  f89c2040          LDRB     r2,[r12,#0x40]
@@ -130,13 +130,13 @@
 00005c  f7fffffe          BL       TimeCompare
 000060  4606              MOV      r6,r0
 ;;;39     		varOperation.currentTime = timeStamp;
-000062  484f              LDR      r0,|L2.416|
+000062  4852              LDR      r0,|L2.428|
 000064  6606              STR      r6,[r0,#0x60]  ; varOperation
 ;;;40     		locatemp ++;
-000066  484f              LDR      r0,|L2.420|
+000066  4852              LDR      r0,|L2.432|
 000068  7800              LDRB     r0,[r0,#0]  ; locatemp
 00006a  1c40              ADDS     r0,r0,#1
-00006c  494d              LDR      r1,|L2.420|
+00006c  4950              LDR      r1,|L2.432|
 00006e  7008              STRB     r0,[r1,#0]
 ;;;41     		if(locatemp == 3)
 000070  4608              MOV      r0,r1
@@ -145,29 +145,29 @@
 000076  d10b              BNE      |L2.144|
 ;;;42     		{
 ;;;43     			carAllRecord.startlongitude = gpsMC.longitude;
-000078  4847              LDR      r0,|L2.408|
+000078  484a              LDR      r0,|L2.420|
 00007a  f8d00049          LDR      r0,[r0,#0x49]  ; gpsMC
-00007e  494a              LDR      r1,|L2.424|
+00007e  494d              LDR      r1,|L2.436|
 000080  6108              STR      r0,[r1,#0x10]  ; carAllRecord
 ;;;44     			carAllRecord.startlatitude  = gpsMC.latitude;
-000082  4845              LDR      r0,|L2.408|
+000082  4848              LDR      r0,|L2.420|
 000084  6c40              LDR      r0,[r0,#0x44]  ; gpsMC
 000086  6148              STR      r0,[r1,#0x14]  ; carAllRecord
 ;;;45     			locatemp = 20;
 000088  2014              MOVS     r0,#0x14
-00008a  4946              LDR      r1,|L2.420|
+00008a  4949              LDR      r1,|L2.432|
 00008c  7008              STRB     r0,[r1,#0]
 00008e  e006              B        |L2.158|
                   |L2.144|
 ;;;46     		}else if(locatemp >= 20)
-000090  4844              LDR      r0,|L2.420|
+000090  4847              LDR      r0,|L2.432|
 000092  7800              LDRB     r0,[r0,#0]  ; locatemp
 000094  2814              CMP      r0,#0x14
 000096  db02              BLT      |L2.158|
 ;;;47     		{
 ;;;48     			locatemp = 20;
 000098  2014              MOVS     r0,#0x14
-00009a  4942              LDR      r1,|L2.420|
+00009a  4945              LDR      r1,|L2.432|
 00009c  7008              STRB     r0,[r1,#0]
                   |L2.158|
 ;;;49     		}
@@ -177,7 +177,7 @@
 0000a4  4604              MOV      r4,r0
 ;;;51     		if(ptrGPSPack != NULL)
 0000a6  2c00              CMP      r4,#0
-0000a8  d059              BEQ      |L2.350|
+0000a8  d05e              BEQ      |L2.360|
 ;;;52     		{
 ;;;53     			ptrGPSPack[0] = 17;
 0000aa  2011              MOVS     r0,#0x11
@@ -196,7 +196,7 @@
 0000be  f8c46003          STR      r6,[r4,#3]
 ;;;58     			
 ;;;59     			timeStamp = t_htonl(gpsMC.longitude);
-0000c2  4935              LDR      r1,|L2.408|
+0000c2  4938              LDR      r1,|L2.420|
 0000c4  f8d10049          LDR      r0,[r1,#0x49]  ; gpsMC
 0000c8  f7fffffe          BL       t_htonl
 0000cc  4606              MOV      r6,r0
@@ -204,7 +204,7 @@
 0000ce  f8c46007          STR      r6,[r4,#7]
 ;;;61     			
 ;;;62     			timeStamp = t_htonl(gpsMC.latitude);
-0000d2  4931              LDR      r1,|L2.408|
+0000d2  4934              LDR      r1,|L2.420|
 0000d4  6c48              LDR      r0,[r1,#0x44]  ; gpsMC
 0000d6  f7fffffe          BL       t_htonl
 0000da  4606              MOV      r6,r0
@@ -212,7 +212,7 @@
 0000dc  f8c4600b          STR      r6,[r4,#0xb]
 ;;;64     			
 ;;;65     			speed = t_htons(gpsMC.direction);
-0000e0  492d              LDR      r1,|L2.408|
+0000e0  4930              LDR      r1,|L2.420|
 0000e2  f8b10063          LDRH     r0,[r1,#0x63]  ; gpsMC
 0000e6  f7fffffe          BL       t_htons
 0000ea  9002              STR      r0,[sp,#8]
@@ -224,154 +224,162 @@
 ;;;69     //			memcpy(&ptrGPSPack[17],&speed,2);        //GPS 车速 
 ;;;70     			
 ;;;71     			if((varOperation.isDataFlow == 0)&&(sendNum != osTime))     //数据流已经流动起来了  确保1秒发送一次
-0000f4  482a              LDR      r0,|L2.416|
+0000f4  482d              LDR      r0,|L2.428|
 0000f6  f890002d          LDRB     r0,[r0,#0x2d]  ; varOperation
-0000fa  bb68              CBNZ     r0,|L2.344|
+0000fa  bb90              CBNZ     r0,|L2.354|
 0000fc  45a8              CMP      r8,r5
-0000fe  d02b              BEQ      |L2.344|
+0000fe  d030              BEQ      |L2.354|
 ;;;72     			{	
 ;;;73     				sendNum = osTime;
 000100  46a8              MOV      r8,r5
-;;;74     				
-;;;75     				OSMutexPend(CDMASendMutex,0,&err);
-000102  aa03              ADD      r2,sp,#0xc
-000104  2100              MOVS     r1,#0
-000106  4829              LDR      r0,|L2.428|
-000108  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-00010a  f7fffffe          BL       OSMutexPend
-;;;76     				
-;;;77     				memcpy(&pPid[51][pPid[51][0]],&ptrGPSPack[3],ptrGPSPack[0] - 3);//合并 GPS 位置信息
-00010e  4928              LDR      r1,|L2.432|
-000110  f8d110cc          LDR      r1,[r1,#0xcc]  ; pPid
-000114  4b26              LDR      r3,|L2.432|
-000116  f8d330cc          LDR      r3,[r3,#0xcc]  ; pPid
-00011a  781b              LDRB     r3,[r3,#0]
-00011c  18c8              ADDS     r0,r1,r3
-00011e  7821              LDRB     r1,[r4,#0]
-000120  1eca              SUBS     r2,r1,#3
-000122  1ce1              ADDS     r1,r4,#3
-000124  f7fffffe          BL       __aeabi_memcpy
-;;;78     				pPid[51][0] += ptrGPSPack[0] - 3;
-000128  4821              LDR      r0,|L2.432|
-00012a  f8d000cc          LDR      r0,[r0,#0xcc]  ; pPid
-00012e  7801              LDRB     r1,[r0,#0]
-000130  7820              LDRB     r0,[r4,#0]
-000132  1ec0              SUBS     r0,r0,#3
-000134  4408              ADD      r0,r0,r1
-000136  491e              LDR      r1,|L2.432|
-000138  f8d110cc          LDR      r1,[r1,#0xcc]  ; pPid
-00013c  7008              STRB     r0,[r1,#0]
-;;;79     				cdmaDataToSend->datLength += ptrGPSPack[0] - 3;
-00013e  481d              LDR      r0,|L2.436|
-000140  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000142  8801              LDRH     r1,[r0,#0]
-000144  7820              LDRB     r0,[r4,#0]
-000146  1ec0              SUBS     r0,r0,#3
-000148  4408              ADD      r0,r0,r1
-00014a  491a              LDR      r1,|L2.436|
-00014c  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-00014e  8008              STRH     r0,[r1,#0]
-;;;80     				
-;;;81     				OSMutexPost(CDMASendMutex);
-000150  4816              LDR      r0,|L2.428|
-000152  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-000154  f7fffffe          BL       OSMutexPost
-                  |L2.344|
-;;;82     			}
-;;;83     			Mem_free(ptrGPSPack);
-000158  4620              MOV      r0,r4
-00015a  f7fffffe          BL       Mem_free
-                  |L2.350|
-;;;84     		}
-;;;85     		osTime = RTC_GetCounter();
-00015e  f7fffffe          BL       RTC_GetCounter
-000162  4605              MOV      r5,r0
-;;;86     		timeStamp = varOperation.currentTime > osTime? (varOperation.currentTime - osTime):(osTime - varOperation.currentTime);
-000164  480e              LDR      r0,|L2.416|
-000166  6e01              LDR      r1,[r0,#0x60]  ; varOperation
-000168  42a9              CMP      r1,r5
-00016a  d902              BLS      |L2.370|
-00016c  6e00              LDR      r0,[r0,#0x60]  ; varOperation
-00016e  1b40              SUBS     r0,r0,r5
-000170  e002              B        |L2.376|
-                  |L2.370|
-000172  480b              LDR      r0,|L2.416|
-000174  6e00              LDR      r0,[r0,#0x60]  ; varOperation
-000176  1a28              SUBS     r0,r5,r0
-                  |L2.376|
-000178  4606              MOV      r6,r0
-;;;87     		if(timeStamp > 300)//时间相差5分钟后，校时（以GPS时间为准）
-00017a  f5b67f96          CMP      r6,#0x12c
-00017e  d903              BLS      |L2.392|
-;;;88     			RTC_Time_Adjust(varOperation.currentTime);
-000180  4907              LDR      r1,|L2.416|
-000182  6e08              LDR      r0,[r1,#0x60]  ; varOperation
-000184  f7fffffe          BL       RTC_Time_Adjust
-                  |L2.392|
-;;;89     		freGPSLed = LEDSLOW;           //LED  指示，GPS定位正常
-000188  f44f707a          MOV      r0,#0x3e8
-00018c  4903              LDR      r1,|L2.412|
-00018e  8008              STRH     r0,[r1,#0]
-000190  bf00              NOP                            ;35
+;;;74     				if(varOperation.isDataFlow != 1)
+000102  482a              LDR      r0,|L2.428|
+000104  f890002d          LDRB     r0,[r0,#0x2d]  ; varOperation
+000108  2801              CMP      r0,#1
+00010a  d02a              BEQ      |L2.354|
+;;;75     				{
+;;;76     					OSMutexPend(CDMASendMutex,0,&err);
+00010c  aa03              ADD      r2,sp,#0xc
+00010e  2100              MOVS     r1,#0
+000110  4829              LDR      r0,|L2.440|
+000112  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+000114  f7fffffe          BL       OSMutexPend
+;;;77     					
+;;;78     					memcpy(&pPid[51][pPid[51][0]],&ptrGPSPack[3],ptrGPSPack[0] - 3);//合并 GPS 位置信息
+000118  4928              LDR      r1,|L2.444|
+00011a  f8d110cc          LDR      r1,[r1,#0xcc]  ; pPid
+00011e  4b27              LDR      r3,|L2.444|
+000120  f8d330cc          LDR      r3,[r3,#0xcc]  ; pPid
+000124  781b              LDRB     r3,[r3,#0]
+000126  18c8              ADDS     r0,r1,r3
+000128  7821              LDRB     r1,[r4,#0]
+00012a  1eca              SUBS     r2,r1,#3
+00012c  1ce1              ADDS     r1,r4,#3
+00012e  f7fffffe          BL       __aeabi_memcpy
+;;;79     					pPid[51][0] += ptrGPSPack[0] - 3;
+000132  4822              LDR      r0,|L2.444|
+000134  f8d000cc          LDR      r0,[r0,#0xcc]  ; pPid
+000138  7801              LDRB     r1,[r0,#0]
+00013a  7820              LDRB     r0,[r4,#0]
+00013c  1ec0              SUBS     r0,r0,#3
+00013e  4408              ADD      r0,r0,r1
+000140  491e              LDR      r1,|L2.444|
+000142  f8d110cc          LDR      r1,[r1,#0xcc]  ; pPid
+000146  7008              STRB     r0,[r1,#0]
+;;;80     					cdmaDataToSend->datLength += ptrGPSPack[0] - 3;
+000148  481d              LDR      r0,|L2.448|
+00014a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00014c  8801              LDRH     r1,[r0,#0]
+00014e  7820              LDRB     r0,[r4,#0]
+000150  1ec0              SUBS     r0,r0,#3
+000152  4408              ADD      r0,r0,r1
+000154  491a              LDR      r1,|L2.448|
+000156  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000158  8008              STRH     r0,[r1,#0]
+;;;81     					
+;;;82     					OSMutexPost(CDMASendMutex);
+00015a  4817              LDR      r0,|L2.440|
+00015c  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+00015e  f7fffffe          BL       OSMutexPost
+                  |L2.354|
+;;;83     				}
+;;;84     				
+;;;85     			}
+;;;86     			Mem_free(ptrGPSPack);
+000162  4620              MOV      r0,r4
+000164  f7fffffe          BL       Mem_free
+                  |L2.360|
+;;;87     		}
+;;;88     		osTime = RTC_GetCounter();
+000168  f7fffffe          BL       RTC_GetCounter
+00016c  4605              MOV      r5,r0
+;;;89     		timeStamp = varOperation.currentTime > osTime? (varOperation.currentTime - osTime):(osTime - varOperation.currentTime);
+00016e  480f              LDR      r0,|L2.428|
+000170  6e01              LDR      r1,[r0,#0x60]  ; varOperation
+000172  42a9              CMP      r1,r5
+000174  d902              BLS      |L2.380|
+000176  6e00              LDR      r0,[r0,#0x60]  ; varOperation
+000178  1b40              SUBS     r0,r0,r5
+00017a  e002              B        |L2.386|
+                  |L2.380|
+00017c  480b              LDR      r0,|L2.428|
+00017e  6e00              LDR      r0,[r0,#0x60]  ; varOperation
+000180  1a28              SUBS     r0,r5,r0
+                  |L2.386|
+000182  4606              MOV      r6,r0
+;;;90     		if(timeStamp > 300)//时间相差5分钟后，校时（以GPS时间为准）
+000184  f5b67f96          CMP      r6,#0x12c
+000188  d903              BLS      |L2.402|
+;;;91     			RTC_Time_Adjust(varOperation.currentTime);
+00018a  4908              LDR      r1,|L2.428|
+00018c  6e08              LDR      r0,[r1,#0x60]  ; varOperation
+00018e  f7fffffe          BL       RTC_Time_Adjust
                   |L2.402|
-000192  e73b              B        |L2.12|
-;;;90     	}
-;;;91     }
-;;;92     
+;;;92     		freGPSLed = LEDSLOW;           //LED  指示，GPS定位正常
+000192  f44f707a          MOV      r0,#0x3e8
+000196  4904              LDR      r1,|L2.424|
+000198  8008              STRH     r0,[r1,#0]
+00019a  bf00              NOP                            ;35
+                  |L2.412|
+00019c  e736              B        |L2.12|
+;;;93     	}
+;;;94     }
+;;;95     
                           ENDP
 
-                  |L2.404|
-                          DCD      receGPSQ
-                  |L2.408|
-                          DCD      gpsMC
-                  |L2.412|
-                          DCD      freGPSLed
+00019e  0000              DCW      0x0000
                   |L2.416|
-                          DCD      varOperation
+                          DCD      receGPSQ
                   |L2.420|
-                          DCD      locatemp
+                          DCD      gpsMC
                   |L2.424|
-                          DCD      carAllRecord
+                          DCD      freGPSLed
                   |L2.428|
-                          DCD      CDMASendMutex
+                          DCD      varOperation
                   |L2.432|
-                          DCD      pPid
+                          DCD      locatemp
                   |L2.436|
+                          DCD      carAllRecord
+                  |L2.440|
+                          DCD      CDMASendMutex
+                  |L2.444|
+                          DCD      pPid
+                  |L2.448|
                           DCD      cdmaDataToSend
 
                           AREA ||i.GPS_Analysis||, CODE, READONLY, ALIGN=1
 
                   GPS_Analysis PROC
-;;;264    //buf:接收到的GPS数据缓冲区首地址
-;;;265    void GPS_Analysis(nmea_msg *gpsx,u8 *buf)
+;;;267    //buf:接收到的GPS数据缓冲区首地址
+;;;268    void GPS_Analysis(nmea_msg *gpsx,u8 *buf)
 000000  b570              PUSH     {r4-r6,lr}
-;;;266    {
+;;;269    {
 000002  4604              MOV      r4,r0
 000004  460d              MOV      r5,r1
-;;;267    	NMEA_GPRMC_Analysis(gpsx,buf);	//GPRMC解析  只解析这一个就行了，下面的不需要啦
+;;;270    	NMEA_GPRMC_Analysis(gpsx,buf);	//GPRMC解析  只解析这一个就行了，下面的不需要啦
 000006  4629              MOV      r1,r5
 000008  4620              MOV      r0,r4
 00000a  f7fffffe          BL       NMEA_GPRMC_Analysis
-;;;268    }
+;;;271    }
 00000e  bd70              POP      {r4-r6,pc}
-;;;269    
+;;;272    
                           ENDP
 
 
                           AREA ||i.NMEA_Comma_Pos||, CODE, READONLY, ALIGN=1
 
                   NMEA_Comma_Pos PROC
-;;;135    //       0XFF,代表不存在第cx个逗号	
-;;;136    u8 NMEA_Comma_Pos(u8 *buf,u8 cx)
+;;;138    //       0XFF,代表不存在第cx个逗号	
+;;;139    u8 NMEA_Comma_Pos(u8 *buf,u8 cx)
 000000  4602              MOV      r2,r0
-;;;137    {	 		    
-;;;138    	u8 *p=buf;
+;;;140    {	 		    
+;;;141    	u8 *p=buf;
 000002  4613              MOV      r3,r2
-;;;139    	while(cx)
+;;;142    	while(cx)
 000004  e010              B        |L4.40|
                   |L4.6|
-;;;140    	{		 
-;;;141    		if(*buf=='*'||*buf<' '||*buf>'z')return 0XFF;//遇到'*'或者非法字符,则不存在第cx个逗号
+;;;143    	{		 
+;;;144    		if(*buf=='*'||*buf<' '||*buf>'z')return 0XFF;//遇到'*'或者非法字符,则不存在第cx个逗号
 000006  7810              LDRB     r0,[r2,#0]
 000008  282a              CMP      r0,#0x2a
 00000a  d005              BEQ      |L4.24|
@@ -384,60 +392,60 @@
                   |L4.24|
 000018  20ff              MOVS     r0,#0xff
                   |L4.26|
-;;;142    		if(*buf==',')cx--;
-;;;143    		buf++;
-;;;144    	}
-;;;145    	return buf-p;	 
-;;;146    }
+;;;145    		if(*buf==',')cx--;
+;;;146    		buf++;
+;;;147    	}
+;;;148    	return buf-p;	 
+;;;149    }
 00001a  4770              BX       lr
                   |L4.28|
-00001c  7810              LDRB     r0,[r2,#0]            ;142
-00001e  282c              CMP      r0,#0x2c              ;142
+00001c  7810              LDRB     r0,[r2,#0]            ;145
+00001e  282c              CMP      r0,#0x2c              ;145
 000020  d101              BNE      |L4.38|
-000022  1e48              SUBS     r0,r1,#1              ;142
-000024  b2c1              UXTB     r1,r0                 ;142
+000022  1e48              SUBS     r0,r1,#1              ;145
+000024  b2c1              UXTB     r1,r0                 ;145
                   |L4.38|
-000026  1c52              ADDS     r2,r2,#1              ;143
+000026  1c52              ADDS     r2,r2,#1              ;146
                   |L4.40|
-000028  2900              CMP      r1,#0                 ;139
+000028  2900              CMP      r1,#0                 ;142
 00002a  d1ec              BNE      |L4.6|
-00002c  1ad0              SUBS     r0,r2,r3              ;145
-00002e  b2c0              UXTB     r0,r0                 ;145
+00002c  1ad0              SUBS     r0,r2,r3              ;148
+00002e  b2c0              UXTB     r0,r0                 ;148
 000030  e7f3              B        |L4.26|
-;;;147    //m^n函数
+;;;150    //m^n函数
                           ENDP
 
 
                           AREA ||i.NMEA_GPRMC_Analysis||, CODE, READONLY, ALIGN=2
 
                   NMEA_GPRMC_Analysis PROC
-;;;199    //buf:接收到的GPS数据缓冲区首地址
-;;;200    void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
+;;;202    //buf:接收到的GPS数据缓冲区首地址
+;;;203    void NMEA_GPRMC_Analysis(nmea_msg *gpsx,u8 *buf)
 000000  e92d4ff0          PUSH     {r4-r11,lr}
-;;;201    {
+;;;204    {
 000004  b085              SUB      sp,sp,#0x14
 000006  4604              MOV      r4,r0
 000008  4688              MOV      r8,r1
-;;;202    	u8 *p1,dx;	//dx小数点位数	p1指向 GPRMC 的开始位置		 
-;;;203    	u8 posx;     
-;;;204    	u32 temp;	   
-;;;205    	float rs;  
-;;;206    	p1=(u8*)strstr((const char *)buf,"GPRMC");//"$GPRMC",经常有&和GPRMC分开的情况,故只判断GPRMC.
+;;;205    	u8 *p1,dx;	//dx小数点位数	p1指向 GPRMC 的开始位置		 
+;;;206    	u8 posx;     
+;;;207    	u32 temp;	   
+;;;208    	float rs;  
+;;;209    	p1=(u8*)strstr((const char *)buf,"GPRMC");//"$GPRMC",经常有&和GPRMC分开的情况,故只判断GPRMC.
 00000a  a19c              ADR      r1,|L5.636|
 00000c  4640              MOV      r0,r8
 00000e  f7fffffe          BL       strstr
 000012  4607              MOV      r7,r0
-;;;207    	
-;;;208    	posx=NMEA_Comma_Pos(p1,1);								//得到UTC时间
+;;;210    	
+;;;211    	posx=NMEA_Comma_Pos(p1,1);								//得到UTC时间
 000014  2101              MOVS     r1,#1
 000016  4638              MOV      r0,r7
 000018  f7fffffe          BL       NMEA_Comma_Pos
 00001c  4605              MOV      r5,r0
-;;;209    	if(posx!=0XFF)
+;;;212    	if(posx!=0XFF)
 00001e  2dff              CMP      r5,#0xff
 000020  d023              BEQ      |L5.106|
-;;;210    	{
-;;;211    		temp=NMEA_Str2num(p1+posx,&dx)/NMEA_Pow(10,dx);	 	//得到UTC时间,去掉ms
+;;;213    	{
+;;;214    		temp=NMEA_Str2num(p1+posx,&dx)/NMEA_Pow(10,dx);	 	//得到UTC时间,去掉ms
 000022  1978              ADDS     r0,r7,r5
 000024  a904              ADD      r1,sp,#0x10
 000026  f7fffffe          BL       NMEA_Str2num
@@ -446,13 +454,13 @@
 000030  200a              MOVS     r0,#0xa
 000032  f7fffffe          BL       NMEA_Pow
 000036  fbbaf6f0          UDIV     r6,r10,r0
-;;;212    		gpsx->utc.hour=temp/10000;
+;;;215    		gpsx->utc.hour=temp/10000;
 00003a  f2427010          MOV      r0,#0x2710
 00003e  fbb6f0f0          UDIV     r0,r6,r0
 000042  b2c1              UXTB     r1,r0
 000044  2041              MOVS     r0,#0x41
 000046  5501              STRB     r1,[r0,r4]
-;;;213    		gpsx->utc.min=(temp/100)%100;
+;;;216    		gpsx->utc.min=(temp/100)%100;
 000048  2064              MOVS     r0,#0x64
 00004a  fbb6f0f0          UDIV     r0,r6,r0
 00004e  2164              MOVS     r1,#0x64
@@ -460,29 +468,29 @@
 000054  fb010112          MLS      r1,r1,r2,r0
 000058  2042              MOVS     r0,#0x42
 00005a  5501              STRB     r1,[r0,r4]
-;;;214    		gpsx->utc.sec=temp%100;	 	 
+;;;217    		gpsx->utc.sec=temp%100;	 	 
 00005c  2064              MOVS     r0,#0x64
 00005e  fbb6f1f0          UDIV     r1,r6,r0
 000062  fb006111          MLS      r1,r0,r1,r6
 000066  2043              MOVS     r0,#0x43
 000068  5501              STRB     r1,[r0,r4]
                   |L5.106|
-;;;215    	}	
-;;;216    	posx=NMEA_Comma_Pos(p1,3);								//得到纬度
+;;;218    	}	
+;;;219    	posx=NMEA_Comma_Pos(p1,3);								//得到纬度
 00006a  2103              MOVS     r1,#3
 00006c  4638              MOV      r0,r7
 00006e  f7fffffe          BL       NMEA_Comma_Pos
 000072  4605              MOV      r5,r0
-;;;217    	if(posx!=0XFF)
+;;;220    	if(posx!=0XFF)
 000074  2dff              CMP      r5,#0xff
 000076  d043              BEQ      |L5.256|
-;;;218    	{
-;;;219    		temp=NMEA_Str2num(p1+posx,&dx);		 	 
+;;;221    	{
+;;;222    		temp=NMEA_Str2num(p1+posx,&dx);		 	 
 000078  1978              ADDS     r0,r7,r5
 00007a  a904              ADD      r1,sp,#0x10
 00007c  f7fffffe          BL       NMEA_Str2num
 000080  4606              MOV      r6,r0
-;;;220    		gpsx->latitude=temp/NMEA_Pow(10,dx+2);	//得到°
+;;;223    		gpsx->latitude=temp/NMEA_Pow(10,dx+2);	//得到°
 000082  f89d0010          LDRB     r0,[sp,#0x10]
 000086  1c80              ADDS     r0,r0,#2
 000088  b2c1              UXTB     r1,r0
@@ -490,7 +498,7 @@
 00008c  f7fffffe          BL       NMEA_Pow
 000090  fbb6f0f0          UDIV     r0,r6,r0
 000094  6460              STR      r0,[r4,#0x44]
-;;;221    		rs=temp%NMEA_Pow(10,dx+2);				//得到'		 
+;;;224    		rs=temp%NMEA_Pow(10,dx+2);				//得到'		 
 000096  f89d0010          LDRB     r0,[sp,#0x10]
 00009a  1c80              ADDS     r0,r0,#2
 00009c  b2c1              UXTB     r1,r0
@@ -501,7 +509,7 @@
 0000ac  4650              MOV      r0,r10
 0000ae  f7fffffe          BL       __aeabi_ui2f
 0000b2  4681              MOV      r9,r0
-;;;222    		gpsx->latitude=gpsx->latitude*NMEA_Pow(10,5)+(rs*NMEA_Pow(10,5-dx))/60;//转换为° 
+;;;225    		gpsx->latitude=gpsx->latitude*NMEA_Pow(10,5)+(rs*NMEA_Pow(10,5-dx))/60;//转换为° 
 0000b4  f89d0010          LDRB     r0,[sp,#0x10]
 0000b8  f1c00005          RSB      r0,r0,#5
 0000bc  b2c1              UXTB     r1,r0
@@ -530,33 +538,33 @@
 0000fa  f7fffffe          BL       __aeabi_f2uiz
 0000fe  6460              STR      r0,[r4,#0x44]
                   |L5.256|
-;;;223    	}
-;;;224    	posx=NMEA_Comma_Pos(p1,4);								//南纬还是北纬 
+;;;226    	}
+;;;227    	posx=NMEA_Comma_Pos(p1,4);								//南纬还是北纬 
 000100  2104              MOVS     r1,#4
 000102  4638              MOV      r0,r7
 000104  f7fffffe          BL       NMEA_Comma_Pos
 000108  4605              MOV      r5,r0
-;;;225    	if(posx!=0XFF)gpsx->nshemi=*(p1+posx);					 
+;;;228    	if(posx!=0XFF)gpsx->nshemi=*(p1+posx);					 
 00010a  2dff              CMP      r5,#0xff
 00010c  d002              BEQ      |L5.276|
 00010e  5d78              LDRB     r0,[r7,r5]
 000110  f8840048          STRB     r0,[r4,#0x48]
                   |L5.276|
-;;;226     	posx=NMEA_Comma_Pos(p1,5);								//得到经度
+;;;229     	posx=NMEA_Comma_Pos(p1,5);								//得到经度
 000114  2105              MOVS     r1,#5
 000116  4638              MOV      r0,r7
 000118  f7fffffe          BL       NMEA_Comma_Pos
 00011c  4605              MOV      r5,r0
-;;;227    	if(posx!=0XFF)
+;;;230    	if(posx!=0XFF)
 00011e  2dff              CMP      r5,#0xff
 000120  d045              BEQ      |L5.430|
-;;;228    	{												  
-;;;229    		temp=NMEA_Str2num(p1+posx,&dx);		 	 
+;;;231    	{												  
+;;;232    		temp=NMEA_Str2num(p1+posx,&dx);		 	 
 000122  1978              ADDS     r0,r7,r5
 000124  a904              ADD      r1,sp,#0x10
 000126  f7fffffe          BL       NMEA_Str2num
 00012a  4606              MOV      r6,r0
-;;;230    		gpsx->longitude=temp/NMEA_Pow(10,dx+2);	//得到°
+;;;233    		gpsx->longitude=temp/NMEA_Pow(10,dx+2);	//得到°
 00012c  f89d0010          LDRB     r0,[sp,#0x10]
 000130  1c80              ADDS     r0,r0,#2
 000132  b2c1              UXTB     r1,r0
@@ -564,7 +572,7 @@
 000136  f7fffffe          BL       NMEA_Pow
 00013a  fbb6f0f0          UDIV     r0,r6,r0
 00013e  f8440f49          STR      r0,[r4,#0x49]!
-;;;231    		rs=temp%NMEA_Pow(10,dx+2);				//得到'		 
+;;;234    		rs=temp%NMEA_Pow(10,dx+2);				//得到'		 
 000142  f89d0010          LDRB     r0,[sp,#0x10]
 000146  1c80              ADDS     r0,r0,#2
 000148  b2c1              UXTB     r1,r0
@@ -575,7 +583,7 @@
 000158  4650              MOV      r0,r10
 00015a  f7fffffe          BL       __aeabi_ui2f
 00015e  4681              MOV      r9,r0
-;;;232    		gpsx->longitude=gpsx->longitude*NMEA_Pow(10,5)+(rs*NMEA_Pow(10,5-dx))/60;//转换为° 
+;;;235    		gpsx->longitude=gpsx->longitude*NMEA_Pow(10,5)+(rs*NMEA_Pow(10,5-dx))/60;//转换为° 
 000160  f89d0010          LDRB     r0,[sp,#0x10]
 000164  f1c00005          RSB      r0,r0,#5
 000168  b2c1              UXTB     r1,r0
@@ -604,65 +612,65 @@
 0001a6  f7fffffe          BL       __aeabi_f2uiz
 0001aa  f8440949          STR      r0,[r4],#-0x49
                   |L5.430|
-;;;233    	}
-;;;234    	posx=NMEA_Comma_Pos(p1,6);								//东经还是西经
+;;;236    	}
+;;;237    	posx=NMEA_Comma_Pos(p1,6);								//东经还是西经
 0001ae  2106              MOVS     r1,#6
 0001b0  4638              MOV      r0,r7
 0001b2  f7fffffe          BL       NMEA_Comma_Pos
 0001b6  4605              MOV      r5,r0
-;;;235    	if(posx!=0XFF)gpsx->ewhemi=*(p1+posx);		 
+;;;238    	if(posx!=0XFF)gpsx->ewhemi=*(p1+posx);		 
 0001b8  2dff              CMP      r5,#0xff
 0001ba  d002              BEQ      |L5.450|
 0001bc  5d78              LDRB     r0,[r7,r5]
 0001be  f884004d          STRB     r0,[r4,#0x4d]
                   |L5.450|
-;;;236    	
-;;;237    	posx=NMEA_Comma_Pos(p1,7);	                            //地面速率  节 
+;;;239    	
+;;;240    	posx=NMEA_Comma_Pos(p1,7);	                            //地面速率  节 
 0001c2  2107              MOVS     r1,#7
 0001c4  4638              MOV      r0,r7
 0001c6  f7fffffe          BL       NMEA_Comma_Pos
 0001ca  4605              MOV      r5,r0
-;;;238    	if(posx!=0XFF)                                          //1节 = 1.852 公里   1节 = 1.150英里
+;;;241    	if(posx!=0XFF)                                          //1节 = 1.852 公里   1节 = 1.150英里
 0001cc  2dff              CMP      r5,#0xff
 0001ce  d015              BEQ      |L5.508|
-;;;239    	{
-;;;240    		temp=NMEA_Str2num(p1+posx,&dx);		                //得到整型值，此值比原始值大10的dx次方 	 
+;;;242    	{
+;;;243    		temp=NMEA_Str2num(p1+posx,&dx);		                //得到整型值，此值比原始值大10的dx次方 	 
 0001d0  1978              ADDS     r0,r7,r5
 0001d2  a904              ADD      r1,sp,#0x10
 0001d4  f7fffffe          BL       NMEA_Str2num
 0001d8  4606              MOV      r6,r0
-;;;241    		temp=(temp*1852)/36;
+;;;244    		temp=(temp*1852)/36;
 0001da  f240703c          MOV      r0,#0x73c
 0001de  4370              MULS     r0,r6,r0
 0001e0  2124              MOVS     r1,#0x24
 0001e2  fbb0f6f1          UDIV     r6,r0,r1
-;;;242    		temp/=NMEA_Pow(10,dx+1);	
+;;;245    		temp/=NMEA_Pow(10,dx+1);	
 0001e6  f89d0010          LDRB     r0,[sp,#0x10]
 0001ea  1c40              ADDS     r0,r0,#1
 0001ec  b2c1              UXTB     r1,r0
 0001ee  200a              MOVS     r0,#0xa
 0001f0  f7fffffe          BL       NMEA_Pow
 0001f4  fbb6f6f0          UDIV     r6,r6,r0
-;;;243    		gpsx->speed = (uint16_t) temp;
+;;;246    		gpsx->speed = (uint16_t) temp;
 0001f8  f8a46069          STRH     r6,[r4,#0x69]
                   |L5.508|
-;;;244    	}
-;;;245    	
-;;;246    	posx=NMEA_Comma_Pos(p1,8);                              //行驶方向
+;;;247    	}
+;;;248    	
+;;;249    	posx=NMEA_Comma_Pos(p1,8);                              //行驶方向
 0001fc  2108              MOVS     r1,#8
 0001fe  4638              MOV      r0,r7
 000200  f7fffffe          BL       NMEA_Comma_Pos
 000204  4605              MOV      r5,r0
-;;;247    	if(posx!=0XFF)
+;;;250    	if(posx!=0XFF)
 000206  2dff              CMP      r5,#0xff
 000208  d00e              BEQ      |L5.552|
-;;;248    	{
-;;;249    		temp=NMEA_Str2num(p1+posx,&dx);
+;;;251    	{
+;;;252    		temp=NMEA_Str2num(p1+posx,&dx);
 00020a  1978              ADDS     r0,r7,r5
 00020c  a904              ADD      r1,sp,#0x10
 00020e  f7fffffe          BL       NMEA_Str2num
 000212  4606              MOV      r6,r0
-;;;250    		gpsx->direction =(u16)temp/NMEA_Pow(10,dx);
+;;;253    		gpsx->direction =(u16)temp/NMEA_Pow(10,dx);
 000214  f89d1010          LDRB     r1,[sp,#0x10]
 000218  200a              MOVS     r0,#0xa
 00021a  f7fffffe          BL       NMEA_Pow
@@ -670,28 +678,28 @@
 000220  fbb1f0f0          UDIV     r0,r1,r0
 000224  f8a40063          STRH     r0,[r4,#0x63]
                   |L5.552|
-;;;251    	}
-;;;252    	posx=NMEA_Comma_Pos(p1,9);								//得到UTC日期
+;;;254    	}
+;;;255    	posx=NMEA_Comma_Pos(p1,9);								//得到UTC日期
 000228  2109              MOVS     r1,#9
 00022a  4638              MOV      r0,r7
 00022c  f7fffffe          BL       NMEA_Comma_Pos
 000230  4605              MOV      r5,r0
-;;;253    	if(posx!=0XFF)
+;;;256    	if(posx!=0XFF)
 000232  2dff              CMP      r5,#0xff
 000234  d01e              BEQ      |L5.628|
-;;;254    	{
-;;;255    		temp=NMEA_Str2num(p1+posx,&dx);		 				//得到UTC日期
+;;;257    	{
+;;;258    		temp=NMEA_Str2num(p1+posx,&dx);		 				//得到UTC日期
 000236  1978              ADDS     r0,r7,r5
 000238  a904              ADD      r1,sp,#0x10
 00023a  f7fffffe          BL       NMEA_Str2num
 00023e  4606              MOV      r6,r0
-;;;256    		gpsx->utc.date=temp/10000;
+;;;259    		gpsx->utc.date=temp/10000;
 000240  f2427010          MOV      r0,#0x2710
 000244  fbb6f0f0          UDIV     r0,r6,r0
 000248  b2c1              UXTB     r1,r0
 00024a  2040              MOVS     r0,#0x40
 00024c  5501              STRB     r1,[r0,r4]
-;;;257    		gpsx->utc.month=(temp/100)%100;
+;;;260    		gpsx->utc.month=(temp/100)%100;
 00024e  2064              MOVS     r0,#0x64
 000250  fbb6f0f0          UDIV     r0,r6,r0
 000254  2164              MOVS     r1,#0x64
@@ -699,18 +707,18 @@
 00025a  fb010112          MLS      r1,r1,r2,r0
 00025e  203f              MOVS     r0,#0x3f
 000260  5501              STRB     r1,[r0,r4]
-;;;258    		gpsx->utc.year=2000+temp%100;	 	 
+;;;261    		gpsx->utc.year=2000+temp%100;	 	 
 000262  2064              MOVS     r0,#0x64
 000264  fbb6f1f0          UDIV     r1,r6,r0
 000268  fb006011          MLS      r0,r0,r1,r6
 00026c  f50060fa          ADD      r0,r0,#0x7d0
 000270  f8a4003d          STRH     r0,[r4,#0x3d]
                   |L5.628|
-;;;259    	} 
-;;;260    }
+;;;262    	} 
+;;;263    }
 000274  b005              ADD      sp,sp,#0x14
 000276  e8bd8ff0          POP      {r4-r11,pc}
-;;;261    
+;;;264    
                           ENDP
 
 00027a  0000              DCW      0x0000
@@ -725,14 +733,14 @@
                           AREA ||i.NMEA_Pow||, CODE, READONLY, ALIGN=1
 
                   NMEA_Pow PROC
-;;;148    //返回值:m^n次方.
-;;;149    u32 NMEA_Pow(u8 m,u8 n)
+;;;151    //返回值:m^n次方.
+;;;152    u32 NMEA_Pow(u8 m,u8 n)
 000000  b510              PUSH     {r4,lr}
-;;;150    {
+;;;153    {
 000002  4602              MOV      r2,r0
-;;;151    	u32 result=1;	 
+;;;154    	u32 result=1;	 
 000004  2001              MOVS     r0,#1
-;;;152    	while(n--)result*=m;    
+;;;155    	while(n--)result*=m;    
 000006  e000              B        |L6.10|
                   |L6.8|
 000008  4350              MULS     r0,r2,r0
@@ -741,46 +749,46 @@
 00000c  f1a10401          SUB      r4,r1,#1
 000010  b2e1              UXTB     r1,r4
 000012  d1f9              BNE      |L6.8|
-;;;153    	return result;
-;;;154    }
+;;;156    	return result;
+;;;157    }
 000014  bd10              POP      {r4,pc}
-;;;155    //str转换为数字,以','或者'*'结束
+;;;158    //str转换为数字,以','或者'*'结束
                           ENDP
 
 
                           AREA ||i.NMEA_Str2num||, CODE, READONLY, ALIGN=1
 
                   NMEA_Str2num PROC
-;;;158    //返回值:转换后的数值
-;;;159    int NMEA_Str2num(u8 *buf,u8*dx)
+;;;161    //返回值:转换后的数值
+;;;162    int NMEA_Str2num(u8 *buf,u8*dx)
 000000  e92d4ff3          PUSH     {r0,r1,r4-r11,lr}
-;;;160    {
+;;;163    {
 000004  b081              SUB      sp,sp,#4
 000006  4607              MOV      r7,r0
-;;;161    	u8 *p=buf;
+;;;164    	u8 *p=buf;
 000008  463c              MOV      r4,r7
-;;;162    	u32 ires=0,fres=0;
+;;;165    	u32 ires=0,fres=0;
 00000a  2000              MOVS     r0,#0
 00000c  9000              STR      r0,[sp,#0]
 00000e  4683              MOV      r11,r0
-;;;163    	u8 ilen=0,flen=0,i;
+;;;166    	u8 ilen=0,flen=0,i;
 000010  4681              MOV      r9,r0
 000012  2600              MOVS     r6,#0
-;;;164    	u8 mask=0;
+;;;167    	u8 mask=0;
 000014  4680              MOV      r8,r0
-;;;165    	int res;
-;;;166    	while(1) //得到整数和小数的长度
+;;;168    	int res;
+;;;169    	while(1) //得到整数和小数的长度
 000016  e028              B        |L7.106|
                   |L7.24|
-;;;167    	{
-;;;168    		if(*p=='-'){mask|=0X02;p++;}//是负数
+;;;170    	{
+;;;171    		if(*p=='-'){mask|=0X02;p++;}//是负数
 000018  7820              LDRB     r0,[r4,#0]
 00001a  282d              CMP      r0,#0x2d
 00001c  d102              BNE      |L7.36|
 00001e  f0480802          ORR      r8,r8,#2
 000022  1c64              ADDS     r4,r4,#1
                   |L7.36|
-;;;169    		if(*p==','||(*p=='*'))break;//遇到结束了
+;;;172    		if(*p==','||(*p=='*'))break;//遇到结束了
 000024  7820              LDRB     r0,[r4,#0]
 000026  282c              CMP      r0,#0x2c
 000028  d002              BEQ      |L7.48|
@@ -790,7 +798,7 @@
                   |L7.48|
 000030  e01c              B        |L7.108|
                   |L7.50|
-;;;170    		if(*p=='.'){mask|=0X01;p++;}//遇到小数点了
+;;;173    		if(*p=='.'){mask|=0X01;p++;}//遇到小数点了
 000032  7820              LDRB     r0,[r4,#0]
 000034  282e              CMP      r0,#0x2e
 000036  d103              BNE      |L7.64|
@@ -798,7 +806,7 @@
 00003c  1c64              ADDS     r4,r4,#1
 00003e  e009              B        |L7.84|
                   |L7.64|
-;;;171    		else if(*p>'9'||(*p<'0'))	//有非法字符
+;;;174    		else if(*p>'9'||(*p<'0'))	//有非法字符
 000040  7820              LDRB     r0,[r4,#0]
 000042  2839              CMP      r0,#0x39
 000044  dc02              BGT      |L7.76|
@@ -806,44 +814,44 @@
 000048  2830              CMP      r0,#0x30
 00004a  da03              BGE      |L7.84|
                   |L7.76|
-;;;172    		{	
-;;;173    			ilen=0;
+;;;175    		{	
+;;;176    			ilen=0;
 00004c  f04f0900          MOV      r9,#0
-;;;174    			flen=0;
+;;;177    			flen=0;
 000050  2600              MOVS     r6,#0
-;;;175    			break;
+;;;178    			break;
 000052  e00b              B        |L7.108|
                   |L7.84|
-;;;176    		}	
-;;;177    		if(mask&0X01)flen++;
+;;;179    		}	
+;;;180    		if(mask&0X01)flen++;
 000054  f0080001          AND      r0,r8,#1
 000058  b110              CBZ      r0,|L7.96|
 00005a  1c70              ADDS     r0,r6,#1
 00005c  b2c6              UXTB     r6,r0
 00005e  e003              B        |L7.104|
                   |L7.96|
-;;;178    		else ilen++;
+;;;181    		else ilen++;
 000060  f1090001          ADD      r0,r9,#1
 000064  f00009ff          AND      r9,r0,#0xff
                   |L7.104|
-;;;179    		p++;
+;;;182    		p++;
 000068  1c64              ADDS     r4,r4,#1
                   |L7.106|
 00006a  e7d5              B        |L7.24|
                   |L7.108|
-00006c  bf00              NOP                            ;169
-;;;180    	}
-;;;181    	if(mask&0X02)buf++;	//去掉负号
+00006c  bf00              NOP                            ;172
+;;;183    	}
+;;;184    	if(mask&0X02)buf++;	//去掉负号
 00006e  f0080002          AND      r0,r8,#2
 000072  b100              CBZ      r0,|L7.118|
 000074  1c7f              ADDS     r7,r7,#1
                   |L7.118|
-;;;182    	for(i=0;i<ilen;i++)	//得到整数部分数据
+;;;185    	for(i=0;i<ilen;i++)	//得到整数部分数据
 000076  2500              MOVS     r5,#0
 000078  e00e              B        |L7.152|
                   |L7.122|
-;;;183    	{  
-;;;184    		ires+=NMEA_Pow(10,ilen-1-i)*(buf[i]-'0');
+;;;186    	{  
+;;;187    		ires+=NMEA_Pow(10,ilen-1-i)*(buf[i]-'0');
 00007a  f1a90001          SUB      r0,r9,#1
 00007e  1b40              SUBS     r0,r0,r5
 000080  b2c1              UXTB     r1,r0
@@ -854,26 +862,26 @@
 00008c  9a00              LDR      r2,[sp,#0]
 00008e  fb002001          MLA      r0,r0,r1,r2
 000092  9000              STR      r0,[sp,#0]
-000094  1c68              ADDS     r0,r5,#1              ;182
-000096  b2c5              UXTB     r5,r0                 ;182
+000094  1c68              ADDS     r0,r5,#1              ;185
+000096  b2c5              UXTB     r5,r0                 ;185
                   |L7.152|
-000098  454d              CMP      r5,r9                 ;182
+000098  454d              CMP      r5,r9                 ;185
 00009a  dbee              BLT      |L7.122|
-;;;185    	}
-;;;186    	if(flen>5)flen=5;	//最多取5位小数
+;;;188    	}
+;;;189    	if(flen>5)flen=5;	//最多取5位小数
 00009c  2e05              CMP      r6,#5
 00009e  dd00              BLE      |L7.162|
 0000a0  2605              MOVS     r6,#5
                   |L7.162|
-;;;187    	*dx=flen;	 		//小数点位数
+;;;190    	*dx=flen;	 		//小数点位数
 0000a2  9802              LDR      r0,[sp,#8]
 0000a4  7006              STRB     r6,[r0,#0]
-;;;188    	for(i=0;i<flen;i++)	//得到小数部分数据
+;;;191    	for(i=0;i<flen;i++)	//得到小数部分数据
 0000a6  2500              MOVS     r5,#0
 0000a8  e00e              B        |L7.200|
                   |L7.170|
-;;;189    	{  
-;;;190    		fres+=NMEA_Pow(10,flen-1-i)*(buf[ilen+1+i]-'0');
+;;;192    	{  
+;;;193    		fres+=NMEA_Pow(10,flen-1-i)*(buf[ilen+1+i]-'0');
 0000aa  1e70              SUBS     r0,r6,#1
 0000ac  1b40              SUBS     r0,r0,r5
 0000ae  b2c1              UXTB     r1,r0
@@ -884,66 +892,66 @@
 0000bc  5c79              LDRB     r1,[r7,r1]
 0000be  3930              SUBS     r1,r1,#0x30
 0000c0  fb00bb01          MLA      r11,r0,r1,r11
-0000c4  1c68              ADDS     r0,r5,#1              ;188
-0000c6  b2c5              UXTB     r5,r0                 ;188
+0000c4  1c68              ADDS     r0,r5,#1              ;191
+0000c6  b2c5              UXTB     r5,r0                 ;191
                   |L7.200|
-0000c8  42b5              CMP      r5,r6                 ;188
+0000c8  42b5              CMP      r5,r6                 ;191
 0000ca  dbee              BLT      |L7.170|
-;;;191    	} 
-;;;192    	res=ires*NMEA_Pow(10,flen)+fres;
+;;;194    	} 
+;;;195    	res=ires*NMEA_Pow(10,flen)+fres;
 0000cc  4631              MOV      r1,r6
 0000ce  200a              MOVS     r0,#0xa
 0000d0  f7fffffe          BL       NMEA_Pow
 0000d4  9900              LDR      r1,[sp,#0]
 0000d6  fb01ba00          MLA      r10,r1,r0,r11
-;;;193    	if(mask&0X02)res=-res;		   
+;;;196    	if(mask&0X02)res=-res;		   
 0000da  f0080002          AND      r0,r8,#2
 0000de  b108              CBZ      r0,|L7.228|
 0000e0  f1ca0a00          RSB      r10,r10,#0
                   |L7.228|
-;;;194    	return res;
+;;;197    	return res;
 0000e4  4650              MOV      r0,r10
-;;;195    }	  							 
+;;;198    }	  							 
 0000e6  e8bd8ffe          POP      {r1-r11,pc}
-;;;196    
+;;;199    
                           ENDP
 
 
                           AREA ||i.TimeCompare||, CODE, READONLY, ALIGN=2
 
                   TimeCompare PROC
-;;;96     const uint32_t Month_Days_Accu_L[13] = {0,31,60,91,121,152,182,213,244,274,305,335,366};
-;;;97     uint32_t TimeCompare(uint32_t TYY,uint32_t TMO,uint32_t TDD,
+;;;99     const uint32_t Month_Days_Accu_L[13] = {0,31,60,91,121,152,182,213,244,274,305,335,366};
+;;;100    uint32_t TimeCompare(uint32_t TYY,uint32_t TMO,uint32_t TDD,
 000000  e92d4ff0          PUSH     {r4-r11,lr}
-;;;98     					 uint32_t THH,uint32_t TMM,uint32_t TSS)
-;;;99     {
+;;;101    					 uint32_t THH,uint32_t TMM,uint32_t TSS)
+;;;102    {
 000004  4604              MOV      r4,r0
 000006  460d              MOV      r5,r1
 000008  461f              MOV      r7,r3
 00000a  e9ddc809          LDRD     r12,r8,[sp,#0x24]
-;;;100    	uint32_t LeapY, ComY, TotSeconds, TotDays;
-;;;101    	if(TYY==1970)
+;;;103    	uint32_t LeapY, ComY, TotSeconds, TotDays;
+;;;104    	if(TYY==1970)
 00000e  f24079b2          MOV      r9,#0x7b2
 000012  454c              CMP      r4,r9
 000014  d101              BNE      |L8.26|
-;;;102          LeapY = 0;
+;;;105          LeapY = 0;
 000016  2100              MOVS     r1,#0
 000018  e003              B        |L8.34|
                   |L8.26|
-;;;103        else
-;;;104          LeapY = (TYY - 1968 -1)/4 ;//+1
+;;;106        else
+;;;107          LeapY = (TYY - 1968 -1)/4 ;//+1
 00001a  f2a479b1          SUB      r9,r4,#0x7b1
 00001e  ea4f0199          LSR      r1,r9,#2
                   |L8.34|
-;;;105        ComY = (TYY - 1970)-(LeapY);
+;;;108        ComY = (TYY - 1970)-(LeapY);
 000022  f2a479b2          SUB      r9,r4,#0x7b2
 000026  eba90301          SUB      r3,r9,r1
-;;;106        if (TYY%4)
+;;;109        if (TYY%4)
 00002a  f0040903          AND      r9,r4,#3
 00002e  f1b90f00          CMP      r9,#0
 000032  d015              BEQ      |L8.96|
-;;;107        //common year
-;;;108        	TotDays = LeapY*366 + ComY*365 + Month_Days_Accu_C[TMO-1] + (TDD-1); 
+;;;110        //common year
+;;;111        	TotDays = LeapY*366 + ComY*365 + Month_Days_Accu_C[TMO-1] + (TDD-1); 
 000034  f240196d          MOV      r9,#0x16d
 000038  fb03f909          MUL      r9,r3,r9
 00003c  f04f0ab7          MOV      r10,#0xb7
@@ -957,9 +965,9 @@
 00005a  eb0a0609          ADD      r6,r10,r9
 00005e  e014              B        |L8.138|
                   |L8.96|
-;;;109      	else
-;;;110        //leap year
-;;;111        TotDays = LeapY*366 + ComY*365 + Month_Days_Accu_L[TMO-1] + (TDD-1); 
+;;;112      	else
+;;;113        //leap year
+;;;114        TotDays = LeapY*366 + ComY*365 + Month_Days_Accu_L[TMO-1] + (TDD-1); 
 000060  f240196d          MOV      r9,#0x16d
 000064  fb03f909          MUL      r9,r3,r9
 000068  f04f0ab7          MOV      r10,#0xb7
@@ -972,7 +980,7 @@
 000082  f1a20901          SUB      r9,r2,#1
 000086  eb0a0609          ADD      r6,r10,r9
                   |L8.138|
-;;;112      	TotSeconds = TotDays*SecsPerDay + (THH*3600 + TMM*60 + TSS);
+;;;115      	TotSeconds = TotDays*SecsPerDay + (THH*3600 + TMM*60 + TSS);
 00008a  f44f6961          MOV      r9,#0xe10
 00008e  fb07f909          MUL      r9,r7,r9
 000092  ebcc1a0c          RSB      r10,r12,r12,LSL #4
@@ -981,10 +989,10 @@
 00009e  f24029a3          MOV      r9,#0x2a3
 0000a2  fb06f909          MUL      r9,r6,r9
 0000a6  eb0a10c9          ADD      r0,r10,r9,LSL #7
-;;;113    	return 	TotSeconds;
-;;;114    }
+;;;116    	return 	TotSeconds;
+;;;117    }
 0000aa  e8bd8ff0          POP      {r4-r11,pc}
-;;;115    
+;;;118    
                           ENDP
 
 0000ae  0000              DCW      0x0000
@@ -996,93 +1004,93 @@
                           AREA ||i.Ublox_Cfg_Ack_Check||, CODE, READONLY, ALIGN=2
 
                   Ublox_Cfg_Ack_Check PROC
-;;;289    //       3,接收到NACK应答
-;;;290    u8 Ublox_Cfg_Ack_Check(void)//todo:判断应答
+;;;292    //       3,接收到NACK应答
+;;;293    u8 Ublox_Cfg_Ack_Check(void)//todo:判断应答
 000000  b5f8              PUSH     {r3-r7,lr}
-;;;291    {			 
-;;;292    	uint16_t length = 0;
+;;;294    {			 
+;;;295    	uint16_t length = 0;
 000002  2600              MOVS     r6,#0
-;;;293    	uint8_t err,i;
-;;;294    	uint8_t *ptrGPSRece = NULL;
+;;;296    	uint8_t err,i;
+;;;297    	uint8_t *ptrGPSRece = NULL;
 000004  2500              MOVS     r5,#0
-;;;295    	ptrGPSRece = OSQPend(receGPSQ,250,&err);//等待接收到应答   
+;;;298    	ptrGPSRece = OSQPend(receGPSQ,250,&err);//等待接收到应答   
 000006  466a              MOV      r2,sp
 000008  21fa              MOVS     r1,#0xfa
 00000a  481a              LDR      r0,|L9.116|
 00000c  6800              LDR      r0,[r0,#0]  ; receGPSQ
 00000e  f7fffffe          BL       OSQPend
 000012  4605              MOV      r5,r0
-;;;296    	if(err == OS_ERR_TIMEOUT)
+;;;299    	if(err == OS_ERR_TIMEOUT)
 000014  f89d0000          LDRB     r0,[sp,#0]
 000018  280a              CMP      r0,#0xa
 00001a  d101              BNE      |L9.32|
-;;;297    		return 1;
+;;;300    		return 1;
 00001c  2001              MOVS     r0,#1
                   |L9.30|
-;;;298    	length = ptrGPSRece[0];         //此次接收到的数据长度 
-;;;299    	length <<= 8;
-;;;300    	length += ptrGPSRece[1];
-;;;301    	
-;;;302    	for(i=2;i<(length+2);i++)
-;;;303    		if(ptrGPSRece[i+2]==0XB5)
-;;;304    				break;              //查找同步字符 0XB5
-;;;305    	if(i == (length+2))             //没有找到同步字符
-;;;306    		err = 2;
-;;;307    	else if(ptrGPSRece[i + 3] == 0) //接收到NACK应答
-;;;308    		err = 3;
-;;;309    	else
-;;;310    		err = 0;                    //收到ACK应答
-;;;311    	Mem_free(ptrGPSRece);           //释放接收到的内存块
-;;;312    	return err;
-;;;313    
-;;;314    }
+;;;301    	length = ptrGPSRece[0];         //此次接收到的数据长度 
+;;;302    	length <<= 8;
+;;;303    	length += ptrGPSRece[1];
+;;;304    	
+;;;305    	for(i=2;i<(length+2);i++)
+;;;306    		if(ptrGPSRece[i+2]==0XB5)
+;;;307    				break;              //查找同步字符 0XB5
+;;;308    	if(i == (length+2))             //没有找到同步字符
+;;;309    		err = 2;
+;;;310    	else if(ptrGPSRece[i + 3] == 0) //接收到NACK应答
+;;;311    		err = 3;
+;;;312    	else
+;;;313    		err = 0;                    //收到ACK应答
+;;;314    	Mem_free(ptrGPSRece);           //释放接收到的内存块
+;;;315    	return err;
+;;;316    
+;;;317    }
 00001e  bdf8              POP      {r3-r7,pc}
                   |L9.32|
-000020  782e              LDRB     r6,[r5,#0]            ;298
-000022  f64f70ff          MOV      r0,#0xffff            ;299
-000026  ea002606          AND      r6,r0,r6,LSL #8       ;299
-00002a  7868              LDRB     r0,[r5,#1]            ;300
-00002c  4430              ADD      r0,r0,r6              ;300
-00002e  b286              UXTH     r6,r0                 ;300
-000030  2402              MOVS     r4,#2                 ;302
+000020  782e              LDRB     r6,[r5,#0]            ;301
+000022  f64f70ff          MOV      r0,#0xffff            ;302
+000026  ea002606          AND      r6,r0,r6,LSL #8       ;302
+00002a  7868              LDRB     r0,[r5,#1]            ;303
+00002c  4430              ADD      r0,r0,r6              ;303
+00002e  b286              UXTH     r6,r0                 ;303
+000030  2402              MOVS     r4,#2                 ;305
 000032  e006              B        |L9.66|
                   |L9.52|
-000034  1ca0              ADDS     r0,r4,#2              ;303
-000036  5c28              LDRB     r0,[r5,r0]            ;303
-000038  28b5              CMP      r0,#0xb5              ;303
+000034  1ca0              ADDS     r0,r4,#2              ;306
+000036  5c28              LDRB     r0,[r5,r0]            ;306
+000038  28b5              CMP      r0,#0xb5              ;306
 00003a  d100              BNE      |L9.62|
 00003c  e004              B        |L9.72|
                   |L9.62|
-00003e  1c60              ADDS     r0,r4,#1              ;302
-000040  b2c4              UXTB     r4,r0                 ;302
+00003e  1c60              ADDS     r0,r4,#1              ;305
+000040  b2c4              UXTB     r4,r0                 ;305
                   |L9.66|
-000042  1cb0              ADDS     r0,r6,#2              ;302
-000044  4284              CMP      r4,r0                 ;302
+000042  1cb0              ADDS     r0,r6,#2              ;305
+000044  4284              CMP      r4,r0                 ;305
 000046  dbf5              BLT      |L9.52|
                   |L9.72|
-000048  bf00              NOP                            ;304
-00004a  1cb0              ADDS     r0,r6,#2              ;305
-00004c  4284              CMP      r4,r0                 ;305
+000048  bf00              NOP                            ;307
+00004a  1cb0              ADDS     r0,r6,#2              ;308
+00004c  4284              CMP      r4,r0                 ;308
 00004e  d102              BNE      |L9.86|
-000050  2002              MOVS     r0,#2                 ;306
-000052  9000              STR      r0,[sp,#0]            ;306
+000050  2002              MOVS     r0,#2                 ;309
+000052  9000              STR      r0,[sp,#0]            ;309
 000054  e007              B        |L9.102|
                   |L9.86|
-000056  1ce0              ADDS     r0,r4,#3              ;307
-000058  5c28              LDRB     r0,[r5,r0]            ;307
+000056  1ce0              ADDS     r0,r4,#3              ;310
+000058  5c28              LDRB     r0,[r5,r0]            ;310
 00005a  b910              CBNZ     r0,|L9.98|
-00005c  2003              MOVS     r0,#3                 ;308
-00005e  9000              STR      r0,[sp,#0]            ;308
+00005c  2003              MOVS     r0,#3                 ;311
+00005e  9000              STR      r0,[sp,#0]            ;311
 000060  e001              B        |L9.102|
                   |L9.98|
-000062  2000              MOVS     r0,#0                 ;310
-000064  9000              STR      r0,[sp,#0]            ;310
+000062  2000              MOVS     r0,#0                 ;313
+000064  9000              STR      r0,[sp,#0]            ;313
                   |L9.102|
-000066  4628              MOV      r0,r5                 ;311
+000066  4628              MOV      r0,r5                 ;314
 000068  f7fffffe          BL       Mem_free
-00006c  f89d0000          LDRB     r0,[sp,#0]            ;312
+00006c  f89d0000          LDRB     r0,[sp,#0]            ;315
 000070  e7d5              B        |L9.30|
-;;;315    //配置保存
+;;;318    //配置保存
                           ENDP
 
 000072  0000              DCW      0x0000
@@ -1092,372 +1100,372 @@
                           AREA ||i.Ublox_Cfg_Cfg_Save||, CODE, READONLY, ALIGN=1
 
                   Ublox_Cfg_Cfg_Save PROC
-;;;317    //返回值:0,执行成功;1,执行失败.
-;;;318    u8 Ublox_Cfg_Cfg_Save(void)
+;;;320    //返回值:0,执行成功;1,执行失败.
+;;;321    u8 Ublox_Cfg_Cfg_Save(void)
 000000  b570              PUSH     {r4-r6,lr}
-;;;319    {
-;;;320    	u8 i;
-;;;321    	_ublox_cfg_cfg *cfg_cfg=Mem_malloc(sizeof(_ublox_cfg_cfg));
+;;;322    {
+;;;323    	u8 i;
+;;;324    	_ublox_cfg_cfg *cfg_cfg=Mem_malloc(sizeof(_ublox_cfg_cfg));
 000002  2015              MOVS     r0,#0x15
 000004  f7fffffe          BL       Mem_malloc
 000008  4604              MOV      r4,r0
-;;;322    	cfg_cfg->header=0X62B5;		//cfg header
+;;;325    	cfg_cfg->header=0X62B5;		//cfg header
 00000a  f24620b5          MOV      r0,#0x62b5
 00000e  8020              STRH     r0,[r4,#0]
-;;;323    	cfg_cfg->id=0X0906;			//cfg cfg id
+;;;326    	cfg_cfg->id=0X0906;			//cfg cfg id
 000010  f6401006          MOV      r0,#0x906
 000014  8060              STRH     r0,[r4,#2]
-;;;324    	cfg_cfg->dlength=13;		//数据区长度为13个字节.		 
+;;;327    	cfg_cfg->dlength=13;		//数据区长度为13个字节.		 
 000016  200d              MOVS     r0,#0xd
 000018  80a0              STRH     r0,[r4,#4]
-;;;325    	cfg_cfg->clearmask=0;		//清除掩码为0
+;;;328    	cfg_cfg->clearmask=0;		//清除掩码为0
 00001a  2000              MOVS     r0,#0
 00001c  f8c40006          STR      r0,[r4,#6]
-;;;326    	cfg_cfg->savemask=0XFFFF; 	//保存掩码为0XFFFF
+;;;329    	cfg_cfg->savemask=0XFFFF; 	//保存掩码为0XFFFF
 000020  f64f70ff          MOV      r0,#0xffff
 000024  f8c4000a          STR      r0,[r4,#0xa]
-;;;327    	cfg_cfg->loadmask=0; 		//加载掩码为0 
+;;;330    	cfg_cfg->loadmask=0; 		//加载掩码为0 
 000028  2000              MOVS     r0,#0
 00002a  f8c4000e          STR      r0,[r4,#0xe]
-;;;328    	cfg_cfg->devicemask=4; 		//保存在EEPROM里面		 
+;;;331    	cfg_cfg->devicemask=4; 		//保存在EEPROM里面		 
 00002e  2004              MOVS     r0,#4
 000030  74a0              STRB     r0,[r4,#0x12]
-;;;329    	Ublox_CheckSum((u8*)(&cfg_cfg->id),sizeof(_ublox_cfg_cfg)-4,&cfg_cfg->cka,&cfg_cfg->ckb);
+;;;332    	Ublox_CheckSum((u8*)(&cfg_cfg->id),sizeof(_ublox_cfg_cfg)-4,&cfg_cfg->cka,&cfg_cfg->ckb);
 000032  f1040314          ADD      r3,r4,#0x14
 000036  1e5a              SUBS     r2,r3,#1
 000038  2111              MOVS     r1,#0x11
 00003a  1ca0              ADDS     r0,r4,#2
 00003c  f7fffffe          BL       Ublox_CheckSum
-;;;330    	GPSSendDatas((u8*)cfg_cfg,sizeof(_ublox_cfg_cfg));//发送数据给NEO-6M     
+;;;333    	GPSSendDatas((u8*)cfg_cfg,sizeof(_ublox_cfg_cfg));//发送数据给NEO-6M     
 000040  2115              MOVS     r1,#0x15
 000042  4620              MOV      r0,r4
 000044  f7fffffe          BL       GPSSendDatas
-;;;331    	for(i=0;i<6;i++)
+;;;334    	for(i=0;i<6;i++)
 000048  2500              MOVS     r5,#0
 00004a  e005              B        |L10.88|
                   |L10.76|
-;;;332    		if(Ublox_Cfg_Ack_Check()==0)
+;;;335    		if(Ublox_Cfg_Ack_Check()==0)
 00004c  f7fffffe          BL       Ublox_Cfg_Ack_Check
 000050  b900              CBNZ     r0,|L10.84|
-;;;333    			break;		//EEPROM写入需要比较久时间,所以连续判断多次
+;;;336    			break;		//EEPROM写入需要比较久时间,所以连续判断多次
 000052  e003              B        |L10.92|
                   |L10.84|
-000054  1c68              ADDS     r0,r5,#1              ;331
-000056  b2c5              UXTB     r5,r0                 ;331
+000054  1c68              ADDS     r0,r5,#1              ;334
+000056  b2c5              UXTB     r5,r0                 ;334
                   |L10.88|
-000058  2d06              CMP      r5,#6                 ;331
+000058  2d06              CMP      r5,#6                 ;334
 00005a  dbf7              BLT      |L10.76|
                   |L10.92|
 00005c  bf00              NOP      
-;;;334    	Mem_free(cfg_cfg);
+;;;337    	Mem_free(cfg_cfg);
 00005e  4620              MOV      r0,r4
 000060  f7fffffe          BL       Mem_free
-;;;335    	return i==6?1:0;
+;;;338    	return i==6?1:0;
 000064  2d06              CMP      r5,#6
 000066  d101              BNE      |L10.108|
 000068  2001              MOVS     r0,#1
                   |L10.106|
-;;;336    }
+;;;339    }
 00006a  bd70              POP      {r4-r6,pc}
                   |L10.108|
-00006c  2000              MOVS     r0,#0                 ;335
+00006c  2000              MOVS     r0,#0                 ;338
 00006e  e7fc              B        |L10.106|
-;;;337    //配置NMEA输出信息格式
+;;;340    //配置NMEA输出信息格式
                           ENDP
 
 
                           AREA ||i.Ublox_Cfg_Msg||, CODE, READONLY, ALIGN=1
 
                   Ublox_Cfg_Msg PROC
-;;;344    //返回值:0,执行成功;其他,执行失败.
-;;;345    u8 Ublox_Cfg_Msg(u8 msgid,u8 uart1set)
+;;;347    //返回值:0,执行成功;其他,执行失败.
+;;;348    u8 Ublox_Cfg_Msg(u8 msgid,u8 uart1set)
 000000  b570              PUSH     {r4-r6,lr}
-;;;346    {
+;;;349    {
 000002  4605              MOV      r5,r0
 000004  460e              MOV      r6,r1
-;;;347    	_ublox_cfg_msg *cfg_msg = Mem_malloc(sizeof(_ublox_cfg_msg));
+;;;350    	_ublox_cfg_msg *cfg_msg = Mem_malloc(sizeof(_ublox_cfg_msg));
 000006  2010              MOVS     r0,#0x10
 000008  f7fffffe          BL       Mem_malloc
 00000c  4604              MOV      r4,r0
-;;;348    	cfg_msg->header=0X62B5;		//cfg header
+;;;351    	cfg_msg->header=0X62B5;		//cfg header
 00000e  f24620b5          MOV      r0,#0x62b5
 000012  8020              STRH     r0,[r4,#0]
-;;;349    	cfg_msg->id=0X0106;			//cfg msg id
+;;;352    	cfg_msg->id=0X0106;			//cfg msg id
 000014  f44f7083          MOV      r0,#0x106
 000018  8060              STRH     r0,[r4,#2]
-;;;350    	cfg_msg->dlength=8;			//数据区长度为8个字节.	
+;;;353    	cfg_msg->dlength=8;			//数据区长度为8个字节.	
 00001a  2008              MOVS     r0,#8
 00001c  80a0              STRH     r0,[r4,#4]
-;;;351    	cfg_msg->msgclass=0XF0;  	//NMEA消息
+;;;354    	cfg_msg->msgclass=0XF0;  	//NMEA消息
 00001e  20f0              MOVS     r0,#0xf0
 000020  71a0              STRB     r0,[r4,#6]
-;;;352    	cfg_msg->msgid=msgid; 		//要操作的NMEA消息条目
+;;;355    	cfg_msg->msgid=msgid; 		//要操作的NMEA消息条目
 000022  71e5              STRB     r5,[r4,#7]
-;;;353    	cfg_msg->iicset=1; 			//默认开启
+;;;356    	cfg_msg->iicset=1; 			//默认开启
 000024  2001              MOVS     r0,#1
 000026  7220              STRB     r0,[r4,#8]
-;;;354    	cfg_msg->uart1set=uart1set; //开关设置
+;;;357    	cfg_msg->uart1set=uart1set; //开关设置
 000028  7266              STRB     r6,[r4,#9]
-;;;355    	cfg_msg->uart2set=1; 	 	//默认开启
+;;;358    	cfg_msg->uart2set=1; 	 	//默认开启
 00002a  72a0              STRB     r0,[r4,#0xa]
-;;;356    	cfg_msg->usbset=1; 			//默认开启
+;;;359    	cfg_msg->usbset=1; 			//默认开启
 00002c  72e0              STRB     r0,[r4,#0xb]
-;;;357    	cfg_msg->spiset=1; 			//默认开启
+;;;360    	cfg_msg->spiset=1; 			//默认开启
 00002e  7320              STRB     r0,[r4,#0xc]
-;;;358    	cfg_msg->ncset=1; 			//默认开启	  
+;;;361    	cfg_msg->ncset=1; 			//默认开启	  
 000030  7360              STRB     r0,[r4,#0xd]
-;;;359    	Ublox_CheckSum((u8*)(&cfg_msg->id),sizeof(_ublox_cfg_msg)-4,&cfg_msg->cka,&cfg_msg->ckb);
+;;;362    	Ublox_CheckSum((u8*)(&cfg_msg->id),sizeof(_ublox_cfg_msg)-4,&cfg_msg->cka,&cfg_msg->ckb);
 000032  f104030f          ADD      r3,r4,#0xf
 000036  1e5a              SUBS     r2,r3,#1
 000038  210c              MOVS     r1,#0xc
 00003a  1ca0              ADDS     r0,r4,#2
 00003c  f7fffffe          BL       Ublox_CheckSum
-;;;360    	GPSSendDatas((u8*)cfg_msg,sizeof(_ublox_cfg_msg));//发送数据给NEO-6M   
+;;;363    	GPSSendDatas((u8*)cfg_msg,sizeof(_ublox_cfg_msg));//发送数据给NEO-6M   
 000040  2110              MOVS     r1,#0x10
 000042  4620              MOV      r0,r4
 000044  f7fffffe          BL       GPSSendDatas
-;;;361    	Mem_free(cfg_msg);
+;;;364    	Mem_free(cfg_msg);
 000048  4620              MOV      r0,r4
 00004a  f7fffffe          BL       Mem_free
-;;;362    	return Ublox_Cfg_Ack_Check();
+;;;365    	return Ublox_Cfg_Ack_Check();
 00004e  f7fffffe          BL       Ublox_Cfg_Ack_Check
-;;;363    }
+;;;366    }
 000052  bd70              POP      {r4-r6,pc}
-;;;364    //配置NMEA输出信息格式
+;;;367    //配置NMEA输出信息格式
                           ENDP
 
 
                           AREA ||i.Ublox_Cfg_Prt||, CODE, READONLY, ALIGN=1
 
                   Ublox_Cfg_Prt PROC
-;;;366    //返回值:0,执行成功;其他,执行失败(这里不会返回0了)
-;;;367    u8 Ublox_Cfg_Prt(u32 baudrate)
+;;;369    //返回值:0,执行成功;其他,执行失败(这里不会返回0了)
+;;;370    u8 Ublox_Cfg_Prt(u32 baudrate)
 000000  b570              PUSH     {r4-r6,lr}
-;;;368    {
+;;;371    {
 000002  4605              MOV      r5,r0
-;;;369    	_ublox_cfg_prt *cfg_prt=Mem_malloc(sizeof(_ublox_cfg_prt));
+;;;372    	_ublox_cfg_prt *cfg_prt=Mem_malloc(sizeof(_ublox_cfg_prt));
 000004  201c              MOVS     r0,#0x1c
 000006  f7fffffe          BL       Mem_malloc
 00000a  4604              MOV      r4,r0
-;;;370    	cfg_prt->header=0X62B5;		//cfg header
+;;;373    	cfg_prt->header=0X62B5;		//cfg header
 00000c  f24620b5          MOV      r0,#0x62b5
 000010  8020              STRH     r0,[r4,#0]
-;;;371    	cfg_prt->id=0X0006;			//cfg prt id
+;;;374    	cfg_prt->id=0X0006;			//cfg prt id
 000012  2006              MOVS     r0,#6
 000014  8060              STRH     r0,[r4,#2]
-;;;372    	cfg_prt->dlength=20;		//数据区长度为20个字节.	
+;;;375    	cfg_prt->dlength=20;		//数据区长度为20个字节.	
 000016  2014              MOVS     r0,#0x14
 000018  80a0              STRH     r0,[r4,#4]
-;;;373    	cfg_prt->portid=1;			//操作串口1
+;;;376    	cfg_prt->portid=1;			//操作串口1
 00001a  2001              MOVS     r0,#1
 00001c  71a0              STRB     r0,[r4,#6]
-;;;374    	cfg_prt->reserved=0;	 	//保留字节,设置为0
+;;;377    	cfg_prt->reserved=0;	 	//保留字节,设置为0
 00001e  2000              MOVS     r0,#0
 000020  71e0              STRB     r0,[r4,#7]
-;;;375    	cfg_prt->txready=0;	 		//TX Ready设置为0
+;;;378    	cfg_prt->txready=0;	 		//TX Ready设置为0
 000022  8120              STRH     r0,[r4,#8]
-;;;376    	cfg_prt->mode=0X08D0; 		//8位,1个停止位,无校验位
+;;;379    	cfg_prt->mode=0X08D0; 		//8位,1个停止位,无校验位
 000024  f44f600d          MOV      r0,#0x8d0
 000028  f8c4000a          STR      r0,[r4,#0xa]
-;;;377    	cfg_prt->baudrate=baudrate; //波特率设置
+;;;380    	cfg_prt->baudrate=baudrate; //波特率设置
 00002c  f8c4500e          STR      r5,[r4,#0xe]
-;;;378    	cfg_prt->inprotomask=0X0007;//0+1+2
+;;;381    	cfg_prt->inprotomask=0X0007;//0+1+2
 000030  2007              MOVS     r0,#7
 000032  8260              STRH     r0,[r4,#0x12]
-;;;379    	cfg_prt->outprotomask=0X0007;//0+1+2
+;;;382    	cfg_prt->outprotomask=0X0007;//0+1+2
 000034  82a0              STRH     r0,[r4,#0x14]
-;;;380     	cfg_prt->reserved4=0; 		//保留字节,设置为0
+;;;383     	cfg_prt->reserved4=0; 		//保留字节,设置为0
 000036  2000              MOVS     r0,#0
 000038  82e0              STRH     r0,[r4,#0x16]
-;;;381     	cfg_prt->reserved5=0; 		//保留字节,设置为0 
+;;;384     	cfg_prt->reserved5=0; 		//保留字节,设置为0 
 00003a  8320              STRH     r0,[r4,#0x18]
-;;;382    	Ublox_CheckSum((u8*)(&cfg_prt->id),sizeof(_ublox_cfg_prt)-4,&cfg_prt->cka,&cfg_prt->ckb);
+;;;385    	Ublox_CheckSum((u8*)(&cfg_prt->id),sizeof(_ublox_cfg_prt)-4,&cfg_prt->cka,&cfg_prt->ckb);
 00003c  f104031b          ADD      r3,r4,#0x1b
 000040  1e5a              SUBS     r2,r3,#1
 000042  2118              MOVS     r1,#0x18
 000044  1ca0              ADDS     r0,r4,#2
 000046  f7fffffe          BL       Ublox_CheckSum
-;;;383    	GPSSendDatas((u8*)cfg_prt,sizeof(_ublox_cfg_prt));//发送数据给NEO-6M   
+;;;386    	GPSSendDatas((u8*)cfg_prt,sizeof(_ublox_cfg_prt));//发送数据给NEO-6M   
 00004a  211c              MOVS     r1,#0x1c
 00004c  4620              MOV      r0,r4
 00004e  f7fffffe          BL       GPSSendDatas
-;;;384    	OSTimeDlyHMSM(0,0,0,200);				//等待发送完成 
+;;;387    	OSTimeDlyHMSM(0,0,0,200);				//等待发送完成 
 000052  23c8              MOVS     r3,#0xc8
 000054  2200              MOVS     r2,#0
 000056  4611              MOV      r1,r2
 000058  4610              MOV      r0,r2
 00005a  f7fffffe          BL       OSTimeDlyHMSM
-;;;385    //	usart3_init(baudrate);	//重新初始化串口3  
-;;;386    	Mem_free(cfg_prt);
+;;;388    //	usart3_init(baudrate);	//重新初始化串口3  
+;;;389    	Mem_free(cfg_prt);
 00005e  4620              MOV      r0,r4
 000060  f7fffffe          BL       Mem_free
-;;;387    	return Ublox_Cfg_Ack_Check();//这里不会反回0,因为UBLOX发回来的应答在串口重新初始化的时候已经被丢弃了.
+;;;390    	return Ublox_Cfg_Ack_Check();//这里不会反回0,因为UBLOX发回来的应答在串口重新初始化的时候已经被丢弃了.
 000064  f7fffffe          BL       Ublox_Cfg_Ack_Check
-;;;388    } 
+;;;391    } 
 000068  bd70              POP      {r4-r6,pc}
-;;;389    //配置UBLOX NEO-6的时钟脉冲输出
+;;;392    //配置UBLOX NEO-6的时钟脉冲输出
                           ENDP
 
 
                           AREA ||i.Ublox_Cfg_Rate||, CODE, READONLY, ALIGN=1
 
                   Ublox_Cfg_Rate PROC
-;;;417    //返回值:0,发送成功;其他,发送失败.
-;;;418    u8 Ublox_Cfg_Rate(u16 measrate,u8 reftime)
+;;;420    //返回值:0,发送成功;其他,发送失败.
+;;;421    u8 Ublox_Cfg_Rate(u16 measrate,u8 reftime)
 000000  b570              PUSH     {r4-r6,lr}
-;;;419    {
+;;;422    {
 000002  4605              MOV      r5,r0
 000004  460e              MOV      r6,r1
-;;;420    	_ublox_cfg_rate *cfg_rate=Mem_malloc(sizeof(_ublox_cfg_rate));
+;;;423    	_ublox_cfg_rate *cfg_rate=Mem_malloc(sizeof(_ublox_cfg_rate));
 000006  200e              MOVS     r0,#0xe
 000008  f7fffffe          BL       Mem_malloc
 00000c  4604              MOV      r4,r0
-;;;421     	if(measrate<200)return 1;	//小于200ms，直接退出
+;;;424     	if(measrate<200)return 1;	//小于200ms，直接退出
 00000e  2dc8              CMP      r5,#0xc8
 000010  da01              BGE      |L13.22|
 000012  2001              MOVS     r0,#1
                   |L13.20|
-;;;422     	cfg_rate->header=0X62B5;	//cfg header
-;;;423    	cfg_rate->id=0X0806;	 	//cfg rate id
-;;;424    	cfg_rate->dlength=6;	 	//数据区长度为6个字节.
-;;;425    	cfg_rate->measrate=measrate;//脉冲间隔,us
-;;;426    	cfg_rate->navrate=1;		//导航速率（周期），固定为1
-;;;427    	cfg_rate->timeref=reftime; 	//参考时间为GPS时间
-;;;428    	Ublox_CheckSum((u8*)(&cfg_rate->id),sizeof(_ublox_cfg_rate)-4,&cfg_rate->cka,&cfg_rate->ckb);
-;;;429    	GPSSendDatas((u8*)cfg_rate,sizeof(_ublox_cfg_rate));//发送数据给NEO-6M 
-;;;430    	Mem_free(cfg_rate);
-;;;431    	return Ublox_Cfg_Ack_Check();
-;;;432    }
+;;;425     	cfg_rate->header=0X62B5;	//cfg header
+;;;426    	cfg_rate->id=0X0806;	 	//cfg rate id
+;;;427    	cfg_rate->dlength=6;	 	//数据区长度为6个字节.
+;;;428    	cfg_rate->measrate=measrate;//脉冲间隔,us
+;;;429    	cfg_rate->navrate=1;		//导航速率（周期），固定为1
+;;;430    	cfg_rate->timeref=reftime; 	//参考时间为GPS时间
+;;;431    	Ublox_CheckSum((u8*)(&cfg_rate->id),sizeof(_ublox_cfg_rate)-4,&cfg_rate->cka,&cfg_rate->ckb);
+;;;432    	GPSSendDatas((u8*)cfg_rate,sizeof(_ublox_cfg_rate));//发送数据给NEO-6M 
+;;;433    	Mem_free(cfg_rate);
+;;;434    	return Ublox_Cfg_Ack_Check();
+;;;435    }
 000014  bd70              POP      {r4-r6,pc}
                   |L13.22|
-000016  f24620b5          MOV      r0,#0x62b5            ;422
-00001a  8020              STRH     r0,[r4,#0]            ;422
-00001c  f6400006          MOV      r0,#0x806             ;423
-000020  8060              STRH     r0,[r4,#2]            ;423
-000022  2006              MOVS     r0,#6                 ;424
-000024  80a0              STRH     r0,[r4,#4]            ;424
-000026  80e5              STRH     r5,[r4,#6]            ;425
-000028  2001              MOVS     r0,#1                 ;426
-00002a  8120              STRH     r0,[r4,#8]            ;426
-00002c  8166              STRH     r6,[r4,#0xa]          ;427
-00002e  f104030d          ADD      r3,r4,#0xd            ;428
-000032  1e5a              SUBS     r2,r3,#1              ;428
-000034  210a              MOVS     r1,#0xa               ;428
-000036  1ca0              ADDS     r0,r4,#2              ;428
+000016  f24620b5          MOV      r0,#0x62b5            ;425
+00001a  8020              STRH     r0,[r4,#0]            ;425
+00001c  f6400006          MOV      r0,#0x806             ;426
+000020  8060              STRH     r0,[r4,#2]            ;426
+000022  2006              MOVS     r0,#6                 ;427
+000024  80a0              STRH     r0,[r4,#4]            ;427
+000026  80e5              STRH     r5,[r4,#6]            ;428
+000028  2001              MOVS     r0,#1                 ;429
+00002a  8120              STRH     r0,[r4,#8]            ;429
+00002c  8166              STRH     r6,[r4,#0xa]          ;430
+00002e  f104030d          ADD      r3,r4,#0xd            ;431
+000032  1e5a              SUBS     r2,r3,#1              ;431
+000034  210a              MOVS     r1,#0xa               ;431
+000036  1ca0              ADDS     r0,r4,#2              ;431
 000038  f7fffffe          BL       Ublox_CheckSum
-00003c  210e              MOVS     r1,#0xe               ;429
-00003e  4620              MOV      r0,r4                 ;429
+00003c  210e              MOVS     r1,#0xe               ;432
+00003e  4620              MOV      r0,r4                 ;432
 000040  f7fffffe          BL       GPSSendDatas
-000044  4620              MOV      r0,r4                 ;430
+000044  4620              MOV      r0,r4                 ;433
 000046  f7fffffe          BL       Mem_free
 00004a  f7fffffe          BL       Ublox_Cfg_Ack_Check
 00004e  e7e1              B        |L13.20|
-;;;433    
+;;;436    
                           ENDP
 
 
                           AREA ||i.Ublox_Cfg_Tp||, CODE, READONLY, ALIGN=1
 
                   Ublox_Cfg_Tp PROC
-;;;393    //返回值:0,发送成功;其他,发送失败.
-;;;394    u8 Ublox_Cfg_Tp(u32 interval,u32 length,signed char status)
+;;;396    //返回值:0,发送成功;其他,发送失败.
+;;;397    u8 Ublox_Cfg_Tp(u32 interval,u32 length,signed char status)
 000000  e92d41f0          PUSH     {r4-r8,lr}
-;;;395    {
+;;;398    {
 000004  4605              MOV      r5,r0
 000006  460e              MOV      r6,r1
 000008  4617              MOV      r7,r2
-;;;396    	_ublox_cfg_tp *cfg_tp=Mem_malloc(sizeof(_ublox_cfg_tp));
+;;;399    	_ublox_cfg_tp *cfg_tp=Mem_malloc(sizeof(_ublox_cfg_tp));
 00000a  201c              MOVS     r0,#0x1c
 00000c  f7fffffe          BL       Mem_malloc
 000010  4604              MOV      r4,r0
-;;;397    	cfg_tp->header=0X62B5;		//cfg header
+;;;400    	cfg_tp->header=0X62B5;		//cfg header
 000012  f24620b5          MOV      r0,#0x62b5
 000016  8020              STRH     r0,[r4,#0]
-;;;398    	cfg_tp->id=0X0706;			//cfg tp id
+;;;401    	cfg_tp->id=0X0706;			//cfg tp id
 000018  f2407006          MOV      r0,#0x706
 00001c  8060              STRH     r0,[r4,#2]
-;;;399    	cfg_tp->dlength=20;			//数据区长度为20个字节.
+;;;402    	cfg_tp->dlength=20;			//数据区长度为20个字节.
 00001e  2014              MOVS     r0,#0x14
 000020  80a0              STRH     r0,[r4,#4]
-;;;400    	cfg_tp->interval=interval;	//脉冲间隔,us
+;;;403    	cfg_tp->interval=interval;	//脉冲间隔,us
 000022  f8c45006          STR      r5,[r4,#6]
-;;;401    	cfg_tp->length=length;		//脉冲宽度,us
+;;;404    	cfg_tp->length=length;		//脉冲宽度,us
 000026  f8c4600a          STR      r6,[r4,#0xa]
-;;;402    	cfg_tp->status=status;	   	//时钟脉冲配置
+;;;405    	cfg_tp->status=status;	   	//时钟脉冲配置
 00002a  73a7              STRB     r7,[r4,#0xe]
-;;;403    	cfg_tp->timeref=0;			//参考UTC 时间
+;;;406    	cfg_tp->timeref=0;			//参考UTC 时间
 00002c  2000              MOVS     r0,#0
 00002e  73e0              STRB     r0,[r4,#0xf]
-;;;404    	cfg_tp->flags=0;			//flags为0
+;;;407    	cfg_tp->flags=0;			//flags为0
 000030  7420              STRB     r0,[r4,#0x10]
-;;;405    	cfg_tp->reserved=0;		 	//保留位为0
+;;;408    	cfg_tp->reserved=0;		 	//保留位为0
 000032  7460              STRB     r0,[r4,#0x11]
-;;;406    	cfg_tp->antdelay=820;    	//天线延时为820ns
+;;;409    	cfg_tp->antdelay=820;    	//天线延时为820ns
 000034  f44f704d          MOV      r0,#0x334
 000038  8260              STRH     r0,[r4,#0x12]
-;;;407    	cfg_tp->rfdelay=0;    		//RF延时为0ns
+;;;410    	cfg_tp->rfdelay=0;    		//RF延时为0ns
 00003a  2000              MOVS     r0,#0
 00003c  82a0              STRH     r0,[r4,#0x14]
-;;;408    	cfg_tp->userdelay=0;    	//用户延时为0ns
+;;;411    	cfg_tp->userdelay=0;    	//用户延时为0ns
 00003e  f8c40016          STR      r0,[r4,#0x16]
-;;;409    	Ublox_CheckSum((u8*)(&cfg_tp->id),sizeof(_ublox_cfg_tp)-4,&cfg_tp->cka,&cfg_tp->ckb);
+;;;412    	Ublox_CheckSum((u8*)(&cfg_tp->id),sizeof(_ublox_cfg_tp)-4,&cfg_tp->cka,&cfg_tp->ckb);
 000042  f104031b          ADD      r3,r4,#0x1b
 000046  1e5a              SUBS     r2,r3,#1
 000048  2118              MOVS     r1,#0x18
 00004a  1ca0              ADDS     r0,r4,#2
 00004c  f7fffffe          BL       Ublox_CheckSum
-;;;410    	GPSSendDatas((u8*)cfg_tp,sizeof(_ublox_cfg_tp));//发送数据给NEO-6M  
+;;;413    	GPSSendDatas((u8*)cfg_tp,sizeof(_ublox_cfg_tp));//发送数据给NEO-6M  
 000050  211c              MOVS     r1,#0x1c
 000052  4620              MOV      r0,r4
 000054  f7fffffe          BL       GPSSendDatas
-;;;411    	Mem_free(cfg_tp);
+;;;414    	Mem_free(cfg_tp);
 000058  4620              MOV      r0,r4
 00005a  f7fffffe          BL       Mem_free
-;;;412    	return Ublox_Cfg_Ack_Check();
+;;;415    	return Ublox_Cfg_Ack_Check();
 00005e  f7fffffe          BL       Ublox_Cfg_Ack_Check
-;;;413    }
+;;;416    }
 000062  e8bd81f0          POP      {r4-r8,pc}
-;;;414    //配置UBLOX NEO-6的更新速率	    
+;;;417    //配置UBLOX NEO-6的更新速率	    
                           ENDP
 
 
                           AREA ||i.Ublox_CheckSum||, CODE, READONLY, ALIGN=1
 
                   Ublox_CheckSum PROC
-;;;273    //cka,ckb:两个校验结果.
-;;;274    void Ublox_CheckSum(u8 *buf,u16 len,u8* cka,u8*ckb)
+;;;276    //cka,ckb:两个校验结果.
+;;;277    void Ublox_CheckSum(u8 *buf,u16 len,u8* cka,u8*ckb)
 000000  b570              PUSH     {r4-r6,lr}
-;;;275    {
+;;;278    {
 000002  4604              MOV      r4,r0
-;;;276    	u16 i;
-;;;277    	*cka=0;*ckb=0;
+;;;279    	u16 i;
+;;;280    	*cka=0;*ckb=0;
 000004  2500              MOVS     r5,#0
 000006  7015              STRB     r5,[r2,#0]
 000008  701d              STRB     r5,[r3,#0]
-;;;278    	for(i=0;i<len;i++)
+;;;281    	for(i=0;i<len;i++)
 00000a  2000              MOVS     r0,#0
 00000c  e009              B        |L15.34|
                   |L15.14|
-;;;279    	{
-;;;280    		*cka = *cka+buf[i];
+;;;282    	{
+;;;283    		*cka = *cka+buf[i];
 00000e  7815              LDRB     r5,[r2,#0]
 000010  5c26              LDRB     r6,[r4,r0]
 000012  4435              ADD      r5,r5,r6
 000014  7015              STRB     r5,[r2,#0]
-;;;281    		*ckb = *ckb+*cka;
+;;;284    		*ckb = *ckb+*cka;
 000016  781d              LDRB     r5,[r3,#0]
 000018  7816              LDRB     r6,[r2,#0]
 00001a  4435              ADD      r5,r5,r6
 00001c  701d              STRB     r5,[r3,#0]
-00001e  1c45              ADDS     r5,r0,#1              ;278
-000020  b2a8              UXTH     r0,r5                 ;278
+00001e  1c45              ADDS     r5,r0,#1              ;281
+000020  b2a8              UXTH     r0,r5                 ;281
                   |L15.34|
-000022  4288              CMP      r0,r1                 ;278
+000022  4288              CMP      r0,r1                 ;281
 000024  dbf3              BLT      |L15.14|
-;;;282    	}
-;;;283    }
+;;;285    	}
+;;;286    }
 000026  bd70              POP      {r4-r6,pc}
-;;;284    /////////////////////////////////////////UBLOX 配置代码/////////////////////////////////////
+;;;287    /////////////////////////////////////////UBLOX 配置代码/////////////////////////////////////
                           ENDP
 
 

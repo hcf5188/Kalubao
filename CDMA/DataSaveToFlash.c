@@ -32,11 +32,11 @@ void SoftProgramUpdate(uint32_t wAddr,uint8_t* ptrBuff,uint16_t datLength)
 void SoftErasePage(uint32_t addr)
 {
 	OS_CPU_SR  cpu_sr = 0u;
-	OS_ENTER_CRITICAL();//禁止中断
+	OS_ENTER_CRITICAL();		//禁止中断
 	{
 		volatile FLASH_Status FLASHStatus = FLASH_COMPLETE;
 		
-		if(addr<0x80000)//偏移地址加上起始地址
+		if(addr<0x80000)		//偏移地址加上起始地址
 			addr += NEW_SOFT_ADDR;
 		FLASH_Unlock();
 		FLASH_ClearFlag(FLASH_FLAG_BSY | FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);

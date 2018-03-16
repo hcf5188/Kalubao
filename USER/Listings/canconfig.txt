@@ -259,10 +259,10 @@
                   |L4.62|
 ;;;99     	}else
 ;;;100    	{
-;;;101    		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32)canId<<3)&0xffff0000)>>16;
+;;;101    		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32) canId << 3)&0xffff0000)>>16;
 00003e  f3c4304f          UBFX     r0,r4,#13,#16
 000042  f8ad0000          STRH     r0,[sp,#0]
-;;;102    		CAN_FilterInitStructure.CAN_FilterIdLow    = (((u32)canId<<3)|CAN_ID_EXT)&0xffff;
+;;;102    		CAN_FilterInitStructure.CAN_FilterIdLow    = (((u32) canId << 3)|CAN_ID_EXT)&0xffff;
 000046  2004              MOVS     r0,#4
 000048  eb0000c4          ADD      r0,r0,r4,LSL #3
 00004c  b280              UXTH     r0,r0
@@ -278,7 +278,7 @@
 ;;;106    	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO1;//0
 000062  2001              MOVS     r0,#1
 000064  f8ad0008          STRH     r0,[sp,#8]
-;;;107    	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
+;;;107    	CAN_FilterInitStructure.CAN_FilterActivation     = ENABLE;
 000068  f88d000d          STRB     r0,[sp,#0xd]
 ;;;108    	CAN_FilterInit(&CAN_FilterInitStructure);
 00006c  4668              MOV      r0,sp

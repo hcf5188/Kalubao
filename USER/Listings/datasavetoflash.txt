@@ -282,7 +282,7 @@
 000002  4604              MOV      r4,r0
 ;;;34     	OS_CPU_SR  cpu_sr = 0u;
 000004  2500              MOVS     r5,#0
-;;;35     	OS_ENTER_CRITICAL();//禁止中断
+;;;35     	OS_ENTER_CRITICAL();		//禁止中断
 000006  f7fffffe          BL       OS_CPU_SR_Save
 00000a  4605              MOV      r5,r0
 ;;;36     	{
@@ -290,7 +290,7 @@
 00000c  2004              MOVS     r0,#4
 00000e  9000              STR      r0,[sp,#0]
 ;;;38     		
-;;;39     		if(addr<0x80000)//偏移地址加上起始地址
+;;;39     		if(addr<0x80000)		//偏移地址加上起始地址
 000010  f5b42f00          CMP      r4,#0x80000
 000014  d201              BCS      |L5.26|
 ;;;40     			addr += NEW_SOFT_ADDR;

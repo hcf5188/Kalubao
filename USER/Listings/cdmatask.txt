@@ -26,145 +26,155 @@
 ;;;253    	
 ;;;254    	CDMASendCmd(atCmd,"OK",sizeof(atCmd));
 00000c  2204              MOVS     r2,#4
-00000e  a124              ADR      r1,|L1.160|
-000010  4824              LDR      r0,|L1.164|
+00000e  a128              ADR      r1,|L1.176|
+000010  4828              LDR      r0,|L1.180|
 000012  f7fffffe          BL       CDMASendCmd
 ;;;255    	CDMASendCmd(ate0Cmd,"OK",sizeof(ate0Cmd));
 000016  2206              MOVS     r2,#6
-000018  a121              ADR      r1,|L1.160|
-00001a  4823              LDR      r0,|L1.168|
+000018  a125              ADR      r1,|L1.176|
+00001a  4827              LDR      r0,|L1.184|
 00001c  f7fffffe          BL       CDMASendCmd
 ;;;256    	CDMASendCmd(at_ZDSLEEP,"OK",sizeof(at_ZDSLEEP));
 000020  220e              MOVS     r2,#0xe
-000022  a11f              ADR      r1,|L1.160|
-000024  4821              LDR      r0,|L1.172|
+000022  a123              ADR      r1,|L1.176|
+000024  4825              LDR      r0,|L1.188|
 000026  f7fffffe          BL       CDMASendCmd
 ;;;257    	CDMASendCmd(at_CSQ,"+CSQ:",sizeof(at_CSQ));
 00002a  2209              MOVS     r2,#9
-00002c  a120              ADR      r1,|L1.176|
-00002e  4822              LDR      r0,|L1.184|
+00002c  a124              ADR      r1,|L1.192|
+00002e  4826              LDR      r0,|L1.200|
 000030  f7fffffe          BL       CDMASendCmd
 ;;;258    
 ;;;259    	CDMASendCmd(at_CNMI,"OK",sizeof(at_CNMI));
 000034  2213              MOVS     r2,#0x13
-000036  a11a              ADR      r1,|L1.160|
-000038  4820              LDR      r0,|L1.188|
+000036  a11e              ADR      r1,|L1.176|
+000038  4824              LDR      r0,|L1.204|
 00003a  f7fffffe          BL       CDMASendCmd
 ;;;260    	if(tt == 0)                                                             //不会重复读取 IMEI 号
-00003e  4820              LDR      r0,|L1.192|
+00003e  4824              LDR      r0,|L1.208|
 000040  7800              LDRB     r0,[r0,#0]  ; tt
 000042  b940              CBNZ     r0,|L1.86|
 ;;;261    	{
-;;;262    		CDMAReadIMEI_ICCID(at_GSN,sizeof(at_GSN),varOperation.imei,15);     //读取IMEI号
+;;;262    		CDMAReadIMEI_ICCID(at_GSN,sizeof(at_GSN),varOperation.imei,15);     //读取 IMEI 号
 000044  230f              MOVS     r3,#0xf
-000046  4a1f              LDR      r2,|L1.196|
+000046  4a23              LDR      r2,|L1.212|
 000048  2108              MOVS     r1,#8
-00004a  481f              LDR      r0,|L1.200|
+00004a  4823              LDR      r0,|L1.216|
 00004c  f7fffffe          BL       CDMAReadIMEI_ICCID
 ;;;263    		tt = 1;
 000050  2001              MOVS     r0,#1
-000052  491b              LDR      r1,|L1.192|
+000052  491f              LDR      r1,|L1.208|
 000054  7008              STRB     r0,[r1,#0]
                   |L1.86|
 ;;;264    	}
-;;;265    //	CDMAReadIMEI_ICCID(at_ICCID,sizeof(at_ICCID),varOperation.iccID,20);    //读取SIM卡的ICCID号
+;;;265    //	CDMAReadIMEI_ICCID(at_ICCID,sizeof(at_ICCID),varOperation.iccID,20);    //读取SIM卡的 ICCID 号
 ;;;266    	
 ;;;267    	CDMASendCmd(at_SetZpNum,"OK",sizeof(at_SetZpNum));
 000056  2218              MOVS     r2,#0x18
-000058  a111              ADR      r1,|L1.160|
-00005a  481c              LDR      r0,|L1.204|
+000058  a115              ADR      r1,|L1.176|
+00005a  4820              LDR      r0,|L1.220|
 00005c  f7fffffe          BL       CDMASendCmd
 ;;;268    	CDMASendCmd(at_ZPPPSTATUS,"+ZPPPSTATUS:",sizeof(at_ZPPPSTATUS));
 000060  220f              MOVS     r2,#0xf
-000062  a11b              ADR      r1,|L1.208|
-000064  481e              LDR      r0,|L1.224|
+000062  a11f              ADR      r1,|L1.224|
+000064  4822              LDR      r0,|L1.240|
 000066  f7fffffe          BL       CDMASendCmd
 ;;;269    	
 ;;;270    	CDMASendCmd(at_ZPPPOPEN,"+ZPPPOPEN:CONNECTED",sizeof(at_ZPPPOPEN));
 00006a  220d              MOVS     r2,#0xd
-00006c  a11d              ADR      r1,|L1.228|
-00006e  4822              LDR      r0,|L1.248|
+00006c  a121              ADR      r1,|L1.244|
+00006e  4826              LDR      r0,|L1.264|
 000070  f7fffffe          BL       CDMASendCmd
-;;;271    //	GetIpAddr(at_ZDNS,sizeof(at_ZDNS),varOperation.ipAddr,15);//域名解析，获取生产环境 IP 地址
-;;;272    	
-;;;273    	sendlen = sprintf(sendCmd,(const char*)at_ZIPSETUP,varOperation.ipAddr,varOperation.ipPotr);//TCP连接
-000074  4813              LDR      r0,|L1.196|
-000076  3809              SUBS     r0,r0,#9
-000078  f8b03044          LDRH     r3,[r0,#0x44]  ; varOperation
-00007c  f1000232          ADD      r2,r0,#0x32
-000080  491e              LDR      r1,|L1.252|
-000082  4668              MOV      r0,sp
-000084  f7fffffe          BL       __2sprintf
-000088  b2c4              UXTB     r4,r0
-;;;274    	CDMASendCmd((uint8_t *)sendCmd,"+ZIPSETUP:CONNECTED",sendlen);
-00008a  4622              MOV      r2,r4
-00008c  a11c              ADR      r1,|L1.256|
-00008e  4668              MOV      r0,sp
-000090  f7fffffe          BL       CDMASendCmd
-;;;275    
-;;;276    	freCDMALed = LEDSLOW;           //网络连接成功
-000094  f44f707a          MOV      r0,#0x3e8
-000098  491e              LDR      r1,|L1.276|
-00009a  8008              STRH     r0,[r1,#0]
-;;;277    }
-00009c  b00c              ADD      sp,sp,#0x30
-00009e  bd10              POP      {r4,pc}
-;;;278    
+;;;271    #if (BEN_S_C == 2)
+;;;272    	GetIpAddr(at_ZDNS,sizeof(at_ZDNS),varOperation.ipAddr,15);              //域名解析，获取生产环境 IP 地址
+000074  230f              MOVS     r3,#0xf
+000076  4a17              LDR      r2,|L1.212|
+000078  3229              ADDS     r2,r2,#0x29
+00007a  2122              MOVS     r1,#0x22
+00007c  4823              LDR      r0,|L1.268|
+00007e  f7fffffe          BL       GetIpAddr
+;;;273    #endif
+;;;274    	sendlen = sprintf(sendCmd,(const char*)at_ZIPSETUP,varOperation.ipAddr,varOperation.ipPotr);// TCP 连接
+000082  4814              LDR      r0,|L1.212|
+000084  3809              SUBS     r0,r0,#9
+000086  f8b03044          LDRH     r3,[r0,#0x44]  ; varOperation
+00008a  f1000232          ADD      r2,r0,#0x32
+00008e  4920              LDR      r1,|L1.272|
+000090  4668              MOV      r0,sp
+000092  f7fffffe          BL       __2sprintf
+000096  b2c4              UXTB     r4,r0
+;;;275    	CDMASendCmd((uint8_t *)sendCmd,"+ZIPSETUP:CONNECTED",sendlen);
+000098  4622              MOV      r2,r4
+00009a  a11e              ADR      r1,|L1.276|
+00009c  4668              MOV      r0,sp
+00009e  f7fffffe          BL       CDMASendCmd
+;;;276    
+;;;277    	freCDMALed = LEDSLOW;           //网络连接成功
+0000a2  f44f707a          MOV      r0,#0x3e8
+0000a6  4920              LDR      r1,|L1.296|
+0000a8  8008              STRH     r0,[r1,#0]
+;;;278    }
+0000aa  b00c              ADD      sp,sp,#0x30
+0000ac  bd10              POP      {r4,pc}
+;;;279    
                           ENDP
 
-                  |L1.160|
-0000a0  4f4b00            DCB      "OK",0
-0000a3  00                DCB      0
-                  |L1.164|
-                          DCD      atCmd
-                  |L1.168|
-                          DCD      ate0Cmd
-                  |L1.172|
-                          DCD      at_ZDSLEEP
+0000ae  0000              DCW      0x0000
                   |L1.176|
-0000b0  2b435351          DCB      "+CSQ:",0
-0000b4  3a00    
-0000b6  00                DCB      0
-0000b7  00                DCB      0
+0000b0  4f4b00            DCB      "OK",0
+0000b3  00                DCB      0
+                  |L1.180|
+                          DCD      atCmd
                   |L1.184|
-                          DCD      at_CSQ
+                          DCD      ate0Cmd
                   |L1.188|
-                          DCD      at_CNMI
+                          DCD      at_ZDSLEEP
                   |L1.192|
-                          DCD      ||tt||
-                  |L1.196|
-                          DCD      varOperation+0x9
+0000c0  2b435351          DCB      "+CSQ:",0
+0000c4  3a00    
+0000c6  00                DCB      0
+0000c7  00                DCB      0
                   |L1.200|
-                          DCD      at_GSN
+                          DCD      at_CSQ
                   |L1.204|
-                          DCD      at_SetZpNum
+                          DCD      at_CNMI
                   |L1.208|
-0000d0  2b5a5050          DCB      "+ZPPPSTATUS:",0
-0000d4  50535441
-0000d8  5455533a
-0000dc  00      
-0000dd  00                DCB      0
-0000de  00                DCB      0
-0000df  00                DCB      0
+                          DCD      ||tt||
+                  |L1.212|
+                          DCD      varOperation+0x9
+                  |L1.216|
+                          DCD      at_GSN
+                  |L1.220|
+                          DCD      at_SetZpNum
                   |L1.224|
+0000e0  2b5a5050          DCB      "+ZPPPSTATUS:",0
+0000e4  50535441
+0000e8  5455533a
+0000ec  00      
+0000ed  00                DCB      0
+0000ee  00                DCB      0
+0000ef  00                DCB      0
+                  |L1.240|
                           DCD      at_ZPPPSTATUS
-                  |L1.228|
-0000e4  2b5a5050          DCB      "+ZPPPOPEN:CONNECTED",0
-0000e8  504f5045
-0000ec  4e3a434f
-0000f0  4e4e4543
-0000f4  54454400
-                  |L1.248|
+                  |L1.244|
+0000f4  2b5a5050          DCB      "+ZPPPOPEN:CONNECTED",0
+0000f8  504f5045
+0000fc  4e3a434f
+000100  4e4e4543
+000104  54454400
+                  |L1.264|
                           DCD      at_ZPPPOPEN
-                  |L1.252|
+                  |L1.268|
+                          DCD      at_ZDNS
+                  |L1.272|
                           DCD      at_ZIPSETUP
-                  |L1.256|
-000100  2b5a4950          DCB      "+ZIPSETUP:CONNECTED",0
-000104  53455455
-000108  503a434f
-00010c  4e4e4543
-000110  54454400
                   |L1.276|
+000114  2b5a4950          DCB      "+ZIPSETUP:CONNECTED",0
+000118  53455455
+00011c  503a434f
+000120  4e4e4543
+000124  54454400
+                  |L1.296|
                           DCD      freCDMALed
 
                           AREA ||i.CDMAPowerOpen_Close||, CODE, READONLY, ALIGN=2
@@ -184,7 +194,7 @@
 00000a  6800              LDR      r0,[r0,#0]  ; CDMAPowerMutex
 00000c  f7fffffe          BL       OSMutexPend
 ;;;125    	
-;;;126    	if(((flag == CDMA_CLOSE)&&(varOperation.isCDMAStart%2 == 0))||((flag == CDMA_OPEN)&&(varOperation.isCDMAStart%2 == 1)))
+;;;126    	if(((flag == CDMA_CLOSE)&&(varOperation.isCDMAStart % 2 == 0))||((flag == CDMA_OPEN)&&(varOperation.isCDMAStart%2 == 1)))
 000010  2c01              CMP      r4,#1
 000012  d108              BNE      |L2.38|
 000014  4a24              LDR      r2,|L2.168|
@@ -570,7 +580,7 @@
 000012  495d              LDR      r1,|L6.392|
 000014  f881002d          STRB     r0,[r1,#0x2d]
 ;;;48     	
-;;;49     	while(1)//todo:断网、断开TCP连接、OTA升级、配置文件下发、登录
+;;;49     	while(1)//todo:断网、断开 TCP 连接、OTA升级、配置文件下发、登录
 000018  e0b5              B        |L6.390|
                   |L6.26|
 ;;;50     	{
@@ -719,21 +729,21 @@
 000108  2001              MOVS     r0,#1
 00010a  491f              LDR      r1,|L6.392|
 00010c  f881002d          STRB     r0,[r1,#0x2d]
-;;;98     			freCDMALed = LEDFAST;               //CDMA小灯快闪
+;;;98     			freCDMALed = LEDFAST;           // CDMA 小灯快闪
 000110  20c8              MOVS     r0,#0xc8
 000112  4928              LDR      r1,|L6.436|
 000114  8008              STRH     r0,[r1,#0]
-;;;99     			CDMAPowerOpen_Close(CDMA_CLOSE);//关闭CDMA电源
+;;;99     			CDMAPowerOpen_Close(CDMA_CLOSE);//关闭 CDMA 电源
 000116  2001              MOVS     r0,#1
 000118  f7fffffe          BL       CDMAPowerOpen_Close
 ;;;100    			
-;;;101    			CDMAConfigInit();               //重新启动CDMA
+;;;101    			CDMAConfigInit();               //重新启动 CDMA
 00011c  f7fffffe          BL       CDMAConfigInit
 ;;;102    			varOperation.isDataFlow = 0;    //开启数据流
 000120  2000              MOVS     r0,#0
 000122  4919              LDR      r1,|L6.392|
 000124  f881002d          STRB     r0,[r1,#0x2d]
-;;;103    			carAllRecord.cdmaReStart++;     //记录CDMA重启次数
+;;;103    			carAllRecord.cdmaReStart++;     //记录 CDMA 重启次数
 000128  4823              LDR      r0,|L6.440|
 00012a  f890002a          LDRB     r0,[r0,#0x2a]  ; carAllRecord
 00012e  1c40              ADDS     r0,r0,#1

@@ -420,7 +420,7 @@
 0002d0  f7fffffe          BL       MemLog
 ;;;234    			J1939DataLog();
 0002d4  f7fffffe          BL       J1939DataLog
-;;;235    			
+;;;235    		
 ;;;236    			OSMutexPend(CDMASendMutex,0,&err);     //提高优先级，独占此包数据
 0002d8  466a              MOV      r2,sp
 0002da  2100              MOVS     r1,#0

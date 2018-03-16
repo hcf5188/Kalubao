@@ -97,13 +97,13 @@ u8    nop;
  void CoEng_rloadCal(void);
  void TrqLim(void);
  void ConstLimitation(void);
-/*========================================================================
+/*=====================================================================================
 功  能: CAN通讯故障检测                                               
 参  数: ErrDetecSW:故障检测开关, ErrDebT:设定时间( unit:10ms ), Signal: 接收到CAN信号标志                                                             
 返  回:                                     
 说  明:超过设定时间 ErrDebT 没有接收到 CAN 数据时故障灯点亮
        per 1ms
-========================================================================*/
+======================================================================================*/
 u8 CanErrDetec(u16 ErrDebT,u8 Signal)
 {
    static u16 CanErrCnt = 150;
@@ -125,7 +125,7 @@ u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
 	if(CanErrCnt < 65530)
 		CanErrCnt++;
 	if(Signal==1 && CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1)
-		CanErrCnt = 0; 
+		CanErrCnt = 0;
 	     
 	if(CanErrCnt >= ErrDebT)
 		return 0;
@@ -138,7 +138,7 @@ u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
 
 	if(CanErrCnt < 65530)
 		CanErrCnt ++;
-	if(Signal == 1 && CANr1 == 1&&CANr2 == 1 && CANr3 == 1 && CANr4 == 1 && CANr5==1 && CANr6 == 1){
+	if(Signal == 1 && CANr1 == 1 && CANr2 == 1 && CANr3 == 1 && CANr4 == 1 && CANr5==1 && CANr6 == 1){
 		CanErrCnt = 0; 
 	}     
 	if(CanErrCnt >= ErrDebT)
@@ -154,12 +154,11 @@ CANTBSEL
 CANTAAK
 CANTFLG */
 /* ========================================================================
-功  能:					Can发送数据更新
+功  能:					Can 发送数据更新
 参  数:
 返  回:
 说  明:per 10ms
 ======================================================================== */
-
 //按照低的来限制
 void UpdateTxDataAMT(void)
 {
@@ -167,17 +166,17 @@ void UpdateTxDataAMT(void)
     if(Acc_st==1)     //稳油的会算出扭矩限制，查表一个扭矩限制，最终要取小输送给ECU
 		trq[3] = 225;
     else
-    {
+																			{
          if(DRVDEM_TRQFLT_ENABLE)    //始终是使能的
          {
             if(Load_stCurr == Midload || Load_stCurr == Lowload)//中载或者轻载
             {
                TrqDrvFlt=(u8)CoEng_rDrvLoadFlt + 125; //需求扭矩
             } 
-			else TrqDrvFlt = 255;
+			else TrqDrvFlt = 225;
          } 
 		 else 
-			 TrqDrvFlt = 255;  		//此举没有任何意义，永远也执行不到。
+			 TrqDrvFlt = 225;  		//此举没有任何意义，永远也执行不到。
          if(TrqLoad < trqmax)  		//限制小于最大值。
          {
             if(TrqLoad < TrqDrvFlt) 
@@ -193,15 +192,23 @@ void UpdateTxDataAMT(void)
 				trq[3] = TrqDrvFlt;
          }
 		 trq[0] = 35;
+		 trq[1] = 0xFF;
+		 trq[2] = 0xFF;
+		 trq[3] = 205;
     }
+	 trq[0] = 35;
+	 trq[1] = 0xFF;
+	 trq[2] = 0xFF;
+	 trq[3] = 205;
 }
 
 //节油任务
  void SaveFuleTask(void *pdata)
 {
-	Load_stCurr   = Highload;      // 默认当前油门最大
-	Load_stTarget = Highload;      // 默认计算的油门也是最大
+	Load_stCurr   = Highload;      // 当前正处    轻、中、重载 的模式
+	Load_stTarget = Midload;       // 设置当前于  轻、中、重载 模式的记录变量
 	trqmax        = 225;
+	TrqLoad       = 150;           // 第一次装载值
 	while(1)
 	{
 		OSTimeDlyHMSM(0,0,0,1);	
@@ -264,12 +271,12 @@ void UpdateTxDataAMT(void)
 						else 
 						{
 							Load_stCurr = Load_stTarget;
-							TrqLoad = TrqlimLow;
+							TrqLoad     = TrqlimLow;
 						}
 					} 
 					else TrqLoad = TrqlimMid; 
 				}
-				else if(Load_stCurr == Lowload)
+				else if(Load_stCurr  == Lowload)
 				{
 					if(Load_stTarget == Highload)
 					{
@@ -297,9 +304,9 @@ void UpdateTxDataAMT(void)
 //				{
 					ConstLimitation();       //稳油功能
 					UpdateTxDataAMT();       //限制按照最小的值来   需求扭矩 跟 设定扭矩
-//					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
+					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
 //				}
-//				else if(trq[3]<225)          //当前模式非节油
+//				else if(trq[3] < 225)          //当前模式非节油
 //				{
 //					trq[3]++;
 //					trq[0] = 35;
@@ -314,7 +321,7 @@ void UpdateTxDataAMT(void)
 			{
 				if(CL_stOutflag == 1) 
 				{
-					if(trqmax < 225)    //退出节油模式 最大值要自增
+					if(trqmax < 225)    //退出节油模式  最大值要自增
 					{
 						trqmax++;
 					} 
@@ -325,7 +332,7 @@ void UpdateTxDataAMT(void)
 				}
 			}
 		}
-		if(SystemTime100ms >= 100)//计算20秒的平均扭矩，3秒的平均油门
+		if(SystemTime100ms >= 100)	 //计算20秒的平均扭矩，3秒的平均油门
 		{
 			SystemTime100ms = 0;
 			numCAN=0;
@@ -333,17 +340,17 @@ void UpdateTxDataAMT(void)
 			{
 				CoEng_rloadCal();    //平均负荷率计算, 平均转速计算, 平均油门计算
 //##############################################################
-				CANerr_flg = 1;  
+				CANerr_flg = 1;
 			}
 			else 
-				CANerr_flg = 0; 
+				CANerr_flg = 0;
 		} 
 		if(SystemTime500ms >= 500)
 		{
 			SystemTime500ms = 0;
 //			if(fCanOK)
 //			{
-				CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;//fCanOK = 0;
+//			CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;   //fCanOK = 0;
 //			}
 			
 		}
@@ -493,7 +500,7 @@ void ConstLimitation(void)
 
 	if(TimerAPPCnt0 < 65530)
 		TimerAPPCnt0 ++;
-	if(TimerAPPCnt0 >= 500) 
+	if(TimerAPPCnt0 >= 250) 
 		APP_T0 = 1; 
 
 	rdev = 20;mrdev = -20;
@@ -506,7 +513,7 @@ void ConstLimitation(void)
 			App_dev >= mrdev && App_dev <= rdev &&   //油门的波动范围  正负 20%
 			Eng_nAvg > 1000 && 				         //发动机转速 > 1000
 			Accped_rint > 10 && Accped_rint < 85 &&  //油门开度   > 10%  < 85%
-		    Accped_r3s > 10)                         //3 秒的平均开度 > 10%
+		    Accped_r3s > 10)                         // 3 秒的平均开度 > 10%
 		{
 			if((APP_T0 == 1)&&(CL_stOutflag == 0))   //计时保持 5 秒
 			{

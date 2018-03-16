@@ -4,6 +4,7 @@
 
 void CANTestChannel(void );
 void TestServer(void);
+void Deal5016(uint8_t cmdNum,uint8_t *p);
 
 extern uint16_t freOBDLed;
 extern uint8_t * pPid[52];
@@ -73,7 +74,7 @@ void OBDTask(void *pdata)
 						else 
 							break;
 					} 
-					if(i == cmdManyPackNum)
+					if(i == cmdManyPackNum && varOperation.isDataFlow != 1)
 					{
 						OSMutexPend(CDMASendMutex,0,&err);
 						
@@ -101,6 +102,7 @@ void OBDTask(void *pdata)
 						cdmaDataToSend->datLength += CAN1_RxMsg->Data[0] - cmdLen;
 					}
 					OSMutexPost(CDMASendMutex);
+					Deal5016(cmdNum,&CAN1_RxMsg->Data[cmdLen + 1]);
 //					PIDVarGet(cmdNum,&CAN1_RxMsg->Data[cmdLen + 1]);
 				}
 				else if((CAN1_RxMsg->Data[0]==0x03)&&(CAN1_RxMsg->Data[1]==0x7F))
@@ -143,7 +145,7 @@ void OBDTask(void *pdata)
 										else 
 											break;
 									} 
-									if(i == cmdManyPackNum)
+									if(i == cmdManyPackNum && varOperation.isDataFlow != 1)
 									{
 										OSMutexPend(CDMASendMutex,0,&err);
 										
@@ -153,7 +155,7 @@ void OBDTask(void *pdata)
 										
 										OSMutexPost(CDMASendMutex);
 									}
-									PIDVarGet(cmdNum,&ptrSaveBuff[3]);
+//									PIDVarGet(cmdNum,&ptrSaveBuff[3]);
 									Mem_free(ptrSaveBuff);
 								}
 							}
@@ -300,13 +302,14 @@ void CANTestChannel(void)
 		ptrOK[0] = 3;
 		ptrOK[1] = 0x50;
 		ptrOK[2] = 0x20;
-		
-		OSMutexPend(CDMASendMutex,0,&err);
-		memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrOK,ptrOK[0]);
-		cdmaDataToSend->datLength += ptrOK[0];
-		varOperation.datOKLeng    += ptrOK[0];
-		OSMutexPost(CDMASendMutex);
-		
+		if(varOperation.isDataFlow != 1)
+		{
+			OSMutexPend(CDMASendMutex,0,&err);
+			memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrOK,ptrOK[0]);
+			cdmaDataToSend->datLength += ptrOK[0];
+			varOperation.datOKLeng    += ptrOK[0];
+			OSMutexPost(CDMASendMutex);
+		}
 		Mem_free(ptrOK);
 		varOperation.canTest = 0;
 		
@@ -343,15 +346,18 @@ void CANTestChannel(void)
 			ptrOK[i++] = (dataToSend.canId>>24) & 0x000000FF;ptrOK[i++] = (dataToSend.canId>>16) & 0x000000FF;
 			ptrOK[i++] = (dataToSend.canId>>8) & 0x000000FF;ptrOK[i++] = (dataToSend.canId>>0) & 0x000000FF;
 			memcpy(&ptrOK[i],varOperation.ecuVersion,20);
-			
-			OSMutexPend(CDMASendMutex,0,&err);
-			memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrOK,ptrOK[0]);
-			cdmaDataToSend->datLength += ptrOK[0];
-			varOperation.datOKLeng += ptrOK[0];
-			OSMutexPost(CDMASendMutex);
-			
+			if(varOperation.isDataFlow != 1)
+			{
+				OSMutexPend(CDMASendMutex,0,&err);
+				memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrOK,ptrOK[0]);
+				cdmaDataToSend->datLength += ptrOK[0];
+				varOperation.datOKLeng += ptrOK[0];
+				OSMutexPost(CDMASendMutex);
+			}
 			Mem_free(ptrOK);
 			memcpy(canDataConfig.pidVerCmd,canIdExt[i].pidVerCmd,4);//todo:保存当前读取版本号的指令
+			OSTimeDlyHMSM(0,0,15,0);
+			LoginDataSend(); 
 			break;
 		}
 	}
@@ -363,12 +369,14 @@ void CANTestChannel(void)
 		ptrOK[0] = 3;
 		ptrOK[1] = 0x50;
 		ptrOK[2] = 0x20;
-		
-		OSMutexPend(CDMASendMutex,0,&err);
-		memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrOK,ptrOK[0]);
-		cdmaDataToSend->datLength += ptrOK[0];
-		varOperation.datOKLeng    += ptrOK[0];
-		OSMutexPost(CDMASendMutex);
+		if(varOperation.isDataFlow != 1)
+		{
+			OSMutexPend(CDMASendMutex,0,&err);
+			memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrOK,ptrOK[0]);
+			cdmaDataToSend->datLength += ptrOK[0];
+			varOperation.datOKLeng    += ptrOK[0];
+			OSMutexPost(CDMASendMutex);
+		}
 		
 		Mem_free(ptrOK);
 		return;
@@ -379,8 +387,25 @@ idOK:
 	
 	return;
 }
-extern VARConfig* ptrPIDVars;      //指向第二配置区
 
+
+void Deal5016(uint8_t cmdNum,uint8_t *p)
+{
+	if(cmdNum == 1)
+	{
+		pPid[50][0] = 9;
+		memcpy(&pPid[50][5],p,2);
+	}
+	if(cmdNum == 2)
+	{
+		pPid[50][0] = 9;
+		memcpy(&pPid[50][7],p,2);
+	}	
+}
+
+
+
+extern VARConfig* ptrPIDVars;      //指向第二配置区
 void PIDVarGet(uint8_t cmdId,uint8_t ptrData[])
 {
 	uint8_t  i,j,err;	
@@ -509,10 +534,10 @@ void PIDVarGet(uint8_t cmdId,uint8_t ptrData[])
 				carAllRecord.afterFuel2 = (uint16_t)(saveDate * ((ptrPIDVars + i)->ceo) + (ptrPIDVars + i)->offset);
 				carAllRecord.totalFuel += carAllRecord.afterFuel2;
 				break;
-//			case 10://后喷油量3
-//				carAllRecord.afterFuel3 = (uint16_t)(saveDate * ((ptrPIDVars + i)->ceo) + (ptrPIDVars + i)->offset);
-//				carAllRecord.totalFuel += carAllRecord.afterFuel3;
-//				break;
+			case 10://后喷油量3
+				carAllRecord.afterFuel3 = (uint16_t)(saveDate * ((ptrPIDVars + i)->ceo) + (ptrPIDVars + i)->offset);
+				carAllRecord.totalFuel += carAllRecord.afterFuel3;
+				break;
 			case 11://当前喷油量
 				carAllRecord.curFuel    = (uint16_t)(saveDate * ((ptrPIDVars + i)->ceo) + (ptrPIDVars + i)->offset);
 				carAllRecord.totalFuel += carAllRecord.curFuel;
@@ -537,13 +562,17 @@ void PIDVarGet(uint8_t cmdId,uint8_t ptrData[])
 					temp1 = t_htons(carAllRecord.engineSpeed);
 					memcpy(&ptr[4],&temp1,2);        //当前转速
 					
-					OSMutexPend(CDMASendMutex,0,&err);
+					if(varOperation.isDataFlow != 1)
+					{
+						OSMutexPend(CDMASendMutex,0,&err);
+						
+						memcpy(&pPid[50][pPid[50][0]],ptr,6);
+						pPid[50][0] += 6;
+						cdmaDataToSend->datLength += 6;
+						
+						OSMutexPost(CDMASendMutex);
+					}
 					
-					memcpy(&pPid[50][pPid[50][0]],ptr,6);
-					pPid[50][0] += 6;
-					cdmaDataToSend->datLength += 6;
-					
-					OSMutexPost(CDMASendMutex);
 					
 					Mem_free(ptr);
 					

@@ -98,13 +98,13 @@ void CAN1_SetFilter(uint32_t canId,uint32_t canIde)
 		CAN_FilterInitStructure.CAN_FilterMaskIdLow   = 0xFFFC;
 	}else
 	{
-		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32)canId<<3)&0xffff0000)>>16;
-		CAN_FilterInitStructure.CAN_FilterIdLow    = (((u32)canId<<3)|CAN_ID_EXT)&0xffff;
+		CAN_FilterInitStructure.CAN_FilterIdHigh   = (((u32) canId << 3)&0xffff0000)>>16;
+		CAN_FilterInitStructure.CAN_FilterIdLow    = (((u32) canId << 3)|CAN_ID_EXT)&0xffff;
 		CAN_FilterInitStructure.CAN_FilterMaskIdHigh  = 0xFFFF;
 		CAN_FilterInitStructure.CAN_FilterMaskIdLow   = 0xFFC0;
 	}
 	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO1;//0
-	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
+	CAN_FilterInitStructure.CAN_FilterActivation     = ENABLE;
 	CAN_FilterInit(&CAN_FilterInitStructure);
 }
 

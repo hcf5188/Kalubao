@@ -232,7 +232,7 @@ void StartTask(void *pdata)
 			
 			MemLog(cdmaDataToSend);                //todo：这两行代码用于调试时监控，真正产品的时候可以注释掉
 			J1939DataLog();
-			
+		
 			OSMutexPend(CDMASendMutex,0,&err);     //提高优先级，独占此包数据
 			//将日志报文打包
 			if(cdmaLogData->top <= 250)

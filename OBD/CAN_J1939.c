@@ -14,7 +14,7 @@ void DealJ1939Date(void *pdata)
 {
 	uint8_t  err;
 	uint32_t canId;
-	CanRxMsg* CAN1_RxMsg;        //指向接收到的OBD信息
+	CanRxMsg* CAN1_RxMsg;        //指向接收到的 OBD 信息
 	
 	
 	while(1)
@@ -75,11 +75,11 @@ void DealJ1939Date(void *pdata)
 //			case 0x0CF00400: break;
 			
 			case 0x0CF00300: memcpy(RCVData1,CAN1_RxMsg->Data,8);CANr2=1;break;  // EEC2
-			
+					
 			case 0x18FF0004: memcpy(RCVData2,CAN1_RxMsg->Data,8);CANr3=1;break;  // 
 			
 			case 0x18FF0006: memcpy(RCVData3,CAN1_RxMsg->Data,8);CANr4=1;break;  // 
-			
+					
 			case 0x18FEDF00: memcpy(RCVData4,CAN1_RxMsg->Data,8);CANr5=1;break;  //
 			
 			case 0x18EBFF00: memcpy(RCVData5,CAN1_RxMsg->Data,8);CANr6=1;break;  //
@@ -91,6 +91,8 @@ void DealJ1939Date(void *pdata)
 		Mem_free(CAN1_RxMsg);
 		if(CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1 && CANr7==1)
 		{
+			if(fCanOK == 0)
+				LogReport("\r\nSaveFuel Data Receive OK!");
 			fCanOK = 1;
 		}else
 			fCanOK = 0;

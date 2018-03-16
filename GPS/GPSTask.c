@@ -71,14 +71,17 @@ void GPSTask(void *pdata)
 			if((varOperation.isDataFlow == 0)&&(sendNum != osTime))     //数据流已经流动起来了  确保1秒发送一次
 			{	
 				sendNum = osTime;
+				if(varOperation.isDataFlow != 1)
+				{
+					OSMutexPend(CDMASendMutex,0,&err);
+					
+					memcpy(&pPid[51][pPid[51][0]],&ptrGPSPack[3],ptrGPSPack[0] - 3);//合并 GPS 位置信息
+					pPid[51][0] += ptrGPSPack[0] - 3;
+					cdmaDataToSend->datLength += ptrGPSPack[0] - 3;
+					
+					OSMutexPost(CDMASendMutex);
+				}
 				
-				OSMutexPend(CDMASendMutex,0,&err);
-				
-				memcpy(&pPid[51][pPid[51][0]],&ptrGPSPack[3],ptrGPSPack[0] - 3);//合并 GPS 位置信息
-				pPid[51][0] += ptrGPSPack[0] - 3;
-				cdmaDataToSend->datLength += ptrGPSPack[0] - 3;
-				
-				OSMutexPost(CDMASendMutex);
 			}
 			Mem_free(ptrGPSPack);
 		}
