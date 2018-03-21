@@ -206,6 +206,10 @@ void StartTask(void *pdata)
 		}
 		if(varOperation.pidRun == 1 && varOperation.canTest == 2 && varOperation.pidTset == 0 && varOperation.strengthRun == 0 && varOperation.pidNum != 0xFFFF)   //CAN的波特率和ID均已确定
 		{
+			if(timeToSendLogin % 2500 == 0)
+			{
+				SendFaultCmd();
+			}
 			for(i = 0;i < varOperation.pidNum;i++) //PID指令的数目
 			{
 				(ptrPIDAllDat + i) -> timeCount += 4;
@@ -218,8 +222,8 @@ void StartTask(void *pdata)
 				if(err != OS_ERR_NONE)
 				{
 					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
-					LogReport("\r\n PID cmd OVERLoad;");
-				}
+//					LogReport("\r\n PID cmd OVERLoad;");
+				} 
 			}
 		}
 		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
@@ -253,7 +257,7 @@ void StartTask(void *pdata)
 				Store_Getdates(cdmaLogData,&cdmaDataToSend -> data[cdmaDataToSend->datLength],250);
 				cdmaDataToSend->datLength += 250;
 			}
-			for(i = 0;i < 50; i++)
+			for(i = 0;i < 49; i++)
 			{
 				if(pPid[i][0] > 4)
 				{
@@ -261,6 +265,12 @@ void StartTask(void *pdata)
 					cdmaDataToSend->datLength += pPid[i][0];
 					pPid[i][0] = 4;
 				}
+			}
+			if(pPid[49][0] > 3)
+			{
+				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[49],pPid[49][0]);
+				cdmaDataToSend->datLength += pPid[49][0];
+				pPid[49][0] = 3;
 			}
 			for(i=50;i<52;i++)          //GPS 信息和 瞬时油耗
 			{
@@ -284,7 +294,44 @@ void StartTask(void *pdata)
 		}
 	}
 }
-
+void SendFaultCmd(void)
+{
+	uint8_t * ptrOBDSend;
+	uint8_t err;
+//	static uint32_t timeCount = 0;
+	
+	ptrOBDSend = Mem_malloc(9);
+	ptrOBDSend[0] = 200;
+	if(strengthFuelFlash.modeOrder == 1)
+	{
+		ptrOBDSend = Mem_malloc(9);
+		ptrOBDSend[0] = 236;
+		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd1,8);
+		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+		if(err != OS_ERR_NONE)
+		{
+			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+		} 
+	}else if(strengthFuelFlash.modeOrder == 2)
+	{
+		ptrOBDSend = Mem_malloc(9);//当前故障码
+		ptrOBDSend[0] = 234;
+		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd1,8);
+		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+		if(err != OS_ERR_NONE)
+		{
+			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+		} 
+		ptrOBDSend = Mem_malloc(9);//历史故障码
+		ptrOBDSend[0] = 235;
+		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd2,8);
+		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+		if(err != OS_ERR_NONE)
+		{
+			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+		} 
+	}
+}
 
 
    

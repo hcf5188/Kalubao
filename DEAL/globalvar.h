@@ -143,7 +143,11 @@ __packed typedef struct     //内存监控变量
 	uint8_t safe2[8];       //安全算法指令2
 	uint8_t mode1[8];       //模式指令1
 	uint8_t mode2[8];       //模式指令2
+	
 	uint8_t modeOrder;      //模式指令执行顺序
+	uint8_t faultCmd1[8];   //读取当前故障码
+	uint8_t faultCmd2[8];   //读取历史故障码
+	uint8_t faultClear[8];  //清除故障码
 	
 }STRENFUEL_Struct;
 __packed typedef struct     //内存监控变量
@@ -249,6 +253,7 @@ void CDMASendDataPack(_CDMADataToSend* ptr);       //对将要发送的数据进行打包
 uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal); //对接收到的数据包进行解析，并返回有效数据
 void GlobalVarInit(void );                         //全局变量初始化
 void LoginDataSend(void);                          //登录报文
+void SendFaultCmd(void );                          //发送故障码
 void SendPidCmdData(uint8_t* cmdData);
 void LogReport(char* fmt,...);                     //上传日志文件
 void MemLog(_CDMADataToSend* ptr);                 //内存使用的日志文件

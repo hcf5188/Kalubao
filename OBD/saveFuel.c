@@ -21,7 +21,7 @@
 #define Curr_trqRaw         RCVData0[2]                       //µ±Ç°Å¤¾Ü
 #define DrvDem_trqRaw       RCVData0[1]                       //¼ÝÊ»Ô±ÐèÇóÅ¤¾Ü
 
-#define Acc_st             (RCVData2[7]*256 + RCVData2[6])    //Ñ²º½×´Ì¬
+#define Acc_st             (RCVData2[7]*256 + RCVData2[6])    //Ñ²º½×´Ì¬           Ê²Ã´ÊÇÑ²º½×´Ì¬£¿
 //------------------------------------------------------------------------------------
 #define Highload 3
 #define Midload  2
@@ -500,7 +500,7 @@ void ConstLimitation(void)
 
 	if(TimerAPPCnt0 < 65530)
 		TimerAPPCnt0 ++;
-	if(TimerAPPCnt0 >= 250) 
+	if(TimerAPPCnt0 >= 250)
 		APP_T0 = 1; 
 
 	rdev = 20;mrdev = -20;

@@ -634,7 +634,7 @@
 000014  494f              LDR      r1,|L5.340|
 000016  8008              STRH     r0,[r1,#0]
                   |L5.24|
-;;;503    	if(TimerAPPCnt0 >= 250) 
+;;;503    	if(TimerAPPCnt0 >= 250)
 000018  484e              LDR      r0,|L5.340|
 00001a  8800              LDRH     r0,[r0,#0]  ; TimerAPPCnt0
 00001c  28fa              CMP      r0,#0xfa

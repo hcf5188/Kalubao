@@ -101,7 +101,7 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	if(strengPower[0] != 0xAF)                 //从未记录过该车的喷油量
 		memset(strengPower,0,300);	
 	
-	Flash_ReadDat(ptrMode,PROMOTE_ADDR,80);    //读取提升动力相关参数
+	Flash_ReadDat(ptrMode,PROMOTE_ADDR,100);    //读取提升动力相关参数
 	memcpy(strengthFuelFlash.ecuVer,&ptrMode[offset],16);
 	offset += 16;
 	memcpy(strengthFuelFlash.fuelAddr,&ptrMode[offset],5);
@@ -117,6 +117,12 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	memcpy(strengthFuelFlash.mode2,&ptrMode[offset],8);
 	offset += 8;
 	strengthFuelFlash.modeOrder = ptrMode[offset++];
+	offset++;
+	memcpy(strengthFuelFlash.faultCmd1,&ptrMode[offset],8);    //当前故障码
+	offset += 8;
+	memcpy(strengthFuelFlash.faultCmd2,&ptrMode[offset],8);    //历史故障码
+	offset += 8;
+	memcpy(strengthFuelFlash.faultClear,&ptrMode[offset],8);   //清除故障码
 	Mem_free(ptrMode);
 	
 	varOperation.pidNum      = canDataConfig.pidNum;//得到PID指令的个数

@@ -13,6 +13,9 @@ extern void CDMASendCmd(const uint8_t sendDat[],char* compString,uint16_t sendLe
 static void CanTestCmd(uint8_t* ptrDeal);
 static void FuelModeChange(uint8_t* ptrDeal);
 
+
+void ClearFaultCmd(void);
+
 //本任务用来上发登录报文、处理OTA升级、配置文件升级、模式切换（强动力模式、节油模式等）
 void CDMARecvTask(void *pdata)
 {
@@ -20,7 +23,6 @@ void CDMARecvTask(void *pdata)
 	uint16_t cmdId;
 	uint8_t* ptrRECV = NULL;
 	uint8_t* ptrDeal = NULL;
-	
 	while(1)
 	{
 		ptrRECV = OSQPend(ZIPRecv_Q,30000,&err);  //等待60s后服务器无响应，则退出
@@ -47,7 +49,8 @@ void CDMARecvTask(void *pdata)
 			
 			else if((cmdId >= 0x8000)&&(cmdId < 0x9000)) //程序升级报文    
 				OTA_Updata(ptrDeal);
-			
+			else if(cmdId == 0x5021)
+				ClearFaultCmd();
 			Mem_free(ptrDeal);             //释放内存块
 			varOperation.isLoginDeal = 1;  //登录报文处理完毕
 		}
@@ -167,11 +170,11 @@ static void RecvLoginDatDeal(uint8_t* ptr)      //对服务器回复的登录报文进行解析
 	if(softVersion != sysUpdateVar.curSoftVer) //先考虑OTA升级
 	{
 		varOperation.newSoftVersion = softVersion;
-		OSSemPend(sendMsg,100,&ipLen);    //等待200ms  确保CDMA当前没有发送数据
-		varOperation.isDataFlow     = 1;  // OTA进行升级 停止数据流，一心只为OTA升级
+		OSSemPend(sendMsg,100,&ipLen);         //等待200ms  确保CDMA当前没有发送数据
+		varOperation.isDataFlow     = 1;       // OTA进行升级 停止数据流，一心只为OTA升级
 		sysUpdateVar.isSoftUpdate   = 1;  
 		
-		SendFrameNum(0x8000);             //发送0x8000以请求程序文件大小以及CRC校验
+		SendFrameNum(0x8000);                  //发送0x8000以请求程序文件大小以及CRC校验
 	}
 	else if(ecuId != canDataConfig.pidVersion && sysUpdateVar.isSoftUpdate ==0)  //再考虑配置文件升级
 	{
@@ -492,8 +495,14 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		memcpy(strengthFuel.mode2,&ptrDeal[offset],8);//模式 cmd 2
 		offset += 8;
 		strengthFuel.modeOrder = ptrDeal[offset];     //模式指令与安全算法执行的顺序
+		offset++;
+		memcpy(strengthFuel.faultCmd1,&ptrDeal[offset],8); //当前故障码
+		offset += 8;
+		memcpy(strengthFuel.faultCmd2,&ptrDeal[offset],8); //历史故障码
+		offset += 8;
+		memcpy(strengthFuel.faultClear,&ptrDeal[offset],8);//清除故障码
 		
-		ptrMode = Mem_malloc(80);
+		ptrMode = Mem_malloc(100);
 		offset = 0;
 		
 		memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);//为了拷贝代码，我就用中间数据的方法得了
@@ -511,8 +520,14 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		memcpy(&ptrMode[offset],strengthFuel.mode2,8);
 		offset += 8;
 		ptrMode[offset++] = strengthFuel.modeOrder;
+		offset++;
+		memcpy(&ptrMode[offset],strengthFuel.faultCmd1,8);    //当前故障码指令
+		offset += 8;
+		memcpy(&ptrMode[offset],strengthFuel.faultCmd2,8);    //历史故障码指令
+		offset += 8;
+		memcpy(&ptrMode[offset],strengthFuel.faultClear,8);   //清除故障码指令
 		
-		Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);
+		Save2KDataToFlash(ptrMode,PROMOTE_ADDR,100);
 		Mem_free(ptrMode);
 		
 		__disable_fault_irq();                    //重启
@@ -680,8 +695,9 @@ static void CanTestCmd(uint8_t* ptrDeal)//服务器下发的  CAN测试指令
 	varOperation.pidTset = 0;
 	Mem_free(pidVerCmd);
 }
+
 extern uint8_t strengPower[300];
-static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切换
+static void FuelModeChange(uint8_t* ptrDeal)          //节油、强动力、普通模式 切换
 {
 	uint16_t offset  = 5;
 	uint8_t* ptrMode = NULL;
@@ -704,7 +720,13 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	memcpy(strengthFuel.mode2,&ptrDeal[offset],8);    //模式 cmd 2
 	offset += 8;
 	strengthFuel.modeOrder = ptrDeal[offset];         //模式指令与安全算法执行的顺序
-	
+	offset++;
+	memcpy(strengthFuel.faultCmd1,&ptrDeal[offset],8);    //当前故障码
+	offset += 8;
+	memcpy(strengthFuel.faultCmd2,&ptrDeal[offset],8);    //历史故障码
+	offset += 8;
+	memcpy(strengthFuel.faultClear,&ptrDeal[offset],8);   //清除故障码
+
 	if(strengthFuel.coe == strengthFuelFlash.coe)
 	{
 		ptrMode = Mem_malloc(5);  //
@@ -734,7 +756,7 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	nowCRC = CRC_ComputeFile(nowCRC,strengthFuelFlash.mode2,8);
 	if(nowCRC == newCRC)
 		return;
-	ptrMode = Mem_malloc(80);
+	ptrMode = Mem_malloc(100);
 	offset = 0;
 	
 	memcpy(&ptrMode[offset],strengthFuel.ecuVer,16);
@@ -752,17 +774,28 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	memcpy(&ptrMode[offset],strengthFuel.mode2,8);
 	offset += 8;
 	ptrMode[offset++] = strengthFuel.modeOrder;
-	Save2KDataToFlash(ptrMode,PROMOTE_ADDR,80);//将新的增强动力指令写入Flash
+	offset++;
+	memcpy(&ptrMode[offset],strengthFuel.faultCmd1,8);    //当前故障码指令
+	offset += 8;
+	memcpy(&ptrMode[offset],strengthFuel.faultCmd2,8);    //历史故障码指令
+	offset += 8;
+	memcpy(&ptrMode[offset],strengthFuel.faultClear,8);   //清除故障码指令
 	
-	Mem_free(ptrMode);
-	memcpy(strengthFuelFlash.ecuVer,strengthFuel.ecuVer,16);   //版本号
-	memcpy(strengthFuelFlash.fuelAddr,strengthFuel.fuelAddr,5);//读取喷油量的地址
-	memcpy(strengthFuelFlash.mask,strengthFuel.mask,4);        //安全算法掩码
-	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //安全算法 cmd 1
-	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //安全算法 cmd 2
-	memcpy(strengthFuelFlash.mode1,strengthFuel.mode1,8);      //模式 cmd 1
-	memcpy(strengthFuelFlash.mode2,strengthFuel.mode2,8);      //模式 cmd 2
-	strengthFuelFlash.modeOrder = strengthFuel.modeOrder;      //模式指令与安全算法执行的顺序
+	Save2KDataToFlash(ptrMode,PROMOTE_ADDR,100);                //将新的增强动力指令写入Flash
+	
+//	Mem_free(ptrMode);
+//	memcpy(strengthFuelFlash.ecuVer,strengthFuel.ecuVer,16);   //版本号
+//	memcpy(strengthFuelFlash.fuelAddr,strengthFuel.fuelAddr,5);//读取喷油量的地址
+//	memcpy(strengthFuelFlash.mask,strengthFuel.mask,4);        //安全算法掩码
+//	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //安全算法 cmd 1
+//	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //安全算法 cmd 2
+//	memcpy(strengthFuelFlash.mode1,strengthFuel.mode1,8);      //模式 cmd 1
+//	memcpy(strengthFuelFlash.mode2,strengthFuel.mode2,8);      //模式 cmd 2
+//	strengthFuelFlash.modeOrder = strengthFuel.modeOrder;      //模式指令与安全算法执行的顺序
+//	
+//	memcpy(strengthFuelFlash.faultCmd1,strengthFuel.faultCmd1,8);      //模式 cmd 2
+//	memcpy(strengthFuelFlash.faultCmd2,strengthFuel.faultCmd2,8);      //模式 cmd 2
+//	memcpy(strengthFuelFlash.faultClear,strengthFuel.faultClear,8);     //模式 cmd 2
 	
 	memset(strengPower,0,200);                    //清空Flash保存的喷油量的值
 	SoftErasePage(STRENGE_Q);
@@ -772,7 +805,22 @@ static void FuelModeChange(uint8_t* ptrDeal)         //节油、强动力、普通模式 切
 	NVIC_SystemReset();
 }
 
+void ClearFaultCmd(void)
+{
 
+	uint8_t * ptrOBDSend;
+	uint8_t err;
+//	static uint32_t timeCount = 0;
+	
+	ptrOBDSend = Mem_malloc(9);
+	ptrOBDSend[0] = 201;
+	memcpy(&ptrOBDSend[1],strengthFuelFlash.faultClear,8);
+	err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+	if(err != OS_ERR_NONE)
+	{
+		Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+	} 
+}
 
 
 

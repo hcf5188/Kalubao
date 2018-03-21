@@ -28,7 +28,7 @@ void OBDTask(void *pdata)
 	while(1)
 	{	
 		StrengthFuel();
-		if((varOperation.canTest == 0)||(varOperation.pidTset == 1))      //配置文件不成功，则停止CAN，或者在测试PID指令
+		if((varOperation.canTest == 0)||(varOperation.pidTset == 1))      //配置文件不成功，或者在测试PID指令，则停止CAN
 		{
 			OSTimeDlyHMSM(0,0,1,0);	
 			continue;
@@ -42,7 +42,7 @@ void OBDTask(void *pdata)
 		dataToSend.pdat = &can1_Txbuff[1];   
 		OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);//发送PID指令
 		
-		CAN1_RxMsg = OSQPend(canRecieveQ,500,&err); // 接收到OBD回复
+		CAN1_RxMsg = OSQPend(canRecieveQ,400,&err); // 接收到 OBD 回复
 		if(err == OS_ERR_NONE)
 		{
 			freOBDLed = LEDSLOW;                    // OBD 初始化成功
@@ -52,8 +52,15 @@ void OBDTask(void *pdata)
 				if(ptrSaveBuff != NULL)
 				{
 					ptrSaveBuff[0] = CAN1_RxMsg -> Data[1] + 4;
-					ptrSaveBuff[1] = 0x60;
-					ptrSaveBuff[2] = cmdNum;
+					if(cmdNum == 236)
+					{
+						ptrSaveBuff[1] = 0x50;
+						ptrSaveBuff[2] = 0x24;
+					}
+					else{
+						ptrSaveBuff[1] = 0x60;
+						ptrSaveBuff[2] = cmdNum;
+					}
 					ptrSaveBuff[3] = CAN1_RxMsg -> Data[1];              //故障码长度
 					
 					memcpy(&ptrSaveBuff[4],&CAN1_RxMsg->Data[2],6);
@@ -84,47 +91,92 @@ void OBDTask(void *pdata)
 						
 						OSMutexPost(CDMASendMutex);
 					}
-//					PIDVarGet(cmdNum,&ptrSaveBuff[3]);
 					Mem_free(ptrSaveBuff);
 				}
 			}
 			else  //单包处理
 			{
-				if(CAN1_RxMsg->Data[0] > cmdLen)
+				if(CAN1_RxMsg->Data[0] > cmdLen)//正常的PID指令
 				{
 					OSMutexPend(CDMASendMutex,0,&err);
 					// todo: 限制数据长度，不能越界
-					pPid[cmdNum - 1][3]  = CAN1_RxMsg->Data[0] - cmdLen;
-					if((cmdNum<12&&pPid[cmdNum - 1][0]<58)||(cmdNum>11&&pPid[cmdNum - 1][0]<30))
+					if(cmdNum != 236)
 					{
-						memcpy(&pPid[cmdNum - 1][pPid[cmdNum - 1][0]],&CAN1_RxMsg->Data[cmdLen + 1],(CAN1_RxMsg->Data[0] - cmdLen));
-						pPid[cmdNum - 1][0] += CAN1_RxMsg->Data[0] - cmdLen;
-						cdmaDataToSend->datLength += CAN1_RxMsg->Data[0] - cmdLen;
+						pPid[cmdNum - 1][3]  = CAN1_RxMsg->Data[0] - cmdLen;
+						if((cmdNum<12&&pPid[cmdNum - 1][0]<58)||(cmdNum>11&&cmdNum<60&&pPid[cmdNum - 1][0]<30))
+						{
+							memcpy(&pPid[cmdNum - 1][pPid[cmdNum - 1][0]],&CAN1_RxMsg->Data[cmdLen + 1],(CAN1_RxMsg->Data[0] - cmdLen));
+							pPid[cmdNum - 1][0] += CAN1_RxMsg->Data[0] - cmdLen;
+							cdmaDataToSend->datLength += CAN1_RxMsg->Data[0] - cmdLen;
+						}
+						OSMutexPost(CDMASendMutex);
+						Deal5016(cmdNum,&CAN1_RxMsg->Data[cmdLen + 1]);
 					}
-					OSMutexPost(CDMASendMutex);
-					Deal5016(cmdNum,&CAN1_RxMsg->Data[cmdLen + 1]);
-//					PIDVarGet(cmdNum,&CAN1_RxMsg->Data[cmdLen + 1]);
+					else if(cmdNum == 236)	
+					{
+						ptrSaveBuff = Mem_malloc(8);
+						ptrSaveBuff[0] = CAN1_RxMsg -> Data[0] + 4;
+						ptrSaveBuff[1] = 0x50;
+						ptrSaveBuff[2] = cmdNum - 200;
+						ptrSaveBuff[3] = CAN1_RxMsg -> Data[0];              //故障码长度
+						memcpy(&ptrSaveBuff[4],&CAN1_RxMsg->Data[1],CAN1_RxMsg->Data[0]);
+						
+						OSMutexPend(CDMASendMutex,0,&err);
+								
+						memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrSaveBuff,ptrSaveBuff[0]);
+						cdmaDataToSend->datLength += ptrSaveBuff[0];
+						varOperation.datOKLeng += ptrSaveBuff[0];    //记录不可拆卸的包长度
+						
+						OSMutexPost(CDMASendMutex);
+						Mem_free(ptrSaveBuff);
+					}
 				}
 				else if((CAN1_RxMsg->Data[0]==0x03)&&(CAN1_RxMsg->Data[1]==0x7F))
 				{
-					if(cmdNum != 10)
+					if(cmdNum == 201)                       //重汽清除故障码
+					{	
+						Mem_free(CAN1_RxMsg);
+						CAN1_RxMsg = OSQPend(canRecieveQ,50,&err); // 延时收到清故障码结果
+						OSMutexPend(CDMASendMutex,0,&err);
+						if(err == OS_ERR_NONE)
+						{
+							if(CAN1_RxMsg->Data[1] == 0x54)	//清故障码成功
+							{
+								pPid[49][0] = 4;
+								pPid[49][3] = 0;
+								SendFaultCmd();
+							}
+							else                            //清故障码失败
+							{
+								pPid[49][0] = 4;
+								pPid[49][3] = 1;
+							}										
+						}else                               //清故障码失败
+						{
+							pPid[49][0] = 4;
+							pPid[49][3] = 1;
+						}
+						OSMutexPost(CDMASendMutex);						
+					}
+					else if(cmdNum < 100)
 						LogReport("\r\n05-ECU report:03 7F;PID:%d err:%d,%d,%d,%d,%d,%d;",cmdNum,
 							CAN1_RxMsg->Data[2],CAN1_RxMsg -> Data[3],CAN1_RxMsg->Data[4],CAN1_RxMsg->Data[5],
 							CAN1_RxMsg->Data[6],CAN1_RxMsg -> Data[7]);
-					else if(cmdNum == 10 && strengthFuelFlash.modeOrder == 2)//重汽故障码读取  03 7F 78
+					else if((cmdNum == 234||cmdNum == 235) && strengthFuelFlash.modeOrder == 2)//重汽故障码读取  03 7F 78
 					{
 						Mem_free(CAN1_RxMsg);
 						varOperation.pidRun = 0;//停止发送PID指令
 						CAN1_RxMsg = OSQPend(canRecieveQ,2000,&err); // 接收到OBD回复
 						if(err == OS_ERR_NONE)
+						{	
 							if(CAN1_RxMsg->Data[0] == 0x10)          // 多包处理
 							{
 								ptrSaveBuff = Mem_malloc(CAN1_RxMsg->Data[1] + 10);      //申请的内存块足够长
 								if(ptrSaveBuff != NULL)
 								{
 									ptrSaveBuff[0] = CAN1_RxMsg -> Data[1] + 4;
-									ptrSaveBuff[1] = 0x60;
-									ptrSaveBuff[2] = cmdNum;
+									ptrSaveBuff[1] = 0x50;
+									ptrSaveBuff[2] = cmdNum - 200;
 									ptrSaveBuff[3] = CAN1_RxMsg -> Data[1];              //故障码长度
 									
 									memcpy(&ptrSaveBuff[4],&CAN1_RxMsg->Data[2],6);
@@ -155,11 +207,28 @@ void OBDTask(void *pdata)
 										
 										OSMutexPost(CDMASendMutex);
 									}
-//									PIDVarGet(cmdNum,&ptrSaveBuff[3]);
 									Mem_free(ptrSaveBuff);
 								}
+							}else   //故障码是单包
+							{
+								ptrSaveBuff = Mem_malloc(8);
+								ptrSaveBuff[0] = CAN1_RxMsg -> Data[0] + 4;
+								ptrSaveBuff[1] = 0x50;
+								ptrSaveBuff[2] = cmdNum - 200;
+								ptrSaveBuff[3] = CAN1_RxMsg -> Data[0];              //故障码长度
+ 								memcpy(&ptrSaveBuff[4],&CAN1_RxMsg->Data[1],CAN1_RxMsg->Data[0]);
+								
+								OSMutexPend(CDMASendMutex,0,&err);
+										
+								memcpy(&cdmaDataToSend->data[FRAME_HEAD_LEN + varOperation.datOKLeng],ptrSaveBuff,ptrSaveBuff[0]);
+								cdmaDataToSend->datLength += ptrSaveBuff[0];
+								varOperation.datOKLeng += ptrSaveBuff[0];    //记录不可拆卸的包长度
+								
+								OSMutexPost(CDMASendMutex);
+								Mem_free(ptrSaveBuff);
 							}
-						varOperation.pidRun = 1;   //启动 PID 向 OBD 发送指令
+							varOperation.pidRun = 1;   //启动 PID 向 OBD 发送指令
+						}
 					}
 				}
 				Mem_free(CAN1_RxMsg);
@@ -182,7 +251,7 @@ void TestServer(void)               //用服务器下发的 ID、Baud 等等进行 CAN 配置
 	CanRxMsg* CAN1_RxMsg;
 	CAN_InitTypeDef CAN_InitStructure;
 	varOperation.pidRun = 0;
-	OSSemPend(LoginMes,0,&err);     //1394606080
+	OSSemPend(LoginMes,0,&err);     //
 	if((varOperation.pidVersion == 0xFFFFFFFF )||(varOperation.pidNum == 0xFFFF)||(varOperation.busType == 0xFF))
 	{
 		varOperation.canTest = 0;
@@ -284,7 +353,7 @@ void CANTestChannel(void)
 		CAN1_ClearFilter();
 		CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);
 		
-		//只要此波特率下有数据，CAN波特率就确定了
+		//只要此波特率下有数据，CAN 波特率就确定了
 		CAN1_RxMsg = OSQPend(canRecieveQ,500,&err);
 		if(err == OS_ERR_NONE)
 		{
@@ -388,23 +457,24 @@ idOK:
 	return;
 }
 
-
 void Deal5016(uint8_t cmdNum,uint8_t *p)
 {
+	uint8_t err; 
 	if(cmdNum == 1)
 	{
+		OSMutexPend(CDMASendMutex,0,&err);
 		pPid[50][0] = 9;
 		memcpy(&pPid[50][5],p,2);
+		OSMutexPost(CDMASendMutex);
 	}
 	if(cmdNum == 2)
 	{
+		OSMutexPend(CDMASendMutex,0,&err);
 		pPid[50][0] = 9;
 		memcpy(&pPid[50][7],p,2);
+		OSMutexPost(CDMASendMutex);
 	}	
 }
-
-
-
 extern VARConfig* ptrPIDVars;      //指向第二配置区
 void PIDVarGet(uint8_t cmdId,uint8_t ptrData[])
 {

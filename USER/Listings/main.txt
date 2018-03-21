@@ -2,6 +2,133 @@
 ; commandline ArmCC [--list --split_sections --debug -c --asm --interleave -o..\obj\main.o --asm_dir=.\Listings\ --list_dir=.\Listings\ --depend=..\obj\main.d --cpu=Cortex-M3 --apcs=interwork -O0 --diag_suppress=9931 -I..\OBD -I..\SYSTEM -I..\USER -I..\LIB\inc -I..\UCOSII\CONFIG -I..\UCOSII\PORT -I..\UCOSII\CORE -I..\HAEDWARE -I..\GPS -I..\CDMA -I..\DEAL -I..\USB\CONFIG -I..\USB\STM32_USB-FS-Device_Driver\inc -I.\RTE\_Project -ID:\Keil_v5\ARM\PACK\ARM\CMSIS\5.2.0\CMSIS\Include -ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include -D__MICROLIB -D__UVISION_VERSION=524 -D_RTE_ -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER --omf_browse=..\obj\main.crf main.c]
                           THUMB
 
+                          AREA ||i.SendFaultCmd||, CODE, READONLY, ALIGN=2
+
+                  SendFaultCmd PROC
+;;;296    }
+;;;297    void SendFaultCmd(void)
+000000  b570              PUSH     {r4-r6,lr}
+;;;298    {
+;;;299    	uint8_t * ptrOBDSend;
+;;;300    	uint8_t err;
+;;;301    //	static uint32_t timeCount = 0;
+;;;302    	
+;;;303    	ptrOBDSend = Mem_malloc(9);
+000002  2009              MOVS     r0,#9
+000004  f7fffffe          BL       Mem_malloc
+000008  4604              MOV      r4,r0
+;;;304    	ptrOBDSend[0] = 200;
+00000a  20c8              MOVS     r0,#0xc8
+00000c  7020              STRB     r0,[r4,#0]
+;;;305    	if(strengthFuelFlash.modeOrder == 1)
+00000e  482a              LDR      r0,|L1.184|
+000010  f890003a          LDRB     r0,[r0,#0x3a]  ; strengthFuelFlash
+000014  2801              CMP      r0,#1
+000016  d119              BNE      |L1.76|
+;;;306    	{
+;;;307    		ptrOBDSend = Mem_malloc(9);
+000018  2009              MOVS     r0,#9
+00001a  f7fffffe          BL       Mem_malloc
+00001e  4604              MOV      r4,r0
+;;;308    		ptrOBDSend[0] = 236;
+000020  20ec              MOVS     r0,#0xec
+000022  7020              STRB     r0,[r4,#0]
+;;;309    		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd1,8);
+000024  4824              LDR      r0,|L1.184|
+000026  303b              ADDS     r0,r0,#0x3b
+000028  6801              LDR      r1,[r0,#0]  ; strengthFuelFlash
+00002a  f8c41001          STR      r1,[r4,#1]
+00002e  6840              LDR      r0,[r0,#4]  ; strengthFuelFlash
+000030  f8c40005          STR      r0,[r4,#5]
+;;;310    		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+000034  4621              MOV      r1,r4
+000036  4821              LDR      r0,|L1.188|
+000038  6800              LDR      r0,[r0,#0]  ; canSendQ
+00003a  f7fffffe          BL       OSQPost
+00003e  4605              MOV      r5,r0
+;;;311    		if(err != OS_ERR_NONE)
+000040  2d00              CMP      r5,#0
+000042  d038              BEQ      |L1.182|
+;;;312    		{
+;;;313    			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+000044  4620              MOV      r0,r4
+000046  f7fffffe          BL       Mem_free
+00004a  e034              B        |L1.182|
+                  |L1.76|
+;;;314    		} 
+;;;315    	}else if(strengthFuelFlash.modeOrder == 2)
+00004c  481a              LDR      r0,|L1.184|
+00004e  f890003a          LDRB     r0,[r0,#0x3a]  ; strengthFuelFlash
+000052  2802              CMP      r0,#2
+000054  d12f              BNE      |L1.182|
+;;;316    	{
+;;;317    		ptrOBDSend = Mem_malloc(9);//当前故障码
+000056  2009              MOVS     r0,#9
+000058  f7fffffe          BL       Mem_malloc
+00005c  4604              MOV      r4,r0
+;;;318    		ptrOBDSend[0] = 234;
+00005e  20ea              MOVS     r0,#0xea
+000060  7020              STRB     r0,[r4,#0]
+;;;319    		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd1,8);
+000062  4815              LDR      r0,|L1.184|
+000064  303b              ADDS     r0,r0,#0x3b
+000066  6801              LDR      r1,[r0,#0]  ; strengthFuelFlash
+000068  f8c41001          STR      r1,[r4,#1]
+00006c  6840              LDR      r0,[r0,#4]  ; strengthFuelFlash
+00006e  f8c40005          STR      r0,[r4,#5]
+;;;320    		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+000072  4621              MOV      r1,r4
+000074  4811              LDR      r0,|L1.188|
+000076  6800              LDR      r0,[r0,#0]  ; canSendQ
+000078  f7fffffe          BL       OSQPost
+00007c  4605              MOV      r5,r0
+;;;321    		if(err != OS_ERR_NONE)
+00007e  b115              CBZ      r5,|L1.134|
+;;;322    		{
+;;;323    			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+000080  4620              MOV      r0,r4
+000082  f7fffffe          BL       Mem_free
+                  |L1.134|
+;;;324    		} 
+;;;325    		ptrOBDSend = Mem_malloc(9);//历史故障码
+000086  2009              MOVS     r0,#9
+000088  f7fffffe          BL       Mem_malloc
+00008c  4604              MOV      r4,r0
+;;;326    		ptrOBDSend[0] = 235;
+00008e  20eb              MOVS     r0,#0xeb
+000090  7020              STRB     r0,[r4,#0]
+;;;327    		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd2,8);
+000092  4809              LDR      r0,|L1.184|
+000094  3043              ADDS     r0,r0,#0x43
+000096  6801              LDR      r1,[r0,#0]  ; strengthFuelFlash
+000098  f8c41001          STR      r1,[r4,#1]
+00009c  6840              LDR      r0,[r0,#4]  ; strengthFuelFlash
+00009e  f8c40005          STR      r0,[r4,#5]
+;;;328    		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+0000a2  4621              MOV      r1,r4
+0000a4  4805              LDR      r0,|L1.188|
+0000a6  6800              LDR      r0,[r0,#0]  ; canSendQ
+0000a8  f7fffffe          BL       OSQPost
+0000ac  4605              MOV      r5,r0
+;;;329    		if(err != OS_ERR_NONE)
+0000ae  b115              CBZ      r5,|L1.182|
+;;;330    		{
+;;;331    			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+0000b0  4620              MOV      r0,r4
+0000b2  f7fffffe          BL       Mem_free
+                  |L1.182|
+;;;332    		} 
+;;;333    	}
+;;;334    }
+0000b6  bd70              POP      {r4-r6,pc}
+;;;335    
+                          ENDP
+
+                  |L1.184|
+                          DCD      strengthFuelFlash
+                  |L1.188|
+                          DCD      canSendQ
+
                           AREA ||i.StartTask||, CODE, READONLY, ALIGN=2
 
                   StartTask PROC
@@ -15,7 +142,7 @@
 ;;;137    	uint8_t   *ptrOBDSend;
 ;;;138    	uint16_t  dataLength;
 ;;;139    	uint32_t  timeToSendLogin  = 0;
-000004  2700              MOVS     r7,#0
+000004  2600              MOVS     r6,#0
 ;;;140    	OS_CPU_SR cpu_sr=0;
 000006  46a0              MOV      r8,r4
 ;;;141    	pdata = pdata; 
@@ -24,43 +151,43 @@
 ;;;143    	cdmaDataToSend = CDMNSendDataInit(1000);//初始化获取发向CDMA的消息结构体
 00000a  f44f707a          MOV      r0,#0x3e8
 00000e  f7fffffe          BL       CDMNSendDataInit
-000012  49fe              LDR      r1,|L1.1036|
+000012  49fe              LDR      r1,|L2.1036|
 000014  6008              STR      r0,[r1,#0]  ; cdmaDataToSend
 ;;;144    	cdmaLogData    = Store_Init(1000);
 000016  f44f707a          MOV      r0,#0x3e8
 00001a  f7fffffe          BL       Store_Init
-00001e  49fc              LDR      r1,|L1.1040|
+00001e  49fc              LDR      r1,|L2.1040|
 000020  6008              STR      r0,[r1,#0]  ; cdmaLogData
 ;;;145    	if(varOperation.USB_NormalMode == 1)    //USB 升级模式
-000022  48fc              LDR      r0,|L1.1044|
+000022  48fc              LDR      r0,|L2.1044|
 000024  7a00              LDRB     r0,[r0,#8]  ; varOperation
 000026  2801              CMP      r0,#1
-000028  d115              BNE      |L1.86|
+000028  d115              BNE      |L2.86|
 ;;;146    	{
 ;;;147    		USBRecieveQ = OSQCreate(&usbRecBuf[0],USBRECBUF_SIZE);  //建立USB接收 消息队列
 00002a  210a              MOVS     r1,#0xa
-00002c  48fa              LDR      r0,|L1.1048|
+00002c  48fa              LDR      r0,|L2.1048|
 00002e  f7fffffe          BL       OSQCreate
-000032  49fa              LDR      r1,|L1.1052|
+000032  49fa              LDR      r1,|L2.1052|
 000034  6008              STR      r0,[r1,#0]  ; USBRecieveQ
 ;;;148    		USBSendQ    = OSQCreate(&usbSendBuf[0],USBSENDBUF_SIZE);//建立USB发送 消息队列
 000036  2105              MOVS     r1,#5
-000038  48f9              LDR      r0,|L1.1056|
+000038  48f9              LDR      r0,|L2.1056|
 00003a  f7fffffe          BL       OSQCreate
-00003e  49f9              LDR      r1,|L1.1060|
+00003e  49f9              LDR      r1,|L2.1060|
 000040  6008              STR      r0,[r1,#0]  ; USBSendQ
 ;;;149    		
 ;;;150    		OSTaskCreate(USBUpdataTask,(void *)0,(OS_STK*)&USB_TASK_STK[USB_STK_SIZE - 1],USB_TASK_PRIO);
 000042  2309              MOVS     r3,#9
-000044  4af8              LDR      r2,|L1.1064|
+000044  4af8              LDR      r2,|L2.1064|
 000046  2100              MOVS     r1,#0
-000048  48f8              LDR      r0,|L1.1068|
+000048  48f8              LDR      r0,|L2.1068|
 00004a  f7fffffe          BL       OSTaskCreate
 ;;;151    		OSTaskSuspend(OS_PRIO_SELF);    //挂起起始任务
 00004e  20ff              MOVS     r0,#0xff
 000050  f7fffffe          BL       OSTaskSuspend
-000054  e093              B        |L1.382|
-                  |L1.86|
+000054  e093              B        |L2.382|
+                  |L2.86|
 ;;;152    	}else
 ;;;153    	{
 ;;;154    		OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
@@ -71,154 +198,154 @@
 ;;;157    		beepSem   = OSSemCreate(1);       //蜂鸣器信号量（目前只是开机响一下，以后可以加点花样）
 00005c  2001              MOVS     r0,#1
 00005e  f7fffffe          BL       OSSemCreate
-000062  49f3              LDR      r1,|L1.1072|
+000062  49f3              LDR      r1,|L2.1072|
 000064  6008              STR      r0,[r1,#0]  ; beepSem
 ;;;158    		LoginMes  = OSSemCreate(0);       //登录报文信号量
 000066  2000              MOVS     r0,#0
 000068  f7fffffe          BL       OSSemCreate
-00006c  49f1              LDR      r1,|L1.1076|
+00006c  49f1              LDR      r1,|L2.1076|
 00006e  6008              STR      r0,[r1,#0]  ; LoginMes
 ;;;159    		sendMsg   = OSSemCreate(0);       //创建CDMA是否正在发送消息的信号量
 000070  2000              MOVS     r0,#0
 000072  f7fffffe          BL       OSSemCreate
-000076  49f0              LDR      r1,|L1.1080|
+000076  49f0              LDR      r1,|L2.1080|
 000078  6008              STR      r0,[r1,#0]  ; sendMsg
 ;;;160    		
 ;;;161    		CDMASendMutex  = OSMutexCreate(CDMA_SEND_PRIO,&err);        //向 CDMA 发送缓冲区发送数据 独占 互斥型信号量
 00007a  4669              MOV      r1,sp
 00007c  2007              MOVS     r0,#7
 00007e  f7fffffe          BL       OSMutexCreate
-000082  49ee              LDR      r1,|L1.1084|
+000082  49ee              LDR      r1,|L2.1084|
 000084  6008              STR      r0,[r1,#0]  ; CDMASendMutex
 ;;;162    		CDMAPowerMutex = OSMutexCreate(CDMAPOWER_PRIO,&err);        //CDMA 电源互斥信号量管理
 000086  4669              MOV      r1,sp
 000088  2006              MOVS     r0,#6
 00008a  f7fffffe          BL       OSMutexCreate
-00008e  49ec              LDR      r1,|L1.1088|
+00008e  49ec              LDR      r1,|L2.1088|
 000090  6008              STR      r0,[r1,#0]  ; CDMAPowerMutex
 ;;;163    		CANSendMutex   = OSMutexCreate(CAN_SEND_MUTEX,&err);        //CAN 发送数据信号量
 000092  4669              MOV      r1,sp
 000094  2008              MOVS     r0,#8
 000096  f7fffffe          BL       OSMutexCreate
-00009a  49ea              LDR      r1,|L1.1092|
+00009a  49ea              LDR      r1,|L2.1092|
 00009c  6008              STR      r0,[r1,#0]  ; CANSendMutex
 ;;;164    		
 ;;;165    		CDMARecieveQ = OSQCreate(&cdmaRecBuf[0],CDMARECBUF_SIZE);   //建立CDMA接收 消息队列
 00009e  210a              MOVS     r1,#0xa
-0000a0  48e9              LDR      r0,|L1.1096|
+0000a0  48e9              LDR      r0,|L2.1096|
 0000a2  f7fffffe          BL       OSQCreate
-0000a6  49e9              LDR      r1,|L1.1100|
+0000a6  49e9              LDR      r1,|L2.1100|
 0000a8  6008              STR      r0,[r1,#0]  ; CDMARecieveQ
 ;;;166    		CDMASendQ    = OSQCreate(&cdmaSendBuf[0],CDMASENDBUF_SIZE); //建立CDMA发送 消息队列
 0000aa  2105              MOVS     r1,#5
-0000ac  48e8              LDR      r0,|L1.1104|
+0000ac  48e8              LDR      r0,|L2.1104|
 0000ae  f7fffffe          BL       OSQCreate
-0000b2  49e8              LDR      r1,|L1.1108|
+0000b2  49e8              LDR      r1,|L2.1108|
 0000b4  6008              STR      r0,[r1,#0]  ; CDMASendQ
 ;;;167    		ZIPRecv_Q    = OSQCreate(&ZIPRecBuf[0],ZIPRECVBUF_SIZE);    //建立“ZIPRECV”处理消息队列
 0000b6  2105              MOVS     r1,#5
-0000b8  48e7              LDR      r0,|L1.1112|
+0000b8  48e7              LDR      r0,|L2.1112|
 0000ba  f7fffffe          BL       OSQCreate
-0000be  49e7              LDR      r1,|L1.1116|
+0000be  49e7              LDR      r1,|L2.1116|
 0000c0  6008              STR      r0,[r1,#0]  ; ZIPRecv_Q
 ;;;168    		
 ;;;169    		receGPSQ     = OSQCreate(&gpsRecBuf[0],GPSRECBUF_SIZE);     //建立GPS接收 消息队列
 0000c2  210a              MOVS     r1,#0xa
-0000c4  48e6              LDR      r0,|L1.1120|
+0000c4  48e6              LDR      r0,|L2.1120|
 0000c6  f7fffffe          BL       OSQCreate
-0000ca  49e6              LDR      r1,|L1.1124|
+0000ca  49e6              LDR      r1,|L2.1124|
 0000cc  6008              STR      r0,[r1,#0]  ; receGPSQ
 ;;;170    		canSendQ     = OSQCreate(&canSendBuf[0],CANSENDBUF_SIZE);   //卡路宝向ECU发送指令的消息队列
 0000ce  f44f71af          MOV      r1,#0x15e
-0000d2  48e5              LDR      r0,|L1.1128|
+0000d2  48e5              LDR      r0,|L2.1128|
 0000d4  f7fffffe          BL       OSQCreate
-0000d8  49e4              LDR      r1,|L1.1132|
+0000d8  49e4              LDR      r1,|L2.1132|
 0000da  6008              STR      r0,[r1,#0]  ; canSendQ
 ;;;171    		canRecieveQ  = OSQCreate(&canRecBuf[0],CANRECBUF_SIZE);     //卡路宝从ECU接收指令的消息队列
 0000dc  2114              MOVS     r1,#0x14
-0000de  48e4              LDR      r0,|L1.1136|
+0000de  48e4              LDR      r0,|L2.1136|
 0000e0  f7fffffe          BL       OSQCreate
-0000e4  49e3              LDR      r1,|L1.1140|
+0000e4  49e3              LDR      r1,|L2.1140|
 0000e6  6008              STR      r0,[r1,#0]  ; canRecieveQ
 ;;;172    		canJ1939Q    = OSQCreate(&canJ1939Buf[0],CANJ1939BUF_SIZE); // ECU向卡路宝发送 J1939 消息队列
 0000e8  2114              MOVS     r1,#0x14
-0000ea  48e3              LDR      r0,|L1.1144|
+0000ea  48e3              LDR      r0,|L2.1144|
 0000ec  f7fffffe          BL       OSQCreate
-0000f0  49e2              LDR      r1,|L1.1148|
+0000f0  49e2              LDR      r1,|L2.1148|
 0000f2  6008              STR      r0,[r1,#0]  ; canJ1939Q
 ;;;173    
 ;;;174    /*************************************        创建各任务         ************************************************/		
 ;;;175    
 ;;;176    		OSTaskCreate(PowerDeal,    (void *)0,(OS_STK*)&POWER_TASK_STK[POWER_STK_SIZE - 1],      POWER_TASK_PRIO);
 0000f4  2312              MOVS     r3,#0x12
-0000f6  4ae2              LDR      r2,|L1.1152|
+0000f6  4ae2              LDR      r2,|L2.1152|
 0000f8  2100              MOVS     r1,#0
-0000fa  48e2              LDR      r0,|L1.1156|
+0000fa  48e2              LDR      r0,|L2.1156|
 0000fc  f7fffffe          BL       OSTaskCreate
 ;;;177    		
 ;;;178    		OSTaskCreate(CDMATask,     (void *)0,(OS_STK*)&CDMA_TASK_STK[CDMA_STK_SIZE - 1],        CDMA_TASK_PRIO);
 000100  230b              MOVS     r3,#0xb
-000102  4ae1              LDR      r2,|L1.1160|
+000102  4ae1              LDR      r2,|L2.1160|
 000104  2100              MOVS     r1,#0
-000106  48e1              LDR      r0,|L1.1164|
+000106  48e1              LDR      r0,|L2.1164|
 000108  f7fffffe          BL       OSTaskCreate
 ;;;179    		
 ;;;180    		OSTaskCreate(CDMARecvTask, (void *)0,(OS_STK*)&CDMARecv_TASK_STK[CDMARecv_STK_SIZE - 1],CDMARevc_TASK_PRIO);	
 00010c  230c              MOVS     r3,#0xc
-00010e  4ae0              LDR      r2,|L1.1168|
+00010e  4ae0              LDR      r2,|L2.1168|
 000110  2100              MOVS     r1,#0
-000112  48e0              LDR      r0,|L1.1172|
+000112  48e0              LDR      r0,|L2.1172|
 000114  f7fffffe          BL       OSTaskCreate
 ;;;181    
 ;;;182    		OSTaskCreate(GPSTask,      (void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE - 1],          GPS_TASK_PRIO);	
 000118  230e              MOVS     r3,#0xe
-00011a  4adf              LDR      r2,|L1.1176|
+00011a  4adf              LDR      r2,|L2.1176|
 00011c  2100              MOVS     r1,#0
-00011e  48df              LDR      r0,|L1.1180|
+00011e  48df              LDR      r0,|L2.1180|
 000120  f7fffffe          BL       OSTaskCreate
 ;;;183    
 ;;;184    		OSTaskCreate(OBDTask,      (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE - 1],          OBD_TASK_PRIO);
 000124  230f              MOVS     r3,#0xf
-000126  4ade              LDR      r2,|L1.1184|
+000126  4ade              LDR      r2,|L2.1184|
 000128  2100              MOVS     r1,#0
-00012a  48de              LDR      r0,|L1.1188|
+00012a  48de              LDR      r0,|L2.1188|
 00012c  f7fffffe          BL       OSTaskCreate
 ;;;185    		OSTaskCreate(DealJ1939Date,(void *)0,(OS_STK*)&J1939_TASK_STK[J1939_STK_SIZE - 1],      J1939_TASK_PRIO);//创建J1939处理任务		
 000130  2310              MOVS     r3,#0x10
-000132  4add              LDR      r2,|L1.1192|
+000132  4add              LDR      r2,|L2.1192|
 000134  2100              MOVS     r1,#0
-000136  48dd              LDR      r0,|L1.1196|
+000136  48dd              LDR      r0,|L2.1196|
 000138  f7fffffe          BL       OSTaskCreate
 ;;;186    		OSTaskCreate(SaveFuleTask, (void *)0,(OS_STK*)&SAVEFULE_TASK_STK[SAVEFUEL_STK_SIZE - 1],SAVE_FUEL_PEIO); //创建节油任务		
 00013c  2311              MOVS     r3,#0x11
-00013e  4adc              LDR      r2,|L1.1200|
+00013e  4adc              LDR      r2,|L2.1200|
 000140  2100              MOVS     r1,#0
-000142  48dc              LDR      r0,|L1.1204|
+000142  48dc              LDR      r0,|L2.1204|
 000144  f7fffffe          BL       OSTaskCreate
 ;;;187    
 ;;;188    		OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE - 1],CDMA_LED_PRIO);
 000148  2314              MOVS     r3,#0x14
-00014a  4adb              LDR      r2,|L1.1208|
+00014a  4adb              LDR      r2,|L2.1208|
 00014c  2100              MOVS     r1,#0
-00014e  48db              LDR      r0,|L1.1212|
+00014e  48db              LDR      r0,|L2.1212|
 000150  f7fffffe          BL       OSTaskCreate
 ;;;189    		OSTaskCreate(GPSLEDTask, (void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE - 1], GPS_LED_PRIO);		
 000154  2315              MOVS     r3,#0x15
-000156  4ada              LDR      r2,|L1.1216|
+000156  4ada              LDR      r2,|L2.1216|
 000158  2100              MOVS     r1,#0
-00015a  48da              LDR      r0,|L1.1220|
+00015a  48da              LDR      r0,|L2.1220|
 00015c  f7fffffe          BL       OSTaskCreate
 ;;;190    		OSTaskCreate(OBDLEDTask, (void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE - 1], OBD_LED_PRIO);	
 000160  2316              MOVS     r3,#0x16
-000162  4ad9              LDR      r2,|L1.1224|
+000162  4ad9              LDR      r2,|L2.1224|
 000164  2100              MOVS     r1,#0
-000166  48d9              LDR      r0,|L1.1228|
+000166  48d9              LDR      r0,|L2.1228|
 000168  f7fffffe          BL       OSTaskCreate
 ;;;191    		OSTaskCreate(BeepTask,   (void *)0,(OS_STK*)&BEEP_STK[BEEP_STK_SIZE - 1],   BEEP_TASK_PRIO);
 00016c  2317              MOVS     r3,#0x17
-00016e  4ad8              LDR      r2,|L1.1232|
+00016e  4ad8              LDR      r2,|L2.1232|
 000170  2100              MOVS     r1,#0
-000172  48d8              LDR      r0,|L1.1236|
+000172  48d8              LDR      r0,|L2.1236|
 000174  f7fffffe          BL       OSTaskCreate
 ;;;192    		
 ;;;193    /***************************************************************************************************************/		
@@ -226,11 +353,11 @@
 ;;;195    		OS_EXIT_CRITICAL();				  //退出临界区(可以被中断打断)
 000178  4640              MOV      r0,r8
 00017a  f7fffffe          BL       OS_CPU_SR_Restore
-                  |L1.382|
+                  |L2.382|
 ;;;196    	}
 ;;;197    	while(1)
-00017e  e242              B        |L1.1542|
-                  |L1.384|
+00017e  e266              B        |L2.1614|
+                  |L2.384|
 ;;;198    	{
 ;;;199    		OSTimeDlyHMSM(0,0,0,4);           //4ms扫描一次
 000180  2304              MOVS     r3,#4
@@ -239,636 +366,675 @@
 000186  4610              MOV      r0,r2
 000188  f7fffffe          BL       OSTimeDlyHMSM
 ;;;200    		if(varOperation.isDataFlow == 1)
-00018c  48a1              LDR      r0,|L1.1044|
+00018c  48a1              LDR      r0,|L2.1044|
 00018e  f890002d          LDRB     r0,[r0,#0x2d]  ; varOperation
 000192  2801              CMP      r0,#1
-000194  d100              BNE      |L1.408|
+000194  d100              BNE      |L2.408|
 ;;;201    			continue;                     //数据流未流动
-000196  e236              B        |L1.1542|
-                  |L1.408|
+000196  e25a              B        |L2.1614|
+                  |L2.408|
 ;;;202    		timeToSendLogin++;
-000198  1c7f              ADDS     r7,r7,#1
+000198  1c76              ADDS     r6,r6,#1
 ;;;203    		if(timeToSendLogin % 45000 == 0)  //定期3分钟发送登录报文
 00019a  f64a70c8          MOV      r0,#0xafc8
-00019e  fbb7f1f0          UDIV     r1,r7,r0
-0001a2  fb007011          MLS      r0,r0,r1,r7
-0001a6  b908              CBNZ     r0,|L1.428|
+00019e  fbb6f1f0          UDIV     r1,r6,r0
+0001a2  fb006011          MLS      r0,r0,r1,r6
+0001a6  b908              CBNZ     r0,|L2.428|
 ;;;204    		{
 ;;;205    			LoginDataSend(); 
 0001a8  f7fffffe          BL       LoginDataSend
-                  |L1.428|
+                  |L2.428|
 ;;;206    		}
 ;;;207    		if(varOperation.pidRun == 1 && varOperation.canTest == 2 && varOperation.pidTset == 0 && varOperation.strengthRun == 0 && varOperation.pidNum != 0xFFFF)   //CAN的波特率和ID均已确定
-0001ac  4899              LDR      r0,|L1.1044|
+0001ac  4899              LDR      r0,|L2.1044|
 0001ae  f8900095          LDRB     r0,[r0,#0x95]  ; varOperation
 0001b2  2801              CMP      r0,#1
-0001b4  d160              BNE      |L1.632|
-0001b6  4897              LDR      r0,|L1.1044|
+0001b4  d166              BNE      |L2.644|
+0001b6  4897              LDR      r0,|L2.1044|
 0001b8  f8b00091          LDRH     r0,[r0,#0x91]  ; varOperation
 0001bc  2802              CMP      r0,#2
-0001be  d15b              BNE      |L1.632|
-0001c0  4894              LDR      r0,|L1.1044|
+0001be  d161              BNE      |L2.644|
+0001c0  4894              LDR      r0,|L2.1044|
 0001c2  f8900093          LDRB     r0,[r0,#0x93]  ; varOperation
 0001c6  2800              CMP      r0,#0
-0001c8  d156              BNE      |L1.632|
-0001ca  4892              LDR      r0,|L1.1044|
+0001c8  d15c              BNE      |L2.644|
+0001ca  4892              LDR      r0,|L2.1044|
 0001cc  f8900094          LDRB     r0,[r0,#0x94]  ; varOperation
 0001d0  2800              CMP      r0,#0
-0001d2  d151              BNE      |L1.632|
-0001d4  488f              LDR      r0,|L1.1044|
+0001d2  d157              BNE      |L2.644|
+0001d4  488f              LDR      r0,|L2.1044|
 0001d6  f8b00078          LDRH     r0,[r0,#0x78]  ; varOperation
 0001da  f64f71ff          MOV      r1,#0xffff
 0001de  4288              CMP      r0,r1
-0001e0  d04a              BEQ      |L1.632|
+0001e0  d050              BEQ      |L2.644|
 ;;;208    		{
-;;;209    			for(i = 0;i < varOperation.pidNum;i++) //PID指令的数目
-0001e2  2400              MOVS     r4,#0
-0001e4  e043              B        |L1.622|
-                  |L1.486|
+;;;209    			if(timeToSendLogin % 2500 == 0)
+0001e2  f64010c4          MOV      r0,#0x9c4
+0001e6  fbb6f1f0          UDIV     r1,r6,r0
+0001ea  fb006011          MLS      r0,r0,r1,r6
+0001ee  b908              CBNZ     r0,|L2.500|
 ;;;210    			{
-;;;211    				(ptrPIDAllDat + i) -> timeCount += 4;
-0001e6  eb041004          ADD      r0,r4,r4,LSL #4
-0001ea  49bb              LDR      r1,|L1.1240|
-0001ec  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
-0001ee  4408              ADD      r0,r0,r1
-0001f0  6840              LDR      r0,[r0,#4]
-0001f2  1d00              ADDS     r0,r0,#4
-0001f4  eb041104          ADD      r1,r4,r4,LSL #4
-0001f8  4ab7              LDR      r2,|L1.1240|
-0001fa  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
-0001fc  4411              ADD      r1,r1,r2
-0001fe  6048              STR      r0,[r1,#4]
-;;;212    				if((ptrPIDAllDat + i) -> timeCount < (ptrPIDAllDat + i) -> period)
-000200  eb041004          ADD      r0,r4,r4,LSL #4
-000204  49b4              LDR      r1,|L1.1240|
-000206  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
-000208  4408              ADD      r0,r0,r1
-00020a  6840              LDR      r0,[r0,#4]
-00020c  eb041104          ADD      r1,r4,r4,LSL #4
-000210  4ab1              LDR      r2,|L1.1240|
-000212  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
-000214  4411              ADD      r1,r1,r2
-000216  6809              LDR      r1,[r1,#0]
-000218  4288              CMP      r0,r1
-00021a  d200              BCS      |L1.542|
-;;;213    					continue;
-00021c  e025              B        |L1.618|
-                  |L1.542|
-;;;214    				(ptrPIDAllDat + i) -> timeCount = 0;
-00021e  2000              MOVS     r0,#0
-000220  eb041104          ADD      r1,r4,r4,LSL #4
-000224  4aac              LDR      r2,|L1.1240|
-000226  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
-000228  4411              ADD      r1,r1,r2
-00022a  6048              STR      r0,[r1,#4]
-;;;215    				ptrOBDSend = Mem_malloc(9);
-00022c  2009              MOVS     r0,#9
-00022e  f7fffffe          BL       Mem_malloc
-000232  4605              MOV      r5,r0
-;;;216    				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
-000234  eb041004          ADD      r0,r4,r4,LSL #4
-000238  49a7              LDR      r1,|L1.1240|
-00023a  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
-00023c  4408              ADD      r0,r0,r1
-00023e  6881              LDR      r1,[r0,#8]
-000240  6029              STR      r1,[r5,#0]
-000242  68c1              LDR      r1,[r0,#0xc]
-000244  6069              STR      r1,[r5,#4]
-000246  7c00              LDRB     r0,[r0,#0x10]
-000248  7228              STRB     r0,[r5,#8]
-;;;217    				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
-00024a  4629              MOV      r1,r5
-00024c  4887              LDR      r0,|L1.1132|
-00024e  6800              LDR      r0,[r0,#0]  ; canSendQ
-000250  f7fffffe          BL       OSQPost
-000254  9000              STR      r0,[sp,#0]
-;;;218    				if(err != OS_ERR_NONE)
-000256  f89d0000          LDRB     r0,[sp,#0]
-00025a  b128              CBZ      r0,|L1.616|
-;;;219    				{
-;;;220    					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
-00025c  4628              MOV      r0,r5
-00025e  f7fffffe          BL       Mem_free
-;;;221    					LogReport("\r\n PID cmd OVERLoad;");
-000262  a09e              ADR      r0,|L1.1244|
-000264  f7fffffe          BL       LogReport
-                  |L1.616|
-000268  bf00              NOP                            ;213
-                  |L1.618|
-00026a  1c60              ADDS     r0,r4,#1              ;209
-00026c  b2c4              UXTB     r4,r0                 ;209
-                  |L1.622|
-00026e  4869              LDR      r0,|L1.1044|
-000270  f8b00078          LDRH     r0,[r0,#0x78]         ;209  ; varOperation
-000274  42a0              CMP      r0,r4                 ;209
-000276  dcb6              BGT      |L1.486|
-                  |L1.632|
-;;;222    				}
-;;;223    			}
-;;;224    		}
-;;;225    		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
-000278  4864              LDR      r0,|L1.1036|
-00027a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00027c  8800              LDRH     r0,[r0,#0]
-00027e  4964              LDR      r1,|L1.1040|
-000280  6809              LDR      r1,[r1,#0]  ; cdmaLogData
-000282  8809              LDRH     r1,[r1,#0]
-000284  4408              ADD      r0,r0,r1
-000286  b286              UXTH     r6,r0
-;;;226    		if(dataLength > 36)                        //要发送的数据不为空
-000288  2e24              CMP      r6,#0x24
-00028a  dd06              BLE      |L1.666|
-;;;227    			cdmaDataToSend->timeCount += 4;
-00028c  485f              LDR      r0,|L1.1036|
-00028e  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000290  8840              LDRH     r0,[r0,#2]
-000292  1d00              ADDS     r0,r0,#4
-000294  495d              LDR      r1,|L1.1036|
-000296  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000298  8048              STRH     r0,[r1,#2]
-                  |L1.666|
-;;;228    		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 650) )//发送时间到或者要发送的数组长度超过850个字节
-00029a  485c              LDR      r0,|L1.1036|
-00029c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00029e  8840              LDRH     r0,[r0,#2]
-0002a0  f64031b8          MOV      r1,#0xbb8
-0002a4  4288              CMP      r0,r1
-0002a6  da06              BGE      |L1.694|
-0002a8  4858              LDR      r0,|L1.1036|
-0002aa  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0002ac  8800              LDRH     r0,[r0,#0]
-0002ae  f240218a          MOV      r1,#0x28a
-0002b2  4288              CMP      r0,r1
-0002b4  db7e              BLT      |L1.948|
-                  |L1.694|
-;;;229    		{
-;;;230    			cdmaDataToSend->datLength = FRAME_HEAD_LEN + varOperation.datOKLeng;
-0002b6  4857              LDR      r0,|L1.1044|
-0002b8  f8b00096          LDRH     r0,[r0,#0x96]  ; varOperation
-0002bc  301b              ADDS     r0,r0,#0x1b
-0002be  4953              LDR      r1,|L1.1036|
-0002c0  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-0002c2  8008              STRH     r0,[r1,#0]
-;;;231    			varOperation.datOKLeng = 0;
-0002c4  2000              MOVS     r0,#0
-0002c6  4953              LDR      r1,|L1.1044|
-0002c8  f8a10096          STRH     r0,[r1,#0x96]
-;;;232    			
-;;;233    			MemLog(cdmaDataToSend);                //todo：这两行代码用于调试时监控，真正产品的时候可以注释掉
-0002cc  484f              LDR      r0,|L1.1036|
-0002ce  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0002d0  f7fffffe          BL       MemLog
-;;;234    			J1939DataLog();
-0002d4  f7fffffe          BL       J1939DataLog
-;;;235    		
-;;;236    			OSMutexPend(CDMASendMutex,0,&err);     //提高优先级，独占此包数据
-0002d8  466a              MOV      r2,sp
-0002da  2100              MOVS     r1,#0
-0002dc  4857              LDR      r0,|L1.1084|
-0002de  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-0002e0  f7fffffe          BL       OSMutexPend
-;;;237    			//将日志报文打包
-;;;238    			if(cdmaLogData->top <= 250)
-0002e4  484a              LDR      r0,|L1.1040|
-0002e6  6800              LDR      r0,[r0,#0]  ; cdmaLogData
-0002e8  8800              LDRH     r0,[r0,#0]
-0002ea  28fa              CMP      r0,#0xfa
-0002ec  dc52              BGT      |L1.916|
-;;;239    			{
-;;;240    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = (uint8_t)cdmaLogData->top + 3;
-0002ee  4848              LDR      r0,|L1.1040|
-0002f0  6800              LDR      r0,[r0,#0]  ; cdmaLogData
-0002f2  7800              LDRB     r0,[r0,#0]
-0002f4  1cc0              ADDS     r0,r0,#3
-0002f6  b2c1              UXTB     r1,r0
-0002f8  4844              LDR      r0,|L1.1036|
-0002fa  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0002fc  8802              LDRH     r2,[r0,#0]
-0002fe  4843              LDR      r0,|L1.1036|
-000300  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000302  8800              LDRH     r0,[r0,#0]
-000304  1c40              ADDS     r0,r0,#1
-000306  4b41              LDR      r3,|L1.1036|
-000308  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-00030a  8018              STRH     r0,[r3,#0]
-00030c  483f              LDR      r0,|L1.1036|
-00030e  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000310  6840              LDR      r0,[r0,#4]
-000312  5481              STRB     r1,[r0,r2]
-;;;241    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x50;
-000314  2150              MOVS     r1,#0x50
-000316  483d              LDR      r0,|L1.1036|
-000318  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00031a  8802              LDRH     r2,[r0,#0]
-00031c  483b              LDR      r0,|L1.1036|
-00031e  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000320  8800              LDRH     r0,[r0,#0]
-000322  1c40              ADDS     r0,r0,#1
-000324  4b39              LDR      r3,|L1.1036|
-000326  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-000328  8018              STRH     r0,[r3,#0]
-00032a  4838              LDR      r0,|L1.1036|
-00032c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00032e  6840              LDR      r0,[r0,#4]
-000330  5481              STRB     r1,[r0,r2]
-;;;242    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x03;
-000332  2203              MOVS     r2,#3
-000334  4835              LDR      r0,|L1.1036|
-000336  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-000338  8801              LDRH     r1,[r0,#0]
-00033a  4834              LDR      r0,|L1.1036|
-00033c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00033e  8800              LDRH     r0,[r0,#0]
-000340  1c40              ADDS     r0,r0,#1
-000342  4b32              LDR      r3,|L1.1036|
-000344  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-000346  8018              STRH     r0,[r3,#0]
-000348  4830              LDR      r0,|L1.1036|
-00034a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00034c  6840              LDR      r0,[r0,#4]
-00034e  5442              STRB     r2,[r0,r1]
-;;;243    				
-;;;244    				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],cdmaLogData->base,cdmaLogData->top);
-000350  4b2e              LDR      r3,|L1.1036|
-000352  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-000354  685b              LDR      r3,[r3,#4]
-000356  f8dfc0b4          LDR      r12,|L1.1036|
-00035a  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
-00035e  f8bcc000          LDRH     r12,[r12,#0]
-000362  eb03000c          ADD      r0,r3,r12
-000366  4b2a              LDR      r3,|L1.1040|
-000368  681b              LDR      r3,[r3,#0]  ; cdmaLogData
-00036a  881a              LDRH     r2,[r3,#0]
-00036c  4b28              LDR      r3,|L1.1040|
-00036e  681b              LDR      r3,[r3,#0]  ; cdmaLogData
-000370  6859              LDR      r1,[r3,#4]
-000372  f7fffffe          BL       __aeabi_memcpy
-;;;245    				cdmaDataToSend->datLength += cdmaLogData->top;
-000376  4825              LDR      r0,|L1.1036|
-000378  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00037a  8800              LDRH     r0,[r0,#0]
-00037c  4924              LDR      r1,|L1.1040|
-00037e  6809              LDR      r1,[r1,#0]  ; cdmaLogData
-000380  8809              LDRH     r1,[r1,#0]
-000382  4408              ADD      r0,r0,r1
-000384  4921              LDR      r1,|L1.1036|
-000386  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000388  8008              STRH     r0,[r1,#0]
-;;;246    				Store_Clear(cdmaLogData);
-00038a  4821              LDR      r0,|L1.1040|
-00038c  6800              LDR      r0,[r0,#0]  ; cdmaLogData
-00038e  f7fffffe          BL       Store_Clear
-000392  e0b6              B        |L1.1282|
-                  |L1.916|
-;;;247    			}
-;;;248    			else
-;;;249    			{
-;;;250    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 253;
-000394  22fd              MOVS     r2,#0xfd
-000396  481d              LDR      r0,|L1.1036|
-000398  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00039a  8801              LDRH     r1,[r0,#0]
-00039c  481b              LDR      r0,|L1.1036|
-00039e  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003a0  8800              LDRH     r0,[r0,#0]
-0003a2  1c40              ADDS     r0,r0,#1
-0003a4  4b19              LDR      r3,|L1.1036|
-0003a6  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-0003a8  8018              STRH     r0,[r3,#0]
-0003aa  4818              LDR      r0,|L1.1036|
-0003ac  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003ae  6840              LDR      r0,[r0,#4]
-0003b0  5442              STRB     r2,[r0,r1]
-;;;251    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x50;
-0003b2  e000              B        |L1.950|
-                  |L1.948|
-0003b4  e126              B        |L1.1540|
-                  |L1.950|
-0003b6  2150              MOVS     r1,#0x50
-0003b8  4814              LDR      r0,|L1.1036|
-0003ba  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003bc  8802              LDRH     r2,[r0,#0]
-0003be  4813              LDR      r0,|L1.1036|
-0003c0  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003c2  8800              LDRH     r0,[r0,#0]
-0003c4  1c40              ADDS     r0,r0,#1
-0003c6  4b11              LDR      r3,|L1.1036|
-0003c8  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-0003ca  8018              STRH     r0,[r3,#0]
-0003cc  480f              LDR      r0,|L1.1036|
-0003ce  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003d0  6840              LDR      r0,[r0,#4]
-0003d2  5481              STRB     r1,[r0,r2]
-;;;252    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x03;
-0003d4  2103              MOVS     r1,#3
-0003d6  480d              LDR      r0,|L1.1036|
-0003d8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003da  8802              LDRH     r2,[r0,#0]
-0003dc  480b              LDR      r0,|L1.1036|
-0003de  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003e0  8800              LDRH     r0,[r0,#0]
-0003e2  1c40              ADDS     r0,r0,#1
-0003e4  4b09              LDR      r3,|L1.1036|
-0003e6  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-0003e8  8018              STRH     r0,[r3,#0]
-0003ea  4808              LDR      r0,|L1.1036|
-0003ec  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003ee  6840              LDR      r0,[r0,#4]
-0003f0  5481              STRB     r1,[r0,r2]
-;;;253    				Store_Getdates(cdmaLogData,&cdmaDataToSend -> data[cdmaDataToSend->datLength],250);
-0003f2  4806              LDR      r0,|L1.1036|
-0003f4  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0003f6  6840              LDR      r0,[r0,#4]
-0003f8  4a04              LDR      r2,|L1.1036|
-0003fa  6812              LDR      r2,[r2,#0]  ; cdmaDataToSend
-0003fc  8812              LDRH     r2,[r2,#0]
-0003fe  1881              ADDS     r1,r0,r2
-000400  22fa              MOVS     r2,#0xfa
-000402  4803              LDR      r0,|L1.1040|
-000404  6800              LDR      r0,[r0,#0]  ; cdmaLogData
-000406  f7fffffe          BL       Store_Getdates
-;;;254    				cdmaDataToSend->datLength += 250;
-00040a  e073              B        |L1.1268|
-                  |L1.1036|
+;;;211    				SendFaultCmd();
+0001f0  f7fffffe          BL       SendFaultCmd
+                  |L2.500|
+;;;212    			}
+;;;213    			for(i = 0;i < varOperation.pidNum;i++) //PID指令的数目
+0001f4  2400              MOVS     r4,#0
+0001f6  e040              B        |L2.634|
+                  |L2.504|
+;;;214    			{
+;;;215    				(ptrPIDAllDat + i) -> timeCount += 4;
+0001f8  eb041004          ADD      r0,r4,r4,LSL #4
+0001fc  49b6              LDR      r1,|L2.1240|
+0001fe  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
+000200  4408              ADD      r0,r0,r1
+000202  6840              LDR      r0,[r0,#4]
+000204  1d00              ADDS     r0,r0,#4
+000206  eb041104          ADD      r1,r4,r4,LSL #4
+00020a  4ab3              LDR      r2,|L2.1240|
+00020c  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
+00020e  4411              ADD      r1,r1,r2
+000210  6048              STR      r0,[r1,#4]
+;;;216    				if((ptrPIDAllDat + i) -> timeCount < (ptrPIDAllDat + i) -> period)
+000212  eb041004          ADD      r0,r4,r4,LSL #4
+000216  49b0              LDR      r1,|L2.1240|
+000218  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
+00021a  4408              ADD      r0,r0,r1
+00021c  6840              LDR      r0,[r0,#4]
+00021e  eb041104          ADD      r1,r4,r4,LSL #4
+000222  4aad              LDR      r2,|L2.1240|
+000224  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
+000226  4411              ADD      r1,r1,r2
+000228  6809              LDR      r1,[r1,#0]
+00022a  4288              CMP      r0,r1
+00022c  d200              BCS      |L2.560|
+;;;217    					continue;
+00022e  e022              B        |L2.630|
+                  |L2.560|
+;;;218    				(ptrPIDAllDat + i) -> timeCount = 0;
+000230  2000              MOVS     r0,#0
+000232  eb041104          ADD      r1,r4,r4,LSL #4
+000236  4aa8              LDR      r2,|L2.1240|
+000238  6812              LDR      r2,[r2,#0]  ; ptrPIDAllDat
+00023a  4411              ADD      r1,r1,r2
+00023c  6048              STR      r0,[r1,#4]
+;;;219    				ptrOBDSend = Mem_malloc(9);
+00023e  2009              MOVS     r0,#9
+000240  f7fffffe          BL       Mem_malloc
+000244  4605              MOV      r5,r0
+;;;220    				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
+000246  eb041004          ADD      r0,r4,r4,LSL #4
+00024a  49a3              LDR      r1,|L2.1240|
+00024c  6809              LDR      r1,[r1,#0]  ; ptrPIDAllDat
+00024e  4408              ADD      r0,r0,r1
+000250  6881              LDR      r1,[r0,#8]
+000252  6029              STR      r1,[r5,#0]
+000254  68c1              LDR      r1,[r0,#0xc]
+000256  6069              STR      r1,[r5,#4]
+000258  7c00              LDRB     r0,[r0,#0x10]
+00025a  7228              STRB     r0,[r5,#8]
+;;;221    				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+00025c  4629              MOV      r1,r5
+00025e  4883              LDR      r0,|L2.1132|
+000260  6800              LDR      r0,[r0,#0]  ; canSendQ
+000262  f7fffffe          BL       OSQPost
+000266  9000              STR      r0,[sp,#0]
+;;;222    				if(err != OS_ERR_NONE)
+000268  f89d0000          LDRB     r0,[sp,#0]
+00026c  b110              CBZ      r0,|L2.628|
+;;;223    				{
+;;;224    					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+00026e  4628              MOV      r0,r5
+000270  f7fffffe          BL       Mem_free
+                  |L2.628|
+000274  bf00              NOP                            ;217
+                  |L2.630|
+000276  1c60              ADDS     r0,r4,#1              ;213
+000278  b2c4              UXTB     r4,r0                 ;213
+                  |L2.634|
+00027a  4866              LDR      r0,|L2.1044|
+00027c  f8b00078          LDRH     r0,[r0,#0x78]         ;213  ; varOperation
+000280  42a0              CMP      r0,r4                 ;213
+000282  dcb9              BGT      |L2.504|
+                  |L2.644|
+;;;225    //					LogReport("\r\n PID cmd OVERLoad;");
+;;;226    				} 
+;;;227    			}
+;;;228    		}
+;;;229    		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
+000284  4861              LDR      r0,|L2.1036|
+000286  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000288  8800              LDRH     r0,[r0,#0]
+00028a  4961              LDR      r1,|L2.1040|
+00028c  6809              LDR      r1,[r1,#0]  ; cdmaLogData
+00028e  8809              LDRH     r1,[r1,#0]
+000290  4408              ADD      r0,r0,r1
+000292  b287              UXTH     r7,r0
+;;;230    		if(dataLength > 36)                        //要发送的数据不为空
+000294  2f24              CMP      r7,#0x24
+000296  dd06              BLE      |L2.678|
+;;;231    			cdmaDataToSend->timeCount += 4;
+000298  485c              LDR      r0,|L2.1036|
+00029a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00029c  8840              LDRH     r0,[r0,#2]
+00029e  1d00              ADDS     r0,r0,#4
+0002a0  495a              LDR      r1,|L2.1036|
+0002a2  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+0002a4  8048              STRH     r0,[r1,#2]
+                  |L2.678|
+;;;232    		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 650) )//发送时间到或者要发送的数组长度超过850个字节
+0002a6  4859              LDR      r0,|L2.1036|
+0002a8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0002aa  8840              LDRH     r0,[r0,#2]
+0002ac  f64031b8          MOV      r1,#0xbb8
+0002b0  4288              CMP      r0,r1
+0002b2  da06              BGE      |L2.706|
+0002b4  4855              LDR      r0,|L2.1036|
+0002b6  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0002b8  8800              LDRH     r0,[r0,#0]
+0002ba  f240218a          MOV      r1,#0x28a
+0002be  4288              CMP      r0,r1
+0002c0  db7e              BLT      |L2.960|
+                  |L2.706|
+;;;233    		{
+;;;234    			cdmaDataToSend->datLength = FRAME_HEAD_LEN + varOperation.datOKLeng;
+0002c2  4854              LDR      r0,|L2.1044|
+0002c4  f8b00096          LDRH     r0,[r0,#0x96]  ; varOperation
+0002c8  301b              ADDS     r0,r0,#0x1b
+0002ca  4950              LDR      r1,|L2.1036|
+0002cc  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+0002ce  8008              STRH     r0,[r1,#0]
+;;;235    			varOperation.datOKLeng = 0;
+0002d0  2000              MOVS     r0,#0
+0002d2  4950              LDR      r1,|L2.1044|
+0002d4  f8a10096          STRH     r0,[r1,#0x96]
+;;;236    			
+;;;237    			MemLog(cdmaDataToSend);                //todo：这两行代码用于调试时监控，真正产品的时候可以注释掉
+0002d8  484c              LDR      r0,|L2.1036|
+0002da  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0002dc  f7fffffe          BL       MemLog
+;;;238    			J1939DataLog();
+0002e0  f7fffffe          BL       J1939DataLog
+;;;239    		
+;;;240    			OSMutexPend(CDMASendMutex,0,&err);     //提高优先级，独占此包数据
+0002e4  466a              MOV      r2,sp
+0002e6  2100              MOVS     r1,#0
+0002e8  4854              LDR      r0,|L2.1084|
+0002ea  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+0002ec  f7fffffe          BL       OSMutexPend
+;;;241    			//将日志报文打包
+;;;242    			if(cdmaLogData->top <= 250)
+0002f0  4847              LDR      r0,|L2.1040|
+0002f2  6800              LDR      r0,[r0,#0]  ; cdmaLogData
+0002f4  8800              LDRH     r0,[r0,#0]
+0002f6  28fa              CMP      r0,#0xfa
+0002f8  dc52              BGT      |L2.928|
+;;;243    			{
+;;;244    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = (uint8_t)cdmaLogData->top + 3;
+0002fa  4845              LDR      r0,|L2.1040|
+0002fc  6800              LDR      r0,[r0,#0]  ; cdmaLogData
+0002fe  7800              LDRB     r0,[r0,#0]
+000300  1cc0              ADDS     r0,r0,#3
+000302  b2c2              UXTB     r2,r0
+000304  4841              LDR      r0,|L2.1036|
+000306  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000308  8801              LDRH     r1,[r0,#0]
+00030a  4840              LDR      r0,|L2.1036|
+00030c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00030e  8800              LDRH     r0,[r0,#0]
+000310  1c40              ADDS     r0,r0,#1
+000312  4b3e              LDR      r3,|L2.1036|
+000314  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000316  8018              STRH     r0,[r3,#0]
+000318  483c              LDR      r0,|L2.1036|
+00031a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00031c  6840              LDR      r0,[r0,#4]
+00031e  5442              STRB     r2,[r0,r1]
+;;;245    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x50;
+000320  2150              MOVS     r1,#0x50
+000322  483a              LDR      r0,|L2.1036|
+000324  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000326  8802              LDRH     r2,[r0,#0]
+000328  4838              LDR      r0,|L2.1036|
+00032a  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00032c  8800              LDRH     r0,[r0,#0]
+00032e  1c40              ADDS     r0,r0,#1
+000330  4b36              LDR      r3,|L2.1036|
+000332  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000334  8018              STRH     r0,[r3,#0]
+000336  4835              LDR      r0,|L2.1036|
+000338  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00033a  6840              LDR      r0,[r0,#4]
+00033c  5481              STRB     r1,[r0,r2]
+;;;246    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x03;
+00033e  2103              MOVS     r1,#3
+000340  4832              LDR      r0,|L2.1036|
+000342  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000344  8802              LDRH     r2,[r0,#0]
+000346  4831              LDR      r0,|L2.1036|
+000348  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00034a  8800              LDRH     r0,[r0,#0]
+00034c  1c40              ADDS     r0,r0,#1
+00034e  4b2f              LDR      r3,|L2.1036|
+000350  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000352  8018              STRH     r0,[r3,#0]
+000354  482d              LDR      r0,|L2.1036|
+000356  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000358  6840              LDR      r0,[r0,#4]
+00035a  5481              STRB     r1,[r0,r2]
+;;;247    				
+;;;248    				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],cdmaLogData->base,cdmaLogData->top);
+00035c  4b2b              LDR      r3,|L2.1036|
+00035e  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000360  685b              LDR      r3,[r3,#4]
+000362  f8dfc0a8          LDR      r12,|L2.1036|
+000366  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
+00036a  f8bcc000          LDRH     r12,[r12,#0]
+00036e  eb03000c          ADD      r0,r3,r12
+000372  4b27              LDR      r3,|L2.1040|
+000374  681b              LDR      r3,[r3,#0]  ; cdmaLogData
+000376  881a              LDRH     r2,[r3,#0]
+000378  4b25              LDR      r3,|L2.1040|
+00037a  681b              LDR      r3,[r3,#0]  ; cdmaLogData
+00037c  6859              LDR      r1,[r3,#4]
+00037e  f7fffffe          BL       __aeabi_memcpy
+;;;249    				cdmaDataToSend->datLength += cdmaLogData->top;
+000382  4822              LDR      r0,|L2.1036|
+000384  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000386  8800              LDRH     r0,[r0,#0]
+000388  4921              LDR      r1,|L2.1040|
+00038a  6809              LDR      r1,[r1,#0]  ; cdmaLogData
+00038c  8809              LDRH     r1,[r1,#0]
+00038e  4408              ADD      r0,r0,r1
+000390  491e              LDR      r1,|L2.1036|
+000392  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000394  8008              STRH     r0,[r1,#0]
+;;;250    				Store_Clear(cdmaLogData);
+000396  481e              LDR      r0,|L2.1040|
+000398  6800              LDR      r0,[r0,#0]  ; cdmaLogData
+00039a  f7fffffe          BL       Store_Clear
+00039e  e0aa              B        |L2.1270|
+                  |L2.928|
+;;;251    			}
+;;;252    			else
+;;;253    			{
+;;;254    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 253;
+0003a0  21fd              MOVS     r1,#0xfd
+0003a2  481a              LDR      r0,|L2.1036|
+0003a4  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003a6  8802              LDRH     r2,[r0,#0]
+0003a8  4818              LDR      r0,|L2.1036|
+0003aa  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003ac  8800              LDRH     r0,[r0,#0]
+0003ae  1c40              ADDS     r0,r0,#1
+0003b0  4b16              LDR      r3,|L2.1036|
+0003b2  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0003b4  8018              STRH     r0,[r3,#0]
+0003b6  4815              LDR      r0,|L2.1036|
+0003b8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003ba  6840              LDR      r0,[r0,#4]
+0003bc  5481              STRB     r1,[r0,r2]
+;;;255    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x50;
+0003be  e000              B        |L2.962|
+                  |L2.960|
+0003c0  e144              B        |L2.1612|
+                  |L2.962|
+0003c2  2150              MOVS     r1,#0x50
+0003c4  4811              LDR      r0,|L2.1036|
+0003c6  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003c8  8802              LDRH     r2,[r0,#0]
+0003ca  4810              LDR      r0,|L2.1036|
+0003cc  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003ce  8800              LDRH     r0,[r0,#0]
+0003d0  1c40              ADDS     r0,r0,#1
+0003d2  4b0e              LDR      r3,|L2.1036|
+0003d4  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0003d6  8018              STRH     r0,[r3,#0]
+0003d8  480c              LDR      r0,|L2.1036|
+0003da  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003dc  6840              LDR      r0,[r0,#4]
+0003de  5481              STRB     r1,[r0,r2]
+;;;256    				cdmaDataToSend->data[cdmaDataToSend->datLength++] = 0x03;
+0003e0  2103              MOVS     r1,#3
+0003e2  480a              LDR      r0,|L2.1036|
+0003e4  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003e6  8802              LDRH     r2,[r0,#0]
+0003e8  4808              LDR      r0,|L2.1036|
+0003ea  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003ec  8800              LDRH     r0,[r0,#0]
+0003ee  1c40              ADDS     r0,r0,#1
+0003f0  4b06              LDR      r3,|L2.1036|
+0003f2  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0003f4  8018              STRH     r0,[r3,#0]
+0003f6  4805              LDR      r0,|L2.1036|
+0003f8  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0003fa  6840              LDR      r0,[r0,#4]
+0003fc  5481              STRB     r1,[r0,r2]
+;;;257    				Store_Getdates(cdmaLogData,&cdmaDataToSend -> data[cdmaDataToSend->datLength],250);
+0003fe  4803              LDR      r0,|L2.1036|
+000400  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000402  6840              LDR      r0,[r0,#4]
+000404  4a01              LDR      r2,|L2.1036|
+000406  6812              LDR      r2,[r2,#0]  ; cdmaDataToSend
+000408  8812              LDRH     r2,[r2,#0]
+00040a  e067              B        |L2.1244|
+                  |L2.1036|
                           DCD      cdmaDataToSend
-                  |L1.1040|
+                  |L2.1040|
                           DCD      cdmaLogData
-                  |L1.1044|
+                  |L2.1044|
                           DCD      varOperation
-                  |L1.1048|
+                  |L2.1048|
                           DCD      usbRecBuf
-                  |L1.1052|
+                  |L2.1052|
                           DCD      USBRecieveQ
-                  |L1.1056|
+                  |L2.1056|
                           DCD      usbSendBuf
-                  |L1.1060|
+                  |L2.1060|
                           DCD      USBSendQ
-                  |L1.1064|
+                  |L2.1064|
                           DCD      USB_TASK_STK+0x1fc
-                  |L1.1068|
+                  |L2.1068|
                           DCD      USBUpdataTask
-                  |L1.1072|
+                  |L2.1072|
                           DCD      beepSem
-                  |L1.1076|
+                  |L2.1076|
                           DCD      LoginMes
-                  |L1.1080|
+                  |L2.1080|
                           DCD      sendMsg
-                  |L1.1084|
+                  |L2.1084|
                           DCD      CDMASendMutex
-                  |L1.1088|
+                  |L2.1088|
                           DCD      CDMAPowerMutex
-                  |L1.1092|
+                  |L2.1092|
                           DCD      CANSendMutex
-                  |L1.1096|
+                  |L2.1096|
                           DCD      cdmaRecBuf
-                  |L1.1100|
+                  |L2.1100|
                           DCD      CDMARecieveQ
-                  |L1.1104|
+                  |L2.1104|
                           DCD      cdmaSendBuf
-                  |L1.1108|
+                  |L2.1108|
                           DCD      CDMASendQ
-                  |L1.1112|
+                  |L2.1112|
                           DCD      ZIPRecBuf
-                  |L1.1116|
+                  |L2.1116|
                           DCD      ZIPRecv_Q
-                  |L1.1120|
+                  |L2.1120|
                           DCD      gpsRecBuf
-                  |L1.1124|
+                  |L2.1124|
                           DCD      receGPSQ
-                  |L1.1128|
+                  |L2.1128|
                           DCD      canSendBuf
-                  |L1.1132|
+                  |L2.1132|
                           DCD      canSendQ
-                  |L1.1136|
+                  |L2.1136|
                           DCD      canRecBuf
-                  |L1.1140|
+                  |L2.1140|
                           DCD      canRecieveQ
-                  |L1.1144|
+                  |L2.1144|
                           DCD      canJ1939Buf
-                  |L1.1148|
+                  |L2.1148|
                           DCD      canJ1939Q
-                  |L1.1152|
+                  |L2.1152|
                           DCD      POWER_TASK_STK+0x1fc
-                  |L1.1156|
+                  |L2.1156|
                           DCD      PowerDeal
-                  |L1.1160|
+                  |L2.1160|
                           DCD      CDMA_TASK_STK+0x1fc
-                  |L1.1164|
+                  |L2.1164|
                           DCD      CDMATask
-                  |L1.1168|
+                  |L2.1168|
                           DCD      CDMARecv_TASK_STK+0x2cc
-                  |L1.1172|
+                  |L2.1172|
                           DCD      CDMARecvTask
-                  |L1.1176|
+                  |L2.1176|
                           DCD      GPS_TASK_STK+0x1fc
-                  |L1.1180|
+                  |L2.1180|
                           DCD      GPSTask
-                  |L1.1184|
+                  |L2.1184|
                           DCD      OBD_TASK_STK+0x1fc
-                  |L1.1188|
+                  |L2.1188|
                           DCD      OBDTask
-                  |L1.1192|
+                  |L2.1192|
                           DCD      J1939_TASK_STK+0x1fc
-                  |L1.1196|
+                  |L2.1196|
                           DCD      DealJ1939Date
-                  |L1.1200|
+                  |L2.1200|
                           DCD      SAVEFULE_TASK_STK+0x1fc
-                  |L1.1204|
+                  |L2.1204|
                           DCD      SaveFuleTask
-                  |L1.1208|
+                  |L2.1208|
                           DCD      CDMA_LED_STK+0x13c
-                  |L1.1212|
+                  |L2.1212|
                           DCD      CDMALEDTask
-                  |L1.1216|
+                  |L2.1216|
                           DCD      GPS_LED_STK+0x13c
-                  |L1.1220|
+                  |L2.1220|
                           DCD      GPSLEDTask
-                  |L1.1224|
+                  |L2.1224|
                           DCD      OBD_LED_STK+0x13c
-                  |L1.1228|
+                  |L2.1228|
                           DCD      OBDLEDTask
-                  |L1.1232|
+                  |L2.1232|
                           DCD      BEEP_STK+0x13c
-                  |L1.1236|
+                  |L2.1236|
                           DCD      BeepTask
-                  |L1.1240|
+                  |L2.1240|
                           DCD      ptrPIDAllDat
-                  |L1.1244|
-0004dc  0d0a2050          DCB      "\r\n PID cmd OVERLoad;",0
-0004e0  49442063
-0004e4  6d64204f
-0004e8  5645524c
-0004ec  6f61643b
-0004f0  00      
-0004f1  00                DCB      0
-0004f2  00                DCB      0
-0004f3  00                DCB      0
-                  |L1.1268|
-0004f4  4844              LDR      r0,|L1.1544|
-0004f6  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0004f8  8800              LDRH     r0,[r0,#0]
-0004fa  30fa              ADDS     r0,r0,#0xfa
-0004fc  4942              LDR      r1,|L1.1544|
-0004fe  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-000500  8008              STRH     r0,[r1,#0]
-                  |L1.1282|
-;;;255    			}
-;;;256    			for(i = 0;i < 50; i++)
-000502  2400              MOVS     r4,#0
-000504  e02b              B        |L1.1374|
-                  |L1.1286|
-;;;257    			{
-;;;258    				if(pPid[i][0] > 4)
-000506  4841              LDR      r0,|L1.1548|
-000508  f8500024          LDR      r0,[r0,r4,LSL #2]
-00050c  7800              LDRB     r0,[r0,#0]
-00050e  2804              CMP      r0,#4
-000510  dd23              BLE      |L1.1370|
-;;;259    				{
-;;;260    					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[i],pPid[i][0]);
-000512  4b3d              LDR      r3,|L1.1544|
-000514  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-000516  685b              LDR      r3,[r3,#4]
-000518  f8dfc0ec          LDR      r12,|L1.1544|
-00051c  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
-000520  f8bcc000          LDRH     r12,[r12,#0]
-000524  eb03000c          ADD      r0,r3,r12
-000528  4b38              LDR      r3,|L1.1548|
-00052a  f8533024          LDR      r3,[r3,r4,LSL #2]
-00052e  781a              LDRB     r2,[r3,#0]
-000530  4b36              LDR      r3,|L1.1548|
-000532  f8531024          LDR      r1,[r3,r4,LSL #2]
-000536  f7fffffe          BL       __aeabi_memcpy
-;;;261    					cdmaDataToSend->datLength += pPid[i][0];
-00053a  4833              LDR      r0,|L1.1544|
-00053c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00053e  8800              LDRH     r0,[r0,#0]
-000540  4932              LDR      r1,|L1.1548|
-000542  f8511024          LDR      r1,[r1,r4,LSL #2]
-000546  7809              LDRB     r1,[r1,#0]
-000548  4408              ADD      r0,r0,r1
-00054a  492f              LDR      r1,|L1.1544|
-00054c  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-00054e  8008              STRH     r0,[r1,#0]
-;;;262    					pPid[i][0] = 4;
-000550  2004              MOVS     r0,#4
-000552  492e              LDR      r1,|L1.1548|
-000554  f8511024          LDR      r1,[r1,r4,LSL #2]
-000558  7008              STRB     r0,[r1,#0]
-                  |L1.1370|
-00055a  1c60              ADDS     r0,r4,#1              ;256
-00055c  b2c4              UXTB     r4,r0                 ;256
-                  |L1.1374|
-00055e  2c32              CMP      r4,#0x32              ;256
-000560  dbd1              BLT      |L1.1286|
-;;;263    				}
-;;;264    			}
-;;;265    			for(i=50;i<52;i++)          //GPS 信息和 瞬时油耗
-000562  2432              MOVS     r4,#0x32
-000564  e02b              B        |L1.1470|
-                  |L1.1382|
-;;;266    			{
-;;;267    				if(pPid[i][0] > 3)
-000566  4829              LDR      r0,|L1.1548|
-000568  f8500024          LDR      r0,[r0,r4,LSL #2]
-00056c  7800              LDRB     r0,[r0,#0]
-00056e  2803              CMP      r0,#3
-000570  dd23              BLE      |L1.1466|
-;;;268    				{
-;;;269    					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[i],pPid[i][0]);
-000572  4b25              LDR      r3,|L1.1544|
-000574  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
-000576  685b              LDR      r3,[r3,#4]
-000578  f8dfc08c          LDR      r12,|L1.1544|
-00057c  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
-000580  f8bcc000          LDRH     r12,[r12,#0]
-000584  eb03000c          ADD      r0,r3,r12
-000588  4b20              LDR      r3,|L1.1548|
-00058a  f8533024          LDR      r3,[r3,r4,LSL #2]
-00058e  781a              LDRB     r2,[r3,#0]
-000590  4b1e              LDR      r3,|L1.1548|
-000592  f8531024          LDR      r1,[r3,r4,LSL #2]
-000596  f7fffffe          BL       __aeabi_memcpy
-;;;270    					cdmaDataToSend->datLength += pPid[i][0];
-00059a  481b              LDR      r0,|L1.1544|
-00059c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-00059e  8800              LDRH     r0,[r0,#0]
-0005a0  491a              LDR      r1,|L1.1548|
-0005a2  f8511024          LDR      r1,[r1,r4,LSL #2]
-0005a6  7809              LDRB     r1,[r1,#0]
-0005a8  4408              ADD      r0,r0,r1
-0005aa  4917              LDR      r1,|L1.1544|
-0005ac  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-0005ae  8008              STRH     r0,[r1,#0]
-;;;271    					pPid[i][0] = 3;
-0005b0  2003              MOVS     r0,#3
-0005b2  4916              LDR      r1,|L1.1548|
-0005b4  f8511024          LDR      r1,[r1,r4,LSL #2]
-0005b8  7008              STRB     r0,[r1,#0]
-                  |L1.1466|
-0005ba  1c60              ADDS     r0,r4,#1              ;265
-0005bc  b2c4              UXTB     r4,r0                 ;265
-                  |L1.1470|
-0005be  2c34              CMP      r4,#0x34              ;265
-0005c0  dbd1              BLT      |L1.1382|
-;;;272    				}
-;;;273    			}
-;;;274    			CDMASendDataPack(cdmaDataToSend);
-0005c2  4811              LDR      r0,|L1.1544|
-0005c4  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
-0005c6  f7fffffe          BL       CDMASendDataPack
-;;;275    			err = OSQPost(CDMASendQ,cdmaDataToSend);
-0005ca  480f              LDR      r0,|L1.1544|
-0005cc  6801              LDR      r1,[r0,#0]  ; cdmaDataToSend
-0005ce  4810              LDR      r0,|L1.1552|
-0005d0  6800              LDR      r0,[r0,#0]  ; CDMASendQ
-0005d2  f7fffffe          BL       OSQPost
-0005d6  9000              STR      r0,[sp,#0]
-;;;276    			if(err != OS_ERR_NONE)     //发送失败
-0005d8  f89d0000          LDRB     r0,[sp,#0]
-0005dc  b140              CBZ      r0,|L1.1520|
-;;;277    			{
-;;;278    				cdmaDataToSend->datLength = 27;
-0005de  201b              MOVS     r0,#0x1b
-0005e0  4909              LDR      r1,|L1.1544|
-0005e2  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-0005e4  8008              STRH     r0,[r1,#0]
-;;;279    				cdmaDataToSend->timeCount = 0;
-0005e6  2000              MOVS     r0,#0
-0005e8  4907              LDR      r1,|L1.1544|
-0005ea  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
-0005ec  8048              STRH     r0,[r1,#2]
-0005ee  e005              B        |L1.1532|
-                  |L1.1520|
-;;;280    			}
-;;;281    			else
-;;;282    				cdmaDataToSend = CDMNSendDataInit(1000);
-0005f0  f44f707a          MOV      r0,#0x3e8
-0005f4  f7fffffe          BL       CDMNSendDataInit
-0005f8  4903              LDR      r1,|L1.1544|
-0005fa  6008              STR      r0,[r1,#0]  ; cdmaDataToSend
-                  |L1.1532|
-;;;283    			OSMutexPost(CDMASendMutex);
-0005fc  4805              LDR      r0,|L1.1556|
-0005fe  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
-000600  f7fffffe          BL       OSMutexPost
-                  |L1.1540|
-000604  bf00              NOP                            ;201
-                  |L1.1542|
-000606  e5bb              B        |L1.384|
-;;;284    		}
-;;;285    	}
-;;;286    }
-;;;287    
+                  |L2.1244|
+0004dc  1881              ADDS     r1,r0,r2
+0004de  22fa              MOVS     r2,#0xfa
+0004e0  485b              LDR      r0,|L2.1616|
+0004e2  6800              LDR      r0,[r0,#0]  ; cdmaLogData
+0004e4  f7fffffe          BL       Store_Getdates
+;;;258    				cdmaDataToSend->datLength += 250;
+0004e8  485a              LDR      r0,|L2.1620|
+0004ea  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0004ec  8800              LDRH     r0,[r0,#0]
+0004ee  30fa              ADDS     r0,r0,#0xfa
+0004f0  4958              LDR      r1,|L2.1620|
+0004f2  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+0004f4  8008              STRH     r0,[r1,#0]
+                  |L2.1270|
+;;;259    			}
+;;;260    			for(i = 0;i < 49; i++)
+0004f6  2400              MOVS     r4,#0
+0004f8  e02b              B        |L2.1362|
+                  |L2.1274|
+;;;261    			{
+;;;262    				if(pPid[i][0] > 4)
+0004fa  4857              LDR      r0,|L2.1624|
+0004fc  f8500024          LDR      r0,[r0,r4,LSL #2]
+000500  7800              LDRB     r0,[r0,#0]
+000502  2804              CMP      r0,#4
+000504  dd23              BLE      |L2.1358|
+;;;263    				{
+;;;264    					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[i],pPid[i][0]);
+000506  4b53              LDR      r3,|L2.1620|
+000508  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+00050a  685b              LDR      r3,[r3,#4]
+00050c  f8dfc144          LDR      r12,|L2.1620|
+000510  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
+000514  f8bcc000          LDRH     r12,[r12,#0]
+000518  eb03000c          ADD      r0,r3,r12
+00051c  4b4e              LDR      r3,|L2.1624|
+00051e  f8533024          LDR      r3,[r3,r4,LSL #2]
+000522  781a              LDRB     r2,[r3,#0]
+000524  4b4c              LDR      r3,|L2.1624|
+000526  f8531024          LDR      r1,[r3,r4,LSL #2]
+00052a  f7fffffe          BL       __aeabi_memcpy
+;;;265    					cdmaDataToSend->datLength += pPid[i][0];
+00052e  4849              LDR      r0,|L2.1620|
+000530  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+000532  8800              LDRH     r0,[r0,#0]
+000534  4948              LDR      r1,|L2.1624|
+000536  f8511024          LDR      r1,[r1,r4,LSL #2]
+00053a  7809              LDRB     r1,[r1,#0]
+00053c  4408              ADD      r0,r0,r1
+00053e  4945              LDR      r1,|L2.1620|
+000540  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000542  8008              STRH     r0,[r1,#0]
+;;;266    					pPid[i][0] = 4;
+000544  2004              MOVS     r0,#4
+000546  4944              LDR      r1,|L2.1624|
+000548  f8511024          LDR      r1,[r1,r4,LSL #2]
+00054c  7008              STRB     r0,[r1,#0]
+                  |L2.1358|
+00054e  1c60              ADDS     r0,r4,#1              ;260
+000550  b2c4              UXTB     r4,r0                 ;260
+                  |L2.1362|
+000552  2c31              CMP      r4,#0x31              ;260
+000554  dbd1              BLT      |L2.1274|
+;;;267    				}
+;;;268    			}
+;;;269    			if(pPid[49][0] > 3)
+000556  4840              LDR      r0,|L2.1624|
+000558  f8d000c4          LDR      r0,[r0,#0xc4]  ; pPid
+00055c  7800              LDRB     r0,[r0,#0]
+00055e  2803              CMP      r0,#3
+000560  dd23              BLE      |L2.1450|
+;;;270    			{
+;;;271    				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[49],pPid[49][0]);
+000562  4b3c              LDR      r3,|L2.1620|
+000564  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+000566  685b              LDR      r3,[r3,#4]
+000568  f8dfc0e8          LDR      r12,|L2.1620|
+00056c  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
+000570  f8bcc000          LDRH     r12,[r12,#0]
+000574  eb03000c          ADD      r0,r3,r12
+000578  4b37              LDR      r3,|L2.1624|
+00057a  f8d330c4          LDR      r3,[r3,#0xc4]  ; pPid
+00057e  781a              LDRB     r2,[r3,#0]
+000580  4b35              LDR      r3,|L2.1624|
+000582  f8d310c4          LDR      r1,[r3,#0xc4]  ; pPid
+000586  f7fffffe          BL       __aeabi_memcpy
+;;;272    				cdmaDataToSend->datLength += pPid[49][0];
+00058a  4832              LDR      r0,|L2.1620|
+00058c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00058e  8800              LDRH     r0,[r0,#0]
+000590  4931              LDR      r1,|L2.1624|
+000592  f8d110c4          LDR      r1,[r1,#0xc4]  ; pPid
+000596  7809              LDRB     r1,[r1,#0]
+000598  4408              ADD      r0,r0,r1
+00059a  492e              LDR      r1,|L2.1620|
+00059c  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+00059e  8008              STRH     r0,[r1,#0]
+;;;273    				pPid[49][0] = 3;
+0005a0  2003              MOVS     r0,#3
+0005a2  492d              LDR      r1,|L2.1624|
+0005a4  f8d110c4          LDR      r1,[r1,#0xc4]  ; pPid
+0005a8  7008              STRB     r0,[r1,#0]
+                  |L2.1450|
+;;;274    			}
+;;;275    			for(i=50;i<52;i++)          //GPS 信息和 瞬时油耗
+0005aa  2432              MOVS     r4,#0x32
+0005ac  e02b              B        |L2.1542|
+                  |L2.1454|
+;;;276    			{
+;;;277    				if(pPid[i][0] > 3)
+0005ae  482a              LDR      r0,|L2.1624|
+0005b0  f8500024          LDR      r0,[r0,r4,LSL #2]
+0005b4  7800              LDRB     r0,[r0,#0]
+0005b6  2803              CMP      r0,#3
+0005b8  dd23              BLE      |L2.1538|
+;;;278    				{
+;;;279    					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[i],pPid[i][0]);
+0005ba  4b26              LDR      r3,|L2.1620|
+0005bc  681b              LDR      r3,[r3,#0]  ; cdmaDataToSend
+0005be  685b              LDR      r3,[r3,#4]
+0005c0  f8dfc090          LDR      r12,|L2.1620|
+0005c4  f8dcc000          LDR      r12,[r12,#0]  ; cdmaDataToSend
+0005c8  f8bcc000          LDRH     r12,[r12,#0]
+0005cc  eb03000c          ADD      r0,r3,r12
+0005d0  4b21              LDR      r3,|L2.1624|
+0005d2  f8533024          LDR      r3,[r3,r4,LSL #2]
+0005d6  781a              LDRB     r2,[r3,#0]
+0005d8  4b1f              LDR      r3,|L2.1624|
+0005da  f8531024          LDR      r1,[r3,r4,LSL #2]
+0005de  f7fffffe          BL       __aeabi_memcpy
+;;;280    					cdmaDataToSend->datLength += pPid[i][0];
+0005e2  481c              LDR      r0,|L2.1620|
+0005e4  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+0005e6  8800              LDRH     r0,[r0,#0]
+0005e8  491b              LDR      r1,|L2.1624|
+0005ea  f8511024          LDR      r1,[r1,r4,LSL #2]
+0005ee  7809              LDRB     r1,[r1,#0]
+0005f0  4408              ADD      r0,r0,r1
+0005f2  4918              LDR      r1,|L2.1620|
+0005f4  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+0005f6  8008              STRH     r0,[r1,#0]
+;;;281    					pPid[i][0] = 3;
+0005f8  2003              MOVS     r0,#3
+0005fa  4917              LDR      r1,|L2.1624|
+0005fc  f8511024          LDR      r1,[r1,r4,LSL #2]
+000600  7008              STRB     r0,[r1,#0]
+                  |L2.1538|
+000602  1c60              ADDS     r0,r4,#1              ;275
+000604  b2c4              UXTB     r4,r0                 ;275
+                  |L2.1542|
+000606  2c34              CMP      r4,#0x34              ;275
+000608  dbd1              BLT      |L2.1454|
+;;;282    				}
+;;;283    			}
+;;;284    			CDMASendDataPack(cdmaDataToSend);
+00060a  4812              LDR      r0,|L2.1620|
+00060c  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
+00060e  f7fffffe          BL       CDMASendDataPack
+;;;285    			err = OSQPost(CDMASendQ,cdmaDataToSend);
+000612  4810              LDR      r0,|L2.1620|
+000614  6801              LDR      r1,[r0,#0]  ; cdmaDataToSend
+000616  4811              LDR      r0,|L2.1628|
+000618  6800              LDR      r0,[r0,#0]  ; CDMASendQ
+00061a  f7fffffe          BL       OSQPost
+00061e  9000              STR      r0,[sp,#0]
+;;;286    			if(err != OS_ERR_NONE)     //发送失败
+000620  f89d0000          LDRB     r0,[sp,#0]
+000624  b140              CBZ      r0,|L2.1592|
+;;;287    			{
+;;;288    				cdmaDataToSend->datLength = 27;
+000626  201b              MOVS     r0,#0x1b
+000628  490a              LDR      r1,|L2.1620|
+00062a  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+00062c  8008              STRH     r0,[r1,#0]
+;;;289    				cdmaDataToSend->timeCount = 0;
+00062e  2000              MOVS     r0,#0
+000630  4908              LDR      r1,|L2.1620|
+000632  6809              LDR      r1,[r1,#0]  ; cdmaDataToSend
+000634  8048              STRH     r0,[r1,#2]
+000636  e005              B        |L2.1604|
+                  |L2.1592|
+;;;290    			}
+;;;291    			else
+;;;292    				cdmaDataToSend = CDMNSendDataInit(1000);
+000638  f44f707a          MOV      r0,#0x3e8
+00063c  f7fffffe          BL       CDMNSendDataInit
+000640  4904              LDR      r1,|L2.1620|
+000642  6008              STR      r0,[r1,#0]  ; cdmaDataToSend
+                  |L2.1604|
+;;;293    			OSMutexPost(CDMASendMutex);
+000644  4806              LDR      r0,|L2.1632|
+000646  6800              LDR      r0,[r0,#0]  ; CDMASendMutex
+000648  f7fffffe          BL       OSMutexPost
+                  |L2.1612|
+00064c  bf00              NOP                            ;201
+                  |L2.1614|
+00064e  e597              B        |L2.384|
+;;;294    		}
+;;;295    	}
+;;;296    }
+;;;297    void SendFaultCmd(void)
                           ENDP
 
-                  |L1.1544|
+                  |L2.1616|
+                          DCD      cdmaLogData
+                  |L2.1620|
                           DCD      cdmaDataToSend
-                  |L1.1548|
+                  |L2.1624|
                           DCD      pPid
-                  |L1.1552|
+                  |L2.1628|
                           DCD      CDMASendQ
-                  |L1.1556|
+                  |L2.1632|
                           DCD      CDMASendMutex
 
                           AREA ||i.main||, CODE, READONLY, ALIGN=2
@@ -891,23 +1057,23 @@
 ;;;111    	sendCDMA_Q = Cir_Queue_Init(1000);//CDMA 串口发送 循环队列 缓冲区
 000012  f44f707a          MOV      r0,#0x3e8
 000016  f7fffffe          BL       Cir_Queue_Init
-00001a  490f              LDR      r1,|L2.88|
+00001a  490f              LDR      r1,|L3.88|
 00001c  6008              STR      r0,[r1,#0]  ; sendCDMA_Q
 ;;;112    	receCDMA_S = Store_Init(1020);    //CDMA 串口接收 数据堆   缓冲区
 00001e  f44f707f          MOV      r0,#0x3fc
 000022  f7fffffe          BL       Store_Init
-000026  490d              LDR      r1,|L2.92|
+000026  490d              LDR      r1,|L3.92|
 000028  6008              STR      r0,[r1,#0]  ; receCDMA_S
 ;;;113    	
 ;;;114    	sendGPS_Q = Cir_Queue_Init(230);  //GPS  串口发送 循环队列 缓冲区
 00002a  20e6              MOVS     r0,#0xe6
 00002c  f7fffffe          BL       Cir_Queue_Init
-000030  490b              LDR      r1,|L2.96|
+000030  490b              LDR      r1,|L3.96|
 000032  6008              STR      r0,[r1,#0]  ; sendGPS_Q
 ;;;115    	receGPS_S = Store_Init(230);      //GPS  串口接收 数据堆   缓冲区
 000034  20e6              MOVS     r0,#0xe6
 000036  f7fffffe          BL       Store_Init
-00003a  490a              LDR      r1,|L2.100|
+00003a  490a              LDR      r1,|L3.100|
 00003c  6008              STR      r0,[r1,#0]  ; receGPS_S
 ;;;116    	
 ;;;117    	SystemBspInit();                  //硬件初始化 
@@ -915,9 +1081,9 @@
 ;;;118    	
 ;;;119    	OSTaskCreate(StartTask,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );
 000042  230a              MOVS     r3,#0xa
-000044  4a08              LDR      r2,|L2.104|
+000044  4a08              LDR      r2,|L3.104|
 000046  2100              MOVS     r1,#0
-000048  4808              LDR      r0,|L2.108|
+000048  4808              LDR      r0,|L3.108|
 00004a  f7fffffe          BL       OSTaskCreate
 ;;;120    	
 ;;;121    	OSStart();	 
@@ -929,17 +1095,17 @@
                           ENDP
 
 000056  0000              DCW      0x0000
-                  |L2.88|
+                  |L3.88|
                           DCD      sendCDMA_Q
-                  |L2.92|
+                  |L3.92|
                           DCD      receCDMA_S
-                  |L2.96|
+                  |L3.96|
                           DCD      sendGPS_Q
-                  |L2.100|
+                  |L3.100|
                           DCD      receGPS_S
-                  |L2.104|
+                  |L3.104|
                           DCD      START_TASK_STK+0x1fc
-                  |L2.108|
+                  |L3.108|
                           DCD      StartTask
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
@@ -999,9 +1165,9 @@
                   gpsMC
                           %        107
                   strengthFuel
-                          %        59
+                          %        83
                   strengthFuelFlash
-                          %        59
+                          %        83
 
                           AREA ||.data||, DATA, ALIGN=2
 

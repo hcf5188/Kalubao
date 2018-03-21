@@ -8,7 +8,7 @@
 #include "stm32f10x_wwdg.h"
 
 
-#define  BEN_S_C    2            //0 - 本地     1 - 测试环境    2 - 生产环境 
+#define  BEN_S_C    1            //0 - 本地     1 - 测试环境    2 - 生产环境 
 
 
 #define  FRAME_HEAD_LEN    27 
