@@ -19,20 +19,21 @@
 
 #define CDMA_TASK_PRIO       11     //网络通信GPRS任务优先级
 #define CDMARevc_TASK_PRIO   12     //处理服务器下发数据的任务的优先级
+#define OBD_ON_OFF_PRIO      13     //ECU断电、重启任务优先级
 #define GPS_TASK_PRIO        14     //车辆定位GPS任务优先级
 #define OBD_TASK_PRIO        15     //故障诊断OBD任务优先级
 #define J1939_TASK_PRIO      16     //SAE J1939 任务处理
 #define SAVE_FUEL_PEIO       17     //节油任务  优先级
 
-#define POWER_TASK_PRIO      18     //电源管理任务
+#define POWER_TASK_PRIO      19     //电源管理任务
 
-#define CDMA_LED_PRIO        20     //网络通信GPRS-LED任务优先级
-#define GPS_LED_PRIO         21     //车辆定位GPS-LED任务优先级
-#define OBD_LED_PRIO         22     //故障诊断OBD-LED任务优先级
-#define BEEP_TASK_PRIO       23     //蜂鸣器任务
+#define CDMA_LED_PRIO        25     //网络通信GPRS-LED任务优先级
+#define GPS_LED_PRIO         26     //车辆定位GPS-LED任务优先级
+#define OBD_LED_PRIO         27     //故障诊断OBD-LED任务优先级
+#define BEEP_TASK_PRIO       28     //蜂鸣器任务
 
-#define POWER_CONTROL_PRIO   27     //电源管理任务   
-#define CAN_BAUD_PRIO        30     //CAN波特率自诊断任务
+#define POWER_CONTROL_PRIO   30     //电源管理任务   
+#define CAN_BAUD_PRIO        31     //CAN波特率自诊断任务
 
 
 /************************   任务堆栈大小定义定义   ************************/
@@ -41,6 +42,7 @@
 #define START_STK_SIZE       128    //起始任务堆栈大小
 #define CDMA_STK_SIZE        128    //网络通信CDMA任务堆栈大小
 #define CDMARecv_STK_SIZE    180    //服务器下发数据
+#define OBD_ONOFF_STK_SIZE   128    //ECU断电、重启任务
 #define GPS_STK_SIZE         128    //车辆定位GPS任务堆栈大小
 #define OBD_STK_SIZE         128    //整车故障诊断OBD任务堆栈大小
 #define J1939_STK_SIZE       128    //整车故障诊断OBD任务堆栈大小
@@ -58,6 +60,8 @@ void CDMATask(void *pdata);      //CDMA发送任务
 void CDMARecvTask(void *pdata);  //CDMA处理服务器下发数据的任务
 
 void GPSTask(void *pdata);       //GPS定位任务
+
+void OBD_ON_OFFDeal(void *pdata);       //ECU断电、重启任务，用于解决常电逻辑
 
 void OBDTask(void *pdata);       //CAN通讯任务
 void DealJ1939Date(void *pdata); //处理J1939主动吐出数据的任务

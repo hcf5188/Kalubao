@@ -32,7 +32,7 @@ OS_EVENT * USBRecieveQ;             //USB  接收消息队列的指针
 #define ZIPRECVBUF_SIZE   5         //RECV接收消息队列保存消息的最大量
 #define GPSRECBUF_SIZE    10        //接收GPS消息队列保存消息的最大量
 #define CANRECBUF_SIZE    20        //CAN接收消息队列保存消息的最大量
-#define CANSENDBUF_SIZE   350       //CAN发送消息队列保存消息的最大量
+#define CANSENDBUF_SIZE   200       //CAN发送消息队列保存消息的最大量
 #define CANJ1939BUF_SIZE  20        //CAN接收J1939消息队列保存消息的最大量
 #define USBRECBUF_SIZE    10        //接收消息队列保存消息的最大量
 #define USBSENDBUF_SIZE   5         //发送消息队列保存消息的最大量
@@ -57,6 +57,8 @@ OS_STK CDMARecv_TASK_STK[CDMARecv_STK_SIZE];//网络通讯CDMA接收服务器数据任务堆栈
 
 OS_STK GPS_TASK_STK[GPS_STK_SIZE];          //车辆定位GPS任务堆栈
 
+OS_STK OBD_ONOFF_TASK_STK[OBD_ONOFF_STK_SIZE]; //常电逻辑任务堆栈
+
 OS_STK OBD_TASK_STK[OBD_STK_SIZE];          //汽车诊断OBD任务堆栈
 OS_STK J1939_TASK_STK[J1939_STK_SIZE];      //SAE - J1939任务堆栈
 OS_STK SAVEFULE_TASK_STK[SAVEFUEL_STK_SIZE];//节油任务堆栈
@@ -68,7 +70,7 @@ OS_STK GPS_LED_STK[LED_STK_SIZE];      //车辆定位GPS-LED任务堆栈
 OS_STK OBD_LED_STK[LED_STK_SIZE];      //汽车诊断OBD-LED任务堆栈
 OS_STK BEEP_STK[BEEP_STK_SIZE];        //蜂鸣器任务堆栈
 
-/******** 各串口接收、发送缓冲区初始化   **************/
+/******** 各串口接收、发送缓冲区初始化 **************/
 
 pCIR_QUEUE sendCDMA_Q = NULL;          //指向 CDMA 串口发送队列  的指针
 pSTORE     receCDMA_S = NULL;          //指向 CDMA 串口接收数据堆的指针
@@ -86,7 +88,7 @@ _CANDataConfig     canDataConfig;      //保存 CAN 通讯参数
 CARRunRecord       carAllRecord;       //整车运行状态信息
 nmea_msg           gpsMC;              // GPS 信息
 
-extern uint8_t * pPid[52];             //多包合一包
+extern uint8_t * pPid[102];             //多包合一包
 
 STRENFUEL_Struct   strengthFuel;       //增强动力、节油
 STRENFUEL_Struct   strengthFuelFlash;  // Flash 保存的增强动力
@@ -129,12 +131,13 @@ int main(void )
 ****************************************************************/
 #define SEND_MAX_TIME  3000              //3000ms计时时间到，则发送数据
 extern _OBD_PID_Cmd *ptrPIDAllDat;   
-
+uint8_t SendPIDCmd(void);
 void StartTask(void *pdata)
 {
 	uint8_t   err;
-	uint8_t   i = 0;
-	uint8_t   *ptrOBDSend;
+	uint8_t   i = 0,bag = 1;
+//	uint8_t   *ptrOBDSend;
+	uint8_t   *ptrPIDdate;
 	uint16_t  dataLength;
 	uint32_t  timeToSendLogin  = 0;
 	OS_CPU_SR cpu_sr=0;
@@ -180,6 +183,8 @@ void StartTask(void *pdata)
 		OSTaskCreate(CDMARecvTask, (void *)0,(OS_STK*)&CDMARecv_TASK_STK[CDMARecv_STK_SIZE - 1],CDMARevc_TASK_PRIO);	
 
 		OSTaskCreate(GPSTask,      (void *)0,(OS_STK*)&GPS_TASK_STK[GPS_STK_SIZE - 1],          GPS_TASK_PRIO);	
+		
+		OSTaskCreate(OBD_ON_OFFDeal,(void *)0,(OS_STK*)&OBD_ONOFF_TASK_STK[OBD_ONOFF_STK_SIZE - 1],OBD_ON_OFF_PRIO);
 
 		OSTaskCreate(OBDTask,      (void *)0,(OS_STK*)&OBD_TASK_STK[OBD_STK_SIZE - 1],          OBD_TASK_PRIO);
 		OSTaskCreate(DealJ1939Date,(void *)0,(OS_STK*)&J1939_TASK_STK[J1939_STK_SIZE - 1],      J1939_TASK_PRIO);//创建J1939处理任务		
@@ -204,32 +209,19 @@ void StartTask(void *pdata)
 		{
 			LoginDataSend(); 
 		}
-		if(varOperation.pidRun == 1 && varOperation.canTest == 2 && varOperation.pidTset == 0 && varOperation.strengthRun == 0 && varOperation.pidNum != 0xFFFF)   //CAN的波特率和ID均已确定
+		if(varOperation.pidRun == 1 && varOperation.canTest >0 && varOperation.pidTset == 0 && varOperation.strengthRun == 0)   //CAN的波特率和ID均已确定
 		{
-			if(timeToSendLogin % 2500 == 0)
+			if(timeToSendLogin % 2500 == 2499 && varOperation.pidSendFlag == 3)//发送故障码读取指令
 			{
 				SendFaultCmd();
 			}
-			for(i = 0;i < varOperation.pidNum;i++) //PID指令的数目
-			{
-				(ptrPIDAllDat + i) -> timeCount += 4;
-				if((ptrPIDAllDat + i) -> timeCount < (ptrPIDAllDat + i) -> period)
-					continue;
-				(ptrPIDAllDat + i) -> timeCount = 0;
-				ptrOBDSend = Mem_malloc(9);
-				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data,9);
-				err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
-				if(err != OS_ERR_NONE)
-				{
-					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
-//					LogReport("\r\n PID cmd OVERLoad;");
-				} 
-			}
+			if(varOperation.pidSendFlag == 1)
+				SendPIDCmd();
 		}
 		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
 		if(dataLength > 36)                        //要发送的数据不为空
 			cdmaDataToSend->timeCount += 4;
-		if((cdmaDataToSend->timeCount >= 3000) || (cdmaDataToSend->datLength >= 650) )//发送时间到或者要发送的数组长度超过850个字节
+		if((cdmaDataToSend->timeCount >= 2000) || (cdmaDataToSend->datLength >= 650) )//发送时间到或者要发送的数组长度超过850个字节
 		{
 			cdmaDataToSend->datLength = FRAME_HEAD_LEN + varOperation.datOKLeng;
 			varOperation.datOKLeng = 0;
@@ -257,22 +249,41 @@ void StartTask(void *pdata)
 				Store_Getdates(cdmaLogData,&cdmaDataToSend -> data[cdmaDataToSend->datLength],250);
 				cdmaDataToSend->datLength += 250;
 			}
-			for(i = 0;i < 49; i++)
+			if(varOperation.pidSendFlag == 3)
 			{
-				if(pPid[i][0] > 4)
+				ptrPIDdate = Mem_malloc(200);
+				ptrPIDdate[0] = 3;
+				ptrPIDdate[1] = 0x50;
+				ptrPIDdate[2] = 0x25;
+				for(i = 0;i < varOperation.pidNum; i++)
 				{
-					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[i],pPid[i][0]);
-					cdmaDataToSend->datLength += pPid[i][0];
-					pPid[i][0] = 4;
+					memcpy(&ptrPIDdate[ptrPIDdate[0]],&pPid[i][1],pPid[i][1]);
+					ptrPIDdate[0] += pPid[i][1];
+					if(i == bag*30)
+					{
+						memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrPIDdate,ptrPIDdate[0]);
+						cdmaDataToSend->datLength += ptrPIDdate[0];
+						ptrPIDdate[0] = 3;
+						ptrPIDdate[1] = 0x50;
+						ptrPIDdate[2] = 0x25;
+						bag++;
+					}
 				}
+				if(i == varOperation.pidNum && i != bag*30)
+				{
+					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrPIDdate,ptrPIDdate[0]);
+					cdmaDataToSend->datLength += ptrPIDdate[0];
+				}
+				ptrPIDdate[0] = 3;
+				ptrPIDdate[1] = 0x50;
+				ptrPIDdate[2] = 0x26;
+				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrPIDdate,ptrPIDdate[0]);
+				cdmaDataToSend->datLength += ptrPIDdate[0];
+				Mem_free(ptrPIDdate);
+				varOperation.pidSendFlag = 1;
+				bag = 1;
 			}
-			if(pPid[49][0] > 3)
-			{
-				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],pPid[49],pPid[49][0]);
-				cdmaDataToSend->datLength += pPid[49][0];
-				pPid[49][0] = 3;
-			}
-			for(i=50;i<52;i++)          //GPS 信息和 瞬时油耗
+			for(i=100;i<102;i++)          //GPS 信息和 清故障码
 			{
 				if(pPid[i][0] > 3)
 				{
@@ -289,8 +300,8 @@ void StartTask(void *pdata)
 				cdmaDataToSend->timeCount = 0;
 			}
 			else
-				cdmaDataToSend = CDMNSendDataInit(1000);
-			OSMutexPost(CDMASendMutex);
+				cdmaDataToSend = CDMNSendDataInit( 1000 );
+			OSMutexPost( CDMASendMutex );
 		}
 	}
 }
@@ -298,7 +309,6 @@ void SendFaultCmd(void)
 {
 	uint8_t * ptrOBDSend;
 	uint8_t err;
-//	static uint32_t timeCount = 0;
 	
 	ptrOBDSend = Mem_malloc(9);
 	ptrOBDSend[0] = 200;
@@ -307,25 +317,25 @@ void SendFaultCmd(void)
 		ptrOBDSend = Mem_malloc(9);
 		ptrOBDSend[0] = 236;
 		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd1,8);
-		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+		err = OSQPost(canSendQ,ptrOBDSend);//向 OBD 推送要发送的 PID 指令
 		if(err != OS_ERR_NONE)
 		{
 			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
 		} 
 	}else if(strengthFuelFlash.modeOrder == 2)
 	{
-		ptrOBDSend = Mem_malloc(9);//当前故障码
+		ptrOBDSend = Mem_malloc(9);		   //当前故障码
 		ptrOBDSend[0] = 234;
 		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd1,8);
-		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+		err = OSQPost(canSendQ,ptrOBDSend);//向 OBD 推送要发送的 PID 指令
 		if(err != OS_ERR_NONE)
 		{
 			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
 		} 
-		ptrOBDSend = Mem_malloc(9);//历史故障码
+		ptrOBDSend = Mem_malloc(9);		   //历史故障码
 		ptrOBDSend[0] = 235;
 		memcpy(&ptrOBDSend[1],strengthFuelFlash.faultCmd2,8);
-		err = OSQPost(canSendQ,ptrOBDSend);//向OBD推送要发送的PID指令
+		err = OSQPost(canSendQ,ptrOBDSend);//向 OBD 推送要发送的 PID 指令
 		if(err != OS_ERR_NONE)
 		{
 			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
@@ -333,6 +343,45 @@ void SendFaultCmd(void)
 	}
 }
 
+uint8_t SendPIDCmd(void)
+{
+	uint8_t i = 0;
+	uint8_t * ptrOBDSend;
+	uint8_t err;
+	for(i = 0;i < varOperation.pidNum;i ++) // PID 指令的数目
+	{
+		ptrOBDSend = Mem_malloc(9);
+		memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data, 9);
+		err = OSQPost(canSendQ,ptrOBDSend);//向 OBD 推送要发送的PID指令
+		if(err != OS_ERR_NONE)
+		{
+			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+		} 
+	}
+	varOperation.pidSendFlag = 0;
+	return 1;
+}
 
    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

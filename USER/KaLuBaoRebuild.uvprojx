@@ -446,6 +446,11 @@
               <FilePath>..\OBD\OBDTask.c</FilePath>
             </File>
             <File>
+              <FileName>OBD_ON_OFF.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\OBD\OBD_ON_OFF.c</FilePath>
+            </File>
+            <File>
               <FileName>CAN_J1939.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\OBD\CAN_J1939.c</FilePath>

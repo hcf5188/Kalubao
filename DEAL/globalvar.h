@@ -64,7 +64,7 @@ __packed typedef struct
 	uint32_t canTxId;       //保存CAN发送ID
 	uint32_t canRxId;       //保存CAN接收ID
 	CANBAUD_Enum  canBaud;  //CAN通讯波特率
-    uint8_t  pidVerCmd[8];     //自识别的结果保存
+    uint8_t  pidVerCmd[8];  //读取ECU版本号指令
 }_CANDataConfig;
 
 
@@ -119,6 +119,12 @@ __packed typedef struct//程序正常运行时候的各个参数
 	uint8_t  isStrenOilOK;  //是否可以进行提升动力
 	uint8_t  isUSBSendDat;  //USB是否要发送数据  0 - 不要   1 - 正在发送
 	uint8_t   pidVerCmd[8];
+	uint8_t  pidSendFlag;   //PID 发送标志
+	//判断常电逻辑中，ECU是否有电的变量
+	uint8_t  flagCAN;       //正常数据流通讯是否成功  0 - 不正常   1 - 正常
+	uint8_t  flagJ1939;     //是否有J1939数据        0 - 不正常   1 - 正常
+	uint8_t  flagVol;       //电压状态是否正常       0 - 不正常   1 - 正常
+	uint8_t  flagECUID;     //配置的ECUID是否正确
 }SYS_OperationVar;
 
 __packed typedef struct//第二个配置文件的结构体
@@ -206,7 +212,7 @@ __packed typedef struct
 	uint8_t  afterFuelTemp; 
 	uint16_t curFuel;         //当前喷油量
 	uint8_t  curFuelTemp;
-	uint16_t  instantFuel;     //瞬时油耗
+	uint16_t  instantFuel;    //瞬时油耗
 	uint32_t runLen1;         //行驶距离
 	uint32_t runLen2;         //车辆距离
 }CARRunRecord;
@@ -245,7 +251,7 @@ uint16_t CRC_ComputeFile(uint16_t srcCRC,uint8_t * data,uint32_t dataLength);
 
 void UbloxCheckSum(u8 *buf,u16 len,u8* cka,u8*ckb);//GPS校验和计算
 
-void CDMAPowerOpen_Close(uint8_t flag);            //打开-关闭CDMA  flag 0 - 打开CDMA    1 - 关闭CDMA
+void CDMAPowerOpen_Close(uint8_t flag);            //打开-关闭CDMA  flag 0 - 打开 CDMA    1 - 关闭CDMA
 void CDMAConfigInit(void );                        //初始化配置CDMA
 _CDMADataToSend* CDMNSendDataInit(uint16_t length);//封包前的初始化
 _CDMADataToSend* CDMNSendInfoInit(uint16_t length);//不带6000的报文
@@ -257,6 +263,7 @@ void SendFaultCmd(void );                          //发送故障码
 void SendPidCmdData(uint8_t* cmdData);
 void LogReport(char* fmt,...);                     //上传日志文件
 void MemLog(_CDMADataToSend* ptr);                 //内存使用的日志文件
+void IsCanCommunicationOK(void);                //发送测试数据
 
 void SoftErasePage(uint32_t addr);//擦除单页 2K
 void SoftProgramUpdate(uint32_t wAddr,uint8_t* ptrBuff,uint16_t datLength);//写入单页

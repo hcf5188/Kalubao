@@ -35,16 +35,16 @@ void CDMARecvTask(void *pdata)
 			cmdId = ptrDeal[3];
 			cmdId = (cmdId<<8) + ptrDeal[4];
 			
-			if(cmdId == 0x5001)                          //接收到登录报文
+			if(cmdId == 0x5001)				//接收到登录报文
 				RecvLoginDatDeal(ptrDeal);
 			
-			else if(cmdId == 0x5015)                     //模式切换
+			else if(cmdId == 0x5015)		//模式切换
 				FuelModeChange(ptrDeal);
 			
-			else if(cmdId == 0x5017)                     //服务器下发的测试指令
+			else if(cmdId == 0x5017)		//服务器下发的测试指令
 				CanTestCmd(ptrDeal);
 			
-			else if(((cmdId >= 0x4000)&&(cmdId < 0x5000))||(cmdId == 0x5012)||(cmdId == 0x5018)) //第一、二部分的配置文件
+			else if(((cmdId >= 0x4000)&&(cmdId < 0x5000))||(cmdId == 0x5012)||(cmdId == 0x5018)) //第一、二部分的配置文件  
 				ConfigUpdata(ptrDeal);
 			
 			else if((cmdId >= 0x8000)&&(cmdId < 0x9000)) //程序升级报文    
@@ -57,7 +57,7 @@ void CDMARecvTask(void *pdata)
 		else   //等待超时
 		{
 			varOperation.isLoginDeal = 1; 
-			if(sysUpdateVar.isSoftUpdate == 1)//OTA升级超时
+			if(sysUpdateVar.isSoftUpdate == 1)// OTA 升级超时
 			{
 				sysUpdateVar.isSoftUpdate = 0;
 				varOperation.isDataFlow   = 0;//重启数据流
@@ -425,7 +425,7 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 			addrSavePid = PID2CONFIGADDR;
 			frameIndex = 0;
 			memset(updateBuff,0,2048);
-			SendConfigNum(0x5012);//请求第二个配置文件
+			SendConfigNum(0x5012);//请求提升动力相关参数 (原来是0x5012请求第二个配置文件)
 		}
 		else  
 		{
@@ -475,7 +475,8 @@ static void ConfigUpdata(uint8_t* ptrDeal )
 		memcpy(canDataConfig.pidVerCmd,varOperation.pidVerCmd,8);
 		Save2KDataToFlash((uint8_t *)&canDataConfig,PIDCONFIG,(sizeof(_CANDataConfig)+3)); //保存 CAN 通讯参数
 		SendConfigNum(0x5018);
-	}else if(cmdId == 0x5018)
+	}
+	else if(cmdId == 0x5018)
 	{
 		offset = 5;
 		memcpy(strengthFuel.ecuVer,&ptrDeal[offset],16); //版本号

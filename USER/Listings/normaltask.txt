@@ -96,7 +96,7 @@
 00008e  f8ad000a          STRH     r0,[sp,#0xa]
 ;;;91     	TIM_OCInitStructure.TIM_Pulse=pluse;
 000092  f8ad700e          STRH     r7,[sp,#0xe]
-;;;92     	TIM_OCInitStructure.TIM_OCPolarity=TIM_OCPolarity_High;
+;;;92     	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
 000096  2000              MOVS     r0,#0
 000098  f8ad0010          STRH     r0,[sp,#0x10]
 ;;;93     	TIM_OC3Init(TIM3,&TIM_OCInitStructure);

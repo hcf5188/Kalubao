@@ -44,44 +44,18 @@ void CAN1_RX1_IRQHandler(void )
 	OSIntEnter();				//系统进入中断服务程序
 	
 	CAN_Receive(CAN1, CAN_FIFO1, CAN1_RxMsg);
-	if(varOperation.pidTset == 1)
+
+	if(CAN1_RxMsg->ExtId != varOperation.canRxId)//扔给J1939任务处理
+	{
+		err = OSQPost(canJ1939Q,CAN1_RxMsg);
+		if(err != OS_ERR_NONE)
+			Mem_free(CAN1_RxMsg);
+	}else 
 	{
 		err = OSQPost(canRecieveQ,CAN1_RxMsg);
 		if(err != OS_ERR_NONE)
 			Mem_free(CAN1_RxMsg);
-	}else
-	{
-		if(varOperation.canTest == 2) //收到CAN回复的数据 - 波特率测试成功
-		{
-			if(CAN1_RxMsg->ExtId != varOperation.canRxId)//扔给J1939任务处理
-			{
-				err = OSQPost(canJ1939Q,CAN1_RxMsg);
-				if(err != OS_ERR_NONE)
-					Mem_free(CAN1_RxMsg);
-			}else 
-			{
-				err = OSQPost(canRecieveQ,CAN1_RxMsg);
-				if(err != OS_ERR_NONE)
-					Mem_free(CAN1_RxMsg);
-			}
-		}	
-		else if(varOperation.canTest == 1)//自识别 CAN ID 阶段
-		{
-			varOperation.canTest = 2;
-			err = OSQPost(canRecieveQ,CAN1_RxMsg);
-			if(err != OS_ERR_NONE)
-				Mem_free(CAN1_RxMsg);
-		}
-		else if(varOperation.canTest == 0)
-		{
-			varOperation.canTest = 1; //自识别波特率阶段
-			err = OSQPost(canRecieveQ,CAN1_RxMsg);
-			if(err != OS_ERR_NONE)
-				Mem_free(CAN1_RxMsg);
-		}
 	}
-	
-
 	OSIntExit();  //中断服务结束，系统进行任务调度
 }
 

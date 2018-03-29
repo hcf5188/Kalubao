@@ -89,7 +89,7 @@ static void BSP_BeeperTimerInit(uint16_t ck_value)
 	TIM_OCInitStructure.TIM_OCMode=TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState=TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_Pulse=pluse;
-	TIM_OCInitStructure.TIM_OCPolarity=TIM_OCPolarity_High;
+	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
 	TIM_OC3Init(TIM3,&TIM_OCInitStructure);
 	TIM_CtrlPWMOutputs(TIM3,ENABLE);
 }

@@ -7,15 +7,22 @@
 
 void SpeedPlusSubCompute(void);//加减速次数计算
 void RunDataReport(void );     //运行数据上报
-
-//整车运行状态管理       todo：看门狗加进去  死机了就重启
+uint16_t adcValue = 0;         //存储ADC的数据
+uint8_t timeSaveFule = 0;
+//时间管理
 void PowerDeal(void *pdata)
 {
 	uint8_t timeCount = 0;  //发动机 启动 - 停止 时间
-
+	uint8_t timePid = 0;
 	while(1)
 	{
-		OSTimeDlyHMSM(0,0,1,0); 
+		OSTimeDlyHMSM(0,0,1,0);
+		timeSaveFule ++;		
+		adcValue = Get_Adc_Average(ADC_Channel_1,10);//判断OBD电源电压  阈值：27.5V
+		if(adcValue < 3060)
+			varOperation.flagVol = 0;//OBD 电源电压低，ECU应该是没电了 
+		else
+			varOperation.flagVol = 1;//OBD  电压正常
 		
 		if(carAllRecord.cdmaReStart < 30)//CDMA连续重启次数小余30，喂狗
 			IWDG_ReloadCounter();        // 喂狗
@@ -26,6 +33,15 @@ void PowerDeal(void *pdata)
 			timeCount = 0;
 		}
 		SpeedPlusSubCompute();//计算加减速、总行程
+		if(varOperation.pidSendFlag != 1)//防止数据流中间被打断，十秒后恢复发送
+		{
+			timePid ++;
+			if(timePid > 10)
+			{
+				timePid = 0;
+				varOperation.pidSendFlag = 1;
+			}
+		}
 	}
 } 
   
@@ -38,7 +54,7 @@ void SpeedPlusSubCompute(void)//加减速次数计算
 	speed = carAllRecord.carSpeed == 0?gpsMC.speed:carAllRecord.carSpeed;
 	speedCount = speed > speedRecord ? speed - speedRecord : speedRecord - speed;
 	
-	if(speedCount >= 20)//todo：这个 参考比较值 有待确定
+	if(speedCount >= 20)          //todo：这个 参考比较值 有待确定
 	{
 		if(ensureOne == 0)
 		{
@@ -56,12 +72,12 @@ void SpeedPlusSubCompute(void)//加减速次数计算
 	}else 
 		ensureOne = 0;
 	
-	speedRecord = speed;//记录当前车速
+	speedRecord = speed;                //记录当前车速
 	
 	if(carAllRecord.carSpeedMax < speed)//得到最大车速
 		carAllRecord.carSpeedMax = speed;
 	
-	carAllRecord.totalMileage += speed;//计算总行程
+	carAllRecord.totalMileage += speed; //计算总行程
 }
 //运行数据上报
 void RunDataReport(void)
@@ -119,8 +135,6 @@ void RunDataReport(void)
 		
 		OSMutexPost(CDMASendMutex);
 	}
-	
-	
 	Mem_free(ptrCarState);	//释放内存块
 }
 

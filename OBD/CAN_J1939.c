@@ -10,6 +10,7 @@ extern u8 RCVData5[16];
 extern u8 RCVData6[16]; 
 extern u8 CANerr_flg,CANerr_state,CANr1,CANr2,CANr3,CANr4,CANr5,CANr6,CANr7;
 extern u8 fCanOK;
+extern uint8_t timeSaveFule;
 void DealJ1939Date(void *pdata)
 {
 	uint8_t  err;
@@ -19,9 +20,13 @@ void DealJ1939Date(void *pdata)
 	
 	while(1)
 	{
-		CAN1_RxMsg = OSQPend(canJ1939Q,0,&err);
+		CAN1_RxMsg = OSQPend(canJ1939Q,500,&err);
 		if(err != OS_ERR_NONE)
+		{
+			varOperation.flagJ1939 = 0;//收不到J1939数据
 			continue;
+		}	
+		varOperation.flagJ1939 = 1;//J1939通讯正常
 		if(CAN1_RxMsg->IDE == 0x04)
 			canId = CAN1_RxMsg->ExtId;
 		else
@@ -91,11 +96,14 @@ void DealJ1939Date(void *pdata)
 		Mem_free(CAN1_RxMsg);
 		if(CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1 && CANr7==1)
 		{
-			if(fCanOK == 0)
-				LogReport("\r\nSaveFuel Data Receive OK!");
 			fCanOK = 1;
 		}else
 			fCanOK = 0;
+		if(timeSaveFule > 15)//统计深度节油要采集的数据是否收齐
+		{
+			timeSaveFule = 0;
+			LogReport("a:%d;b:%d;c:%d;d:%d;e:%d;f:%d;g:%d;\r\n",CANr1,CANr2,CANr3,CANr4,CANr5,CANr6,CANr7);
+		}
 	}
 }
 

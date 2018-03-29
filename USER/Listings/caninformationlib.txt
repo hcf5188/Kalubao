@@ -11,70 +11,52 @@
                           DCD      0x18da00fb
 000010  021a9400          DCB      0x02,0x1a,0x94,0x00
 000014  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da00f1
+                          DCD      0x18da10fb
 00001c  021a9400          DCB      0x02,0x1a,0x94,0x00
 000020  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da10fa
-000028  021a9400          DCB      0x02,0x1a,0x94,0x00
+                          DCD      0x18da00fa
+000028  0322f194          DCB      0x03,0x22,0xf1,0x94
 00002c  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da10fb
-000034  021a9400          DCB      0x02,0x1a,0x94,0x00
+                          DCD      0x18da00f1
+000034  0322f194          DCB      0x03,0x22,0xf1,0x94
 000038  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da10f1
-000040  021a9400          DCB      0x02,0x1a,0x94,0x00
-000044  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da00fa
-00004c  0322f194          DCB      0x03,0x22,0xf1,0x94
-000050  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da00fb
-000058  0322f194          DCB      0x03,0x22,0xf1,0x94
-00005c  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da00f1
-000064  0322f194          DCB      0x03,0x22,0xf1,0x94
-000068  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da00fa
-000070  0322f190          DCB      0x03,0x22,0xf1,0x90
-000074  00000000          DCB      0x00,0x00,0x00,0x00
-                          DCD      0x18da00f1
-00007c  0322f190          DCB      0x03,0x22,0xf1,0x90
-000080  00000000          DCB      0x00,0x00,0x00,0x00
                   TrqlimM
-000084  000002bc          DCW      0x0000,0x02bc
-000088  03200384          DCW      0x0320,0x0384
-00008c  03b603e8          DCW      0x03b6,0x03e8
-000090  05dc0640          DCW      0x05dc,0x0640
-000094  0672068b          DCW      0x0672,0x068b
-000098  06a406bd          DCW      0x06a4,0x06bd
-00009c  06d6076c          DCW      0x06d6,0x076c
-0000a0  138800cd          DCW      0x1388,0x00cd
-0000a4  00cd00cd          DCW      0x00cd,0x00cd
-0000a8  00cd00cd          DCW      0x00cd,0x00cd
-0000ac  00cd00cd          DCW      0x00cd,0x00cd
-0000b0  00cd00cd          DCW      0x00cd,0x00cd
-0000b4  00be00af          DCW      0x00be,0x00af
-0000b8  00a00091          DCW      0x00a0,0x0091
-0000bc  0087007d          DCW      0x0087,0x007d
+00003c  000002bc          DCW      0x0000,0x02bc
+000040  03200384          DCW      0x0320,0x0384
+000044  03b603e8          DCW      0x03b6,0x03e8
+000048  05dc0640          DCW      0x05dc,0x0640
+00004c  0672068b          DCW      0x0672,0x068b
+000050  06a406bd          DCW      0x06a4,0x06bd
+000054  06d6076c          DCW      0x06d6,0x076c
+000058  138800cd          DCW      0x1388,0x00cd
+00005c  00cd00cd          DCW      0x00cd,0x00cd
+000060  00cd00cd          DCW      0x00cd,0x00cd
+000064  00cd00cd          DCW      0x00cd,0x00cd
+000068  00cd00cd          DCW      0x00cd,0x00cd
+00006c  00be00af          DCW      0x00be,0x00af
+000070  00a00091          DCW      0x00a0,0x0091
+000074  0087007d          DCW      0x0087,0x007d
                   TrqlimL
-0000c0  000002bc          DCW      0x0000,0x02bc
-0000c4  03200384          DCW      0x0320,0x0384
-0000c8  03b603e8          DCW      0x03b6,0x03e8
-0000cc  05dc0640          DCW      0x05dc,0x0640
-0000d0  0672068b          DCW      0x0672,0x068b
-0000d4  06a406bd          DCW      0x06a4,0x06bd
-0000d8  06d6076c          DCW      0x06d6,0x076c
-0000dc  138800cd          DCW      0x1388,0x00cd
-0000e0  00cd00cd          DCW      0x00cd,0x00cd
-0000e4  00cd00cd          DCW      0x00cd,0x00cd
-0000e8  00cd00cd          DCW      0x00cd,0x00cd
-0000ec  00cd00cd          DCW      0x00cd,0x00cd
-0000f0  00be00af          DCW      0x00be,0x00af
-0000f4  00a00091          DCW      0x00a0,0x0091
-0000f8  0087007d          DCW      0x0087,0x007d
+000078  000002bc          DCW      0x0000,0x02bc
+00007c  03200384          DCW      0x0320,0x0384
+000080  03b603e8          DCW      0x03b6,0x03e8
+000084  05dc0640          DCW      0x05dc,0x0640
+000088  0672068b          DCW      0x0672,0x068b
+00008c  06a406bd          DCW      0x06a4,0x06bd
+000090  06d6076c          DCW      0x06d6,0x076c
+000094  138800cd          DCW      0x1388,0x00cd
+000098  00cd00cd          DCW      0x00cd,0x00cd
+00009c  00cd00cd          DCW      0x00cd,0x00cd
+0000a0  00cd00cd          DCW      0x00cd,0x00cd
+0000a4  00cd00cd          DCW      0x00cd,0x00cd
+0000a8  00be00af          DCW      0x00be,0x00af
+0000ac  00a00091          DCW      0x00a0,0x0091
+0000b0  0087007d          DCW      0x0087,0x007d
 
                           AREA ||.data||, DATA, ALIGN=0
 
                   canBaudEnum
-000000  010203            DCB      0x01,0x02,0x03
+000000  0102              DCB      0x01,0x02
 
 ;*** Start embedded assembler ***
 

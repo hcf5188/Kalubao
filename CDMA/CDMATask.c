@@ -77,6 +77,7 @@ receCDMA:
 				CDMAConfigInit();               //重新启动CDMA
 				varOperation.isDataFlow = 0;    //开启数据流
 				carAllRecord.cdmaReStart++;     //记录CDMA重启次数
+				LoginDataSend();                //重连需要登录报文
 				goto receCDMA;
 			}
 			err = CDMAReceDeal(pCDMARece,">");
@@ -101,6 +102,7 @@ receCDMA:
 			CDMAConfigInit();               //重新启动 CDMA
 			varOperation.isDataFlow = 0;    //开启数据流
 			carAllRecord.cdmaReStart++;     //记录 CDMA 重启次数
+			LoginDataSend();                //重连需要登录报文
 			goto receCDMA;
 		}
 		//实际要发送的数据

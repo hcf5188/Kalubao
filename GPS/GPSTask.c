@@ -3,7 +3,7 @@
 
 
 extern uint16_t freGPSLed;
-extern uint8_t * pPid[52];
+extern uint8_t * pPid[102];
 /************************      GPS任务    ***********************/
 
 void GPSTask(void *pdata)
@@ -75,8 +75,8 @@ void GPSTask(void *pdata)
 				{
 					OSMutexPend(CDMASendMutex,0,&err);
 					
-					memcpy(&pPid[51][pPid[51][0]],&ptrGPSPack[3],ptrGPSPack[0] - 3);//合并 GPS 位置信息
-					pPid[51][0] += ptrGPSPack[0] - 3;
+					memcpy(&pPid[101][pPid[101][0]],&ptrGPSPack[3],ptrGPSPack[0] - 3);//合并 GPS 位置信息
+					pPid[101][0] += ptrGPSPack[0] - 3;
 					cdmaDataToSend->datLength += ptrGPSPack[0] - 3;
 					
 					OSMutexPost(CDMASendMutex);

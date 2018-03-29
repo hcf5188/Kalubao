@@ -32,10 +32,13 @@ void CAN1Config(void)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 	GPIO_PinRemapConfig(GPIO_Remap1_CAN1 , ENABLE);
+	if(strengthFuelFlash.modeOrder == 1)
+	{
+		CAN1_BaudSet(CANBAUD_250K);      //先设置1M的 CAN 波特率
+		CAN1_ClearFilter();              //清除滤波器
+		CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//FIFO1消息挂号中断允许.	
+	}
 	
-//	CAN1_BaudSet(CANBAUD_250K);      //先设置1M的 CAN 波特率
-//	CAN1_ClearFilter();              //清除滤波器
-//	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//FIFO1消息挂号中断允许.	
 }
 //CAN1 波特率设置
 void CAN1_BaudSet(CANBAUD_Enum baud)

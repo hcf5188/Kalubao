@@ -97,110 +97,7 @@ u8    nop;
  void CoEng_rloadCal(void);
  void TrqLim(void);
  void ConstLimitation(void);
-/*=====================================================================================
-功  能: CAN通讯故障检测                                               
-参  数: ErrDetecSW:故障检测开关, ErrDebT:设定时间( unit:10ms ), Signal: 接收到CAN信号标志                                                             
-返  回:                                     
-说  明:超过设定时间 ErrDebT 没有接收到 CAN 数据时故障灯点亮
-       per 1ms
-======================================================================================*/
-u8 CanErrDetec(u16 ErrDebT,u8 Signal)
-{
-   static u16 CanErrCnt = 150;
-    
-   if(CanErrCnt < 65530)CanErrCnt++;
-   if(Signal==1 && CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1){
-     CanErrCnt = 0; 
-   }
-   if(CanErrCnt >= ErrDebT)
-	   return 0;
-   else 
-	   return 1;
-
-}
-u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
-{
-	static u16 CanErrCnt = 150;
-
-	if(CanErrCnt < 65530)
-		CanErrCnt++;
-	if(Signal==1 && CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1)
-		CanErrCnt = 0;
-	     
-	if(CanErrCnt >= ErrDebT)
-		return 0;
-	else 
-		return 1;
-}
-u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
-{
-	static u16 CanErrCnt = 150;
-
-	if(CanErrCnt < 65530)
-		CanErrCnt ++;
-	if(Signal == 1 && CANr1 == 1 && CANr2 == 1 && CANr3 == 1 && CANr4 == 1 && CANr5==1 && CANr6 == 1){
-		CanErrCnt = 0; 
-	}     
-	if(CanErrCnt >= ErrDebT)
-		return 0;
-	else 
-		return 1;
-}
-
-/* CANRXERR
-CANTXERR
-CANRFLG
-CANTBSEL
-CANTAAK
-CANTFLG */
-/* ========================================================================
-功  能:					Can 发送数据更新
-参  数:
-返  回:
-说  明:per 10ms
-======================================================================== */
-//按照低的来限制
-void UpdateTxDataAMT(void)
-{
-	//todo：详细讲讲这个代码
-    if(Acc_st==1)     //稳油的会算出扭矩限制，查表一个扭矩限制，最终要取小输送给ECU
-		trq[3] = 225;
-    else
-																			{
-         if(DRVDEM_TRQFLT_ENABLE)    //始终是使能的
-         {
-            if(Load_stCurr == Midload || Load_stCurr == Lowload)//中载或者轻载
-            {
-               TrqDrvFlt=(u8)CoEng_rDrvLoadFlt + 125; //需求扭矩
-            } 
-			else TrqDrvFlt = 225;
-         } 
-		 else 
-			 TrqDrvFlt = 225;  		//此举没有任何意义，永远也执行不到。
-         if(TrqLoad < trqmax)  		//限制小于最大值。
-         {
-            if(TrqLoad < TrqDrvFlt) 
-				trq[3] = TrqLoad;
-            else 
-				trq[3] = TrqDrvFlt;
-         }
-         else
-         {
-            if(trqmax < TrqDrvFlt) 
-				trq[3] = trqmax;
-            else 
-				trq[3] = TrqDrvFlt;
-         }
-		 trq[0] = 35;
-		 trq[1] = 0xFF;
-		 trq[2] = 0xFF;
-		 trq[3] = 205;
-    }
-	 trq[0] = 35;
-	 trq[1] = 0xFF;
-	 trq[2] = 0xFF;
-	 trq[3] = 205;
-}
+ void UpdateTxDataAMT(void);
 
 //节油任务
  void SaveFuleTask(void *pdata)
@@ -208,7 +105,7 @@ void UpdateTxDataAMT(void)
 	Load_stCurr   = Highload;      // 当前正处    轻、中、重载 的模式
 	Load_stTarget = Midload;       // 设置当前于  轻、中、重载 模式的记录变量
 	trqmax        = 225;
-	TrqLoad       = 150;           // 第一次装载值
+	TrqLoad       = 225;           // 第一次装载值
 	while(1)
 	{
 		OSTimeDlyHMSM(0,0,0,1);	
@@ -243,7 +140,8 @@ void UpdateTxDataAMT(void)
 					} 
 					else if(Load_stTarget == Lowload)    //应该是轻载模式
 					{
-						if(TrqLoad > TrqlimLow) TrqLoad = TrqLoad - 0.08; //8/s
+						if(TrqLoad > TrqlimLow)
+							TrqLoad = TrqLoad - 0.08; //8/s
 						else 
 						{
 							Load_stCurr = Load_stTarget;
@@ -352,7 +250,6 @@ void UpdateTxDataAMT(void)
 //			{
 //			CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;   //fCanOK = 0;
 //			}
-			
 		}
 	}
 }
@@ -396,11 +293,11 @@ void GearDetect(void)  //10ms     输入信号的获取
 			RateSpeed = RateSpeedRaw/8;
 		}
 	}    
-	Coeng_trqInrCurr = Curr_trq*Moffrm_trqMax/100;   //赋值之后怎么没有后续的操作呢？没用
+	Coeng_trqInrCurr = Curr_trq * Moffrm_trqMax / 100;   //赋值之后怎么没有后续的操作呢？没用
 	EngPrt_trqLim  = EngPrt_trqLimRaw / 10;          //外特性 / 10
-	CoEng_trq      = CoEng_trqRaw/10;                //发动机的输出扭矩 / 10
-	CoEng_trqint   = (signed int)CoEng_trq;		     //取整
-	Accped_r       = Accped_rRaw*0.4;                //踏板 * 0.4
+	CoEng_trq      = CoEng_trqRaw / 10;                //发动机的输出扭矩 / 10
+	CoEng_trqint   = (signed int) CoEng_trq;		     //取整
+	Accped_r       = Accped_rRaw * 0.4;                //踏板 * 0.4
 	Accped_rint    = (int)Accped_r;	                 //对踏板运算结果取整
 	Accped_rFlt    = SignalFlter(Accped_r,Accped_rFltOld,Accpet_tiPT1);//（踏板运算，上次踏板，0.9）
 	Accped_rFltOld = Accped_rFlt;                    //将旧值覆盖，（踏板）
@@ -492,7 +389,7 @@ void TrqLim(void)          //扭矩限制计算
 
 #define TimerAPP0Reset() {TimerAPPCnt0 = 0;APP_T0 = 0;} //reset APP timer0 
 
-//稳油功能
+//稳油功能  主要是用来计算trqmax的
 void ConstLimitation(void)
 {
 	static u16 TimerAPPCnt0 ;
@@ -539,4 +436,106 @@ void ConstLimitation(void)
 		TimerAPP0Reset();	 
 }
 
+/*=====================================================================================
+功  能: CAN通讯故障检测                                               
+参  数: ErrDetecSW:故障检测开关, ErrDebT:设定时间( unit:10ms ), Signal: 接收到CAN信号标志                                                             
+返  回:                                     
+说  明:超过设定时间 ErrDebT 没有接收到 CAN 数据时故障灯点亮
+       per 1ms
+======================================================================================*/
+u8 CanErrDetec(u16 ErrDebT,u8 Signal)
+{
+   static u16 CanErrCnt = 150;
+    
+   if(CanErrCnt < 65530)CanErrCnt++;
+   if(Signal==1 && CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1){
+     CanErrCnt = 0; 
+   }
+   if(CanErrCnt >= ErrDebT)
+	   return 0;
+   else 
+	   return 1;
+
+}
+u8 CanErrDetec7(u16 ErrDebT,u8 Signal)
+{
+	static u16 CanErrCnt = 150;
+
+	if(CanErrCnt < 65530)
+		CanErrCnt++;
+	if(Signal==1 && CANr1==1 && CANr2==1 && CANr3==1 && CANr4==1 && CANr5==1 && CANr6==1)
+		CanErrCnt = 0;
+	     
+	if(CanErrCnt >= ErrDebT)
+		return 0;
+	else 
+		return 1;
+}
+u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
+{
+	static u16 CanErrCnt = 150;
+
+	if(CanErrCnt < 65530)
+		CanErrCnt ++;
+	if(Signal == 1 && CANr1 == 1 && CANr2 == 1 && CANr3 == 1 && CANr4 == 1 && CANr5==1 && CANr6 == 1){
+		CanErrCnt = 0; 
+	}     
+	if(CanErrCnt >= ErrDebT)
+		return 0;
+	else 
+		return 1;
+}
+
+/* CANRXERR
+CANTXERR
+CANRFLG
+CANTBSEL
+CANTAAK
+CANTFLG */
+/* ========================================================================
+功  能:					Can 发送数据更新
+参  数:
+返  回:
+说  明:per 10ms
+======================================================================== */
+//按照低的来限制
+void UpdateTxDataAMT(void)
+{
+	//todo：详细讲讲这个代码
+    if(Acc_st==1)     //稳油的会算出扭矩限制，查表一个扭矩限制，最终要取小输送给ECU
+		trq[3] = 225;
+    else
+																			{
+         if(DRVDEM_TRQFLT_ENABLE)    //始终是使能的
+         {
+            if(Load_stCurr == Midload || Load_stCurr == Lowload)//中载或者轻载
+            {
+               TrqDrvFlt=(u8)CoEng_rDrvLoadFlt + 125; //需求扭矩
+            } 
+			else TrqDrvFlt = 225;
+         } 
+		 else 
+			 TrqDrvFlt = 225;  		//此举没有任何意义，永远也执行不到。
+         if(TrqLoad < trqmax)  		//限制小于最大值。
+         {
+            if(TrqLoad < TrqDrvFlt) 
+				trq[3] = TrqLoad;
+            else 
+				trq[3] = TrqDrvFlt;
+         }
+         else
+         {
+            if(trqmax < TrqDrvFlt) 
+				trq[3] = trqmax;
+            else 
+				trq[3] = TrqDrvFlt;
+         }
+		 trq[0] = 35;
+		 trq[1] = 0xFF;
+		 trq[2] = 0xFF;
+    }
+	 trq[0] = 35;
+	 trq[1] = 0xFF;
+	 trq[2] = 0xFF;
+}
 

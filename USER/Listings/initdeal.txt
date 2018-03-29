@@ -11,136 +11,87 @@
 ;;;12     {
 ;;;13     	uint8_t i = 0;
 000002  2400              MOVS     r4,#0
-;;;14     	for(i = 0;i < 11;i++)
+;;;14     	for(i = 0;i < 100;i++)
 000004  bf00              NOP      
 000006  e014              B        |L1.50|
                   |L1.8|
 ;;;15     	{
-;;;16     		pPid[i]    = Mem_malloc(60);//用于PID高频率采集的数据 内存
-000008  203c              MOVS     r0,#0x3c
+;;;16     		pPid[i]    = Mem_malloc(8);//用于PID高频率采集的数据 内存
+000008  2008              MOVS     r0,#8
 00000a  f7fffffe          BL       Mem_malloc
-00000e  4935              LDR      r1,|L1.228|
+00000e  491e              LDR      r1,|L1.136|
 000010  f8410024          STR      r0,[r1,r4,LSL #2]
-;;;17     		pPid[i][0] = 4;
-000014  2004              MOVS     r0,#4
+;;;17     		pPid[i][0] = i + 1;
+000014  1c60              ADDS     r0,r4,#1
 000016  f8511024          LDR      r1,[r1,r4,LSL #2]
 00001a  7008              STRB     r0,[r1,#0]
-;;;18     		pPid[i][1] = 0x60;
-00001c  2060              MOVS     r0,#0x60
-00001e  4931              LDR      r1,|L1.228|
+;;;18     		pPid[i][1] = 0 ;
+00001c  2000              MOVS     r0,#0
+00001e  491a              LDR      r1,|L1.136|
 000020  f8511024          LDR      r1,[r1,r4,LSL #2]
 000024  7048              STRB     r0,[r1,#1]
 ;;;19     		pPid[i][2] = i + 1;
 000026  1c60              ADDS     r0,r4,#1
-000028  492e              LDR      r1,|L1.228|
+000028  4917              LDR      r1,|L1.136|
 00002a  f8511024          LDR      r1,[r1,r4,LSL #2]
 00002e  7088              STRB     r0,[r1,#2]
 000030  b2c4              UXTB     r4,r0                 ;14
                   |L1.50|
-000032  2c0b              CMP      r4,#0xb               ;14
+000032  2c64              CMP      r4,#0x64              ;14
 000034  dbe8              BLT      |L1.8|
 ;;;20     	}
-;;;21     	for(i = 11;i < 50;i++)
-000036  240b              MOVS     r4,#0xb
-000038  e014              B        |L1.100|
-                  |L1.58|
-;;;22     	{
-;;;23     		pPid[i]    = Mem_malloc(30);//用于低频率 PID 采集的数据 内存
-00003a  201e              MOVS     r0,#0x1e
-00003c  f7fffffe          BL       Mem_malloc
-000040  4928              LDR      r1,|L1.228|
-000042  f8410024          STR      r0,[r1,r4,LSL #2]
-;;;24     		pPid[i][0] = 4;
-000046  2004              MOVS     r0,#4
-000048  f8511024          LDR      r1,[r1,r4,LSL #2]
-00004c  7008              STRB     r0,[r1,#0]
-;;;25     		pPid[i][1] = 0x60;
-00004e  2060              MOVS     r0,#0x60
-000050  4924              LDR      r1,|L1.228|
-000052  f8511024          LDR      r1,[r1,r4,LSL #2]
-000056  7048              STRB     r0,[r1,#1]
-;;;26     		pPid[i][2] = i + 1;
-000058  1c60              ADDS     r0,r4,#1
-00005a  4922              LDR      r1,|L1.228|
-00005c  f8511024          LDR      r1,[r1,r4,LSL #2]
-000060  7088              STRB     r0,[r1,#2]
-000062  b2c4              UXTB     r4,r0                 ;21
-                  |L1.100|
-000064  2c32              CMP      r4,#0x32              ;21
-000066  dbe8              BLT      |L1.58|
-;;;27     	}
-;;;28     	pPid[49] = Mem_malloc(30);      //最后一个是用来保存 5016 的数据
-000068  201e              MOVS     r0,#0x1e
-00006a  f7fffffe          BL       Mem_malloc
-00006e  491d              LDR      r1,|L1.228|
-000070  f8c100c4          STR      r0,[r1,#0xc4]  ; pPid
-;;;29     	pPid[49][0] = 3;
-000074  2003              MOVS     r0,#3
-000076  f8d110c4          LDR      r1,[r1,#0xc4]  ; pPid
-00007a  7008              STRB     r0,[r1,#0]
-;;;30     	pPid[49][1] = 0x50;
-00007c  2050              MOVS     r0,#0x50
-00007e  4919              LDR      r1,|L1.228|
-000080  f8d110c4          LDR      r1,[r1,#0xc4]  ; pPid
-000084  7048              STRB     r0,[r1,#1]
-;;;31     	pPid[49][2] = 0x21;
-000086  2021              MOVS     r0,#0x21
-000088  4916              LDR      r1,|L1.228|
-00008a  f8d110c4          LDR      r1,[r1,#0xc4]  ; pPid
-00008e  7088              STRB     r0,[r1,#2]
-;;;32     	
-;;;33     	pPid[50] = Mem_malloc(30);      //最后一个是用来保存 5016 的数据
-000090  201e              MOVS     r0,#0x1e
-000092  f7fffffe          BL       Mem_malloc
-000096  4913              LDR      r1,|L1.228|
-000098  f8c100c8          STR      r0,[r1,#0xc8]  ; pPid
-;;;34     	pPid[50][0] = 3;
-00009c  2003              MOVS     r0,#3
-00009e  f8d110c8          LDR      r1,[r1,#0xc8]  ; pPid
-0000a2  7008              STRB     r0,[r1,#0]
-;;;35     	pPid[50][1] = 0x50;
-0000a4  2050              MOVS     r0,#0x50
-0000a6  490f              LDR      r1,|L1.228|
-0000a8  f8d110c8          LDR      r1,[r1,#0xc8]  ; pPid
-0000ac  7048              STRB     r0,[r1,#1]
-;;;36     	pPid[50][2] = 0x16;
-0000ae  2016              MOVS     r0,#0x16
-0000b0  490c              LDR      r1,|L1.228|
-0000b2  f8d110c8          LDR      r1,[r1,#0xc8]  ; pPid
-0000b6  7088              STRB     r0,[r1,#2]
-;;;37     	
-;;;38     	pPid[51] = Mem_malloc(60);      //保存 GPS 信息的数据
-0000b8  203c              MOVS     r0,#0x3c
-0000ba  f7fffffe          BL       Mem_malloc
-0000be  4909              LDR      r1,|L1.228|
-0000c0  f8c100cc          STR      r0,[r1,#0xcc]  ; pPid
-;;;39     	pPid[51][0] = 3;
-0000c4  2003              MOVS     r0,#3
-0000c6  f8d110cc          LDR      r1,[r1,#0xcc]  ; pPid
-0000ca  7008              STRB     r0,[r1,#0]
-;;;40     	pPid[51][1] = 0x50;
-0000cc  2050              MOVS     r0,#0x50
-0000ce  4905              LDR      r1,|L1.228|
-0000d0  f8d110cc          LDR      r1,[r1,#0xcc]  ; pPid
-0000d4  7048              STRB     r0,[r1,#1]
-;;;41     	pPid[51][2] = 0x02;
-0000d6  2002              MOVS     r0,#2
-0000d8  4902              LDR      r1,|L1.228|
-0000da  f8d110cc          LDR      r1,[r1,#0xcc]  ; pPid
-0000de  7088              STRB     r0,[r1,#2]
-;;;42     }
-0000e0  bd10              POP      {r4,pc}
-;;;43     
+;;;21     
+;;;22     	pPid[100]   = Mem_malloc(30);  //向服务器回复清除故障码结果
+000036  201e              MOVS     r0,#0x1e
+000038  f7fffffe          BL       Mem_malloc
+00003c  4912              LDR      r1,|L1.136|
+00003e  f8c10190          STR      r0,[r1,#0x190]  ; pPid
+;;;23     	pPid[100][0] = 3;
+000042  2003              MOVS     r0,#3
+000044  f8d11190          LDR      r1,[r1,#0x190]  ; pPid
+000048  7008              STRB     r0,[r1,#0]
+;;;24     	pPid[100][1] = 0x50;
+00004a  2050              MOVS     r0,#0x50
+00004c  490e              LDR      r1,|L1.136|
+00004e  f8d11190          LDR      r1,[r1,#0x190]  ; pPid
+000052  7048              STRB     r0,[r1,#1]
+;;;25     	pPid[100][2] = 0x21;
+000054  2021              MOVS     r0,#0x21
+000056  490c              LDR      r1,|L1.136|
+000058  f8d11190          LDR      r1,[r1,#0x190]  ; pPid
+00005c  7088              STRB     r0,[r1,#2]
+;;;26     
+;;;27     	pPid[101] = Mem_malloc(60);      //保存 GPS 信息的数据
+00005e  203c              MOVS     r0,#0x3c
+000060  f7fffffe          BL       Mem_malloc
+000064  4908              LDR      r1,|L1.136|
+000066  f8c10194          STR      r0,[r1,#0x194]  ; pPid
+;;;28     	pPid[101][0] = 3;
+00006a  2003              MOVS     r0,#3
+00006c  f8d11194          LDR      r1,[r1,#0x194]  ; pPid
+000070  7008              STRB     r0,[r1,#0]
+;;;29     	pPid[101][1] = 0x50;
+000072  2050              MOVS     r0,#0x50
+000074  4904              LDR      r1,|L1.136|
+000076  f8d11194          LDR      r1,[r1,#0x194]  ; pPid
+00007a  7048              STRB     r0,[r1,#1]
+;;;30     	pPid[101][2] = 0x02;
+00007c  2002              MOVS     r0,#2
+00007e  4902              LDR      r1,|L1.136|
+000080  f8d11194          LDR      r1,[r1,#0x194]  ; pPid
+000084  7088              STRB     r0,[r1,#2]
+;;;31     }
+000086  bd10              POP      {r4,pc}
+;;;32     
                           ENDP
 
-0000e2  0000              DCW      0x0000
-                  |L1.228|
+                  |L1.136|
                           DCD      pPid
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
                   pPid
-                          %        208
+                          %        408
 
 ;*** Start embedded assembler ***
 

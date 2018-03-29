@@ -82,10 +82,6 @@ typedef struct
 	uint8_t    pidVerCmd[8];
 }CmdVersion;
 
-
-#define NUMOfCANBaud       3     //测试CAN波特率的数量
-#define NUMOfCANID_EXT     11    //CANID扩展帧的个数
-
 void OBD_CAN_SendData(u32 canId,u32 ide,u8* pdat);//CAN1发送数据
 void CAN1_BaudSet(CANBAUD_Enum baud);
 void CAN1_ClearFilter(void);

@@ -137,11 +137,17 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	varOperation.canTxId    = canDataConfig.canTxId;
 	varOperation.canRxId    = canDataConfig.canRxId;
 	varOperation.canBaud    = canDataConfig.canBaud;
-	varOperation.oilMode    = 0;  //默认正常模式
-	varOperation.isStrenOilOK = 0;//默认不可以进行动力提升
+	varOperation.oilMode    = 0;     //默认正常模式
+	varOperation.isStrenOilOK = 0;   //默认不可以进行动力提升
 	varOperation.strengthRun = 0;
 	varOperation.datOKLeng   = 0;
 	varOperation.pidRun      = 1;
+	varOperation.pidSendFlag = 1;    //数据发送的标志
+	
+	varOperation.flagCAN     = 0;    
+	varOperation.flagECUID   = 0;    //是否正常工作过
+	varOperation.flagJ1939   = 0;
+	varOperation.flagVol     = 0;    //
 	memset(varOperation.ecuVersion,0,20);
 	
 	varOperation.pidVarNum  = canDataConfig.pidVarNum;

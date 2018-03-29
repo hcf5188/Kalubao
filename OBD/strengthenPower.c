@@ -220,7 +220,7 @@ void SafeALG(void)
 
 uint8_t verMany[8]  = {0x30,0x00,0x00,0x00,0x00,0x00,0x00,0x00};//多包
 
-uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
+uint8_t  ReadECUVersion(uint8_t cmd[])	//读取ECU版本号
 {
 	uint8_t err,i=0;
 	uint8_t* ptrVer;
@@ -302,6 +302,7 @@ uint8_t  ReadECUVersion(uint8_t cmd[])//读取ECU版本号
 		Mem_free(carChange);
 		LogReport("\r\nCar changed!!!");                       //可能换车了
 		LogReport("\r\n21-ECUVer Mismatching;");
+		varOperation.isStrenOilOK = 0; 	 //不能进行动力提升
 		return 100;                      //版本号读取出来了，还没有匹配的提升动力版本号
 	}
 }
@@ -499,9 +500,9 @@ void StrengthFuel(void)
 		return;
 	varOperation.strengthRun = 1;//进入提升动力状态
 	varOperation.pidRun = 0;
-	//停止CAN报文的发送
-	//过安全算法、过模式、将新的标定值写入ECU
-	//延时20秒，进入正常的CAN报文收发
+	//停止 CAN 报文的发送
+	//过安全算法、过模式、将新的标定值写入 ECU
+	//延时 20 秒，进入正常的 CAN 报文收发
 	SafeALG();
 	OSTimeDlyHMSM(0,0,20,0);
 	varOperation.strengthRun = 0;
