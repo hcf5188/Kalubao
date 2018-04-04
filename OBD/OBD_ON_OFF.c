@@ -15,8 +15,8 @@ void OBD_ON_OFFDeal(void *pdata)
 	uint8_t err,temp;
 	uint8_t * can1_Txbuff;
 	
-	CAN1Config(); //配置CAN
 	OSSemPend(LoginMes,0,&err);   //等待连上网络
+	CAN1Config(); //配置CAN
 	ElecUP();
 	OSTimeDlyHMSM(0,0,5,0);
 	while(1)
@@ -35,19 +35,21 @@ void OBD_ON_OFFDeal(void *pdata)
 				Mem_free(can1_Txbuff);
 			}while(err == OS_ERR_NONE);
 			CANr1=0;CANr2=0;CANr3=0;CANr4=0;CANr5=0;CANr6=0;CANr7=0;fCanOK=0;
-			LogReport("\r\n08-ECU OFF:%d;",adcValue);
+			LogReport("\r\n08-ECU OFF!");
 	
 			IsCanCommunicationOK();
 			if(varOperation.canTest == 1)
 			{
 				Get_Q_FromECU();                          //获取喷油量的值
 				varOperation.pidRun = 1;                  //启动PID数据发送
+				varOperation.flagRecvOK = 0;
 			}	
 			else if(temp == 0)
 			{
 				varOperation.pidRun = 1;
+				varOperation.flagRecvOK = 0;
 			}
-			LogReport("\r\nECU ON:%d;",adcValue);
+			LogReport("\r\nECU ON!");
 			OSTimeDlyHMSM(0,0,15,0);
 		}
 	}
@@ -60,6 +62,7 @@ void IsCanCommunicationOK(void)//用读取版本号的指令发送测试帧
 	dataToSend.canId = canDataConfig.canTxId;
 	dataToSend.ide   = canDataConfig.canIdType;
 	dataToSend.pdat  = canDataConfig.pidVerCmd;    //用读取版本号的指令进行测试
+	varOperation.flagRecvOK = 0;
 	do{
 		OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
 		CAN1_RxMsg = OSQPend(canRecieveQ,500,&err);

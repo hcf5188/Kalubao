@@ -178,35 +178,37 @@
 000000  b508              PUSH     {r3,lr}
 ;;;111    {
 ;;;112    	uint8_t err;
-;;;113    	while(1)
-000002  e012              B        |L3.42|
-                  |L3.4|
-;;;114    	{
-;;;115    		OSSemPend(beepSem,0,&err);//想让蜂鸣器响，发送个信号量即可
-000004  466a              MOV      r2,sp
-000006  2100              MOVS     r1,#0
-000008  4808              LDR      r0,|L3.44|
-00000a  6800              LDR      r0,[r0,#0]  ; beepSem
-00000c  f7fffffe          BL       OSSemPend
-;;;116    		BSP_BeeperTimerInit(1000);//打开蜂鸣器，频率可以设定
-000010  f44f707a          MOV      r0,#0x3e8
-000014  f7fffffe          BL       BSP_BeeperTimerInit
-;;;117    		OSTimeDlyHMSM(0,0,0,300);
-000018  f44f7396          MOV      r3,#0x12c
-00001c  2200              MOVS     r2,#0
-00001e  4611              MOV      r1,r2
-000020  4610              MOV      r0,r2
-000022  f7fffffe          BL       OSTimeDlyHMSM
-;;;118    		BSP_BeeperTimer_Off();    //关闭蜂鸣器
-000026  f7fffffe          BL       BSP_BeeperTimer_Off
-                  |L3.42|
-00002a  e7eb              B        |L3.4|
-;;;119    	}
-;;;120    }
-;;;121    
+;;;113    	TIM1ConfigInit();
+000002  f7fffffe          BL       TIM1ConfigInit
+;;;114    	while(1)
+000006  e012              B        |L3.46|
+                  |L3.8|
+;;;115    	{
+;;;116    		OSSemPend(beepSem,0,&err);//想让蜂鸣器响，发送个信号量即可
+000008  466a              MOV      r2,sp
+00000a  2100              MOVS     r1,#0
+00000c  4808              LDR      r0,|L3.48|
+00000e  6800              LDR      r0,[r0,#0]  ; beepSem
+000010  f7fffffe          BL       OSSemPend
+;;;117    		BSP_BeeperTimerInit(1000);//打开蜂鸣器，频率可以设定
+000014  f44f707a          MOV      r0,#0x3e8
+000018  f7fffffe          BL       BSP_BeeperTimerInit
+;;;118    		OSTimeDlyHMSM(0,0,0,300);
+00001c  f44f7396          MOV      r3,#0x12c
+000020  2200              MOVS     r2,#0
+000022  4611              MOV      r1,r2
+000024  4610              MOV      r0,r2
+000026  f7fffffe          BL       OSTimeDlyHMSM
+;;;119    		BSP_BeeperTimer_Off();    //关闭蜂鸣器
+00002a  f7fffffe          BL       BSP_BeeperTimer_Off
+                  |L3.46|
+00002e  e7eb              B        |L3.8|
+;;;120    	}
+;;;121    }
+;;;122    
                           ENDP
 
-                  |L3.44|
+                  |L3.48|
                           DCD      beepSem
 
                           AREA ||i.CDMALEDTask||, CODE, READONLY, ALIGN=2
@@ -407,7 +409,91 @@
                   |L6.88|
                           DCD      0x40010c00
 
-                          AREA ||.data||, DATA, ALIGN=1
+                          AREA ||i.TIM1ConfigInit||, CODE, READONLY, ALIGN=2
+
+                  TIM1ConfigInit PROC
+;;;122    
+;;;123    void TIM1ConfigInit(void )
+000000  b50e              PUSH     {r1-r3,lr}
+;;;124    {
+;;;125    	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+;;;126    
+;;;127    	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE); //时钟使能
+000002  2101              MOVS     r1,#1
+000004  02c8              LSLS     r0,r1,#11
+000006  f7fffffe          BL       RCC_APB2PeriphClockCmd
+;;;128    	
+;;;129    	//定时器TIM2初始化
+;;;130    	TIM_TimeBaseStructure.TIM_Period = 9999;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
+00000a  f242700f          MOV      r0,#0x270f
+00000e  f8ad0004          STRH     r0,[sp,#4]
+;;;131    	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
+000012  f641401f          MOV      r0,#0x1c1f
+000016  f8ad0000          STRH     r0,[sp,#0]
+;;;132    	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
+00001a  2000              MOVS     r0,#0
+00001c  f8ad0006          STRH     r0,[sp,#6]
+;;;133    	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+000020  f8ad0002          STRH     r0,[sp,#2]
+;;;134    	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+000024  f88d0008          STRB     r0,[sp,#8]
+;;;135    	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
+000028  4669              MOV      r1,sp
+00002a  4806              LDR      r0,|L7.68|
+00002c  f7fffffe          BL       TIM_TimeBaseInit
+;;;136     
+;;;137    	TIM_ITConfig(TIM1,TIM_IT_Update,ENABLE );       //使能指定的TIM2中断,允许更新中断
+000030  2201              MOVS     r2,#1
+000032  4611              MOV      r1,r2
+000034  4803              LDR      r0,|L7.68|
+000036  f7fffffe          BL       TIM_ITConfig
+;;;138    	
+;;;139    	TIM_Cmd(TIM1, ENABLE);  //使能TIMx		
+00003a  2101              MOVS     r1,#1
+00003c  4801              LDR      r0,|L7.68|
+00003e  f7fffffe          BL       TIM_Cmd
+;;;140    }
+000042  bd0e              POP      {r1-r3,pc}
+;;;141    u32 timeBase = 0;
+                          ENDP
+
+                  |L7.68|
+                          DCD      0x40012c00
+
+                          AREA ||i.TIM1_UP_IRQHandler||, CODE, READONLY, ALIGN=2
+
+                  TIM1_UP_IRQHandler PROC
+;;;141    u32 timeBase = 0;
+;;;142    void TIM1_UP_IRQHandler(void)
+000000  b510              PUSH     {r4,lr}
+;;;143    {
+;;;144    	
+;;;145    	TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+000002  2101              MOVS     r1,#1
+000004  4806              LDR      r0,|L8.32|
+000006  f7fffffe          BL       TIM_ClearITPendingBit
+;;;146    	OSIntEnter();	
+00000a  f7fffffe          BL       OSIntEnter
+;;;147    	timeBase ++;
+00000e  4805              LDR      r0,|L8.36|
+000010  6800              LDR      r0,[r0,#0]  ; timeBase
+000012  1c40              ADDS     r0,r0,#1
+000014  4903              LDR      r1,|L8.36|
+000016  6008              STR      r0,[r1,#0]  ; timeBase
+;;;148    	OSIntExit();  //中断服务结束，系统进行任务调度
+000018  f7fffffe          BL       OSIntExit
+;;;149    	
+;;;150    }
+00001c  bd10              POP      {r4,pc}
+                          ENDP
+
+00001e  0000              DCW      0x0000
+                  |L8.32|
+                          DCD      0x40012c00
+                  |L8.36|
+                          DCD      timeBase
+
+                          AREA ||.data||, DATA, ALIGN=2
 
                   freCDMALed
 000000  00c8              DCW      0x00c8
@@ -415,6 +501,9 @@
 000002  00c8              DCW      0x00c8
                   freOBDLed
 000004  00c8              DCW      0x00c8
+000006  0000              DCB      0x00,0x00
+                  timeBase
+                          DCD      0x00000000
 
 ;*** Start embedded assembler ***
 

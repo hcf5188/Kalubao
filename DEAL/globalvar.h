@@ -123,7 +123,7 @@ __packed typedef struct//程序正常运行时候的各个参数
 	//判断常电逻辑中，ECU是否有电的变量
 	uint8_t  flagCAN;       //正常数据流通讯是否成功  0 - 不正常   1 - 正常
 	uint8_t  flagJ1939;     //是否有J1939数据        0 - 不正常   1 - 正常
-	uint8_t  flagVol;       //电压状态是否正常       0 - 不正常   1 - 正常
+	uint8_t  flagRecvOK;    //数据采集完毕
 	uint8_t  flagECUID;     //配置的ECUID是否正确
 }SYS_OperationVar;
 

@@ -35,10 +35,12 @@ _CDMADataToSend* CDMNSendInfoInit(uint16_t length)//要发送的数据，进行初始化
 }
 uint32_t realTime = 0;
 uint16_t crc      = 0;
+extern u32 timeBase;
 void CDMASendDataPack(_CDMADataToSend* ptr)		//对上传的数据包进行帧头封装、CRC校验等
 {
 	_PROTOCOL_HEAD *pHead = NULL;
-	realTime = RTC_GetCounter();				//得到系统运行的RTC时间
+//	realTime = RTC_GetCounter();				//得到系统运行的RTC时间
+	realTime = timeBase;
 	pHead = Mem_malloc(sizeof(_PROTOCOL_HEAD));
 	pHead->magic    = 0x7E;
 	pHead->len      = t_htons(ptr->datLength - 3);   //MAP层数据长度
@@ -147,7 +149,7 @@ void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需
 	varOperation.flagCAN     = 0;    
 	varOperation.flagECUID   = 0;    //是否正常工作过
 	varOperation.flagJ1939   = 0;
-	varOperation.flagVol     = 0;    //
+	varOperation.flagRecvOK  = 0;
 	memset(varOperation.ecuVersion,0,20);
 	
 	varOperation.pidVarNum  = canDataConfig.pidVarNum;

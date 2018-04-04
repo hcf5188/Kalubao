@@ -35,7 +35,7 @@ void OBDTask(void *pdata)
 			continue;
 		cmdNum = can1_Txbuff[0];  //记录PID指令序号
 		cmdLen = can1_Txbuff[1];  //记录PID指令长度
-		
+//		OSTimeDlyHMSM(0,0,0,20);
 		dataToSend.pdat = &can1_Txbuff[1];   
 		OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);//发送PID指令
 		
@@ -99,10 +99,16 @@ void OBDTask(void *pdata)
 				if(cmdNum < 100)
 				{
 					OSMutexPend(CDMASendMutex,0,&err);
+					
 					pPid[cmdNum - 1][1] = CAN1_RxMsg->Data[0];//得到指令的长度 + 1
 					memcpy(&pPid[cmdNum - 1][2],&CAN1_RxMsg->Data[2],CAN1_RxMsg->Data[0]-1);
 					if(cmdNum == varOperation.pidNum)
-						varOperation.pidSendFlag = 3;//数据采集完成
+					{
+						varOperation.pidSendFlag = 0;
+						varOperation.flagRecvOK  = 1;//数据采集完成
+					}
+						
+					cdmaDataToSend->datLength += CAN1_RxMsg->Data[0];
 					OSMutexPost(CDMASendMutex);
 				}
 				else if(CAN1_RxMsg->Data[0] > cmdLen)//正常的PID指令
@@ -251,7 +257,11 @@ void OBDTask(void *pdata)
 				varOperation.flagCAN = 0;//CAN 数据流不通
 				freOBDLed = LEDFAST; 
 				pidErrCount = 6;
-				varOperation.pidRun = 0;				
+				varOperation.pidRun = 0;
+				do{
+					can1_Txbuff = OSQAccept(canSendQ,&err);//清空消息队列里的消息
+					Mem_free(can1_Txbuff);
+				}while(err == OS_ERR_NONE);				
 			}
 		}
 		Mem_free(can1_Txbuff);      //释放内存块

@@ -5,91 +5,91 @@
                           AREA ||i.CARVarInit||, CODE, READONLY, ALIGN=2
 
                   CARVarInit PROC
-;;;318    //车辆运行的数据 初始化
-;;;319    void CARVarInit(void)
+;;;320    //车辆运行的数据 初始化
+;;;321    void CARVarInit(void)
 000000  2000              MOVS     r0,#0
-;;;320    {
-;;;321    	carAllRecord.startTime       = 0;//发动机启动时间
+;;;322    {
+;;;323    	carAllRecord.startTime       = 0;//发动机启动时间
 000002  4920              LDR      r1,|L1.132|
 000004  6008              STR      r0,[r1,#0]  ; carAllRecord
-;;;322    	carAllRecord.stopTime        = 0;//发动机停止时间
+;;;324    	carAllRecord.stopTime        = 0;//发动机停止时间
 000006  6048              STR      r0,[r1,#4]  ; carAllRecord
-;;;323    	carAllRecord.totalMileage    = 0;//此次总行程
+;;;325    	carAllRecord.totalMileage    = 0;//此次总行程
 000008  6088              STR      r0,[r1,#8]  ; carAllRecord
-;;;324    	carAllRecord.totalFuel       = 0;//总油耗
+;;;326    	carAllRecord.totalFuel       = 0;//总油耗
 00000a  60c8              STR      r0,[r1,#0xc]  ; carAllRecord
-;;;325    	carAllRecord.startlongitude  = 0;//汽车开始 经度
+;;;327    	carAllRecord.startlongitude  = 0;//汽车开始 经度
 00000c  6108              STR      r0,[r1,#0x10]  ; carAllRecord
-;;;326    	carAllRecord.startlatitude   = 0;//汽车开始 纬度
+;;;328    	carAllRecord.startlatitude   = 0;//汽车开始 纬度
 00000e  6148              STR      r0,[r1,#0x14]  ; carAllRecord
-;;;327    	carAllRecord.stoplongitude   = 0;//汽车停止 经度
+;;;329    	carAllRecord.stoplongitude   = 0;//汽车停止 经度
 000010  6188              STR      r0,[r1,#0x18]  ; carAllRecord
-;;;328    	carAllRecord.stoplatitude    = 0;//汽车停止 纬度
+;;;330    	carAllRecord.stoplatitude    = 0;//汽车停止 纬度
 000012  61c8              STR      r0,[r1,#0x1c]  ; carAllRecord
-;;;329    	carAllRecord.rapidlyPlusNum  = 0;//急加速次数
+;;;331    	carAllRecord.rapidlyPlusNum  = 0;//急加速次数
 000014  f8810020          STRB     r0,[r1,#0x20]
-;;;330    	carAllRecord.rapidlySubNum   = 0;//急减速次数
+;;;332    	carAllRecord.rapidlySubNum   = 0;//急减速次数
 000018  f8810021          STRB     r0,[r1,#0x21]
-;;;331    	carAllRecord.engineSpeedMax  = 0;//最高转速
+;;;333    	carAllRecord.engineSpeedMax  = 0;//最高转速
 00001c  8448              STRH     r0,[r1,#0x22]
-;;;332    	carAllRecord.carSpeedMax     = 0;//最高车速
+;;;334    	carAllRecord.carSpeedMax     = 0;//最高车速
 00001e  8488              STRH     r0,[r1,#0x24]
-;;;333    	carAllRecord.messageNum      = 0;//消息条数
+;;;335    	carAllRecord.messageNum      = 0;//消息条数
 000020  f8c10026          STR      r0,[r1,#0x26]  ; carAllRecord
-;;;334    	carAllRecord.cdmaReStart     = 0;//CDMA重启次数
+;;;336    	carAllRecord.cdmaReStart     = 0;//CDMA重启次数
 000024  f881002a          STRB     r0,[r1,#0x2a]
-;;;335    	carAllRecord.netFlow         = 0;//网络流量
+;;;337    	carAllRecord.netFlow         = 0;//网络流量
 000028  f8c1002b          STR      r0,[r1,#0x2b]  ; carAllRecord
-;;;336    	
-;;;337    	carAllRecord.afterFuel       = 0;//后喷油量
+;;;338    	
+;;;339    	carAllRecord.afterFuel       = 0;//后喷油量
 00002c  f8a10046          STRH     r0,[r1,#0x46]
-;;;338    	carAllRecord.afterFuel1      = 0;
+;;;340    	carAllRecord.afterFuel1      = 0;
 000030  f8a10048          STRH     r0,[r1,#0x48]
-;;;339    	carAllRecord.afterFuel2      = 0;
+;;;341    	carAllRecord.afterFuel2      = 0;
 000034  f8a1004a          STRH     r0,[r1,#0x4a]
-;;;340    	carAllRecord.afterFuel3      = 0;
+;;;342    	carAllRecord.afterFuel3      = 0;
 000038  f8a1004c          STRH     r0,[r1,#0x4c]
-;;;341    	carAllRecord.afterFuelTemp   = 0;
+;;;343    	carAllRecord.afterFuelTemp   = 0;
 00003c  f881004e          STRB     r0,[r1,#0x4e]
-;;;342    	carAllRecord.allFuel         = 0; //总喷油量
+;;;344    	carAllRecord.allFuel         = 0; //总喷油量
 000040  f8c10035          STR      r0,[r1,#0x35]  ; carAllRecord
-;;;343    	carAllRecord.allFuelTemp     = 0;
+;;;345    	carAllRecord.allFuelTemp     = 0;
 000044  f8810039          STRB     r0,[r1,#0x39]
-;;;344    	carAllRecord.beforeFuel      = 0; //预喷油量
+;;;346    	carAllRecord.beforeFuel      = 0; //预喷油量
 000048  f8a1003d          STRH     r0,[r1,#0x3d]
-;;;345    	carAllRecord.beforeFuel1     = 0;
+;;;347    	carAllRecord.beforeFuel1     = 0;
 00004c  f8a1003f          STRH     r0,[r1,#0x3f]
-;;;346    	carAllRecord.beforeFuel2     = 0;
+;;;348    	carAllRecord.beforeFuel2     = 0;
 000050  f8a10041          STRH     r0,[r1,#0x41]
-;;;347    	carAllRecord.beforeFuel3     = 0;
+;;;349    	carAllRecord.beforeFuel3     = 0;
 000054  f8a10043          STRH     r0,[r1,#0x43]
-;;;348    	carAllRecord.beforeFuelTemp  = 0;
+;;;350    	carAllRecord.beforeFuelTemp  = 0;
 000058  f8810045          STRB     r0,[r1,#0x45]
-;;;349    	carAllRecord.carSpeed        = 0; //车速
+;;;351    	carAllRecord.carSpeed        = 0; //车速
 00005c  f8a1002f          STRH     r0,[r1,#0x2f]
-;;;350    	carAllRecord.carSpeedTemp    = 0;
+;;;352    	carAllRecord.carSpeedTemp    = 0;
 000060  f8810031          STRB     r0,[r1,#0x31]
-;;;351    	carAllRecord.curFuel         = 0; //当前喷油量
+;;;353    	carAllRecord.curFuel         = 0; //当前喷油量
 000064  f8a1004f          STRH     r0,[r1,#0x4f]
-;;;352    	carAllRecord.curFuelTemp     = 0;
+;;;354    	carAllRecord.curFuelTemp     = 0;
 000068  f8810051          STRB     r0,[r1,#0x51]
-;;;353    	carAllRecord.primaryFuel     = 0; //主喷油量
+;;;355    	carAllRecord.primaryFuel     = 0; //主喷油量
 00006c  8748              STRH     r0,[r1,#0x3a]
-;;;354    	carAllRecord.primaryFuelTemp = 0;
+;;;356    	carAllRecord.primaryFuelTemp = 0;
 00006e  f881003c          STRB     r0,[r1,#0x3c]
-;;;355    	carAllRecord.engineSpeed     = 0; //发动机转速
+;;;357    	carAllRecord.engineSpeed     = 0; //发动机转速
 000072  8648              STRH     r0,[r1,#0x32]
-;;;356    	carAllRecord.engineSpeedTemp = 0; 
+;;;358    	carAllRecord.engineSpeedTemp = 0; 
 000074  f8810034          STRB     r0,[r1,#0x34]
-;;;357    	carAllRecord.runLen1         = 0; //行驶距离为 0
+;;;359    	carAllRecord.runLen1         = 0; //行驶距离为 0
 000078  6548              STR      r0,[r1,#0x54]  ; carAllRecord
-;;;358    	carAllRecord.runLen2         = 0; //车辆距离为 0
+;;;360    	carAllRecord.runLen2         = 0; //车辆距离为 0
 00007a  6588              STR      r0,[r1,#0x58]  ; carAllRecord
-;;;359    	carAllRecord.instantFuel     = 0; //瞬时油耗
+;;;361    	carAllRecord.instantFuel     = 0; //瞬时油耗
 00007c  f8a10052          STRH     r0,[r1,#0x52]
-;;;360    }
+;;;362    }
 000080  4770              BX       lr
-;;;361    
+;;;363    
                           ENDP
 
 000082  0000              DCW      0x0000
@@ -99,74 +99,76 @@
                           AREA ||i.CDMASendDataPack||, CODE, READONLY, ALIGN=2
 
                   CDMASendDataPack PROC
-;;;37     uint16_t crc      = 0;
-;;;38     void CDMASendDataPack(_CDMADataToSend* ptr)		//对上传的数据包进行帧头封装、CRC校验等
+;;;38     extern u32 timeBase;
+;;;39     void CDMASendDataPack(_CDMADataToSend* ptr)		//对上传的数据包进行帧头封装、CRC校验等
 000000  b570              PUSH     {r4-r6,lr}
-;;;39     {
+;;;40     {
 000002  4604              MOV      r4,r0
-;;;40     	_PROTOCOL_HEAD *pHead = NULL;
+;;;41     	_PROTOCOL_HEAD *pHead = NULL;
 000004  2500              MOVS     r5,#0
-;;;41     	realTime = RTC_GetCounter();				//得到系统运行的RTC时间
-000006  f7fffffe          BL       RTC_GetCounter
-00000a  4927              LDR      r1,|L2.168|
+;;;42     //	realTime = RTC_GetCounter();				//得到系统运行的RTC时间
+;;;43     	realTime = timeBase;
+000006  4828              LDR      r0,|L2.168|
+000008  6800              LDR      r0,[r0,#0]  ; timeBase
+00000a  4928              LDR      r1,|L2.172|
 00000c  6008              STR      r0,[r1,#0]  ; realTime
-;;;42     	pHead = Mem_malloc(sizeof(_PROTOCOL_HEAD));
+;;;44     	pHead = Mem_malloc(sizeof(_PROTOCOL_HEAD));
 00000e  201b              MOVS     r0,#0x1b
 000010  f7fffffe          BL       Mem_malloc
 000014  4605              MOV      r5,r0
-;;;43     	pHead->magic    = 0x7E;
+;;;45     	pHead->magic    = 0x7E;
 000016  207e              MOVS     r0,#0x7e
 000018  7028              STRB     r0,[r5,#0]
-;;;44     	pHead->len      = t_htons(ptr->datLength - 3);   //MAP层数据长度
+;;;46     	pHead->len      = t_htons(ptr->datLength - 3);   //MAP层数据长度
 00001a  8821              LDRH     r1,[r4,#0]
 00001c  1ec9              SUBS     r1,r1,#3
 00001e  b288              UXTH     r0,r1
 000020  f7fffffe          BL       t_htons
 000024  f8a50001          STRH     r0,[r5,#1]
-;;;45     	memcpy(pHead->device,varOperation.imei,16);      //拷贝设备唯一标识码 IMEI
+;;;47     	memcpy(pHead->device,varOperation.imei,16);      //拷贝设备唯一标识码 IMEI
 000028  2210              MOVS     r2,#0x10
-00002a  4920              LDR      r1,|L2.172|
+00002a  4921              LDR      r1,|L2.176|
 00002c  1ce8              ADDS     r0,r5,#3
 00002e  f7fffffe          BL       __aeabi_memcpy
-;;;46     	pHead->msgid    = t_htonl(varOperation.sendId);  //发送帧流水号 
-000032  491e              LDR      r1,|L2.172|
+;;;48     	pHead->msgid    = t_htonl(varOperation.sendId);  //发送帧流水号 
+000032  491f              LDR      r1,|L2.176|
 000034  3909              SUBS     r1,r1,#9
 000036  6dc8              LDR      r0,[r1,#0x5c]  ; varOperation
 000038  f7fffffe          BL       t_htonl
 00003c  f8c50013          STR      r0,[r5,#0x13]
-;;;47     	pHead->time_cli = t_htonl(realTime);             //记录当前包要发送的时间 
-000040  4819              LDR      r0,|L2.168|
+;;;49     	pHead->time_cli = t_htonl(realTime);             //记录当前包要发送的时间 
+000040  481a              LDR      r0,|L2.172|
 000042  6800              LDR      r0,[r0,#0]  ; realTime
 000044  f7fffffe          BL       t_htonl
 000048  f8c50017          STR      r0,[r5,#0x17]
-;;;48     	
-;;;49     	varOperation.sendId ++;
-00004c  4817              LDR      r0,|L2.172|
+;;;50     	
+;;;51     	varOperation.sendId ++;
+00004c  4818              LDR      r0,|L2.176|
 00004e  3809              SUBS     r0,r0,#9
 000050  6dc0              LDR      r0,[r0,#0x5c]  ; varOperation
 000052  1c40              ADDS     r0,r0,#1
-000054  4915              LDR      r1,|L2.172|
+000054  4916              LDR      r1,|L2.176|
 000056  3909              SUBS     r1,r1,#9
 000058  65c8              STR      r0,[r1,#0x5c]  ; varOperation
-;;;50     	memcpy(ptr->data,pHead,sizeof(_PROTOCOL_HEAD));
+;;;52     	memcpy(ptr->data,pHead,sizeof(_PROTOCOL_HEAD));
 00005a  6860              LDR      r0,[r4,#4]
 00005c  221b              MOVS     r2,#0x1b
 00005e  4629              MOV      r1,r5
 000060  f7fffffe          BL       __aeabi_memcpy
-;;;51     	Mem_free(pHead);                                 //申请的内存块，用完一定要释放啊
+;;;53     	Mem_free(pHead);                                 //申请的内存块，用完一定要释放啊
 000064  4628              MOV      r0,r5
 000066  f7fffffe          BL       Mem_free
-;;;52     	
-;;;53     	crc = CRC_Compute16(&ptr->data[1],ptr -> datLength-1);
+;;;54     	
+;;;55     	crc = CRC_Compute16(&ptr->data[1],ptr -> datLength-1);
 00006a  8822              LDRH     r2,[r4,#0]
 00006c  1e51              SUBS     r1,r2,#1
 00006e  6862              LDR      r2,[r4,#4]
 000070  1c50              ADDS     r0,r2,#1
 000072  f7fffffe          BL       CRC_Compute16
-000076  490e              LDR      r1,|L2.176|
+000076  490f              LDR      r1,|L2.180|
 000078  8008              STRH     r0,[r1,#0]
-;;;54     	
-;;;55     	ptr->data[ptr->datLength++] = (crc>>8) & 0xff;
+;;;56     	
+;;;57     	ptr->data[ptr->datLength++] = (crc>>8) & 0xff;
 00007a  4608              MOV      r0,r1
 00007c  8800              LDRH     r0,[r0,#0]  ; crc
 00007e  0a01              LSRS     r1,r0,#8
@@ -175,32 +177,34 @@
 000084  8020              STRH     r0,[r4,#0]
 000086  6860              LDR      r0,[r4,#4]
 000088  5481              STRB     r1,[r0,r2]
-;;;56     	ptr->data[ptr->datLength++] = crc & 0xff;
-00008a  4809              LDR      r0,|L2.176|
+;;;58     	ptr->data[ptr->datLength++] = crc & 0xff;
+00008a  480a              LDR      r0,|L2.180|
 00008c  7801              LDRB     r1,[r0,#0]  ; crc
 00008e  8822              LDRH     r2,[r4,#0]
 000090  1c50              ADDS     r0,r2,#1
 000092  8020              STRH     r0,[r4,#0]
 000094  6860              LDR      r0,[r4,#4]
 000096  5481              STRB     r1,[r0,r2]
-;;;57     	ptr->data[ptr->datLength++] = 0x7E;
+;;;59     	ptr->data[ptr->datLength++] = 0x7E;
 000098  217e              MOVS     r1,#0x7e
 00009a  8822              LDRH     r2,[r4,#0]
 00009c  1c50              ADDS     r0,r2,#1
 00009e  8020              STRH     r0,[r4,#0]
 0000a0  6860              LDR      r0,[r4,#4]
 0000a2  5481              STRB     r1,[r0,r2]
-;;;58     }
+;;;60     }
 0000a4  bd70              POP      {r4-r6,pc}
-;;;59     
+;;;61     
                           ENDP
 
 0000a6  0000              DCW      0x0000
                   |L2.168|
-                          DCD      realTime
+                          DCD      timeBase
                   |L2.172|
-                          DCD      varOperation+0x9
+                          DCD      realTime
                   |L2.176|
+                          DCD      varOperation+0x9
+                  |L2.180|
                           DCD      ||crc||
 
                           AREA ||i.CDMNSendDataInit||, CODE, READONLY, ALIGN=2
@@ -333,329 +337,322 @@
                           AREA ||i.GlobalVarInit||, CODE, READONLY, ALIGN=2
 
                   GlobalVarInit PROC
-;;;82     uint8_t pid2Config[300]  = {0};//此数组用来保存PID第二配置文件数据
-;;;83     void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
+;;;84     uint8_t pid2Config[300]  = {0};//此数组用来保存PID第二配置文件数据
+;;;85     void GlobalVarInit(void )      //todo：全局变量初始化  不断补充，从Flash中读取需不需要更新等 (ECU版本)
 000000  b570              PUSH     {r4-r6,lr}
-;;;84     {    
-;;;85     	uint8_t *ptrMode;
-;;;86     	uint8_t offset = 0;
+;;;86     {    
+;;;87     	uint8_t *ptrMode;
+;;;88     	uint8_t offset = 0;
 000002  2400              MOVS     r4,#0
-;;;87     	ptrMode = Mem_malloc(80);
+;;;89     	ptrMode = Mem_malloc(80);
 000004  2050              MOVS     r0,#0x50
 000006  f7fffffe          BL       Mem_malloc
 00000a  4605              MOV      r5,r0
-;;;88     	
-;;;89     	//从Flash中载入数据进全局变量
-;;;90     	Flash_ReadDat((uint8_t *)&sysUpdateVar,SBOOT_UPGREAD_ADDR,sizeof(_SystemInformation));
+;;;90     	
+;;;91     	//从Flash中载入数据进全局变量
+;;;92     	Flash_ReadDat((uint8_t *)&sysUpdateVar,SBOOT_UPGREAD_ADDR,sizeof(_SystemInformation));
 00000c  2210              MOVS     r2,#0x10
-00000e  4977              LDR      r1,|L5.492|
-000010  4877              LDR      r0,|L5.496|
+00000e  4974              LDR      r1,|L5.480|
+000010  4874              LDR      r0,|L5.484|
 000012  f7fffffe          BL       Flash_ReadDat
-;;;91     	//从Flash中读取PID参数
-;;;92     	Flash_ReadDat((uint8_t *)&canDataConfig,PIDCONFIG,sizeof(_CANDataConfig));
+;;;93     	//从Flash中读取PID参数
+;;;94     	Flash_ReadDat((uint8_t *)&canDataConfig,PIDCONFIG,sizeof(_CANDataConfig));
 000016  221b              MOVS     r2,#0x1b
-000018  4976              LDR      r1,|L5.500|
-00001a  4877              LDR      r0,|L5.504|
+000018  4973              LDR      r1,|L5.488|
+00001a  4874              LDR      r0,|L5.492|
 00001c  f7fffffe          BL       Flash_ReadDat
-;;;93     	
-;;;94     	PIDConfig2DataRead(configData,PID1CONFIGADDR,6000);
+;;;95     	
+;;;96     	PIDConfig2DataRead(configData,PID1CONFIGADDR,6000);
 000020  f2417270          MOV      r2,#0x1770
-000024  4975              LDR      r1,|L5.508|
-000026  4876              LDR      r0,|L5.512|
+000024  4972              LDR      r1,|L5.496|
+000026  4873              LDR      r0,|L5.500|
 000028  f7fffffe          BL       PIDConfig2DataRead
-;;;95     	ptrPIDAllDat = (_OBD_PID_Cmd *)configData;
-00002c  4874              LDR      r0,|L5.512|
-00002e  4975              LDR      r1,|L5.516|
+;;;97     	ptrPIDAllDat = (_OBD_PID_Cmd *)configData;
+00002c  4871              LDR      r0,|L5.500|
+00002e  4972              LDR      r1,|L5.504|
 000030  6008              STR      r0,[r1,#0]  ; ptrPIDAllDat
-;;;96     	
-;;;97     	Flash_ReadDat(pid2Config,PID2CONFIGADDR,300); //读取第二配置文件数据
+;;;98     	
+;;;99     	Flash_ReadDat(pid2Config,PID2CONFIGADDR,300); //读取第二配置文件数据
 000032  f44f7296          MOV      r2,#0x12c
-000036  4974              LDR      r1,|L5.520|
-000038  4874              LDR      r0,|L5.524|
+000036  4971              LDR      r1,|L5.508|
+000038  4871              LDR      r0,|L5.512|
 00003a  f7fffffe          BL       Flash_ReadDat
-;;;98     	ptrPIDVars   = (VARConfig*)pid2Config;
-00003e  4873              LDR      r0,|L5.524|
-000040  4973              LDR      r1,|L5.528|
+;;;100    	ptrPIDVars   = (VARConfig*)pid2Config;
+00003e  4870              LDR      r0,|L5.512|
+000040  4970              LDR      r1,|L5.516|
 000042  6008              STR      r0,[r1,#0]  ; ptrPIDVars
-;;;99     	
-;;;100    	Flash_ReadDat(strengPower,STRENGE_Q,300);  //读出喷油量的原始值
+;;;101    	
+;;;102    	Flash_ReadDat(strengPower,STRENGE_Q,300);  //读出喷油量的原始值
 000044  f44f7296          MOV      r2,#0x12c
-000048  4972              LDR      r1,|L5.532|
-00004a  4873              LDR      r0,|L5.536|
+000048  496f              LDR      r1,|L5.520|
+00004a  4870              LDR      r0,|L5.524|
 00004c  f7fffffe          BL       Flash_ReadDat
-;;;101    	if(strengPower[0] != 0xAF)                 //从未记录过该车的喷油量
-000050  4871              LDR      r0,|L5.536|
+;;;103    	if(strengPower[0] != 0xAF)                 //从未记录过该车的喷油量
+000050  486e              LDR      r0,|L5.524|
 000052  7800              LDRB     r0,[r0,#0]  ; strengPower
 000054  28af              CMP      r0,#0xaf
 000056  d004              BEQ      |L5.98|
-;;;102    		memset(strengPower,0,300);	
+;;;104    		memset(strengPower,0,300);	
 000058  f44f7196          MOV      r1,#0x12c
-00005c  486e              LDR      r0,|L5.536|
+00005c  486b              LDR      r0,|L5.524|
 00005e  f7fffffe          BL       __aeabi_memclr
                   |L5.98|
-;;;103    	
-;;;104    	Flash_ReadDat(ptrMode,PROMOTE_ADDR,100);    //读取提升动力相关参数
+;;;105    	
+;;;106    	Flash_ReadDat(ptrMode,PROMOTE_ADDR,100);    //读取提升动力相关参数
 000062  2264              MOVS     r2,#0x64
-000064  496d              LDR      r1,|L5.540|
+000064  496a              LDR      r1,|L5.528|
 000066  4628              MOV      r0,r5
 000068  f7fffffe          BL       Flash_ReadDat
-;;;105    	memcpy(strengthFuelFlash.ecuVer,&ptrMode[offset],16);
+;;;107    	memcpy(strengthFuelFlash.ecuVer,&ptrMode[offset],16);
 00006c  1929              ADDS     r1,r5,r4
 00006e  2210              MOVS     r2,#0x10
-000070  486b              LDR      r0,|L5.544|
+000070  4868              LDR      r0,|L5.532|
 000072  f7fffffe          BL       __aeabi_memcpy
-;;;106    	offset += 16;
+;;;108    	offset += 16;
 000076  f1040010          ADD      r0,r4,#0x10
 00007a  b2c4              UXTB     r4,r0
-;;;107    	memcpy(strengthFuelFlash.fuelAddr,&ptrMode[offset],5);
+;;;109    	memcpy(strengthFuelFlash.fuelAddr,&ptrMode[offset],5);
 00007c  1928              ADDS     r0,r5,r4
-00007e  4968              LDR      r1,|L5.544|
+00007e  4965              LDR      r1,|L5.532|
 000080  6802              LDR      r2,[r0,#0]
 000082  610a              STR      r2,[r1,#0x10]  ; strengthFuelFlash
 000084  7900              LDRB     r0,[r0,#4]
 000086  7508              STRB     r0,[r1,#0x14]
-;;;108    	offset += 5;
+;;;110    	offset += 5;
 000088  1d60              ADDS     r0,r4,#5
 00008a  b2c4              UXTB     r4,r0
-;;;109    	memcpy(strengthFuelFlash.mask ,&ptrMode[offset],4);
+;;;111    	memcpy(strengthFuelFlash.mask ,&ptrMode[offset],4);
 00008c  1929              ADDS     r1,r5,r4
-00008e  4864              LDR      r0,|L5.544|
+00008e  4861              LDR      r0,|L5.532|
 000090  6809              LDR      r1,[r1,#0]
 000092  f8c01015          STR      r1,[r0,#0x15]  ; strengthFuelFlash
-;;;110    	offset += 4;
+;;;112    	offset += 4;
 000096  1d20              ADDS     r0,r4,#4
 000098  b2c4              UXTB     r4,r0
-;;;111    	memcpy(strengthFuelFlash.safe1,&ptrMode[offset],8);
+;;;113    	memcpy(strengthFuelFlash.safe1,&ptrMode[offset],8);
 00009a  1928              ADDS     r0,r5,r4
-00009c  4960              LDR      r1,|L5.544|
+00009c  495d              LDR      r1,|L5.532|
 00009e  311a              ADDS     r1,r1,#0x1a
 0000a0  6802              LDR      r2,[r0,#0]
 0000a2  600a              STR      r2,[r1,#0]  ; strengthFuelFlash
 0000a4  6840              LDR      r0,[r0,#4]
 0000a6  6048              STR      r0,[r1,#4]  ; strengthFuelFlash
-;;;112    	offset += 8;
+;;;114    	offset += 8;
 0000a8  f1040008          ADD      r0,r4,#8
 0000ac  b2c4              UXTB     r4,r0
-;;;113    	memcpy(strengthFuelFlash.safe2,&ptrMode[offset],8);
+;;;115    	memcpy(strengthFuelFlash.safe2,&ptrMode[offset],8);
 0000ae  1929              ADDS     r1,r5,r4
-0000b0  485b              LDR      r0,|L5.544|
+0000b0  4858              LDR      r0,|L5.532|
 0000b2  3022              ADDS     r0,r0,#0x22
 0000b4  680a              LDR      r2,[r1,#0]
 0000b6  6002              STR      r2,[r0,#0]  ; strengthFuelFlash
 0000b8  6849              LDR      r1,[r1,#4]
 0000ba  6041              STR      r1,[r0,#4]  ; strengthFuelFlash
-;;;114    	offset += 8;
+;;;116    	offset += 8;
 0000bc  f1040008          ADD      r0,r4,#8
 0000c0  b2c4              UXTB     r4,r0
-;;;115    	memcpy(strengthFuelFlash.mode1,&ptrMode[offset],8);
-0000c2  1929              ADDS     r1,r5,r4
-0000c4  4856              LDR      r0,|L5.544|
-0000c6  302a              ADDS     r0,r0,#0x2a
-0000c8  680a              LDR      r2,[r1,#0]
-0000ca  6002              STR      r2,[r0,#0]  ; strengthFuelFlash
-0000cc  6849              LDR      r1,[r1,#4]
-0000ce  6041              STR      r1,[r0,#4]  ; strengthFuelFlash
-;;;116    	offset += 8;
+;;;117    	memcpy(strengthFuelFlash.mode1,&ptrMode[offset],8);
+0000c2  1928              ADDS     r0,r5,r4
+0000c4  4953              LDR      r1,|L5.532|
+0000c6  312a              ADDS     r1,r1,#0x2a
+0000c8  6802              LDR      r2,[r0,#0]
+0000ca  600a              STR      r2,[r1,#0]  ; strengthFuelFlash
+0000cc  6840              LDR      r0,[r0,#4]
+0000ce  6048              STR      r0,[r1,#4]  ; strengthFuelFlash
+;;;118    	offset += 8;
 0000d0  f1040008          ADD      r0,r4,#8
 0000d4  b2c4              UXTB     r4,r0
-;;;117    	memcpy(strengthFuelFlash.mode2,&ptrMode[offset],8);
+;;;119    	memcpy(strengthFuelFlash.mode2,&ptrMode[offset],8);
 0000d6  1929              ADDS     r1,r5,r4
-0000d8  4851              LDR      r0,|L5.544|
+0000d8  484e              LDR      r0,|L5.532|
 0000da  3032              ADDS     r0,r0,#0x32
 0000dc  680a              LDR      r2,[r1,#0]
 0000de  6002              STR      r2,[r0,#0]  ; strengthFuelFlash
 0000e0  6849              LDR      r1,[r1,#4]
 0000e2  6041              STR      r1,[r0,#4]  ; strengthFuelFlash
-;;;118    	offset += 8;
+;;;120    	offset += 8;
 0000e4  f1040008          ADD      r0,r4,#8
 0000e8  b2c4              UXTB     r4,r0
-;;;119    	strengthFuelFlash.modeOrder = ptrMode[offset++];
+;;;121    	strengthFuelFlash.modeOrder = ptrMode[offset++];
 0000ea  4620              MOV      r0,r4
 0000ec  1c61              ADDS     r1,r4,#1
 0000ee  b2cc              UXTB     r4,r1
 0000f0  5c28              LDRB     r0,[r5,r0]
-0000f2  494b              LDR      r1,|L5.544|
+0000f2  4948              LDR      r1,|L5.532|
 0000f4  f881003a          STRB     r0,[r1,#0x3a]
-;;;120    	offset++;
+;;;122    	offset++;
 0000f8  1c60              ADDS     r0,r4,#1
 0000fa  b2c4              UXTB     r4,r0
-;;;121    	memcpy(strengthFuelFlash.faultCmd1,&ptrMode[offset],8);    //当前故障码
+;;;123    	memcpy(strengthFuelFlash.faultCmd1,&ptrMode[offset],8);    //当前故障码
 0000fc  1928              ADDS     r0,r5,r4
 0000fe  313b              ADDS     r1,r1,#0x3b
 000100  6802              LDR      r2,[r0,#0]
 000102  600a              STR      r2,[r1,#0]  ; strengthFuelFlash
 000104  6840              LDR      r0,[r0,#4]
 000106  6048              STR      r0,[r1,#4]  ; strengthFuelFlash
-;;;122    	offset += 8;
+;;;124    	offset += 8;
 000108  f1040008          ADD      r0,r4,#8
 00010c  b2c4              UXTB     r4,r0
-;;;123    	memcpy(strengthFuelFlash.faultCmd2,&ptrMode[offset],8);    //历史故障码
+;;;125    	memcpy(strengthFuelFlash.faultCmd2,&ptrMode[offset],8);    //历史故障码
 00010e  1929              ADDS     r1,r5,r4
-000110  4843              LDR      r0,|L5.544|
+000110  4840              LDR      r0,|L5.532|
 000112  3043              ADDS     r0,r0,#0x43
 000114  680a              LDR      r2,[r1,#0]
 000116  6002              STR      r2,[r0,#0]  ; strengthFuelFlash
 000118  6849              LDR      r1,[r1,#4]
 00011a  6041              STR      r1,[r0,#4]  ; strengthFuelFlash
-;;;124    	offset += 8;
+;;;126    	offset += 8;
 00011c  f1040008          ADD      r0,r4,#8
 000120  b2c4              UXTB     r4,r0
-;;;125    	memcpy(strengthFuelFlash.faultClear,&ptrMode[offset],8);   //清除故障码
+;;;127    	memcpy(strengthFuelFlash.faultClear,&ptrMode[offset],8);   //清除故障码
 000122  1928              ADDS     r0,r5,r4
-000124  493e              LDR      r1,|L5.544|
+000124  493b              LDR      r1,|L5.532|
 000126  314b              ADDS     r1,r1,#0x4b
 000128  6802              LDR      r2,[r0,#0]
 00012a  600a              STR      r2,[r1,#0]  ; strengthFuelFlash
 00012c  6840              LDR      r0,[r0,#4]
 00012e  6048              STR      r0,[r1,#4]  ; strengthFuelFlash
-;;;126    	Mem_free(ptrMode);
+;;;128    	Mem_free(ptrMode);
 000130  4628              MOV      r0,r5
 000132  f7fffffe          BL       Mem_free
-;;;127    	
-;;;128    	varOperation.pidNum      = canDataConfig.pidNum;//得到PID指令的个数
-000136  4830              LDR      r0,|L5.504|
+;;;129    	
+;;;130    	varOperation.pidNum      = canDataConfig.pidNum;//得到PID指令的个数
+000136  482d              LDR      r0,|L5.492|
 000138  8880              LDRH     r0,[r0,#4]  ; canDataConfig
-00013a  493a              LDR      r1,|L5.548|
+00013a  4937              LDR      r1,|L5.536|
 00013c  f8a10078          STRH     r0,[r1,#0x78]
-;;;129    	varOperation.isDataFlow  = 1;              //设备启动的时候，数据流未流动
+;;;131    	varOperation.isDataFlow  = 1;              //设备启动的时候，数据流未流动
 000140  2001              MOVS     r0,#1
 000142  f881002d          STRB     r0,[r1,#0x2d]
-;;;130    	varOperation.isCDMAStart = CDMA_CLOSE;     //CDMA初始状态为关闭
+;;;132    	varOperation.isCDMAStart = CDMA_CLOSE;     //CDMA初始状态为关闭
 000146  f881002f          STRB     r0,[r1,#0x2f]
-;;;131    	varOperation.isEngineRun = ENGINE_RUN;     //初始认为发动机是启动了的
+;;;133    	varOperation.isEngineRun = ENGINE_RUN;     //初始认为发动机是启动了的
 00014a  2000              MOVS     r0,#0
 00014c  f881002e          STRB     r0,[r1,#0x2e]
-;;;132    	varOperation.sendId      = 0x80000000;     //发送的帧流水号
+;;;134    	varOperation.sendId      = 0x80000000;     //发送的帧流水号
 000150  f04f4000          MOV      r0,#0x80000000
 000154  65c8              STR      r0,[r1,#0x5c]  ; varOperation
-;;;133    	
-;;;134    	varOperation.pidVersion = canDataConfig.pidVersion;
-000156  4828              LDR      r0,|L5.504|
+;;;135    	
+;;;136    	varOperation.pidVersion = canDataConfig.pidVersion;
+000156  4825              LDR      r0,|L5.492|
 000158  6800              LDR      r0,[r0,#0]  ; canDataConfig
 00015a  f8c1007a          STR      r0,[r1,#0x7a]  ; varOperation
-;;;135    	varOperation.busType    = canDataConfig.busType;
-00015e  4826              LDR      r0,|L5.504|
+;;;137    	varOperation.busType    = canDataConfig.busType;
+00015e  4823              LDR      r0,|L5.492|
 000160  7a00              LDRB     r0,[r0,#8]  ; canDataConfig
 000162  f8810086          STRB     r0,[r1,#0x86]
-;;;136    	varOperation.canIdType  = canDataConfig.canIdType;
-000166  4824              LDR      r0,|L5.504|
+;;;138    	varOperation.canIdType  = canDataConfig.canIdType;
+000166  4821              LDR      r0,|L5.492|
 000168  7a40              LDRB     r0,[r0,#9]  ; canDataConfig
 00016a  f8810087          STRB     r0,[r1,#0x87]
-;;;137    	varOperation.canTxId    = canDataConfig.canTxId;
-00016e  4822              LDR      r0,|L5.504|
+;;;139    	varOperation.canTxId    = canDataConfig.canTxId;
+00016e  481f              LDR      r0,|L5.492|
 000170  f8d0000a          LDR      r0,[r0,#0xa]  ; canDataConfig
 000174  f8c10088          STR      r0,[r1,#0x88]  ; varOperation
-;;;138    	varOperation.canRxId    = canDataConfig.canRxId;
-000178  481f              LDR      r0,|L5.504|
+;;;140    	varOperation.canRxId    = canDataConfig.canRxId;
+000178  481c              LDR      r0,|L5.492|
 00017a  f8d0000e          LDR      r0,[r0,#0xe]  ; canDataConfig
 00017e  f8c1008c          STR      r0,[r1,#0x8c]  ; varOperation
-;;;139    	varOperation.canBaud    = canDataConfig.canBaud;
-000182  481d              LDR      r0,|L5.504|
+;;;141    	varOperation.canBaud    = canDataConfig.canBaud;
+000182  481a              LDR      r0,|L5.492|
 000184  7c80              LDRB     r0,[r0,#0x12]  ; canDataConfig
 000186  f8810090          STRB     r0,[r1,#0x90]
-;;;140    	varOperation.oilMode    = 0;     //默认正常模式
+;;;142    	varOperation.oilMode    = 0;     //默认正常模式
 00018a  2000              MOVS     r0,#0
 00018c  f8810098          STRB     r0,[r1,#0x98]
-;;;141    	varOperation.isStrenOilOK = 0;   //默认不可以进行动力提升
+;;;143    	varOperation.isStrenOilOK = 0;   //默认不可以进行动力提升
 000190  f8810099          STRB     r0,[r1,#0x99]
-;;;142    	varOperation.strengthRun = 0;
+;;;144    	varOperation.strengthRun = 0;
 000194  f8810094          STRB     r0,[r1,#0x94]
-;;;143    	varOperation.datOKLeng   = 0;
+;;;145    	varOperation.datOKLeng   = 0;
 000198  f8a10096          STRH     r0,[r1,#0x96]
-;;;144    	varOperation.pidRun      = 1;
+;;;146    	varOperation.pidRun      = 1;
 00019c  2001              MOVS     r0,#1
 00019e  f8810095          STRB     r0,[r1,#0x95]
-;;;145    	varOperation.pidSendFlag = 1;    //数据发送的标志
+;;;147    	varOperation.pidSendFlag = 1;    //数据发送的标志
 0001a2  f88100a3          STRB     r0,[r1,#0xa3]
-;;;146    	
-;;;147    	varOperation.flagCAN     = 0;    
+;;;148    	
+;;;149    	varOperation.flagCAN     = 0;    
 0001a6  2000              MOVS     r0,#0
 0001a8  f88100a4          STRB     r0,[r1,#0xa4]
-;;;148    	varOperation.flagECUID   = 0;    //是否正常工作过
+;;;150    	varOperation.flagECUID   = 0;    //是否正常工作过
 0001ac  f88100a7          STRB     r0,[r1,#0xa7]
-;;;149    	varOperation.flagJ1939   = 0;
+;;;151    	varOperation.flagJ1939   = 0;
 0001b0  f88100a5          STRB     r0,[r1,#0xa5]
-;;;150    	varOperation.flagVol     = 0;    //
+;;;152    	varOperation.flagRecvOK  = 0;
 0001b4  f88100a6          STRB     r0,[r1,#0xa6]
-;;;151    	memset(varOperation.ecuVersion,0,20);
+;;;153    	memset(varOperation.ecuVersion,0,20);
 0001b8  2114              MOVS     r1,#0x14
-0001ba  481a              LDR      r0,|L5.548|
+0001ba  4817              LDR      r0,|L5.536|
 0001bc  3064              ADDS     r0,r0,#0x64
 0001be  f7fffffe          BL       __aeabi_memclr
-;;;152    	
-;;;153    	varOperation.pidVarNum  = canDataConfig.pidVarNum;
-0001c2  480d              LDR      r0,|L5.504|
-0001c4  88c0              LDRH     r0,[r0,#6]  ; canDataConfig
-0001c6  4917              LDR      r1,|L5.548|
-0001c8  f8a10084          STRH     r0,[r1,#0x84]
 ;;;154    	
-;;;155    	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
-0001cc  f2475044          MOV      r0,#0x7544
+;;;155    	varOperation.pidVarNum  = canDataConfig.pidVarNum;
+0001c2  480a              LDR      r0,|L5.492|
+0001c4  88c0              LDRH     r0,[r0,#6]  ; canDataConfig
+0001c6  4914              LDR      r1,|L5.536|
+0001c8  f8a10084          STRH     r0,[r1,#0x84]
+;;;156    	
+;;;157    	varOperation.ipPotr = IP_Port;             //todo:后期是域名解析  初始化端口号
+0001cc  f242700e          MOV      r0,#0x270e
 0001d0  f8a10044          STRH     r0,[r1,#0x44]
-;;;156    	memset(varOperation.ipAddr,0,18);
+;;;158    	memset(varOperation.ipAddr,0,18);
 0001d4  2112              MOVS     r1,#0x12
-0001d6  4813              LDR      r0,|L5.548|
+0001d6  4810              LDR      r0,|L5.536|
 0001d8  3032              ADDS     r0,r0,#0x32
 0001da  f7fffffe          BL       __aeabi_memclr
-;;;157    #if (BEN_S_C < 2)
-;;;158    	memcpy(varOperation.ipAddr,ipAddr,sizeof(ipAddr));//todo：IP地址，程序升级后用flash中的IP及端口号	//采用域名解析了
-0001de  220f              MOVS     r2,#0xf
-0001e0  4911              LDR      r1,|L5.552|
-0001e2  4810              LDR      r0,|L5.548|
-0001e4  3032              ADDS     r0,r0,#0x32
-0001e6  f7fffffe          BL       __aeabi_memcpy
-;;;159    #endif
-;;;160    }
-0001ea  bd70              POP      {r4-r6,pc}
-;;;161     uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
+;;;159    #if (BEN_S_C < 2)
+;;;160    	memcpy(varOperation.ipAddr,ipAddr,sizeof(ipAddr));//todo：IP地址，程序升级后用flash中的IP及端口号	//采用域名解析了
+;;;161    #endif
+;;;162    }
+0001de  bd70              POP      {r4-r6,pc}
+;;;163     uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
                           ENDP
 
-                  |L5.492|
+                  |L5.480|
                           DCD      0x08007800
-                  |L5.496|
+                  |L5.484|
                           DCD      sysUpdateVar
-                  |L5.500|
+                  |L5.488|
                           DCD      0x08060800
-                  |L5.504|
+                  |L5.492|
                           DCD      canDataConfig
-                  |L5.508|
+                  |L5.496|
                           DCD      0x08063000
-                  |L5.512|
+                  |L5.500|
                           DCD      configData
-                  |L5.516|
+                  |L5.504|
                           DCD      ptrPIDAllDat
-                  |L5.520|
+                  |L5.508|
                           DCD      0x08061000
-                  |L5.524|
+                  |L5.512|
                           DCD      pid2Config
-                  |L5.528|
+                  |L5.516|
                           DCD      ptrPIDVars
-                  |L5.532|
+                  |L5.520|
                           DCD      0x08060000
-                  |L5.536|
+                  |L5.524|
                           DCD      strengPower
-                  |L5.540|
+                  |L5.528|
                           DCD      0x08065000
-                  |L5.544|
+                  |L5.532|
                           DCD      strengthFuelFlash
-                  |L5.548|
+                  |L5.536|
                           DCD      varOperation
-                  |L5.552|
-                          DCD      ipAddr
 
                           AREA ||i.LogReport||, CODE, READONLY, ALIGN=2
 
                   LogReport PROC
-;;;273    
-;;;274    void LogReport(char* fmt,...)          //上传日志文件
+;;;275    
+;;;276    void LogReport(char* fmt,...)          //上传日志文件
 000000  b40f              PUSH     {r0-r3}
-;;;275    {
+;;;277    {
 000002  b57c              PUSH     {r2-r6,lr}
-;;;276    	u8 datLen,err;
-;;;277    	va_list ap;
-;;;278    	uint8_t * ptrSaveLog;
-;;;279    
-;;;280    	if(cdmaDataToSend->datLength > 750)
+;;;278    	u8 datLen,err;
+;;;279    	va_list ap;
+;;;280    	uint8_t * ptrSaveLog;
+;;;281    
+;;;282    	if(cdmaDataToSend->datLength > 750)
 000004  4823              LDR      r0,|L6.148|
 000006  6800              LDR      r0,[r0,#0]  ; cdmaDataToSend
 000008  8800              LDRH     r0,[r0,#0]
@@ -663,87 +660,87 @@
 00000e  4288              CMP      r0,r1
 000010  dd02              BLE      |L6.24|
                   |L6.18|
-;;;281    		return;
-;;;282    	ptrSaveLog = Mem_malloc(255);
-;;;283    	va_start(ap,fmt);
-;;;284    	vsprintf((char*)ptrSaveLog,fmt,ap);
-;;;285    	va_end(ap);
-;;;286    	
-;;;287    	datLen=strlen((const char*)ptrSaveLog);//此次发送数据的长度
+;;;283    		return;
+;;;284    	ptrSaveLog = Mem_malloc(255);
+;;;285    	va_start(ap,fmt);
+;;;286    	vsprintf((char*)ptrSaveLog,fmt,ap);
+;;;287    	va_end(ap);
 ;;;288    	
-;;;289    	if(varOperation.isDataFlow != 1)
-;;;290    	{
-;;;291    		OSMutexPend(CDMASendMutex,0,&err);
-;;;292    		
-;;;293    		if((datLen + cdmaLogData->top) < 900)				
-;;;294    		{
-;;;295    			memcpy(&cdmaLogData->base[cdmaLogData->top],ptrSaveLog,datLen);
-;;;296    			cdmaLogData->top += datLen;
-;;;297    		}
-;;;298    		OSMutexPost(CDMASendMutex);
-;;;299    	}
-;;;300    	
-;;;301    	Mem_free(ptrSaveLog);
-;;;302    }
+;;;289    	datLen=strlen((const char*)ptrSaveLog);//此次发送数据的长度
+;;;290    	
+;;;291    	if(varOperation.isDataFlow != 1)
+;;;292    	{
+;;;293    		OSMutexPend(CDMASendMutex,0,&err);
+;;;294    		
+;;;295    		if((datLen + cdmaLogData->top) < 900)				
+;;;296    		{
+;;;297    			memcpy(&cdmaLogData->base[cdmaLogData->top],ptrSaveLog,datLen);
+;;;298    			cdmaLogData->top += datLen;
+;;;299    		}
+;;;300    		OSMutexPost(CDMASendMutex);
+;;;301    	}
+;;;302    	
+;;;303    	Mem_free(ptrSaveLog);
+;;;304    }
 000012  bc7c              POP      {r2-r6}
 000014  f85dfb14          LDR      pc,[sp],#0x14
                   |L6.24|
-000018  20ff              MOVS     r0,#0xff              ;282
+000018  20ff              MOVS     r0,#0xff              ;284
 00001a  f7fffffe          BL       Mem_malloc
-00001e  4605              MOV      r5,r0                 ;282
-000020  a807              ADD      r0,sp,#0x1c           ;283
-000022  9000              STR      r0,[sp,#0]            ;283
-000024  4628              MOV      r0,r5                 ;284
-000026  9a00              LDR      r2,[sp,#0]            ;284
-000028  9906              LDR      r1,[sp,#0x18]         ;284
+00001e  4605              MOV      r5,r0                 ;284
+000020  a807              ADD      r0,sp,#0x1c           ;285
+000022  9000              STR      r0,[sp,#0]            ;285
+000024  4628              MOV      r0,r5                 ;286
+000026  9a00              LDR      r2,[sp,#0]            ;286
+000028  9906              LDR      r1,[sp,#0x18]         ;286
 00002a  f7fffffe          BL       __c89vsprintf
-00002e  2000              MOVS     r0,#0                 ;285
-000030  9000              STR      r0,[sp,#0]            ;285
-000032  4628              MOV      r0,r5                 ;287
+00002e  2000              MOVS     r0,#0                 ;287
+000030  9000              STR      r0,[sp,#0]            ;287
+000032  4628              MOV      r0,r5                 ;289
 000034  f7fffffe          BL       strlen
-000038  b2c4              UXTB     r4,r0                 ;287
+000038  b2c4              UXTB     r4,r0                 ;289
 00003a  4817              LDR      r0,|L6.152|
-00003c  f890002d          LDRB     r0,[r0,#0x2d]         ;289  ; varOperation
-000040  2801              CMP      r0,#1                 ;289
+00003c  f890002d          LDRB     r0,[r0,#0x2d]         ;291  ; varOperation
+000040  2801              CMP      r0,#1                 ;291
 000042  d022              BEQ      |L6.138|
-000044  aa01              ADD      r2,sp,#4              ;291
-000046  2100              MOVS     r1,#0                 ;291
+000044  aa01              ADD      r2,sp,#4              ;293
+000046  2100              MOVS     r1,#0                 ;293
 000048  4814              LDR      r0,|L6.156|
-00004a  6800              LDR      r0,[r0,#0]            ;291  ; CDMASendMutex
+00004a  6800              LDR      r0,[r0,#0]            ;293  ; CDMASendMutex
 00004c  f7fffffe          BL       OSMutexPend
 000050  4813              LDR      r0,|L6.160|
-000052  6800              LDR      r0,[r0,#0]            ;293  ; cdmaLogData
-000054  8800              LDRH     r0,[r0,#0]            ;293
-000056  4420              ADD      r0,r0,r4              ;293
-000058  f5b07f61          CMP      r0,#0x384             ;293
+000052  6800              LDR      r0,[r0,#0]            ;295  ; cdmaLogData
+000054  8800              LDRH     r0,[r0,#0]            ;295
+000056  4420              ADD      r0,r0,r4              ;295
+000058  f5b07f61          CMP      r0,#0x384             ;295
 00005c  da11              BGE      |L6.130|
 00005e  4910              LDR      r1,|L6.160|
-000060  6809              LDR      r1,[r1,#0]            ;295  ; cdmaLogData
-000062  6849              LDR      r1,[r1,#4]            ;295
+000060  6809              LDR      r1,[r1,#0]            ;297  ; cdmaLogData
+000062  6849              LDR      r1,[r1,#4]            ;297
 000064  4a0e              LDR      r2,|L6.160|
-000066  6812              LDR      r2,[r2,#0]            ;295  ; cdmaLogData
-000068  8812              LDRH     r2,[r2,#0]            ;295
-00006a  1888              ADDS     r0,r1,r2              ;295
-00006c  4622              MOV      r2,r4                 ;295
-00006e  4629              MOV      r1,r5                 ;295
+000066  6812              LDR      r2,[r2,#0]            ;297  ; cdmaLogData
+000068  8812              LDRH     r2,[r2,#0]            ;297
+00006a  1888              ADDS     r0,r1,r2              ;297
+00006c  4622              MOV      r2,r4                 ;297
+00006e  4629              MOV      r1,r5                 ;297
 000070  f7fffffe          BL       __aeabi_memcpy
 000074  480a              LDR      r0,|L6.160|
-000076  6800              LDR      r0,[r0,#0]            ;296  ; cdmaLogData
-000078  8800              LDRH     r0,[r0,#0]            ;296
-00007a  4420              ADD      r0,r0,r4              ;296
+000076  6800              LDR      r0,[r0,#0]            ;298  ; cdmaLogData
+000078  8800              LDRH     r0,[r0,#0]            ;298
+00007a  4420              ADD      r0,r0,r4              ;298
 00007c  4908              LDR      r1,|L6.160|
-00007e  6809              LDR      r1,[r1,#0]            ;296  ; cdmaLogData
-000080  8008              STRH     r0,[r1,#0]            ;296
+00007e  6809              LDR      r1,[r1,#0]            ;298  ; cdmaLogData
+000080  8008              STRH     r0,[r1,#0]            ;298
                   |L6.130|
 000082  4806              LDR      r0,|L6.156|
-000084  6800              LDR      r0,[r0,#0]            ;298  ; CDMASendMutex
+000084  6800              LDR      r0,[r0,#0]            ;300  ; CDMASendMutex
 000086  f7fffffe          BL       OSMutexPost
                   |L6.138|
-00008a  4628              MOV      r0,r5                 ;301
+00008a  4628              MOV      r0,r5                 ;303
 00008c  f7fffffe          BL       Mem_free
 000090  bf00              NOP      
 000092  e7be              B        |L6.18|
-;;;303    
+;;;305    
                           ENDP
 
                   |L6.148|
@@ -758,12 +755,12 @@
                           AREA ||i.MemLog||, CODE, READONLY, ALIGN=2
 
                   MemLog PROC
-;;;306    
-;;;307    void MemLog(_CDMADataToSend* ptr)
+;;;308    
+;;;309    void MemLog(_CDMADataToSend* ptr)
 000000  b51f              PUSH     {r0-r4,lr}
-;;;308    {
+;;;310    {
 000002  4604              MOV      r4,r0
-;;;309    	LogReport("\r\n03-1:%d;2:%d;3:%d;4:%d;5:%d;6:%d;7:%d;",\
+;;;311    	LogReport("\r\n03-1:%d;2:%d;3:%d;4:%d;5:%d;6:%d;7:%d;",\
 000004  4809              LDR      r0,|L7.44|
 000006  7bc0              LDRB     r0,[r0,#0xf]  ; allMemState
 000008  4908              LDR      r1,|L7.44|
@@ -780,16 +777,16 @@
 000022  8841              LDRH     r1,[r0,#2]  ; allMemState
 000024  a002              ADR      r0,|L7.48|
 000026  f7fffffe          BL       LogReport
-;;;310    			allMemState.memUsedMax1,\
-;;;311    			allMemState.memUsedMax2,\
-;;;312    			allMemState.memUsedMax3,\
-;;;313    			allMemState.memUsedMax4,\
-;;;314    			allMemState.memUsedMax5,\
-;;;315    			allMemState.memUsedMax6,\
-;;;316    			allMemState.memUsedMax7);
-;;;317    }
+;;;312    			allMemState.memUsedMax1,\
+;;;313    			allMemState.memUsedMax2,\
+;;;314    			allMemState.memUsedMax3,\
+;;;315    			allMemState.memUsedMax4,\
+;;;316    			allMemState.memUsedMax5,\
+;;;317    			allMemState.memUsedMax6,\
+;;;318    			allMemState.memUsedMax7);
+;;;319    }
 00002a  bd1f              POP      {r0-r4,pc}
-;;;318    //车辆运行的数据 初始化
+;;;320    //车辆运行的数据 初始化
                           ENDP
 
                   |L7.44|
@@ -813,214 +810,214 @@
                           AREA ||i.RecvDataAnalysis||, CODE, READONLY, ALIGN=1
 
                   RecvDataAnalysis PROC
-;;;160    }
-;;;161     uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
+;;;162    }
+;;;163     uint8_t* RecvDataAnalysis(uint8_t* ptrDataToDeal)//解析接收到的数据包
 000000  e92d47f0          PUSH     {r4-r10,lr}
-;;;162    {
+;;;164    {
 000004  4605              MOV      r5,r0
-;;;163    	uint16_t i = 0;
+;;;165    	uint16_t i = 0;
 000006  2600              MOVS     r6,#0
-;;;164    	uint16_t datLen   = 0;
+;;;166    	uint16_t datLen   = 0;
 000008  2400              MOVS     r4,#0
-;;;165    	uint16_t crcDat   = 0;
+;;;167    	uint16_t crcDat   = 0;
 00000a  46a0              MOV      r8,r4
-;;;166    	uint16_t crcCheck = 0;
+;;;168    	uint16_t crcCheck = 0;
 00000c  46a1              MOV      r9,r4
-;;;167    	uint8_t* ptr = NULL;
+;;;169    	uint8_t* ptr = NULL;
 00000e  2700              MOVS     r7,#0
-;;;168    	while(1)
+;;;170    	while(1)
 000010  e00e              B        |L8.48|
                   |L8.18|
-;;;169    	{
-;;;170    		if(ptrDataToDeal[i++] == 0x7E)
+;;;171    	{
+;;;172    		if(ptrDataToDeal[i++] == 0x7E)
 000012  4630              MOV      r0,r6
 000014  1c71              ADDS     r1,r6,#1
 000016  b28e              UXTH     r6,r1
 000018  5c28              LDRB     r0,[r5,r0]
 00001a  287e              CMP      r0,#0x7e
 00001c  d100              BNE      |L8.32|
-;;;171    			break;
+;;;173    			break;
 00001e  e008              B        |L8.50|
                   |L8.32|
-;;;172    		if(i >= 60)
+;;;174    		if(i >= 60)
 000020  2e3c              CMP      r6,#0x3c
 000022  db05              BLT      |L8.48|
-;;;173    		{
-;;;174    			Mem_free(ptrDataToDeal);
+;;;175    		{
+;;;176    			Mem_free(ptrDataToDeal);
 000024  4628              MOV      r0,r5
 000026  f7fffffe          BL       Mem_free
-;;;175    			return NULL;
+;;;177    			return NULL;
 00002a  2000              MOVS     r0,#0
                   |L8.44|
-;;;176    		}
-;;;177    	}
-;;;178    	datLen   = ptrDataToDeal[i++];
-;;;179    	datLen   = (datLen << 8) + ptrDataToDeal[i--];
-;;;180    	crcCheck = CRC_Compute16(&ptrDataToDeal[i],datLen + 2);
-;;;181    	
-;;;182    	crcDat   = ptrDataToDeal[i + datLen +2];
-;;;183    	crcDat   = (crcDat << 8) + ptrDataToDeal[i + datLen +3];
-;;;184    	if(crcCheck != crcDat)
-;;;185    	{
-;;;186    		Mem_free(ptrDataToDeal);
-;;;187    		return NULL;
-;;;188    	}
-;;;189    	ptr = Mem_malloc(datLen);
-;;;190    	datLen = datLen - 24;
-;;;191    	ptr[0] = (datLen >> 8)  & 0x00FF;
-;;;192    	ptr[1] = datLen & 0x00FF;
-;;;193    	memcpy(&ptr[2],&ptrDataToDeal[i + 26],datLen);
-;;;194    	
-;;;195    	Mem_free(ptrDataToDeal);
-;;;196    	return ptr;
-;;;197    }
+;;;178    		}
+;;;179    	}
+;;;180    	datLen   = ptrDataToDeal[i++];
+;;;181    	datLen   = (datLen << 8) + ptrDataToDeal[i--];
+;;;182    	crcCheck = CRC_Compute16(&ptrDataToDeal[i],datLen + 2);
+;;;183    	
+;;;184    	crcDat   = ptrDataToDeal[i + datLen +2];
+;;;185    	crcDat   = (crcDat << 8) + ptrDataToDeal[i + datLen +3];
+;;;186    	if(crcCheck != crcDat)
+;;;187    	{
+;;;188    		Mem_free(ptrDataToDeal);
+;;;189    		return NULL;
+;;;190    	}
+;;;191    	ptr = Mem_malloc(datLen);
+;;;192    	datLen = datLen - 24;
+;;;193    	ptr[0] = (datLen >> 8)  & 0x00FF;
+;;;194    	ptr[1] = datLen & 0x00FF;
+;;;195    	memcpy(&ptr[2],&ptrDataToDeal[i + 26],datLen);
+;;;196    	
+;;;197    	Mem_free(ptrDataToDeal);
+;;;198    	return ptr;
+;;;199    }
 00002c  e8bd87f0          POP      {r4-r10,pc}
                   |L8.48|
 000030  e7ef              B        |L8.18|
                   |L8.50|
-000032  bf00              NOP                            ;171
-000034  4630              MOV      r0,r6                 ;178
-000036  1c71              ADDS     r1,r6,#1              ;178
-000038  b28e              UXTH     r6,r1                 ;178
-00003a  5c2c              LDRB     r4,[r5,r0]            ;178
-00003c  4630              MOV      r0,r6                 ;179
-00003e  1e71              SUBS     r1,r6,#1              ;179
-000040  b28e              UXTH     r6,r1                 ;179
-000042  5c28              LDRB     r0,[r5,r0]            ;179
-000044  eb002004          ADD      r0,r0,r4,LSL #8       ;179
-000048  b284              UXTH     r4,r0                 ;179
-00004a  19a8              ADDS     r0,r5,r6              ;180
-00004c  1ca1              ADDS     r1,r4,#2              ;180
+000032  bf00              NOP                            ;173
+000034  4630              MOV      r0,r6                 ;180
+000036  1c71              ADDS     r1,r6,#1              ;180
+000038  b28e              UXTH     r6,r1                 ;180
+00003a  5c2c              LDRB     r4,[r5,r0]            ;180
+00003c  4630              MOV      r0,r6                 ;181
+00003e  1e71              SUBS     r1,r6,#1              ;181
+000040  b28e              UXTH     r6,r1                 ;181
+000042  5c28              LDRB     r0,[r5,r0]            ;181
+000044  eb002004          ADD      r0,r0,r4,LSL #8       ;181
+000048  b284              UXTH     r4,r0                 ;181
+00004a  19a8              ADDS     r0,r5,r6              ;182
+00004c  1ca1              ADDS     r1,r4,#2              ;182
 00004e  f7fffffe          BL       CRC_Compute16
-000052  4681              MOV      r9,r0                 ;180
-000054  1930              ADDS     r0,r6,r4              ;182
-000056  1c80              ADDS     r0,r0,#2              ;182
-000058  f8158000          LDRB     r8,[r5,r0]            ;182
-00005c  1930              ADDS     r0,r6,r4              ;183
-00005e  1cc0              ADDS     r0,r0,#3              ;183
-000060  5c28              LDRB     r0,[r5,r0]            ;183
-000062  eb002008          ADD      r0,r0,r8,LSL #8       ;183
-000066  fa1ff880          UXTH     r8,r0                 ;183
-00006a  45c1              CMP      r9,r8                 ;184
+000052  4681              MOV      r9,r0                 ;182
+000054  1930              ADDS     r0,r6,r4              ;184
+000056  1c80              ADDS     r0,r0,#2              ;184
+000058  f8158000          LDRB     r8,[r5,r0]            ;184
+00005c  1930              ADDS     r0,r6,r4              ;185
+00005e  1cc0              ADDS     r0,r0,#3              ;185
+000060  5c28              LDRB     r0,[r5,r0]            ;185
+000062  eb002008          ADD      r0,r0,r8,LSL #8       ;185
+000066  fa1ff880          UXTH     r8,r0                 ;185
+00006a  45c1              CMP      r9,r8                 ;186
 00006c  d004              BEQ      |L8.120|
-00006e  4628              MOV      r0,r5                 ;186
+00006e  4628              MOV      r0,r5                 ;188
 000070  f7fffffe          BL       Mem_free
-000074  2000              MOVS     r0,#0                 ;187
+000074  2000              MOVS     r0,#0                 ;189
 000076  e7d9              B        |L8.44|
                   |L8.120|
-000078  4620              MOV      r0,r4                 ;189
+000078  4620              MOV      r0,r4                 ;191
 00007a  f7fffffe          BL       Mem_malloc
-00007e  4607              MOV      r7,r0                 ;189
-000080  f1a40018          SUB      r0,r4,#0x18           ;190
-000084  b284              UXTH     r4,r0                 ;190
-000086  0a20              LSRS     r0,r4,#8              ;191
-000088  7038              STRB     r0,[r7,#0]            ;191
-00008a  707c              STRB     r4,[r7,#1]            ;192
-00008c  f106001a          ADD      r0,r6,#0x1a           ;193
-000090  1829              ADDS     r1,r5,r0              ;193
-000092  4622              MOV      r2,r4                 ;193
-000094  1cb8              ADDS     r0,r7,#2              ;193
+00007e  4607              MOV      r7,r0                 ;191
+000080  f1a40018          SUB      r0,r4,#0x18           ;192
+000084  b284              UXTH     r4,r0                 ;192
+000086  0a20              LSRS     r0,r4,#8              ;193
+000088  7038              STRB     r0,[r7,#0]            ;193
+00008a  707c              STRB     r4,[r7,#1]            ;194
+00008c  f106001a          ADD      r0,r6,#0x1a           ;195
+000090  1829              ADDS     r1,r5,r0              ;195
+000092  4622              MOV      r2,r4                 ;195
+000094  1cb8              ADDS     r0,r7,#2              ;195
 000096  f7fffffe          BL       __aeabi_memcpy
-00009a  4628              MOV      r0,r5                 ;195
+00009a  4628              MOV      r0,r5                 ;197
 00009c  f7fffffe          BL       Mem_free
-0000a0  4638              MOV      r0,r7                 ;196
+0000a0  4638              MOV      r0,r7                 ;198
 0000a2  e7c3              B        |L8.44|
-;;;198    
+;;;200    
                           ENDP
 
 
                           AREA ||i.RevolvingSpeedDeal||, CODE, READONLY, ALIGN=2
 
                   RevolvingSpeedDeal PROC
-;;;203    
-;;;204    void RevolvingSpeedDeal(void)//todo:发动机转速处理
+;;;205    
+;;;206    void RevolvingSpeedDeal(void)//todo:发动机转速处理
 000000  b570              PUSH     {r4-r6,lr}
-;;;205    {
-;;;206    	static uint8_t openClose = 0;
-;;;207    	static uint8_t loginFlag = 0;
-;;;208    //	uint8_t err;
-;;;209    	uint32_t currentTime = 0;  //当前时间
+;;;207    {
+;;;208    	static uint8_t openClose = 0;
+;;;209    	static uint8_t loginFlag = 0;
+;;;210    //	uint8_t err;
+;;;211    	uint32_t currentTime = 0;  //当前时间
 000002  2500              MOVS     r5,#0
-;;;210    	uint32_t currentHour = 0;//当前小时     0点-1点   发送登录报文，请求升级
+;;;212    	uint32_t currentHour = 0;//当前小时     0点-1点   发送登录报文，请求升级
 000004  2400              MOVS     r4,#0
-;;;211    	
-;;;212    	currentTime = RTC_GetCounter();
+;;;213    	
+;;;214    	currentTime = RTC_GetCounter();
 000006  f7fffffe          BL       RTC_GetCounter
 00000a  4605              MOV      r5,r0
-;;;213    	currentHour = (currentTime/3600) %24;  //得到当前的小时数
+;;;215    	currentHour = (currentTime/3600) %24;  //得到当前的小时数
 00000c  f44f6061          MOV      r0,#0xe10
 000010  fbb5f0f0          UDIV     r0,r5,r0
 000014  2118              MOVS     r1,#0x18
 000016  fbb0f2f1          UDIV     r2,r0,r1
 00001a  fb010412          MLS      r4,r1,r2,r0
-;;;214    	if(currentHour > 0)
+;;;216    	if(currentHour > 0)
 00001e  b114              CBZ      r4,|L9.38|
-;;;215    		loginFlag = 0;
+;;;217    		loginFlag = 0;
 000020  2000              MOVS     r0,#0
 000022  493b              LDR      r1,|L9.272|
 000024  7008              STRB     r0,[r1,#0]
                   |L9.38|
-;;;216    	
-;;;217    	if(varOperation.isEngineRun == ENGINE_RUN)//发动机正在运行中
+;;;218    	
+;;;219    	if(varOperation.isEngineRun == ENGINE_RUN)//发动机正在运行中
 000026  483b              LDR      r0,|L9.276|
 000028  f890002e          LDRB     r0,[r0,#0x2e]  ; varOperation
 00002c  bb20              CBNZ     r0,|L9.120|
-;;;218    	{
-;;;219    		if(openClose != 1)
+;;;220    	{
+;;;221    		if(openClose != 1)
 00002e  483a              LDR      r0,|L9.280|
 000030  7800              LDRB     r0,[r0,#0]  ; openClose
 000032  2801              CMP      r0,#1
 000034  d06a              BEQ      |L9.268|
-;;;220    		{
-;;;221    			openClose = 1;
+;;;222    		{
+;;;223    			openClose = 1;
 000036  2001              MOVS     r0,#1
 000038  4937              LDR      r1,|L9.280|
 00003a  7008              STRB     r0,[r1,#0]
-;;;222    			//todo:打开CDMA电源、GPS电源、数据流动标志、三个小灯
-;;;223    			freOBDLed  = 100;
+;;;224    			//todo:打开CDMA电源、GPS电源、数据流动标志、三个小灯
+;;;225    			freOBDLed  = 100;
 00003c  2064              MOVS     r0,#0x64
 00003e  4937              LDR      r1,|L9.284|
 000040  8008              STRH     r0,[r1,#0]
-;;;224    			freCDMALed = 100;
+;;;226    			freCDMALed = 100;
 000042  4937              LDR      r1,|L9.288|
 000044  8008              STRH     r0,[r1,#0]
-;;;225    			freGPSLed  = 100;
+;;;227    			freGPSLed  = 100;
 000046  4937              LDR      r1,|L9.292|
 000048  8008              STRH     r0,[r1,#0]
-;;;226    			OSTaskResume(CDMA_LED_PRIO);
+;;;228    			OSTaskResume(CDMA_LED_PRIO);
 00004a  2019              MOVS     r0,#0x19
 00004c  f7fffffe          BL       OSTaskResume
-;;;227    			OSTaskResume(GPS_LED_PRIO);
+;;;229    			OSTaskResume(GPS_LED_PRIO);
 000050  201a              MOVS     r0,#0x1a
 000052  f7fffffe          BL       OSTaskResume
-;;;228    			OSTaskResume(OBD_LED_PRIO);
+;;;230    			OSTaskResume(OBD_LED_PRIO);
 000056  201b              MOVS     r0,#0x1b
 000058  f7fffffe          BL       OSTaskResume
-;;;229    			
-;;;230    			CDMAPowerOpen_Close(CDMA_OPEN);//打开CDMA电源
+;;;231    			
+;;;232    			CDMAPowerOpen_Close(CDMA_OPEN);//打开CDMA电源
 00005c  2000              MOVS     r0,#0
 00005e  f7fffffe          BL       CDMAPowerOpen_Close
-;;;231    			CDMAConfigInit();              //初始化CDMA
+;;;233    			CDMAConfigInit();              //初始化CDMA
 000062  f7fffffe          BL       CDMAConfigInit
-;;;232    			OSTaskResume(CDMA_TASK_PRIO);  //回复CDMA发送任务
+;;;234    			OSTaskResume(CDMA_TASK_PRIO);  //回复CDMA发送任务
 000066  200b              MOVS     r0,#0xb
 000068  f7fffffe          BL       OSTaskResume
-;;;233    			
-;;;234    			GPS_POWER_ON;  //打开
+;;;235    			
+;;;236    			GPS_POWER_ON;  //打开
 00006c  f44f7180          MOV      r1,#0x100
 000070  482d              LDR      r0,|L9.296|
 000072  f7fffffe          BL       GPIO_ResetBits
 000076  e049              B        |L9.268|
                   |L9.120|
-;;;235    		}
-;;;236    	}
-;;;237    	else if(varOperation.isEngineRun == ENGINE_STOP)//发动机已停止运行
+;;;237    		}
+;;;238    	}
+;;;239    	else if(varOperation.isEngineRun == ENGINE_STOP)//发动机已停止运行
 000078  4826              LDR      r0,|L9.276|
 00007a  f890002e          LDRB     r0,[r0,#0x2e]  ; varOperation
 00007e  2801              CMP      r0,#1
 000080  d144              BNE      |L9.268|
-;;;238    	{
-;;;239    		if(currentHour == 0 && loginFlag == 0 && openClose == 0)//零点到,CDMA已关闭，发送登录报文
+;;;240    	{
+;;;241    		if(currentHour == 0 && loginFlag == 0 && openClose == 0)//零点到,CDMA已关闭，发送登录报文
 000082  b9a4              CBNZ     r4,|L9.174|
 000084  4822              LDR      r0,|L9.272|
 000086  7800              LDRB     r0,[r0,#0]  ; loginFlag
@@ -1028,27 +1025,27 @@
 00008a  4823              LDR      r0,|L9.280|
 00008c  7800              LDRB     r0,[r0,#0]  ; openClose
 00008e  b970              CBNZ     r0,|L9.174|
-;;;240    		{
-;;;241    			loginFlag = 1;
+;;;242    		{
+;;;243    			loginFlag = 1;
 000090  2001              MOVS     r0,#1
 000092  491f              LDR      r1,|L9.272|
 000094  7008              STRB     r0,[r1,#0]
-;;;242    			openClose = 1;
+;;;244    			openClose = 1;
 000096  4920              LDR      r1,|L9.280|
 000098  7008              STRB     r0,[r1,#0]
-;;;243    			CDMAPowerOpen_Close(CDMA_OPEN);//打开CDMA电源
+;;;245    			CDMAPowerOpen_Close(CDMA_OPEN);//打开CDMA电源
 00009a  2000              MOVS     r0,#0
 00009c  f7fffffe          BL       CDMAPowerOpen_Close
-;;;244    			CDMAConfigInit();              //初始化CDMA
+;;;246    			CDMAConfigInit();              //初始化CDMA
 0000a0  f7fffffe          BL       CDMAConfigInit
-;;;245    			OSTaskResume(CDMA_TASK_PRIO);  //回复CDMA发送任务
+;;;247    			OSTaskResume(CDMA_TASK_PRIO);  //回复CDMA发送任务
 0000a4  200b              MOVS     r0,#0xb
 0000a6  f7fffffe          BL       OSTaskResume
-;;;246    			LoginDataSend();               //发送登录报文
+;;;248    			LoginDataSend();               //发送登录报文
 0000aa  f7fffffe          BL       LoginDataSend
                   |L9.174|
-;;;247    		}
-;;;248    		if(openClose != 0 && varOperation.isLoginDeal == 1)//需要关闭并且无正在处理的登录报文
+;;;249    		}
+;;;250    		if(openClose != 0 && varOperation.isLoginDeal == 1)//需要关闭并且无正在处理的登录报文
 0000ae  481a              LDR      r0,|L9.280|
 0000b0  7800              LDRB     r0,[r0,#0]  ; openClose
 0000b2  b358              CBZ      r0,|L9.268|
@@ -1056,62 +1053,62 @@
 0000b6  f8900030          LDRB     r0,[r0,#0x30]  ; varOperation
 0000ba  2801              CMP      r0,#1
 0000bc  d126              BNE      |L9.268|
-;;;249    		{
-;;;250    			openClose = 0;
+;;;251    		{
+;;;252    			openClose = 0;
 0000be  2000              MOVS     r0,#0
 0000c0  4915              LDR      r1,|L9.280|
 0000c2  7008              STRB     r0,[r1,#0]
-;;;251    			varOperation.isDataFlow  = 1; //禁止数据流
+;;;253    			varOperation.isDataFlow  = 1; //禁止数据流
 0000c4  2001              MOVS     r0,#1
 0000c6  4913              LDR      r1,|L9.276|
 0000c8  f881002d          STRB     r0,[r1,#0x2d]
-;;;252    			GPS_POWER_OFF;                //关闭GPS电源
+;;;254    			GPS_POWER_OFF;                //关闭GPS电源
 0000cc  0201              LSLS     r1,r0,#8
 0000ce  4816              LDR      r0,|L9.296|
 0000d0  f7fffffe          BL       GPIO_SetBits
-;;;253    			
-;;;254    			OSTimeDlyHMSM(0,0,5,0);       //5s的时间，应该能将所有要发送的数据都发送完毕了
+;;;255    			
+;;;256    			OSTimeDlyHMSM(0,0,5,0);       //5s的时间，应该能将所有要发送的数据都发送完毕了
 0000d4  2300              MOVS     r3,#0
 0000d6  2205              MOVS     r2,#5
 0000d8  4619              MOV      r1,r3
 0000da  4618              MOV      r0,r3
 0000dc  f7fffffe          BL       OSTimeDlyHMSM
-;;;255    			
-;;;256    			//todo：关闭CDMA电源、GPS电源、数据流动标志、三个小灯任务挂起并关闭
-;;;257    		
-;;;258    			OSTaskSuspend(GPS_TASK_PRIO);     //挂起GPS任务
+;;;257    			
+;;;258    			//todo：关闭CDMA电源、GPS电源、数据流动标志、三个小灯任务挂起并关闭
+;;;259    		
+;;;260    			OSTaskSuspend(GPS_TASK_PRIO);     //挂起GPS任务
 0000e0  200e              MOVS     r0,#0xe
 0000e2  f7fffffe          BL       OSTaskSuspend
-;;;259    			
-;;;260    			OSTaskSuspend(CDMA_TASK_PRIO);    //挂起CDMA任务
+;;;261    			
+;;;262    			OSTaskSuspend(CDMA_TASK_PRIO);    //挂起CDMA任务
 0000e6  200b              MOVS     r0,#0xb
 0000e8  f7fffffe          BL       OSTaskSuspend
-;;;261    			CDMAPowerOpen_Close(CDMA_CLOSE);  //关闭CDMA电源
+;;;263    			CDMAPowerOpen_Close(CDMA_CLOSE);  //关闭CDMA电源
 0000ec  2001              MOVS     r0,#1
 0000ee  f7fffffe          BL       CDMAPowerOpen_Close
-;;;262    			
-;;;263    			//挂起LED灯
-;;;264    			OSTaskSuspend(CDMA_LED_PRIO);
+;;;264    			
+;;;265    			//挂起LED灯
+;;;266    			OSTaskSuspend(CDMA_LED_PRIO);
 0000f2  2019              MOVS     r0,#0x19
 0000f4  f7fffffe          BL       OSTaskSuspend
-;;;265    			OSTaskSuspend(GPS_LED_PRIO);
+;;;267    			OSTaskSuspend(GPS_LED_PRIO);
 0000f8  201a              MOVS     r0,#0x1a
 0000fa  f7fffffe          BL       OSTaskSuspend
-;;;266    			OSTaskSuspend(OBD_LED_PRIO);
+;;;268    			OSTaskSuspend(OBD_LED_PRIO);
 0000fe  201b              MOVS     r0,#0x1b
 000100  f7fffffe          BL       OSTaskSuspend
-;;;267    			GPIO_SetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);//关闭所有小灯
+;;;269    			GPIO_SetBits(GPIOB,GPIO_Pin_0 | GPIO_Pin_3 | GPIO_Pin_5 | GPIO_Pin_4);//关闭所有小灯
 000104  2139              MOVS     r1,#0x39
 000106  4809              LDR      r0,|L9.300|
 000108  f7fffffe          BL       GPIO_SetBits
                   |L9.268|
-;;;268    			
-;;;269    			//关闭LED灯光提示  发送蜂鸣器关机提示音  
-;;;270    		}
-;;;271    	}
-;;;272    }
+;;;270    			
+;;;271    			//关闭LED灯光提示  发送蜂鸣器关机提示音  
+;;;272    		}
+;;;273    	}
+;;;274    }
 00010c  bd70              POP      {r4-r6,pc}
-;;;273    
+;;;275    
                           ENDP
 
 00010e  0000              DCW      0x0000
@@ -1143,18 +1140,12 @@
 
                           AREA ||.constdata||, DATA, READONLY, ALIGN=0
 
-                  ipAddr
-000000  3131362e          DCB      0x31,0x31,0x36,0x2e
-000004  3232382e          DCB      0x32,0x32,0x38,0x2e
-000008  39302e31          DCB      0x39,0x30,0x2e,0x31
-00000c  313800            DCB      0x31,0x38,0x00
                   proIPAddr
-00000f  74                DCB      0x74
-000010  63702e35          DCB      0x63,0x70,0x2e,0x35
-000014  31676f6e          DCB      0x31,0x67,0x6f,0x6e
-000018  67677569          DCB      0x67,0x67,0x75,0x69
-00001c  2e636f6d          DCB      0x2e,0x63,0x6f,0x6d
-000020  00                DCB      0x00
+000000  7463702e          DCB      0x74,0x63,0x70,0x2e
+000004  3531676f          DCB      0x35,0x31,0x67,0x6f
+000008  6e676775          DCB      0x6e,0x67,0x67,0x75
+00000c  692e636f          DCB      0x69,0x2e,0x63,0x6f
+000010  6d00              DCB      0x6d,0x00
 
                           AREA ||.data||, DATA, ALIGN=2
 

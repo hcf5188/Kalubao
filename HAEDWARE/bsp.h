@@ -8,7 +8,7 @@
 #include "stm32f10x_wwdg.h"
 
 
-#define  BEN_S_C    0            //0 - 本地     1 - 测试环境    2 - 生产环境 
+#define  BEN_S_C    2            //0 - 本地     1 - 测试环境    2 - 生产环境 
 
 
 #define  FRAME_HEAD_LEN    27 
@@ -32,8 +32,6 @@ extern _CDMADataToSend*   cdmaDataToSend;     //发送给 CDMA 的信息载体
 extern pSTORE             cdmaLogData ;       //发送日志缓冲区
 extern STRENFUEL_Struct   strengthFuel;       //增强动力、节油
 extern STRENFUEL_Struct   strengthFuelFlash;  // Flash 保存的增强动力
-
-
 
 #define CDMA_POWER_HIGH  GPIO_SetBits(GPIOB  ,GPIO_Pin_15)
 #define CDMA_POWER_LOW   GPIO_ResetBits(GPIOB,GPIO_Pin_15)
@@ -59,10 +57,11 @@ void CARVarInit(void);        //与车辆行驶相关结构体的初始化
 void NVIC_AllConfig(void );   //中断方面的重定向
 
 void GPSConfigInit(uint16_t baud);  //设置GPS通信波特率
-	
+
 void CAN1Config(void);        //CAN1 初始化
 
 void CDMAUart2Init(void);     //CDMA 串口初始化
+void TIM1ConfigInit(void);    //定时器 1 矫正时间
 void TIM4ConfigInit(void );   //定时器 3 用来判断CDMA接收超时
 void TIM2ConfigInit(void );   //定时器 2 用来处理GPRS接收逻辑
 void TIM5ConfigInit(void );   //定时器 5 用来处理USB接收

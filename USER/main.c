@@ -69,6 +69,7 @@ OS_STK CDMA_LED_STK[LED_STK_SIZE];     //网络通讯CDMA-LED任务堆栈
 OS_STK GPS_LED_STK[LED_STK_SIZE];      //车辆定位GPS-LED任务堆栈
 OS_STK OBD_LED_STK[LED_STK_SIZE];      //汽车诊断OBD-LED任务堆栈
 OS_STK BEEP_STK[BEEP_STK_SIZE];        //蜂鸣器任务堆栈
+OS_STK OBD_SEND_STK[OBD_SENDDATA_SIZE];//OBD发送任务堆栈
 
 /******** 各串口接收、发送缓冲区初始化 **************/
 
@@ -131,7 +132,13 @@ int main(void )
 ****************************************************************/
 #define SEND_MAX_TIME  3000              //3000ms计时时间到，则发送数据
 extern _OBD_PID_Cmd *ptrPIDAllDat;   
-uint8_t SendPIDCmd(void);
+uint16_t tt = 0;
+u32      t1 = 0;
+u32      t2 = 0;
+u16      tc1 = 0;
+u16      tc2 = 0;
+u16      tc3 = 0;
+u16      tc4 = 0;
 void StartTask(void *pdata)
 {
 	uint8_t   err;
@@ -139,7 +146,7 @@ void StartTask(void *pdata)
 //	uint8_t   *ptrOBDSend;
 	uint8_t   *ptrPIDdate;
 	uint16_t  dataLength;
-	uint32_t  timeToSendLogin  = 0;
+	
 	OS_CPU_SR cpu_sr=0;
 	pdata = pdata; 
 	
@@ -190,6 +197,8 @@ void StartTask(void *pdata)
 		OSTaskCreate(DealJ1939Date,(void *)0,(OS_STK*)&J1939_TASK_STK[J1939_STK_SIZE - 1],      J1939_TASK_PRIO);//创建J1939处理任务		
 		OSTaskCreate(SaveFuleTask, (void *)0,(OS_STK*)&SAVEFULE_TASK_STK[SAVEFUEL_STK_SIZE - 1],SAVE_FUEL_PEIO); //创建节油任务		
 
+		OSTaskCreate(OBD_Send_Task, (void *)0,(OS_STK*)&OBD_SEND_STK[OBD_SENDDATA_SIZE - 1],OBD_SEND_PRIO); //创建节油任务		
+
 		OSTaskCreate(CDMALEDTask,(void *)0,(OS_STK*)&CDMA_LED_STK[LED_STK_SIZE - 1],CDMA_LED_PRIO);
 		OSTaskCreate(GPSLEDTask, (void *)0,(OS_STK*)&GPS_LED_STK[LED_STK_SIZE - 1], GPS_LED_PRIO);		
 		OSTaskCreate(OBDLEDTask, (void *)0,(OS_STK*)&OBD_LED_STK[LED_STK_SIZE - 1], OBD_LED_PRIO);	
@@ -201,31 +210,17 @@ void StartTask(void *pdata)
 	}
 	while(1)
 	{
-		OSTimeDlyHMSM(0,0,0,4);           //4ms扫描一次
+		OSTimeDlyHMSM(0,0,0,10);           //10ms扫描一次
 		if(varOperation.isDataFlow == 1)
 			continue;                     //数据流未流动
-		timeToSendLogin++;
-		if(timeToSendLogin % 45000 == 0)  //定期3分钟发送登录报文
-		{
-			LoginDataSend(); 
-		}
-		if(varOperation.pidRun == 1 && varOperation.canTest >0 && varOperation.pidTset == 0 && varOperation.strengthRun == 0)   //CAN的波特率和ID均已确定
-		{
-			if(timeToSendLogin % 2500 == 2499 && varOperation.pidSendFlag == 3)//发送故障码读取指令
-			{
-				SendFaultCmd();
-			}
-			if(varOperation.pidSendFlag == 1)
-				SendPIDCmd();
-		}
-		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
-		if(dataLength > 36)                        //要发送的数据不为空
-			cdmaDataToSend->timeCount += 4;
+//		dataLength = cdmaDataToSend->datLength + cdmaLogData->top;
+//		if(dataLength > 36)                        //要发送的数据不为空
+		cdmaDataToSend->timeCount += 10;
 		if((cdmaDataToSend->timeCount >= 2000) || (cdmaDataToSend->datLength >= 650) )//发送时间到或者要发送的数组长度超过850个字节
 		{
 			cdmaDataToSend->datLength = FRAME_HEAD_LEN + varOperation.datOKLeng;
 			varOperation.datOKLeng = 0;
-			
+//			cdmaDataToSend->timeCount = 0;
 			MemLog(cdmaDataToSend);                //todo：这两行代码用于调试时监控，真正产品的时候可以注释掉
 			J1939DataLog();
 		
@@ -249,37 +244,57 @@ void StartTask(void *pdata)
 				Store_Getdates(cdmaLogData,&cdmaDataToSend -> data[cdmaDataToSend->datLength],250);
 				cdmaDataToSend->datLength += 250;
 			}
-			if(varOperation.pidSendFlag == 3)
+			if(varOperation.pidSendFlag == 0 && varOperation.pidRun == 1)
 			{
-				ptrPIDdate = Mem_malloc(200);
-				ptrPIDdate[0] = 3;
-				ptrPIDdate[1] = 0x50;
-				ptrPIDdate[2] = 0x25;
-				for(i = 0;i < varOperation.pidNum; i++)
+				varOperation.pidSendFlag = 1;
+				
+				if(varOperation.flagRecvOK == 1)//数据采集成功，将数据流打包发给服务器
 				{
-					memcpy(&ptrPIDdate[ptrPIDdate[0]],&pPid[i][1],pPid[i][1]);
-					ptrPIDdate[0] += pPid[i][1];
-					if(i == bag*30)
+					tt = cdmaDataToSend->timeCount;
+					t2 = RTC_GetCounter();
+					if(t2 - t1 == 2)
+						tc1 ++;
+					else if(t2 - t1 == 1)
+						tc2 ++;
+					else if (t2 - t1 > 2)
+					{
+						tc3 ++;
+						tc4 = t2 - t1;
+					}
+						t1 = t2;
+					
+					
+					varOperation.flagRecvOK = 0;
+					ptrPIDdate = Mem_malloc(200);
+					ptrPIDdate[0] = 3;
+					ptrPIDdate[1] = 0x50;
+					ptrPIDdate[2] = 0x25;
+					for(i = 0;i < varOperation.pidNum; i++)
+					{
+						memcpy(&ptrPIDdate[ptrPIDdate[0]],&pPid[i][1],pPid[i][1]);
+						ptrPIDdate[0] += pPid[i][1];
+						if(i == bag*30)
+						{
+							memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrPIDdate,ptrPIDdate[0]);
+							cdmaDataToSend->datLength += ptrPIDdate[0];
+							ptrPIDdate[0] = 3;
+							ptrPIDdate[1] = 0x50;
+							ptrPIDdate[2] = 0x25;
+							bag++;
+						}
+					}
+					if(i == varOperation.pidNum && i != bag*30)
 					{
 						memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrPIDdate,ptrPIDdate[0]);
 						cdmaDataToSend->datLength += ptrPIDdate[0];
-						ptrPIDdate[0] = 3;
-						ptrPIDdate[1] = 0x50;
-						ptrPIDdate[2] = 0x25;
-						bag++;
 					}
-				}
-				if(i == varOperation.pidNum && i != bag*30)
-				{
+					ptrPIDdate[0] = 3;
+					ptrPIDdate[1] = 0x50;
+					ptrPIDdate[2] = 0x26;
 					memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrPIDdate,ptrPIDdate[0]);
 					cdmaDataToSend->datLength += ptrPIDdate[0];
+					Mem_free(ptrPIDdate);
 				}
-				ptrPIDdate[0] = 3;
-				ptrPIDdate[1] = 0x50;
-				ptrPIDdate[2] = 0x26;
-				memcpy(&cdmaDataToSend->data[cdmaDataToSend->datLength],ptrPIDdate,ptrPIDdate[0]);
-				cdmaDataToSend->datLength += ptrPIDdate[0];
-				Mem_free(ptrPIDdate);
 				varOperation.pidSendFlag = 1;
 				bag = 1;
 			}
@@ -300,7 +315,7 @@ void StartTask(void *pdata)
 				cdmaDataToSend->timeCount = 0;
 			}
 			else
-				cdmaDataToSend = CDMNSendDataInit( 1000 );
+				cdmaDataToSend = CDMNSendDataInit(1000);
 			OSMutexPost( CDMASendMutex );
 		}
 	}
@@ -342,24 +357,54 @@ void SendFaultCmd(void)
 		} 
 	}
 }
-
-uint8_t SendPIDCmd(void)
+uint8_t OBD_Send_Task(void *pdata)//发送数据流指令，有间隔的发送
 {
-	uint8_t i = 0;
+	uint8_t        i = 0;
 	uint8_t * ptrOBDSend;
-	uint8_t err;
-	for(i = 0;i < varOperation.pidNum;i ++) // PID 指令的数目
+	uint8_t   err;
+	uint32_t  sendTimeCount = 0;
+	u16       closeCount    = 0;
+	while(1)
 	{
-		ptrOBDSend = Mem_malloc(9);
-		memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data, 9);
-		err = OSQPost(canSendQ,ptrOBDSend);//向 OBD 推送要发送的PID指令
-		if(err != OS_ERR_NONE)
+		OSTimeDlyHMSM(0,0,0,2);
+		sendTimeCount++;
+		if(varOperation.isDataFlow == 1)//没联网，不发送数据流
 		{
-			Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
-		} 
+			i = 0;
+			OSTimeDlyHMSM(0,0,0,20);
+			continue;
+		}
+		if(sendTimeCount % 90000 == 0)  //定期3分钟发送登录报文
+		{
+			LoginDataSend(); 
+		}
+		if(varOperation.pidRun == 1 && varOperation.canTest >0 && varOperation.pidTset == 0 && varOperation.strengthRun == 0)   //CAN的波特率和ID均已确定
+		{
+			if(varOperation.pidSendFlag == 1 && sendTimeCount % 5 == 0)//10ms发送一次体检指令
+			{
+				ptrOBDSend = Mem_malloc(9);
+				memcpy(ptrOBDSend,(ptrPIDAllDat + i)->data, 9);
+				err = OSQPost(canSendQ,ptrOBDSend);//向 OBD 推送要发送的PID指令
+				if(err != OS_ERR_NONE)
+				{
+					Mem_free(ptrOBDSend);          //推送不成功，需要释放内存块
+				} 
+				i++;
+			}
+			if(i >= varOperation.pidNum || varOperation.pidSendFlag == 0)
+			{
+				i = 0;
+			}
+			if(sendTimeCount % 10000 == 9999 && varOperation.flagCAN == 1)//发送故障码读取指令
+			{
+				SendFaultCmd();
+			}
+		}else                                      //发送被中断，要从第一条数据开始发送
+		{
+			 i = 0;
+		}
+		
 	}
-	varOperation.pidSendFlag = 0;
-	return 1;
 }
 
    

@@ -41,7 +41,7 @@ void CDMARecvTask(void *pdata)
 			else if(cmdId == 0x5015)		//Ä£Ê½ÇĞ»»
 				FuelModeChange(ptrDeal);
 			
-			else if(cmdId == 0x5017)		//·şÎñÆ÷ÏÂ·¢µÄ²âÊÔÖ¸Áî
+			else if(cmdId == 0x5027)		//·şÎñÆ÷ÏÂ·¢µÄ²âÊÔÖ¸Áî
 				CanTestCmd(ptrDeal);
 			
 			else if(((cmdId >= 0x4000)&&(cmdId < 0x5000))||(cmdId == 0x5012)||(cmdId == 0x5018)) //µÚÒ»¡¢¶ş²¿·ÖµÄÅäÖÃÎÄ¼ş  
@@ -122,7 +122,7 @@ static void GetConfigInfo(void)
 	
 	OSQPost(CDMASendQ,otaUpdatSend);
 }
-
+extern u32 timeBase;
 static void RecvLoginDatDeal(uint8_t* ptr)      //¶Ô·şÎñÆ÷»Ø¸´µÄµÇÂ¼±¨ÎÄ½øĞĞ½âÎö
 {
 	uint16_t cmdId = 0;
@@ -132,6 +132,7 @@ static void RecvLoginDatDeal(uint8_t* ptr)      //¶Ô·şÎñÆ÷»Ø¸´µÄµÇÂ¼±¨ÎÄ½øĞĞ½âÎö
 	uint32_t softVersion = 0;
 	uint16_t offset = 3;
 	static uint8_t timetemp = 0;
+	static u8 abflag = 0;
 	cmdId = ptr[offset++];
 	cmdId = (cmdId<<8) + ptr[offset++];
 
@@ -145,8 +146,12 @@ static void RecvLoginDatDeal(uint8_t* ptr)      //¶Ô·şÎñÆ÷»Ø¸´µÄµÇÂ¼±¨ÎÄ½øĞĞ½âÎö
 		carAllRecord.startTime = serverTime;   //ĞĞ³ÌÆğÊ¼Ê±¼ä
 		timetemp = 1;
 	}
-	
-	RTC_Time_Adjust(serverTime);   //µÇÂ¼µÄÊ±ºò£¬¸ú·şÎñÆ÷Ê±¼ä½øĞĞĞ£Ê±¡£
+	if(abflag == 0)
+	{
+		abflag = 1;
+		timeBase = serverTime;
+	}
+//		RTC_Time_Adjust(serverTime);   //µÇÂ¼µÄÊ±ºò£¬¸ú·şÎñÆ÷Ê±¼ä½øĞĞĞ£Ê±¡£
 	
 	softVersion = ptr[offset++];   //µÃµ½Èí¼ş°æ±¾ºÅ
 	softVersion = (softVersion << 8) + ptr[offset++];
@@ -552,46 +557,55 @@ extern uint8_t pidManyBag[8];
 extern CAN1DataToSend  dataToSend; 
 static void CanTestCmd(uint8_t* ptrDeal)//·şÎñÆ÷ÏÂ·¢µÄ  CAN²âÊÔÖ¸Áî
 {
-	uint32_t flowId;
 	uint32_t canRxId;
-//	uint32_t recordId;
+	CANBAUD_Enum canBaud;
 	uint32_t canTxId;
-	uint8_t*  pidVerCmd;
+	uint32_t saveCanID;
+	_CDMADataToSend* pidVerCmd;
 	uint16_t cmdId;
-	uint8_t offset = 3,err = 0,i = 0,cmdManyPackNum = 0;
+	uint8_t pidNum;
+	uint8_t offset = 3,err = 0,i = 0,j=0,cmdManyPackNum = 0;
 	CanRxMsg* CAN1_RxMsg;
-	CAN_InitTypeDef   CAN_InitStructure;
+	CAN_InitTypeDef CAN_InitStructure;
+	uint8_t * can1_Txbuff;
+	cmdId = ptrDeal[offset ++];
+	cmdId = (cmdId << 8) + ptrDeal[offset ++];
 	
-//	recordId = dataToSend.canId;//¼ÇÂ¼Ö®Ç°µÄ  CANID
+	pidVerCmd = CDMNSendDataInit(500); 
+	pidVerCmd->data[pidVerCmd->datLength++] = 0;
+	pidVerCmd->data[pidVerCmd->datLength++] = 0x50;
+	pidVerCmd->data[pidVerCmd->datLength++] = 0x27;
+	memcpy(&pidVerCmd->data[pidVerCmd->datLength],&ptrDeal[offset],8);
+	offset += 8;
+	pidVerCmd->datLength += 8;
 	
-	pidVerCmd = Mem_malloc(8);
-	
-	cmdId     = ptrDeal[offset ++];
-	cmdId     = (cmdId << 8) + ptrDeal[offset ++];
-	
-	flowId = ptrDeal[offset ++];//Á÷Ë®ID
-	flowId = (flowId<<8) + ptrDeal[offset++];
-	flowId = (flowId<<8) + ptrDeal[offset++];
-	flowId = (flowId<<8) + ptrDeal[offset++];
-	
-	canRxId = ptrDeal[offset ++];//¿¨Â·±¦ID
+	canRxId = ptrDeal[offset ++];               //¿¨Â·±¦ID
 	canRxId = (canRxId<<8) + ptrDeal[offset++];
 	canRxId = (canRxId<<8) + ptrDeal[offset++];
 	canRxId = (canRxId<<8) + ptrDeal[offset++];
+	saveCanID = varOperation.canRxId;
+	varOperation.canRxId = canRxId;
 	
-	canTxId = ptrDeal[offset ++];//ECU ID 
+	canTxId = ptrDeal[offset ++];              //ECU ID 
 	canTxId = (canTxId<<8) + ptrDeal[offset++];
 	canTxId = (canTxId<<8) + ptrDeal[offset++];
 	canTxId = (canTxId<<8) + ptrDeal[offset++];
+	canBaud = (CANBAUD_Enum)ptrDeal[offset++];
+	pidNum  = ptrDeal[offset++];
 	
-	memcpy(pidVerCmd,&ptrDeal[offset],8);//Òª²âÊÔµÄ PID Ö¸Áî
-	
+	varOperation.pidRun = 0;                //Í£Ö¹PID·¢ËÍ
 	varOperation.pidTset = 1;
+	OSTimeDlyHMSM(0,0,2,0);//ÑÓÊ±2Ãë£¬ÓÃÓÚÈ·±£OBDÈÎÎñÃ»ÓĞ·¢ËÍ½ÓÊÕµÄÈÎÎñ
+	varOperation.flagRecvOK = 0;
+	do{
+		can1_Txbuff = OSQAccept(canSendQ,&err);//Çå¿ÕÏûÏ¢¶ÓÁĞÀïµÄÏûÏ¢
+		Mem_free(can1_Txbuff);
+	}while(err == OS_ERR_NONE);
 	
 	CAN_DeInit(CAN1);  
 	CAN_StructInit(&CAN_InitStructure);
-	CAN1_BaudSet(canDataConfig.canBaud);  //ÏÈÓÃflashÖĞµÄCANÅäÖÃ½øĞĞ²âÊÔ
-	CAN1_SetFilter(canRxId ,CAN_ID_EXT); 
+	CAN1_BaudSet(canBaud);  //ÏÈÓÃflashÖĞµÄCANÅäÖÃ½øĞĞ²âÊÔ
+	CAN1_ClearFilter();
 	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//ÖØÖÃCANÂË²¨Æ÷
 	
 	for(i = 0;i < 200;i ++)//Çå¿ÕÏûÏ¢¶ÓÁĞ
@@ -601,100 +615,72 @@ static void CanTestCmd(uint8_t* ptrDeal)//·şÎñÆ÷ÏÂ·¢µÄ  CAN²âÊÔÖ¸Áî
 			break;
 		Mem_free(CAN1_RxMsg);
 	}
+	
 	dataToSend.canId = canTxId;
-	dataToSend.pdat  = pidVerCmd;
-	OBD_CAN_SendData(dataToSend.canId,CAN_ID_EXT,dataToSend.pdat);//·¢ËÍPIDÖ¸Áî
 
-	CAN1_RxMsg = OSQPend(canRecieveQ,500,&err); // ½ÓÊÕµ½OBD»Ø¸´
-	if(err == OS_ERR_NONE)
+	for(i = 0;i < pidNum;i ++)
 	{
-		if(CAN1_RxMsg->Data[0] == 0x10)     // ¶à°ü´¦Àí
+		dataToSend.pdat  = &ptrDeal[offset + i*8];
+		OBD_CAN_SendData(dataToSend.canId,CAN_ID_EXT,dataToSend.pdat);//·¢ËÍ PID Ö¸Áî
+		CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);
+		if(err == OS_ERR_NONE)
 		{
-			pidVerCmd = Mem_malloc(CAN1_RxMsg->Data[1] + 15);// ÉêÇëµÄÄÚ´æ¿é×ã¹»³¤
-			if(pidVerCmd != NULL)
+			if(CAN1_RxMsg->Data[0] == 0x10)         // ¶à°ü´¦Àí
 			{
-				pidVerCmd[0] = CAN1_RxMsg -> Data[1] + 8;
-				pidVerCmd[1] = 0x50;
-				pidVerCmd[2] = 0x17;
-				
-				pidVerCmd[3] = (flowId>>24) & 0xFF;           //Ö¸ÁîÁ÷Ë®ºÅ
-				pidVerCmd[4] = (flowId>>16) & 0xFF;
-				pidVerCmd[5] = (flowId>>8)  & 0xFF;
-				pidVerCmd[6] = (flowId>>0)  & 0xFF;
-				
-				pidVerCmd[7] = CAN1_RxMsg->Data[1];           //ÊÕµ½µÄÊı¾İ³¤¶È
-				
-				memcpy(&pidVerCmd[8],&CAN1_RxMsg->Data[2],6);
 				cmdManyPackNum = (CAN1_RxMsg->Data[1] - 6) % 7 == 0? (CAN1_RxMsg->Data[1] - 6)/7 : (CAN1_RxMsg->Data[1] - 6)/7 + 1;
+				pidVerCmd->data[pidVerCmd->datLength++] = (cmdManyPackNum+1) *7;           //ÊÕµ½µÄÊı¾İ³¤¶È
+				memcpy(&pidVerCmd->data[pidVerCmd->datLength],&CAN1_RxMsg->Data[2],6);
+				pidVerCmd->datLength += 6;
 				Mem_free(CAN1_RxMsg);
 				dataToSend.pdat = pidManyBag;                 //·¢ËÍ 0x30 ÇëÇó½ÓÏÂÀ´µÄ¶à°ü
 				OBD_CAN_SendData(dataToSend.canId,dataToSend.ide,dataToSend.pdat);
-				for(i=0;i<cmdManyPackNum;i++)
+				for(j=0;j<cmdManyPackNum;j++)
 				{
 					CAN1_RxMsg = OSQPend(canRecieveQ,25,&err);// ½ÓÊÕ¶à°ü
 					if(err == OS_ERR_NONE)
 					{
-						memcpy(&pidVerCmd[7*i + 14],&CAN1_RxMsg->Data[1],7);
+						memcpy(&pidVerCmd->data[pidVerCmd->datLength],&CAN1_RxMsg->Data[1],7);
 						Mem_free(CAN1_RxMsg);
+						pidVerCmd->datLength += 7;
 					}
-					else 
+					else
 						break;
 				} 
-				if(i == cmdManyPackNum)
-				{
-					SendPidCmdData(pidVerCmd);
-				}
-				Mem_free(pidVerCmd);
+			}
+			else  //µ¥°ü´¦Àí
+			{
+				pidVerCmd->data[pidVerCmd->datLength++] = 9;
+				memcpy(&pidVerCmd->data[pidVerCmd->datLength],CAN1_RxMsg->Data,8);
+				pidVerCmd->datLength += 8;
+			
+				Mem_free(CAN1_RxMsg);
 			}
 		}
-		else  //µ¥°ü´¦Àí
-		{
-			offset = 0;
-			pidVerCmd = Mem_malloc(16);
-			pidVerCmd[offset++] = 16;
-			pidVerCmd[offset++] = 0x50;
-			pidVerCmd[offset++] = 0x17;
-			
-			pidVerCmd[offset++] = (flowId>>24) & 0xFF;//Ö¸ÁîÁ÷Ë®ºÅ
-			pidVerCmd[offset++] = (flowId>>16) & 0xFF;
-			pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
-			pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
-			
-			pidVerCmd[offset++] = 8;//ÊÕµ½µÄÊı¾İ³¤¶È
-			memcpy(&pidVerCmd[offset++],CAN1_RxMsg->Data,8);
-			SendPidCmdData(pidVerCmd);
-			Mem_free(pidVerCmd);
-			Mem_free(CAN1_RxMsg);
-		}
-	}else//ECU ÎŞ»Ø¸´
-	{	offset = 0;
-		pidVerCmd = Mem_malloc(16);
-		pidVerCmd[offset++] = 13;
-		pidVerCmd[offset++] = 0x50;
-		pidVerCmd[offset++] = 0x17;
-		
-		pidVerCmd[offset++] = (flowId>>24) & 0xFF;//Ö¸ÁîÁ÷Ë®ºÅ
-		pidVerCmd[offset++] = (flowId>>16) & 0xFF;
-		pidVerCmd[offset++] = (flowId>>8)  & 0xFF;
-		pidVerCmd[offset++] = (flowId>>0)  & 0xFF;
-		
-		pidVerCmd[offset++] = 5;      //ERROR  -  ÅäÖÃÖ¸Áî´íÎó
-		pidVerCmd[offset++] = 'E';pidVerCmd[offset++] = 'R';pidVerCmd[offset++] = 'R';
-		pidVerCmd[offset++] = 'O';pidVerCmd[offset++] = 'R';
-		SendPidCmdData(pidVerCmd);
-		Mem_free(pidVerCmd);
-		Mem_free(CAN1_RxMsg);
 	}
-	if(varOperation.canTest == 2)
-	{
-		CAN_DeInit(CAN1);  
-		CAN_StructInit(&CAN_InitStructure);
-		CAN1_BaudSet(canDataConfig.canBaud);  //ÏÈÓÃflashÖĞµÄCANÅäÖÃ½øĞĞ²âÊÔ
-		CAN1_ClearFilter();           
-		CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//ÖØÖÃCANÂË²¨Æ÷
-	}
+	Mem_free(ptrDeal);
+	pidVerCmd->data[34] = pidVerCmd->datLength - 34;
+	
+	dataToSend.canId = canDataConfig.canTxId;  //»Ö¸´³õÊ¼µÄPID
+	varOperation.canRxId = saveCanID;
+	
+	CAN_DeInit(CAN1);  
+	CAN_StructInit(&CAN_InitStructure);
+	CAN1_BaudSet(canDataConfig.canBaud);  //»Ö¸´³õÊ¼ÅäÖÃµÄ²¨ÌØÂÊ
+	CAN1_ClearFilter();
+	CAN_ITConfig(CAN1,CAN_IT_FMP1,ENABLE);//ÖØÖÃCANÂË²¨Æ÷
+	
 	varOperation.pidTset = 0;
-	Mem_free(pidVerCmd);
+	varOperation.pidRun = 1;  //Æô¶¯PID·¢ËÍ
+	
+	CDMASendDataPack(pidVerCmd);     //½«²É¼¯µ½µÄÊı¾İ·â°ü
+	OSQPost(CDMASendQ,pidVerCmd);
+	err = OSQPost(CDMASendQ,pidVerCmd);
+	if(err != OS_ERR_NONE)
+	{
+		Mem_free(pidVerCmd->data);
+		Mem_free(pidVerCmd);
+	}
+		
 }
 
 extern uint8_t strengPower[300];
@@ -784,20 +770,6 @@ static void FuelModeChange(uint8_t* ptrDeal)          //½ÚÓÍ¡¢Ç¿¶¯Á¦¡¢ÆÕÍ¨Ä£Ê½ Ç
 	
 	Save2KDataToFlash(ptrMode,PROMOTE_ADDR,100);                //½«ĞÂµÄÔöÇ¿¶¯Á¦Ö¸ÁîĞ´ÈëFlash
 	
-//	Mem_free(ptrMode);
-//	memcpy(strengthFuelFlash.ecuVer,strengthFuel.ecuVer,16);   //°æ±¾ºÅ
-//	memcpy(strengthFuelFlash.fuelAddr,strengthFuel.fuelAddr,5);//¶ÁÈ¡ÅçÓÍÁ¿µÄµØÖ·
-//	memcpy(strengthFuelFlash.mask,strengthFuel.mask,4);        //°²È«Ëã·¨ÑÚÂë
-//	memcpy(strengthFuelFlash.safe1,strengthFuel.safe1,8);      //°²È«Ëã·¨ cmd 1
-//	memcpy(strengthFuelFlash.safe2,strengthFuel.safe2,8);      //°²È«Ëã·¨ cmd 2
-//	memcpy(strengthFuelFlash.mode1,strengthFuel.mode1,8);      //Ä£Ê½ cmd 1
-//	memcpy(strengthFuelFlash.mode2,strengthFuel.mode2,8);      //Ä£Ê½ cmd 2
-//	strengthFuelFlash.modeOrder = strengthFuel.modeOrder;      //Ä£Ê½Ö¸ÁîÓë°²È«Ëã·¨Ö´ĞĞµÄË³Ğò
-//	
-//	memcpy(strengthFuelFlash.faultCmd1,strengthFuel.faultCmd1,8);      //Ä£Ê½ cmd 2
-//	memcpy(strengthFuelFlash.faultCmd2,strengthFuel.faultCmd2,8);      //Ä£Ê½ cmd 2
-//	memcpy(strengthFuelFlash.faultClear,strengthFuel.faultClear,8);     //Ä£Ê½ cmd 2
-	
 	memset(strengPower,0,200);                    //Çå¿ÕFlash±£´æµÄÅçÓÍÁ¿µÄÖµ
 	SoftErasePage(STRENGE_Q);
 	Save2KDataToFlash(strengPower,STRENGE_Q,200);
@@ -808,7 +780,6 @@ static void FuelModeChange(uint8_t* ptrDeal)          //½ÚÓÍ¡¢Ç¿¶¯Á¦¡¢ÆÕÍ¨Ä£Ê½ Ç
 
 void ClearFaultCmd(void)
 {
-
 	uint8_t * ptrOBDSend;
 	uint8_t err;
 //	static uint32_t timeCount = 0;

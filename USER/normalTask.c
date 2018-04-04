@@ -110,6 +110,7 @@ void BSP_BeeperTimer_Off(void)
 void BeepTask(void *pdata)
 {
 	uint8_t err;
+	TIM1ConfigInit();
 	while(1)
 	{
 		OSSemPend(beepSem,0,&err);//想让蜂鸣器响，发送个信号量即可
@@ -119,5 +120,31 @@ void BeepTask(void *pdata)
 	}
 }
 
+void TIM1ConfigInit(void )
+{
+	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 
-
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE); //时钟使能
+	
+	//定时器TIM2初始化
+	TIM_TimeBaseStructure.TIM_Period = 9999;          //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	
+	TIM_TimeBaseStructure.TIM_Prescaler =7199;      //设置用来作为TIMx时钟频率除数的预分频值
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;      //设置时钟分割:TDTS = Tck_tim
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure); //根据指定的参数初始化TIMx的时间基数单位
+ 
+	TIM_ITConfig(TIM1,TIM_IT_Update,ENABLE );       //使能指定的TIM2中断,允许更新中断
+	
+	TIM_Cmd(TIM1, ENABLE);  //使能TIMx		
+}
+u32 timeBase = 0;
+void TIM1_UP_IRQHandler(void)
+{
+	
+	TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+	OSIntEnter();	
+	timeBase ++;
+	OSIntExit();  //中断服务结束，系统进行任务调度
+	
+}

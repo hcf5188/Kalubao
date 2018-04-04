@@ -18,11 +18,7 @@ void PowerDeal(void *pdata)
 	{
 		OSTimeDlyHMSM(0,0,1,0);
 		timeSaveFule ++;		
-		adcValue = Get_Adc_Average(ADC_Channel_1,10);//判断OBD电源电压  阈值：27.5V
-		if(adcValue < 3060)
-			varOperation.flagVol = 0;//OBD 电源电压低，ECU应该是没电了 
-		else
-			varOperation.flagVol = 1;//OBD  电压正常
+//		adcValue = Get_Adc_Average(ADC_Channel_1,10);//获取OBD电源电压 影响数据流 注释掉
 		
 		if(carAllRecord.cdmaReStart < 30)//CDMA连续重启次数小余30，喂狗
 			IWDG_ReloadCounter();        // 喂狗
@@ -32,16 +28,18 @@ void PowerDeal(void *pdata)
 			RunDataReport();
 			timeCount = 0;
 		}
-		SpeedPlusSubCompute();//计算加减速、总行程
-		if(varOperation.pidSendFlag != 1)//防止数据流中间被打断，十秒后恢复发送
-		{
-			timePid ++;
-			if(timePid > 10)
-			{
-				timePid = 0;
-				varOperation.pidSendFlag = 1;
-			}
-		}
+//		SpeedPlusSubCompute();//计算加减速、总行程
+//		if(varOperation.pidSendFlag != 1)//防止数据流中间被打断，十秒后恢复发送
+//		{
+//			timePid ++;
+//			if(timePid > 10)
+//			{
+//				timePid = 0;
+//				varOperation.pidSendFlag = 1;
+//			}
+//		}
+//		else
+//			timePid = 0;
 	}
 } 
   

@@ -780,9 +780,24 @@
 ;;;445    	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
 0000ee  4668              MOV      r0,sp
 0000f0  f7fffffe          BL       NVIC_Init
-;;;446    }
-0000f4  bd08              POP      {r3,pc}
-;;;447    
+;;;446    	
+;;;447    	NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_IRQn; //TIM2中断
+0000f4  2019              MOVS     r0,#0x19
+0000f6  f88d0000          STRB     r0,[sp,#0]
+;;;448    	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
+0000fa  2002              MOVS     r0,#2
+0000fc  f88d0001          STRB     r0,[sp,#1]
+;;;449    	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
+000100  2001              MOVS     r0,#1
+000102  f88d0002          STRB     r0,[sp,#2]
+;;;450    	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
+000106  f88d0003          STRB     r0,[sp,#3]
+;;;451    	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+00010a  4668              MOV      r0,sp
+00010c  f7fffffe          BL       NVIC_Init
+;;;452    }
+000110  bd08              POP      {r3,pc}
+;;;453    
                           ENDP
 
 
@@ -1007,45 +1022,44 @@
 ;;;22     	GPSConfigInit(9600);
 000026  f44f5016          MOV      r0,#0x2580
 00002a  f7fffffe          BL       GPSConfigInit
-;;;23     
+;;;23     	
 ;;;24     	TIM4ConfigInit();
 00002e  f7fffffe          BL       TIM4ConfigInit
 ;;;25     	TIM2ConfigInit();
 000032  f7fffffe          BL       TIM2ConfigInit
-;;;26     	ADC1Init();
-000036  f7fffffe          BL       ADC1Init
+;;;26     //	ADC1Init();
 ;;;27     	RTCConfigureInit();
-00003a  f7fffffe          BL       RTCConfigureInit
+000036  f7fffffe          BL       RTCConfigureInit
 ;;;28     	
 ;;;29     	bitValue = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0);
-00003e  2101              MOVS     r1,#1
-000040  480a              LDR      r0,|L13.108|
-000042  f7fffffe          BL       GPIO_ReadInputDataBit
-000046  4604              MOV      r4,r0
+00003a  2101              MOVS     r1,#1
+00003c  480a              LDR      r0,|L13.104|
+00003e  f7fffffe          BL       GPIO_ReadInputDataBit
+000042  4604              MOV      r4,r0
 ;;;30     	if(bitValue == 1)//USB升级模式
-000048  2c01              CMP      r4,#1
-00004a  d106              BNE      |L13.90|
+000044  2c01              CMP      r4,#1
+000046  d106              BNE      |L13.86|
 ;;;31     	{
 ;;;32     		varOperation.USB_NormalMode = 1;
-00004c  4908              LDR      r1,|L13.112|
-00004e  7208              STRB     r0,[r1,#8]
+000048  4908              LDR      r1,|L13.108|
+00004a  7208              STRB     r0,[r1,#8]
 ;;;33     		GPIO_SetBits(GPIOA,GPIO_Pin_15);//使能USB接口
-000050  03c1              LSLS     r1,r0,#15
-000052  4808              LDR      r0,|L13.116|
-000054  f7fffffe          BL       GPIO_SetBits
-000058  e007              B        |L13.106|
-                  |L13.90|
+00004c  03c1              LSLS     r1,r0,#15
+00004e  4808              LDR      r0,|L13.112|
+000050  f7fffffe          BL       GPIO_SetBits
+000054  e007              B        |L13.102|
+                  |L13.86|
 ;;;34     	}else            //正常工作模式
 ;;;35     	{
 ;;;36     		varOperation.USB_NormalMode = 0;
-00005a  2000              MOVS     r0,#0
-00005c  4904              LDR      r1,|L13.112|
-00005e  7208              STRB     r0,[r1,#8]
+000056  2000              MOVS     r0,#0
+000058  4904              LDR      r1,|L13.108|
+00005a  7208              STRB     r0,[r1,#8]
 ;;;37     		WatchDogInit(7,2000);           //看门狗初始化，系统卡死大概12s后重启 		
-000060  f44f61fa          MOV      r1,#0x7d0
-000064  2007              MOVS     r0,#7
-000066  f7fffffe          BL       WatchDogInit
-                  |L13.106|
+00005c  f44f61fa          MOV      r1,#0x7d0
+000060  2007              MOVS     r0,#7
+000062  f7fffffe          BL       WatchDogInit
+                  |L13.102|
 ;;;38     	}
 ;;;39     //	CDMAUart2Init();
 ;;;40     //	GPSConfigInit(9600);
@@ -1054,15 +1068,15 @@
 ;;;43     //	TIM2ConfigInit();
 ;;;44     //	RTCConfigureInit();	
 ;;;45     }
-00006a  bd10              POP      {r4,pc}
+000066  bd10              POP      {r4,pc}
 ;;;46     //系统时钟滴答初始化
                           ENDP
 
-                  |L13.108|
+                  |L13.104|
                           DCD      0x40011000
-                  |L13.112|
+                  |L13.108|
                           DCD      varOperation
-                  |L13.116|
+                  |L13.112|
                           DCD      0x40010800
 
                           AREA ||i.TIM4ConfigInit||, CODE, READONLY, ALIGN=2

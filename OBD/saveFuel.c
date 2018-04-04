@@ -21,18 +21,19 @@
 #define Curr_trqRaw         RCVData0[2]                       //当前扭拒
 #define DrvDem_trqRaw       RCVData0[1]                       //驾驶员需求扭拒
 
-#define Acc_st             (RCVData2[7]*256 + RCVData2[6])    //巡航状态           什么是巡航状态？
+#define Acc_st             (RCVData2[7]*256 + RCVData2[6])    //巡航状态       什么是巡航状态？
 //------------------------------------------------------------------------------------
 #define Highload 3
 #define Midload  2
 #define Lowload  1
  
 #define Accpet_tiPT1          0.9
-#define CoEng_tiPT1rDrvLoad   0.7
+//#define CoEng_tiPT1rDrvLoad   0.7   //原始值
+#define CoEng_tiPT1rDrvLoad   0.5
 #define EEPROM_DATA_NUM_MAX   3
 #define DRVDEM_TRQFLT_ENABLE  1
-//----------------------------------------------------------------------------------------------- 
-//systerm
+//-------------------------------------------------------------------------------------
+
 u16	  SystemTime250us,SystemTime1ms,SystemTime10ms,SystemTime50ms,SystemTime100ms,SystemTime500ms,SystemTime1s,SystemTime3s;
 u8	  B_TimeOut,CL_stOutflag;
 u8    app1, app2, app3, numapp,appold1,appold2,appold3,appold4,appold5,appold6;
@@ -98,7 +99,7 @@ u8    nop;
  void TrqLim(void);
  void ConstLimitation(void);
  void UpdateTxDataAMT(void);
-
+uint8_t senTime = 0;
 //节油任务
  void SaveFuleTask(void *pdata)
 {
@@ -116,7 +117,7 @@ u8    nop;
 		SystemTime1s ++;
 
 		//每毫秒都会进行数据检查
-		if(SystemTime10ms >= 10)
+		if(SystemTime10ms >= 5)
 		{
 			SystemTime10ms = 0;
 			if(fCanOK) 
@@ -125,13 +126,13 @@ u8    nop;
 				TrqLim();      // 根据发动机转速，得出中载、轻载状态下额定限制值
 /*############################################################################### 
 						载荷状态变化时, 扭拒限制的斜率变化
-################################################################################*/           
+################################################################################*/
 				if(Load_stCurr == Highload)              //当前是重载模式  此处是标志
 				{
 					if(Load_stTarget == Midload)         //手机设定是中档模式   此处是模式标志
 					{
 						if(TrqLoad > TrqlimMid)          //这个就是拿真实值进行比较了
-							TrqLoad = TrqLoad - 0.08;    // 8/s
+							TrqLoad = TrqLoad - 0.08;    //   8/s
 						else 
 						{
 							Load_stCurr = Load_stTarget; //达到预期状态了，赋值、相应标志
@@ -141,7 +142,7 @@ u8    nop;
 					else if(Load_stTarget == Lowload)    //应该是轻载模式
 					{
 						if(TrqLoad > TrqlimLow)
-							TrqLoad = TrqLoad - 0.08; //8/s
+							TrqLoad = TrqLoad - 0.08;    //    8/s
 						else 
 						{
 							Load_stCurr = Load_stTarget;
@@ -178,7 +179,8 @@ u8    nop;
 				{
 					if(Load_stTarget == Highload)
 					{
-						if(TrqLoad < 225) TrqLoad = TrqLoad + 0.08; //8/s
+						if(TrqLoad < 225) 
+							TrqLoad = TrqLoad + 0.08; //8/s
 						else
 						{
 							Load_stCurr = Load_stTarget;
@@ -197,22 +199,19 @@ u8    nop;
 					} 
 					else TrqLoad = TrqlimLow; 
 				}            
-				
-//				if(varOperation.oilMode == 2)//节油功能
+				ConstLimitation();       //稳油功能
+				UpdateTxDataAMT();       //限制按照最小的值来   需求扭矩 跟 设定扭矩还有稳油
+//				if(senTime == 0)
 //				{
-					ConstLimitation();       //稳油功能
-					UpdateTxDataAMT();       //限制按照最小的值来   需求扭矩 跟 设定扭矩
 					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq); //todo 发送节油，等待运行
+//					senTime = 1;
 //				}
-//				else if(trq[3] < 225)          //当前模式非节油
-//				{
-//					trq[3]++;
-//					trq[0] = 35;
-//					OBD_CAN_SendData(0x0C000021,CAN_ID_EXT,trq);
-//				}
+//				else
+//					senTime = 0;
+				
 			}
 		}
-		if(SystemTime50ms)            //稳油退出 斜率   50ms + 1
+		if(SystemTime50ms >= 25)              //稳油退出 斜率   50ms + 1
 		{
 			SystemTime50ms = 0;
 			if(fCanOK) 
@@ -221,7 +220,7 @@ u8    nop;
 				{
 					if(trqmax < 225)    //退出节油模式  最大值要自增
 					{
-						trqmax++;
+						trqmax ++;
 					} 
 					else
 					{
@@ -230,7 +229,7 @@ u8    nop;
 				}
 			}
 		}
-		if(SystemTime100ms >= 100)	 //计算20秒的平均扭矩，3秒的平均油门
+		if(SystemTime100ms >= 50)	 //计算 20 秒的平均扭矩，3秒的平均油门
 		{
 			SystemTime100ms = 0;
 			numCAN=0;
@@ -246,10 +245,6 @@ u8    nop;
 		if(SystemTime500ms >= 500)
 		{
 			SystemTime500ms = 0;
-//			if(fCanOK)
-//			{
-//			CANr1=0,CANr2=0,CANr3=0,CANr4=0,CANr5=0,CANr6=0,CANr7=0;   //fCanOK = 0;
-//			}
 		}
 	}
 }
@@ -397,7 +392,7 @@ void ConstLimitation(void)
 
 	if(TimerAPPCnt0 < 65530)
 		TimerAPPCnt0 ++;
-	if(TimerAPPCnt0 >= 250)
+	if(TimerAPPCnt0 >= 500)
 		APP_T0 = 1; 
 
 	rdev = 20;mrdev = -20;
@@ -486,12 +481,6 @@ u8 CanErrDetec17(u16 ErrDebT,u8 Signal)
 		return 1;
 }
 
-/* CANRXERR
-CANTXERR
-CANRFLG
-CANTBSEL
-CANTAAK
-CANTFLG */
 /* ========================================================================
 功  能:					Can 发送数据更新
 参  数:
@@ -515,7 +504,7 @@ void UpdateTxDataAMT(void)
 			else TrqDrvFlt = 225;
          } 
 		 else 
-			 TrqDrvFlt = 225;  		//此举没有任何意义，永远也执行不到。
+			 TrqDrvFlt = 225;  		//需求扭矩值比较小的话，就把需求扭矩关掉
          if(TrqLoad < trqmax)  		//限制小于最大值。
          {
             if(TrqLoad < TrqDrvFlt) 

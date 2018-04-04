@@ -25,6 +25,8 @@
 #define J1939_TASK_PRIO      16     //SAE J1939 任务处理
 #define SAVE_FUEL_PEIO       17     //节油任务  优先级
 
+#define OBD_SEND_PRIO        18     //数据流发送任务
+
 #define POWER_TASK_PRIO      19     //电源管理任务
 
 #define CDMA_LED_PRIO        25     //网络通信GPRS-LED任务优先级
@@ -50,6 +52,8 @@
 
 #define POWER_STK_SIZE       128    //整车故障诊断OBD任务堆栈大小
 
+#define OBD_SENDDATA_SIZE	 80     //数据流发送任务（定时发送）
+
 #define LED_STK_SIZE         80     //LED任务堆栈大小
 #define BEEP_STK_SIZE        80
 #define CANBUAD_STK_SIZE     80
@@ -74,7 +78,7 @@ void CDMALEDTask(void *pdata);  //CDMA 状态黄灯闪烁任务
 void GPSLEDTask (void *pdata);  //GPS  状态灯闪烁任务
 void OBDLEDTask (void *pdata);  //OBD  状态灯闪烁任务
 void BeepTask   (void *pdata);  //蜂鸣器 开机提示任务
-
+uint8_t OBD_Send_Task(void *pdata);//OBD 发送指令任务
 
 void USBUpdataTask (void *pdata);//USB 升级任务声明
 

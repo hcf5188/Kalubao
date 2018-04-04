@@ -20,10 +20,10 @@ void SystemBspInit(void )
 	
 	CDMAUart2Init();
 	GPSConfigInit(9600);
-
+	
 	TIM4ConfigInit();
 	TIM2ConfigInit();
-	ADC1Init();
+//	ADC1Init();
 	RTCConfigureInit();
 	
 	bitValue = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0);
@@ -439,6 +439,12 @@ void NVIC_AllConfig(void )
 	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
 	//定时器5 辅助USB接收 中断初始化
 	NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn; //TIM2中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
+	NVIC_Init(&NVIC_InitStructure);                 //初始化NVIC寄存器
+	
+	NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_IRQn; //TIM2中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;//先占优先级2级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;       //从优先级1级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
